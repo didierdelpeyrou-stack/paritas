@@ -11,8 +11,6 @@
   import SkillIngot from './SkillIngot.svelte';
   import RollCounter from './RollCounter.svelte';
 
-  type MobilePanel = 'skills' | 'resources' | 'capitals';
-
   /* Métadonnées des compétences pour les lingots */
   const SKILL_META: Array<{ key: SkillKey; ico: string; lbl: string }> = [
     { key: 'negociation', ico: '⚖️', lbl: 'Négociation' },
@@ -40,13 +38,6 @@
 
   let initial = $derived(game.state.name.trim().charAt(0).toUpperCase() || '?');
   let profil = $derived(game.state.profil ? PROFILS[game.state.profil] : null);
-  let mobilePanel = $state<MobilePanel>('skills');
-
-  const MOBILE_PANELS: Array<{ key: MobilePanel; label: string }> = [
-    { key: 'skills', label: 'Compétences' },
-    { key: 'resources', label: 'Ressources' },
-    { key: 'capitals', label: 'Capitaux' }
-  ];
 </script>
 
 <aside class="mobile-dash lg:hidden">
@@ -62,19 +53,10 @@
     </div>
   </div>
 
-  <div class="mobile-tabs" role="tablist" aria-label="Tableau de bord">
-    {#each MOBILE_PANELS as panel}
-      <button
-        type="button"
-        class:active={mobilePanel === panel.key}
-        onclick={() => (mobilePanel = panel.key)}>
-        {panel.label}
-      </button>
-    {/each}
-  </div>
-
-  {#if mobilePanel === 'skills'}
-    <div class="mobile-grid skills">
+  <div class="mobile-sections">
+    <section class="mobile-section">
+      <div class="mobile-section-title">Compétences</div>
+      <div class="mobile-grid skills">
       {#each SKILL_META as m}
         {@const value = game.state.skills[m.key]}
         <div class="mini-stat">
@@ -83,9 +65,12 @@
           <div class="mini-bar"><i style="width: {Math.max(2, Math.min(100, value))}%"></i></div>
         </div>
       {/each}
-    </div>
-  {:else if mobilePanel === 'resources'}
-    <div class="mobile-grid">
+      </div>
+    </section>
+
+    <section class="mobile-section">
+      <div class="mobile-section-title">Ressources</div>
+      <div class="mobile-grid resources">
       {#each Object.entries(game.state.resources) as [k, v]}
         <div class="mini-stat">
           <div class="mini-top"><span>{RES_META[k]?.ico}</span><b>{Math.round(v)}</b></div>
@@ -93,9 +78,12 @@
           <div class="mini-bar resource"><i style="width: {Math.max(2, Math.min(100, v))}%"></i></div>
         </div>
       {/each}
-    </div>
-  {:else}
-    <div class="mobile-grid">
+      </div>
+    </section>
+
+    <details class="mobile-capitals">
+      <summary>Capitaux et acquis</summary>
+      <div class="mobile-grid capitals">
       {#each Object.entries(game.state.capitaux) as [k, v]}
         <div class="mini-stat">
           <div class="mini-top"><span>{CAP_META[k]?.ico}</span><b>{Math.round(v)}</b></div>
@@ -103,8 +91,9 @@
           <div class="mini-bar capital"><i style="width: {Math.max(2, Math.min(100, v))}%"></i></div>
         </div>
       {/each}
-    </div>
-  {/if}
+      </div>
+    </details>
+  </div>
 
   {#if game.state.activeTensions.length > 0}
     <div class="mobile-alert">{game.state.activeTensions.slice(0, 2).join(' · ')}</div>
@@ -283,44 +272,50 @@
     margin-left: 1px;
   }
 
-  .mobile-tabs {
+  .mobile-sections {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.35rem;
+    gap: 0.7rem;
     margin-top: 0.7rem;
-    padding: 0.22rem;
-    border-radius: 0.55rem;
-    background: rgba(7, 9, 13, 0.54);
   }
 
-  .mobile-tabs button {
-    min-width: 0;
-    border: 0;
-    border-radius: 0.42rem;
-    background: transparent;
-    color: rgba(237, 228, 201, 0.68);
-    padding: 0.45rem 0.3rem;
-    font-size: 0.7rem;
-    font-family: 'Cinzel', Georgia, serif;
-    letter-spacing: 0.04em;
-    cursor: pointer;
-  }
-
-  .mobile-tabs button.active {
-    background: rgba(200, 155, 60, 0.18);
+  .mobile-section-title,
+  .mobile-capitals summary {
     color: #ffd36d;
-    box-shadow: inset 0 0 0 1px rgba(255, 211, 109, 0.18);
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    text-transform: uppercase;
   }
 
   .mobile-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.45rem;
-    margin-top: 0.6rem;
+    margin-top: 0.45rem;
   }
 
   .mobile-grid.skills {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .mobile-grid.resources {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .mobile-grid.capitals {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .mobile-capitals {
+    border-top: 1px solid rgba(237, 228, 201, 0.08);
+    padding-top: 0.65rem;
+  }
+
+  .mobile-capitals summary {
+    cursor: pointer;
+    list-style-position: outside;
+    margin-left: 1rem;
   }
 
   .mini-stat {
@@ -396,13 +391,13 @@
   }
 
   @media (max-width: 380px) {
-    .mobile-tabs button {
-      font-size: 0.62rem;
-      letter-spacing: 0.02em;
-    }
-
     .mobile-grid.skills {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mobile-grid.resources,
+    .mobile-grid.capitals {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 </style>

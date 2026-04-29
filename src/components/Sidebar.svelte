@@ -11,6 +11,8 @@
   import SkillIngot from './SkillIngot.svelte';
   import RollCounter from './RollCounter.svelte';
 
+  type MobilePanel = 'skills' | 'resources' | 'capitals';
+
   /* Métadonnées des compétences pour les lingots */
   const SKILL_META: Array<{ key: SkillKey; ico: string; lbl: string }> = [
     { key: 'negociation', ico: '⚖️', lbl: 'Négociation' },
@@ -38,9 +40,78 @@
 
   let initial = $derived(game.state.name.trim().charAt(0).toUpperCase() || '?');
   let profil = $derived(game.state.profil ? PROFILS[game.state.profil] : null);
+  let mobilePanel = $state<MobilePanel>('skills');
+
+  const MOBILE_PANELS: Array<{ key: MobilePanel; label: string }> = [
+    { key: 'skills', label: 'Compétences' },
+    { key: 'resources', label: 'Ressources' },
+    { key: 'capitals', label: 'Capitaux' }
+  ];
 </script>
 
-<aside class="bordered-card p-4 space-y-4 sticky top-4 self-start">
+<aside class="mobile-dash lg:hidden">
+  <div class="mobile-head">
+    <div class="mobile-avatar {game.state.camp === 'salarie' ? 'salarie' : 'patron'}">{initial}</div>
+    <div class="mobile-id">
+      <div class="mobile-name">{game.state.name || 'Joueur'}</div>
+      <div class="mobile-era">{game.state.camp === 'patron' ? 'Patronat' : 'Salariat'} · T{game.state.turn}</div>
+    </div>
+    <div class="mobile-score">
+      <span>{game.scoreDialectic}</span>
+      <small>/100</small>
+    </div>
+  </div>
+
+  <div class="mobile-tabs" role="tablist" aria-label="Tableau de bord">
+    {#each MOBILE_PANELS as panel}
+      <button
+        type="button"
+        class:active={mobilePanel === panel.key}
+        onclick={() => (mobilePanel = panel.key)}>
+        {panel.label}
+      </button>
+    {/each}
+  </div>
+
+  {#if mobilePanel === 'skills'}
+    <div class="mobile-grid skills">
+      {#each SKILL_META as m}
+        {@const value = game.state.skills[m.key]}
+        <div class="mini-stat">
+          <div class="mini-top"><span>{m.ico}</span><b>{Math.round(value)}</b></div>
+          <div class="mini-label">{m.lbl}</div>
+          <div class="mini-bar"><i style="width: {Math.max(2, Math.min(100, value))}%"></i></div>
+        </div>
+      {/each}
+    </div>
+  {:else if mobilePanel === 'resources'}
+    <div class="mobile-grid">
+      {#each Object.entries(game.state.resources) as [k, v]}
+        <div class="mini-stat">
+          <div class="mini-top"><span>{RES_META[k]?.ico}</span><b>{Math.round(v)}</b></div>
+          <div class="mini-label">{RES_META[k]?.lbl ?? k}</div>
+          <div class="mini-bar resource"><i style="width: {Math.max(2, Math.min(100, v))}%"></i></div>
+        </div>
+      {/each}
+    </div>
+  {:else}
+    <div class="mobile-grid">
+      {#each Object.entries(game.state.capitaux) as [k, v]}
+        <div class="mini-stat">
+          <div class="mini-top"><span>{CAP_META[k]?.ico}</span><b>{Math.round(v)}</b></div>
+          <div class="mini-label">{CAP_META[k]?.lbl ?? k}</div>
+          <div class="mini-bar capital"><i style="width: {Math.max(2, Math.min(100, v))}%"></i></div>
+        </div>
+      {/each}
+    </div>
+  {/if}
+
+  {#if game.state.activeTensions.length > 0}
+    <div class="mobile-alert">{game.state.activeTensions.slice(0, 2).join(' · ')}</div>
+  {/if}
+</aside>
+
+<aside class="hidden lg:block bordered-card p-4 space-y-4 sticky top-4 self-start">
   <!-- Identité -->
   <div class="flex items-center gap-3">
     <div class="w-12 h-12 rounded-full flex items-center justify-center font-display font-bold text-xl text-white shadow-lg ring-2 ring-gold
@@ -136,3 +207,202 @@
     </div>
   {/if}
 </aside>
+
+<style>
+  .mobile-dash {
+    border: 1px solid rgba(42, 52, 65, 0.95);
+    border-radius: 0.75rem;
+    background: linear-gradient(180deg, rgba(26, 31, 38, 0.96), rgba(16, 20, 26, 0.96));
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    padding: 0.75rem;
+  }
+
+  .mobile-head {
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .mobile-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    color: white;
+    font-family: 'Cinzel', Georgia, serif;
+    font-weight: 800;
+    border: 1px solid rgba(255, 224, 144, 0.55);
+  }
+
+  .mobile-avatar.salarie {
+    background: linear-gradient(135deg, #7f1d1d, #dc2626);
+  }
+
+  .mobile-avatar.patron {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  }
+
+  .mobile-id {
+    min-width: 0;
+    line-height: 1.15;
+  }
+
+  .mobile-name {
+    color: #ede4c9;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-era {
+    margin-top: 0.18rem;
+    color: rgba(237, 228, 201, 0.6);
+    font-size: 0.72rem;
+    font-style: italic;
+  }
+
+  .mobile-score {
+    min-width: 62px;
+    text-align: right;
+    color: #7ff0b2;
+    font-family: 'Cinzel', Georgia, serif;
+    font-weight: 800;
+  }
+
+  .mobile-score span {
+    font-size: 1.75rem;
+    line-height: 1;
+  }
+
+  .mobile-score small {
+    color: rgba(237, 228, 201, 0.55);
+    font-size: 0.72rem;
+    margin-left: 1px;
+  }
+
+  .mobile-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.35rem;
+    margin-top: 0.7rem;
+    padding: 0.22rem;
+    border-radius: 0.55rem;
+    background: rgba(7, 9, 13, 0.54);
+  }
+
+  .mobile-tabs button {
+    min-width: 0;
+    border: 0;
+    border-radius: 0.42rem;
+    background: transparent;
+    color: rgba(237, 228, 201, 0.68);
+    padding: 0.45rem 0.3rem;
+    font-size: 0.7rem;
+    font-family: 'Cinzel', Georgia, serif;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+  }
+
+  .mobile-tabs button.active {
+    background: rgba(200, 155, 60, 0.18);
+    color: #ffd36d;
+    box-shadow: inset 0 0 0 1px rgba(255, 211, 109, 0.18);
+  }
+
+  .mobile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+    margin-top: 0.6rem;
+  }
+
+  .mobile-grid.skills {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .mini-stat {
+    min-width: 0;
+    border: 1px solid rgba(237, 228, 201, 0.09);
+    border-radius: 0.55rem;
+    background: rgba(13, 16, 20, 0.62);
+    padding: 0.45rem 0.5rem;
+  }
+
+  .mini-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.35rem;
+  }
+
+  .mini-top span {
+    font-size: 0.96rem;
+    line-height: 1;
+  }
+
+  .mini-top b {
+    color: #ede4c9;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 1rem;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mini-label {
+    margin-top: 0.2rem;
+    color: rgba(237, 228, 201, 0.58);
+    font-size: 0.66rem;
+    line-height: 1.1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mini-bar {
+    height: 4px;
+    margin-top: 0.4rem;
+    border-radius: 999px;
+    background: rgba(7, 9, 13, 0.85);
+    overflow: hidden;
+  }
+
+  .mini-bar i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #c89b3c, #ffd36d);
+  }
+
+  .mini-bar.resource i {
+    background: linear-gradient(90deg, #5fb56b, #a7f3d0);
+  }
+
+  .mini-bar.capital i {
+    background: linear-gradient(90deg, #8b5cf6, #c4b5fd);
+  }
+
+  .mobile-alert {
+    margin-top: 0.55rem;
+    border-radius: 0.45rem;
+    border: 1px solid rgba(167, 139, 250, 0.28);
+    background: rgba(109, 40, 217, 0.12);
+    color: rgba(237, 228, 201, 0.76);
+    padding: 0.4rem 0.55rem;
+    font-size: 0.68rem;
+    line-height: 1.25;
+  }
+
+  @media (max-width: 380px) {
+    .mobile-tabs button {
+      font-size: 0.62rem;
+      letter-spacing: 0.02em;
+    }
+
+    .mobile-grid.skills {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

@@ -306,8 +306,8 @@ export const EVENTS: GameEvent[] = [
 export const GENERIC_EVENTS: GameEvent[] = [
   {
     id: 'gen-cotisations',
-    era: -1, format: 'reigns', title: 'Cotisations en baisse',
-    situation: () => "La caisse se vide. Les membres rechignent à cotiser.",
+    era: -1, format: 'reigns', title: 'Caisse commune en baisse',
+    situation: () => "La caisse commune se vide. Les membres hésitent à verser davantage, mais sans réserve le collectif perd sa capacité d'action.",
     swipe: { left: 0, right: 1 },
     choices: [
       { text: 'Tournée porte-à-porte', icon: '🚪', tag: 'mobilise', skillUp: 'mobilisation', dc: 40,
@@ -316,15 +316,15 @@ export const GENERIC_EVENTS: GameEvent[] = [
       { text: 'Augmenter la cotisation', icon: '💰', tag: 'institution', skillUp: 'negociation', dc: 35,
         effects: { caisse: 8, soutien: -3 },
         explanation: "Solution comptable, peu populaire." },
-      { text: 'Couper les permanents', icon: '✂️', tag: 'production', skillUp: 'production', dc: 30,
+      { text: 'Réduire les tournées et les réunions', icon: '✂️', tag: 'production', skillUp: 'production', dc: 30,
         effects: { caisse: 10, soutien: -8, mobilisation: -3 },
-        explanation: "Tu sacrifies l'ossature militante." }
+        explanation: "Tu économises vite, mais tu fragilises la présence collective." }
     ]
   },
   {
     id: 'gen-tribune',
-    era: -1, format: 'reigns', title: 'Sollicitation médiatique',
-    situation: () => "Un journal influent te demande une tribune.",
+    era: -1, format: 'reigns', title: 'Prise de parole publique',
+    situation: () => "Une feuille locale, un journal ou une assemblée te donne la parole. Le message peut rassembler, ou exposer le collectif.",
     swipe: { left: 0, right: 1 },
     choices: [
       { text: 'Tribune offensive', icon: '📢', tag: 'discours', skillUp: 'baratin', dc: 45,
@@ -336,8 +336,52 @@ export const GENERIC_EVENTS: GameEvent[] = [
     ]
   },
   {
+    id: 'gen-mutuelle-secours',
+    era: 0, format: 'reigns', title: 'Société de secours mutuel',
+    situation: () => "Les coalitions professionnelles sont interdites, mais une caisse de secours peut aider les familles touchées par la maladie, l'accident ou la perte d'ouvrage.",
+    swipe: { left: 0, right: 1 },
+    choices: [
+      { text: 'Fonder une caisse de secours discrète', icon: '🕯️', recommended: true, tag: 'institution', skillUp: 'expertise', dc: 44,
+        effects: { expertise: 4, soutien: 6, caisse: -3, social: 2 },
+        explanation: "Tu bâtis une solidarité légale en apparence, mais politiquement féconde." },
+      { text: 'Assumer une coalition revendicative', icon: '✊', risky: true, tag: 'refuse', skillUp: 'mobilisation', dc: 60,
+        effects: { mobilisation: 6, soutien: 5, influence: -6 },
+        effectsFail: { soutien: -5, prestige: -4, sante: -5 },
+        explanation: "Tu fais naître le rapport de force, au risque de la répression." }
+    ]
+  },
+  {
+    id: 'gen-livret-ouvrier',
+    era: 0, format: 'reigns', title: 'Livret ouvrier',
+    situation: () => "Le livret ouvrier suit les déplacements et les engagements. Sans visa, changer d'atelier ou de ville devient risqué.",
+    swipe: { left: 0, right: 1 },
+    choices: [
+      { text: 'Négocier les visas avec le patron', icon: '📘', tag: 'negocie', skillUp: 'negociation', dc: 46,
+        effects: { negociation: 4, influence: 3, soutien: 2 },
+        explanation: "Tu desserres la contrainte sans déclencher l'affrontement." },
+      { text: 'Organiser une entraide pour les sans-livret', icon: '🤝', recommended: true, tag: 'mobilise', skillUp: 'mobilisation', dc: 52,
+        effects: { mobilisation: 5, soutien: 6, caisse: -3 },
+        explanation: "Tu protèges les plus vulnérables et crées une solidarité de fait." }
+    ]
+  },
+  {
+    id: 'gen-chambre-ouvriere',
+    era: 1, format: 'reigns', title: 'Chambre ouvrière tolérée',
+    situation: () => "Dans la ville industrielle, des ouvriers veulent tenir une chambre professionnelle. Le droit reste incertain, mais l'administration ferme parfois les yeux.",
+    swipe: { left: 0, right: 1 },
+    choices: [
+      { text: 'Rédiger des statuts prudents', icon: '📜', recommended: true, tag: 'institution', skillUp: 'politique', dc: 50,
+        effects: { politique: 5, influence: 4, soutien: 3 },
+        explanation: "Tu construis une organisation durable sans provoquer immédiatement l'interdiction." },
+      { text: 'Faire de la chambre un foyer de grève', icon: '🔥', risky: true, tag: 'greve', skillUp: 'mobilisation', dc: 62,
+        effects: { mobilisation: 7, soutien: 5, influence: -5, sante: -3 },
+        effectsFail: { soutien: -6, influence: -7, prestige: -4 },
+        explanation: "Tu assumes la chambre comme organe de lutte, avec un risque de fermeture." }
+    ]
+  },
+  {
     id: 'gen-nao-salaires',
-    era: -1, format: 'reigns', title: 'NAO sous tension',
+    era: 3, format: 'reigns', title: 'NAO sous tension',
     situation: ({ camp }) => camp === 'patron'
       ? "La négociation annuelle obligatoire démarre. Les syndicats arrivent avec l'inflation et des fiches de paie annotées."
       : "La direction ouvre les NAO avec une enveloppe floue. La base veut un signal clair sur les salaires.",
@@ -357,11 +401,11 @@ export const GENERIC_EVENTS: GameEvent[] = [
   },
   {
     id: 'gen-accident-travail',
-    era: -1, format: 'reigns', title: 'Accident sur le site',
+    era: 1, format: 'reigns', title: 'Accident sur le site',
     situation: () => "Un accident grave survient au petit matin. Les versions divergent déjà entre atelier, encadrement et presse locale.",
     swipe: { left: 0, right: 1 },
     choices: [
-      { text: 'Déclencher une enquête paritaire', icon: '🔎', recommended: true, tag: 'institution', skillUp: 'expertise', dc: 45,
+      { text: 'Déclencher une enquête contradictoire', icon: '🔎', recommended: true, tag: 'institution', skillUp: 'expertise', dc: 45,
         effects: { expertise: 5, prestige: 4, sante: 6, influence: 2 },
         explanation: "Tu sécurises les faits avant que chacun n'installe son récit." },
       { text: 'Organiser une heure d’arrêt collectif', icon: '✊', tag: 'mobilise', skillUp: 'mobilisation', dc: 50,
@@ -375,7 +419,7 @@ export const GENERIC_EVENTS: GameEvent[] = [
   },
   {
     id: 'gen-rumeur-reseaux',
-    era: -1, format: 'reigns', title: 'Rumeur sur les réseaux',
+    era: 3, format: 'reigns', title: 'Rumeur sur les réseaux',
     situation: () => "Un extrait coupé d'une réunion circule. En trois heures, tout le monde croit avoir compris ce qui s'est passé.",
     swipe: { left: 0, right: 1 },
     choices: [
@@ -393,7 +437,7 @@ export const GENERIC_EVENTS: GameEvent[] = [
   },
   {
     id: 'gen-plan-productivite',
-    era: -1, format: 'reigns', title: 'Plan productivité',
+    era: 3, format: 'reigns', title: 'Plan productivité',
     situation: ({ camp }) => camp === 'patron'
       ? "Le comité exécutif exige un gain rapide de productivité. Le terrain prévient que les équipes sont déjà à flux tendu."
       : "La direction présente un plan productivité. Les mots sont polis, les cadences le seront moins.",
@@ -413,7 +457,7 @@ export const GENERIC_EVENTS: GameEvent[] = [
   },
   {
     id: 'gen-formation-delegues',
-    era: -1, format: 'reigns', title: 'Former la relève',
+    era: 2, format: 'reigns', title: 'Former la relève',
     situation: () => "Les anciens savent tout faire, les nouveaux n'osent pas encore parler. La prochaine table approche.",
     swipe: { left: 0, right: 1 },
     choices: [
@@ -431,8 +475,8 @@ export const GENERIC_EVENTS: GameEvent[] = [
   },
   {
     id: 'gen-mediation-prefet',
-    era: -1, format: 'reigns', title: 'Médiation du préfet',
-    situation: () => "Le conflit s'enlise. La préfecture propose une médiation, avec caméras à l'entrée et compte rendu officiel.",
+    era: 1, format: 'reigns', title: 'Médiation du préfet',
+    situation: () => "Le conflit s'enlise. L'autorité préfectorale propose une médiation, avec procès-verbal et témoins à l'entrée.",
     swipe: { left: 0, right: 1 },
     choices: [
       { text: 'Accepter avec mandat écrit', icon: '📜', recommended: true, tag: 'institution', skillUp: 'politique', dc: 48,
@@ -449,7 +493,7 @@ export const GENERIC_EVENTS: GameEvent[] = [
   },
   {
     id: 'gen-budget-campagne',
-    era: -1, format: 'reigns', title: 'Budget de campagne',
+    era: 3, format: 'reigns', title: 'Budget de campagne',
     situation: () => "Une campagne d'information est prête. Il faut choisir où mettre l'argent : terrain, expertise ou image.",
     swipe: { left: 0, right: 1 },
     choices: [
@@ -484,7 +528,7 @@ export const GENERIC_EVENTS: GameEvent[] = [
   },
   {
     id: 'gen-audit-comptes',
-    era: -1, format: 'reigns', title: 'Audit des comptes',
+    era: 2, format: 'reigns', title: 'Audit des comptes',
     situation: () => "Un financeur, une fédération ou un administrateur demande à voir les comptes. Les lignes sont justes, mais pas toutes racontables.",
     swipe: { left: 0, right: 1 },
     choices: [
@@ -502,7 +546,7 @@ export const GENERIC_EVENTS: GameEvent[] = [
   },
   {
     id: 'gen-crise-service',
-    era: -1, format: 'reigns', title: 'Service essentiel',
+    era: 3, format: 'reigns', title: 'Service essentiel',
     situation: () => "Une grève ou un incident touche un service essentiel. Le public soutient encore le mouvement, mais l'impatience monte.",
     swipe: { left: 0, right: 1 },
     choices: [

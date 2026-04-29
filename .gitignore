@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+.vite/
+.svelte-kit/
+.env
+.env.local
+vite
+paritas@*
+vite.config.ts.timestamp-*.mjs

@@ -58,6 +58,20 @@
     rebirth.choose(choice);
   }
 
+  function subtitleFor(id: ActorId, s: typeof gameState): string | undefined {
+    if (!s) return undefined;
+    if (id === 'adversaire') return s.worldAI.opponent.factionName;
+    if (id === 'etat') {
+      const faction = s.worldAI.state.faction;
+      if (faction === 'unitaire') return undefined;
+      if (faction === 'bercy') return 'Bercy';
+      if (faction === 'travail') return 'Ministère du Travail';
+      if (faction === 'elysee') return 'Élysée';
+    }
+    if (id === 'base') return s.organization.name;
+    return undefined;
+  }
+
   function handleContinue() {
     rebirth.continueAfterConsequence();
   }
@@ -127,7 +141,11 @@
               Acteurs
             </div>
             {#each ACTOR_IDS as id}
-              <ActorPanel actorId={id} actor={s.actors[id]} />
+              <ActorPanel
+                actorId={id}
+                actor={s.actors[id]}
+                subtitle={subtitleFor(id, s)}
+              />
             {/each}
           </section>
         {:else if activeTab === 'organisation'}

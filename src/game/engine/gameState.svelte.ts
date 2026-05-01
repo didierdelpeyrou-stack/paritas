@@ -474,6 +474,12 @@ class RebirthGameStore {
       if (!s.worldAI) {
         s.worldAI = freshWorldAI();
       }
+      if (!s.worldAI.state.faction) {
+        s.worldAI = {
+          ...s.worldAI,
+          state: { ...s.worldAI.state, faction: 'unitaire', cycle: 'mid_term' }
+        };
+      }
       if (!s.activePipelines) {
         s.activePipelines = [];
       }

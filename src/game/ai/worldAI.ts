@@ -17,7 +17,9 @@ export function freshWorldAI(): WorldAIState {
       id: 'mediation',
       label: 'Médiation',
       intensity: 35,
-      signal: 'L’État observe encore : il cherche une table avant de choisir une contrainte.'
+      signal: 'L’État observe encore : il cherche une table avant de choisir une contrainte.',
+      faction: 'unitaire',
+      cycle: 'mid_term'
     },
     opponent: {
       id: 'compromis_limite',

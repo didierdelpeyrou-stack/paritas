@@ -58,7 +58,7 @@ export interface NarrativePromptOutput {
   memoryLine?: string;
 }
 
-const FETCH_TIMEOUT_MS = 2000;
+const FETCH_TIMEOUT_MS = 4000;
 
 function endpoint(): string | null {
   const url = import.meta.env.VITE_NARRATIVE_API;

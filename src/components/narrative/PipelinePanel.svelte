@@ -1,11 +1,18 @@
 <script lang="ts">
   import type { ActivePipeline } from '../../game/narrative/pipelineTypes';
+  import { pipelineMaxStage, pipelineStageLabel } from '../../game/narrative/pipelineContent';
 
   interface Props {
     pipelines: ActivePipeline[];
   }
 
   let { pipelines }: Props = $props();
+
+  function stageHeadline(p: ActivePipeline): string {
+    if (p.stage > pipelineMaxStage(p.id)) return 'résolu';
+    const label = pipelineStageLabel(p.id, p.stage);
+    return label ? `étape ${p.stage + 1} · ${label}` : `étape ${p.stage + 1}`;
+  }
 </script>
 
 {#if pipelines.length > 0}
@@ -21,7 +28,7 @@
           <div class="flex items-start justify-between gap-2">
             <div>
               <b>{pipeline.label}</b>
-              <small>étape {pipeline.stage + 1} · dernière secousse T{pipeline.lastTurn}</small>
+              <small>{stageHeadline(pipeline)} · dernière secousse T{pipeline.lastTurn}</small>
             </div>
             <em>{Math.round(pipeline.pressure)}</em>
           </div>

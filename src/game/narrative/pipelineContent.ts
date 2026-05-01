@@ -57,6 +57,53 @@ const PIPELINE_STAGES: Record<PipelineId, StageBuilder[]> = {
   ]
 };
 
+const STAGE_LABELS: Record<PipelineId, string[]> = {
+  institution: [
+    'Gestion s’installe',
+    'Réforme à écrire',
+    'Mémoire institutionnelle',
+    'Crise budgétaire',
+    'L’État avance ses pions',
+    'Héritage en débat'
+  ],
+  rupture: [
+    'Mémoire de la rupture',
+    'Mot d’ordre',
+    'Répression ou concession',
+    'Scission ou institutionnalisation',
+    'Transmission générationnelle',
+    'Mythe à défendre'
+  ],
+  capture: [
+    'Siège confortable',
+    'Murmure de la base',
+    'Avant l’élection interne',
+    'Au sortir des urnes',
+    'L’État se recompose',
+    'Récit de la capture'
+  ],
+  refondation: [
+    'Refaire autrement',
+    'Coalition mutualiste',
+    'Doctrine en débat',
+    'Passage à l’échelle',
+    'Récupération guettée',
+    'Doctrine devenue norme'
+  ],
+  declin: [
+    'Comptes et fatigue',
+    'Permanences fermées',
+    'Disparition ou refondation',
+    'Second souffle',
+    'Recommencement',
+    'Trace dans l’histoire'
+  ]
+};
+
+export function pipelineStageLabel(id: PipelineId, stage: number): string | null {
+  return STAGE_LABELS[id][stage] ?? null;
+}
+
 export function pipelineSceneData(
   id: PipelineId,
   stage: number,

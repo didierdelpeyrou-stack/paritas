@@ -10,6 +10,8 @@
   } from '../../game/narrative/choicePosture';
   import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
   import VoicePanel from './VoicePanel.svelte';
+  import HistoricalImage from '../HistoricalImage.svelte';
+  import { imageFor } from '../../game/content/historicalImages';
 
   interface Props {
     scenario: Scenario;
@@ -18,6 +20,7 @@
     onChoose: (choice: Choice) => void;
   }
   let { scenario, mode, dominantTrait, onChoose }: Props = $props();
+  const hasImage = $derived(!!imageFor(scenario.id));
 
   function isLocked(choice: Choice): boolean {
     return !!choice.requiresTrait && choice.requiresTrait !== dominantTrait;
@@ -48,6 +51,10 @@
     </div>
     <h2 class="font-display text-2xl text-gold">{scenario.title}</h2>
   </header>
+
+  {#if hasImage}
+    <HistoricalImage id={scenario.id} shape="tableau" />
+  {/if}
 
   <div class="text-parchment leading-relaxed whitespace-pre-line text-sm sm:text-base">
     {setupText}

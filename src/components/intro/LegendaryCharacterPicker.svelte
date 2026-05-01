@@ -7,6 +7,7 @@
   } from '../../game/content/legendaryCharacters';
   import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
   import type { PlayerTrait } from '../../game/types';
+  import HistoricalImage from '../HistoricalImage.svelte';
 
   interface Props {
     selected: LegendaryCharacter | null;
@@ -176,7 +177,9 @@
       onkeydown={(e) => e.stopPropagation()}
     >
       <header class="modal-head">
-        <div class="avatar">{t.init}</div>
+        <div class="avatar-block">
+          <HistoricalImage id={t.id} shape="portrait" height="120px" />
+        </div>
         <div class="min-w-0 flex-1">
           <h2 id="char-modal-title" class="font-display text-xl text-gold leading-tight">
             {t.name}
@@ -254,19 +257,8 @@
     margin-bottom: 1rem;
   }
 
-  .modal-head .avatar {
+  .modal-head .avatar-block {
     flex-shrink: 0;
-    width: 3rem;
-    height: 3rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(200, 155, 60, 0.45);
-    border-radius: 999px;
-    background: rgba(13, 16, 20, 0.55);
-    color: #f4d58b;
-    font-family: 'Cinzel', Georgia, serif;
-    font-size: 1.1rem;
   }
 
   .modal-head .close-btn {

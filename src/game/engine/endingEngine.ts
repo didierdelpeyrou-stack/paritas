@@ -3,6 +3,7 @@
  */
 
 import type { EndingId, RebirthGameState, RunStats } from '../types';
+import type { ObjectiveProgress, RoleObjective } from '../objectives/types';
 import { computeFinalScore } from '../simulation/scoring';
 
 export interface EndingRender {
@@ -13,6 +14,8 @@ export interface EndingRender {
   /** Score final 0..100 */
   score: number;
   stats: RunStats;
+  objectives: RoleObjective[];
+  objectiveProgress: ObjectiveProgress[];
 }
 
 export function pickEnding(state: RebirthGameState): EndingId {
@@ -58,7 +61,9 @@ export function buildEnding(state: RebirthGameState): EndingRender {
     title: ENDING_TITLES[id],
     text: ENDING_TEXTS[id](state),
     score,
-    stats
+    stats,
+    objectives: state.objectives,
+    objectiveProgress: state.objectiveProgress
   };
 }
 

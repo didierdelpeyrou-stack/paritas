@@ -57,6 +57,8 @@ import {
   type ElectionCampaignMove
 } from '../org/internalElections';
 import { advancePipelineAfterScenario, syncPipelines } from '../narrative/pipelineEngine';
+import { objectivesForRole } from '../objectives/catalog';
+import { evaluateObjectives } from '../objectives/evaluator';
 
 const SAVE_KEY = 'paritas_rebirth_save_v1';
 
@@ -74,7 +76,8 @@ function freshRebirthState(
       resources = applyResourceDelta(resources, legendary.resourceBonus);
     }
   }
-  return {
+  const objectives = objectivesForRole(camp, legendary?.id);
+  const draft: RebirthGameState = {
     name,
     camp,
     mode,
@@ -90,11 +93,15 @@ function freshRebirthState(
     worldAI: freshWorldAI(),
     activePipelines: [],
     memory: freshMemory(),
+    objectives,
+    objectiveProgress: [],
     phase: 'idle',
     lastChoice: null,
     lastConsequenceText: null,
     endingId: null
   };
+  draft.objectiveProgress = evaluateObjectives(draft, objectives);
+  return draft;
 }
 
 class RebirthGameStore {
@@ -166,7 +173,8 @@ class RebirthGameStore {
     const after: RebirthGameState = {
       ...next,
       phase: 'consequence',
-      lastConsequenceText: render.text
+      lastConsequenceText: render.text,
+      objectiveProgress: evaluateObjectives(next, next.objectives, next.objectiveProgress)
     };
     this.state = after;
     this.consequence = render;
@@ -214,7 +222,14 @@ class RebirthGameStore {
     const worldTick = tickWorldAI(strategyTick.state);
     const electionTick = tickInternalElection(worldTick.state);
     const pipelineState = syncPipelines(electionTick.state);
-    this.state = pipelineState;
+    this.state = {
+      ...pipelineState,
+      objectiveProgress: evaluateObjectives(
+        pipelineState,
+        pipelineState.objectives,
+        pipelineState.objectiveProgress
+      )
+    };
     const logs = [...strategyTick.logs, ...worldTick.logs, ...electionTick.logs];
     if (logs.length > 0) {
       this.log = [...this.log, ...logs].slice(-50);
@@ -401,6 +416,10 @@ class RebirthGameStore {
       if (!s.activePipelines) {
         s.activePipelines = [];
       }
+      if (!s.objectives) {
+        s.objectives = objectivesForRole(s.camp);
+      }
+      s.objectiveProgress = evaluateObjectives(s, s.objectives, s.objectiveProgress ?? []);
       this.state = s;
       this.log = data.log ?? [];
       const pick = pickNextScenario(s);

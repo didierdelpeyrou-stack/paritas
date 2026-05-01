@@ -8,6 +8,7 @@ import type { PlayerOrganization } from './org/types';
 import type { ActiveStrategy } from './strategy/types';
 import type { WorldAIState } from './ai/types';
 import type { ActivePipeline } from './narrative/pipelineTypes';
+import type { ObjectiveProgress, RoleObjective } from './objectives/types';
 
 /* ============================================================
    Identité du joueur — Rebirth
@@ -258,6 +259,10 @@ export interface RebirthGameState {
 
   /* Mémoire */
   memory: Memory;
+
+  /* Objectifs assignés au rôle (snapshot figé au démarrage) + suivi */
+  objectives: RoleObjective[];
+  objectiveProgress: ObjectiveProgress[];
 
   /* Phase du tour */
   phase: GamePhase;

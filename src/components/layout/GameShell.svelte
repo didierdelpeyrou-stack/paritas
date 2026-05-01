@@ -8,6 +8,7 @@
   import ResourceGauge from '../simulation/ResourceGauge.svelte';
   import ActorPanel from '../simulation/ActorPanel.svelte';
   import OrganizationPanel from '../org/OrganizationPanel.svelte';
+  import ObjectivePanel from '../objectives/ObjectivePanel.svelte';
   import StrategyPanel from '../strategy/StrategyPanel.svelte';
   import WorldStrategyPanel from '../world/WorldStrategyPanel.svelte';
   import EndingReport from '../feedback/EndingReport.svelte';
@@ -75,6 +76,8 @@
           {e.blurb}
         </p>
       </section>
+
+      <ObjectivePanel objectives={s.objectives} progress={s.objectiveProgress} turn={s.turn} />
 
       <OrganizationPanel organization={s.organization} turn={s.turn} />
 

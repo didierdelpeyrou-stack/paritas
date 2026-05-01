@@ -23,7 +23,12 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
       { trait: 'rupture', text: 'S’ils interdisent la voix collective, il faudra apprendre à parler bas.' },
       { trait: 'batisseur', text: 'La solidarité survivra peut-être sous un autre nom.' }
     ],
-    quotes: [{ text: 'Il n’y a plus de corporations dans l’État.', source: 'Esprit de la loi Le Chapelier, 1791' }],
+    quotes: [
+      {
+        text: 'L’anéantissement de toutes les espèces de corporations des citoyens du même état ou profession étant une des bases fondamentales de la Constitution française, il est défendu de les rétablir de fait.',
+        source: 'Loi Le Chapelier, article 1, 14 juin 1791'
+      }
+    ],
     choices: [
       {
         id: 'chapelier-clandestin',

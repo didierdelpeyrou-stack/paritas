@@ -39,9 +39,10 @@ export function applyNarrativeEnrichment(
   current: ConsequenceRender,
   output: NarrativePromptOutput
 ): ConsequenceRender {
+  const text = output.consequence?.trim() ? output.consequence : current.text;
   return {
     ...current,
-    text: output.consequence,
+    text,
     innerVoice: output.innerVoice ?? current.innerVoice,
     newspaperHeadline: output.newspaperHeadline ?? current.newspaperHeadline,
     memoryLine: output.memoryLine ?? current.memoryLine,

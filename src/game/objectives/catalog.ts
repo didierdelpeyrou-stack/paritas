@@ -79,7 +79,7 @@ const PER_CHARACTER: Record<string, RoleObjective[]> = {
     {
       id: 'maire-cfdt-modernise',
       label: 'Moderniser le syndicalisme',
-      description: 'Atteindre un capital institutionnel d’au moins 70 sans renoncer à la confiance (≥ 50).',
+      description: 'Atteindre un capital institutionnel d’au moins 70 (CFDT recentrée).',
       condition: { kind: 'resource-min', resource: 'institution', threshold: 70 },
       weight: 3
     }

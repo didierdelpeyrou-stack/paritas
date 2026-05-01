@@ -430,7 +430,8 @@ class RebirthGameStore {
     try {
       const payload = {
         state: this.state,
-        log: this.log
+        log: this.log,
+        consequence: this.consequence
       };
       localStorage.setItem(SAVE_KEY, JSON.stringify(payload));
     } catch {
@@ -442,7 +443,11 @@ class RebirthGameStore {
     try {
       const raw = localStorage.getItem(SAVE_KEY);
       if (!raw) return false;
-      const data = JSON.parse(raw) as { state?: RebirthGameState; log?: string[] };
+      const data = JSON.parse(raw) as {
+        state?: RebirthGameState;
+        log?: string[];
+        consequence?: ConsequenceRender | null;
+      };
       const s = data.state;
       if (!s) return false;
       if (!s.organization) {
@@ -474,6 +479,14 @@ class RebirthGameStore {
       this.currentScenario = pick?.scenario ?? null;
       if (s.phase === 'ended') {
         this.ending = buildEnding(s);
+      } else if (s.phase === 'consequence') {
+        if (data.consequence) {
+          this.consequence = data.consequence;
+        } else {
+          /* Old save — no persisted consequence, but state stuck mid-turn.
+             Roll forward to the next scene so the UI is never stuck blank. */
+          this.state = { ...s, phase: 'scene' };
+        }
       }
       return true;
     } catch {

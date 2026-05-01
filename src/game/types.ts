@@ -5,6 +5,7 @@
 
 import type { Camp } from '../lib/types';
 import type { PlayerOrganization } from './org/types';
+import type { ActiveStrategy } from './strategy/types';
 
 /* ============================================================
    Identité du joueur — Rebirth
@@ -249,6 +250,7 @@ export interface RebirthGameState {
   resources: Resources;
   actors: Actors;
   organization: PlayerOrganization;
+  activeStrategies: ActiveStrategy[];
 
   /* Mémoire */
   memory: Memory;

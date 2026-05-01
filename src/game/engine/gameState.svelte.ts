@@ -38,6 +38,8 @@ import {
   freshOrganization
 } from '../org/organization';
 import type { OrgAction } from '../org/types';
+import { availableStrategies, strategyById } from '../strategy/catalog';
+import { startStrategy, tickStrategies } from '../strategy/resolver';
 
 const SAVE_KEY = 'paritas_rebirth_save_v1';
 
@@ -67,6 +69,7 @@ function freshRebirthState(
     resources,
     actors: freshActors(),
     organization: freshOrganization(camp, name),
+    activeStrategies: [],
     memory: freshMemory(),
     phase: 'idle',
     lastChoice: null,
@@ -161,9 +164,32 @@ class RebirthGameStore {
       this.endRun();
       return;
     }
-    this.state = this.applyOrganizationUpkeep(advanceTurn(s));
+    const advanced = this.applyOrganizationUpkeep(advanceTurn(s));
+    const ticked = tickStrategies(advanced);
+    this.state = ticked.state;
+    if (ticked.logs.length > 0) {
+      this.log = [...this.log, ...ticked.logs].slice(-50);
+    }
     this.consequence = null;
     this.advanceToNextScenario();
+    this.persist();
+  }
+
+  startStrategy(strategyId: string) {
+    const s = this.state;
+    if (!s || !canDevelopOrganization(s.turn, s.camp)) return;
+    const definition = strategyById(strategyId);
+    if (!definition) return;
+    const activeIds = s.activeStrategies.map(strategy => strategy.id);
+    const available = availableStrategies(s.turn, s.camp, s.organization, activeIds);
+    if (!available.some(strategy => strategy.id === strategyId)) return;
+    if (s.organization.treasury < (definition.costPerTurn.treasury ?? 0)) return;
+
+    this.state = startStrategy(s, definition);
+    this.log = [
+      ...this.log,
+      `T${s.turn} — Stratégie lancée : ${definition.label}. ${definition.description}`
+    ].slice(-50);
     this.persist();
   }
 
@@ -293,6 +319,9 @@ class RebirthGameStore {
       if (!s) return false;
       if (!s.organization) {
         s.organization = freshOrganization(s.camp, s.name);
+      }
+      if (!s.activeStrategies) {
+        s.activeStrategies = [];
       }
       this.state = s;
       this.log = data.log ?? [];

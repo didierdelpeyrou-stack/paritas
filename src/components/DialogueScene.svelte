@@ -64,7 +64,7 @@
   <div class="bordered-card p-6 relative overflow-hidden">
     <!-- Header : époque + titre + PNJ -->
     {#if event.date}
-      <div class="text-[0.7rem] uppercase tracking-[0.2em] text-gold font-display mb-1">{event.date}</div>
+      <div class="text-[0.78rem] uppercase tracking-[0.2em] text-gold font-display mb-1">{event.date}</div>
     {/if}
     <h2 class="font-display text-2xl text-gold-soft leading-tight mb-4">{event.title}</h2>
 
@@ -87,7 +87,7 @@
       {#key stepIdx}
         <div class="min-h-[140px]" in:fly={{ y: 8, duration: 300 }}>
           {#if currentStep}
-            <div class="text-[0.7rem] uppercase tracking-[0.2em] {speakerColor(currentStep.who)} font-display mb-2">
+            <div class="text-[0.78rem] uppercase tracking-[0.2em] {speakerColor(currentStep.who)} font-display mb-2">
               {currentStep.who === 'pnj' ? (event.pnj?.name ?? 'Lui') : currentStep.who === 'self' ? 'Toi' : 'Narrateur'}
             </div>
             <p class="text-lg leading-relaxed text-parchment {!typingDone ? 'cursor-blink' : ''}">
@@ -133,7 +133,7 @@
 
         {#if event.portee}
           <div class="text-xs text-parchment border border-sky-400/25 bg-sky-950/20 rounded-lg px-3 py-2 my-4">
-            <div class="font-display uppercase tracking-[0.16em] text-sky-300 text-[0.62rem] mb-1">
+            <div class="font-display uppercase tracking-[0.16em] text-sky-300 text-[0.72rem] mb-1">
               Portée socio-historique
             </div>
             <div class="leading-relaxed text-parchment-dim/90">{@html event.portee}</div>
@@ -158,8 +158,8 @@
                     <ReflectiveChoicePanel choice={ch} event={event} gameState={gameState} camp={camp} compact />
                   {/if}
                 </div>
-                {#if ch.recommended}<span class="text-[0.65rem] uppercase tracking-wider text-emerald-400 font-display whitespace-nowrap">★ Historien</span>{/if}
-                {#if ch.risky}<span class="text-[0.65rem] uppercase tracking-wider text-orange-400 font-display whitespace-nowrap">⚡ Risqué</span>{/if}
+                {#if ch.recommended}<span class="text-[0.74rem] uppercase tracking-wider text-emerald-400 font-display whitespace-nowrap">★ Historien</span>{/if}
+                {#if ch.risky}<span class="text-[0.74rem] uppercase tracking-wider text-orange-400 font-display whitespace-nowrap">⚡ Risqué</span>{/if}
               </div>
             </button>
           {/each}

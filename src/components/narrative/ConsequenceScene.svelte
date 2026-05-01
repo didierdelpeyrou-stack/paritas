@@ -138,7 +138,7 @@
   .trait-change .hint {
     flex-basis: 100%;
     color: rgba(237, 228, 201, 0.6);
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     font-style: italic;
   }
 
@@ -156,7 +156,7 @@
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    font-size: 0.7rem;
+    font-size: 0.78rem;
   }
 
   .trait-shift em {

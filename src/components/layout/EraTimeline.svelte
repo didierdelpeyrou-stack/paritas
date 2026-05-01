@@ -87,7 +87,7 @@
 
   .dot-label {
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.55rem;
+    font-size: 0.74rem;
     color: rgba(237, 228, 201, 0.45);
     letter-spacing: 0.02em;
     white-space: nowrap;

@@ -133,7 +133,7 @@
 
   .res-line span {
     color: rgba(237, 228, 201, 0.65);
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     line-height: 1.25;
   }
 

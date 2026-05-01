@@ -95,7 +95,7 @@
     display: block;
     margin-top: 0.16rem;
     color: rgba(237, 228, 201, 0.62);
-    font-size: 0.66rem;
+    font-size: 0.74rem;
     line-height: 1.3;
   }
 
@@ -107,7 +107,7 @@
     padding: 0.12rem 0.45rem;
     color: #f4d58b;
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
   }
@@ -149,7 +149,7 @@
   .hint {
     margin-top: 0.35rem;
     color: rgba(237, 228, 201, 0.55);
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     font-style: italic;
   }
 </style>

@@ -147,7 +147,7 @@
 
   .actor-sub {
     color: rgba(237, 228, 201, 0.55);
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     line-height: 1.2;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -159,7 +159,7 @@
     border-radius: 999px;
     padding: 0.12rem 0.5rem;
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
@@ -192,7 +192,7 @@
 
   .stance-tag {
     color: rgba(237, 228, 201, 0.7);
-    font-size: 0.66rem;
+    font-size: 0.74rem;
     font-style: italic;
     flex-shrink: 0;
   }
@@ -216,7 +216,7 @@
   .actor-risk {
     color: #e8a09b;
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     letter-spacing: 0.04em;
     text-transform: uppercase;
   }

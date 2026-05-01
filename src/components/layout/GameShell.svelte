@@ -12,6 +12,7 @@
   import ManifSimulator from '../org/ManifSimulator.svelte';
   import MeetingSimulator from '../org/MeetingSimulator.svelte';
   import FormationTalentsPanel from '../org/FormationTalentsPanel.svelte';
+  import TreasuryPanel from '../org/TreasuryPanel.svelte';
   import ObjectivePanel from '../objectives/ObjectivePanel.svelte';
   import WorldStrategyPanel from '../world/WorldStrategyPanel.svelte';
   import EndingReport from '../feedback/EndingReport.svelte';
@@ -172,8 +173,8 @@
               title={musicOn ? 'Musique active' : 'Musique coupée'}
             >{musicOn ? '♫' : '·'}</button>
             <div class="text-right ml-1" title="Score provisoire — il bouge à chaque choix.">
-              <div class="font-display text-gold-soft text-base leading-none">{liveScore}<span class="text-[0.7rem] text-parchment-dim/60">/100</span></div>
-              <div class="text-[0.6rem] uppercase tracking-wider text-parchment-dim/65">score</div>
+              <div class="font-display text-gold-soft text-base leading-none">{liveScore}<span class="text-[0.78rem] text-parchment-dim/60">/100</span></div>
+              <div class="text-[0.72rem] uppercase tracking-wider text-parchment-dim/65">score</div>
             </div>
           </div>
         </div>
@@ -219,6 +220,7 @@
             {/each}
           </section>
         {:else if activeTab === 'org'}
+          <TreasuryPanel gameState={s} />
           <OrganizationPanel organization={s.organization} turn={s.turn} />
           <StrategyPanel
             turn={s.turn}
@@ -327,7 +329,7 @@
     background: transparent;
     color: rgba(237, 228, 201, 0.6);
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
     padding: 0.62rem 0.55rem;

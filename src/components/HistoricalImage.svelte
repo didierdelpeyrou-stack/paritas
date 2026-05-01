@@ -71,7 +71,7 @@
 
   .historical figcaption {
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.55rem;
+    font-size: 0.74rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
     color: rgba(237, 228, 201, 0.6);
@@ -86,7 +86,7 @@
     background: rgba(13, 16, 20, 0.32);
     color: rgba(237, 228, 201, 0.45);
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     display: flex;

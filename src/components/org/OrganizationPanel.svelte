@@ -57,9 +57,9 @@
     </div>
     <div class="text-right">
       <div class="font-display text-gold-soft text-lg leading-none">{Math.round(organization.treasury)}</div>
-      <div class="text-[0.65rem] text-parchment-dim/80 uppercase">caisse</div>
+      <div class="text-[0.74rem] text-parchment-dim/80 uppercase">caisse</div>
       <div
-        class="text-[0.62rem] mt-0.5"
+        class="text-[0.72rem] mt-0.5"
         class:text-emerald-300={net > 0}
         class:text-rose-300={net < 0}
         class:text-parchment-dim={net === 0}
@@ -335,7 +335,7 @@
     display: block;
     margin-top: 0.14rem;
     color: rgba(237, 228, 201, 0.6);
-    font-size: 0.66rem;
+    font-size: 0.74rem;
     line-height: 1.25;
   }
 
@@ -347,7 +347,7 @@
   .faction-score span,
   .faction-score em {
     display: block;
-    font-size: 0.66rem;
+    font-size: 0.74rem;
     font-style: normal;
   }
 
@@ -400,7 +400,7 @@
     justify-content: space-between;
     gap: 0.5rem;
     color: rgba(237, 228, 201, 0.7);
-    font-size: 0.66rem;
+    font-size: 0.74rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
@@ -431,7 +431,7 @@
   .fatigue-warn {
     margin-top: 0.4rem;
     color: #e8a09b;
-    font-size: 0.66rem;
+    font-size: 0.74rem;
     font-style: italic;
   }
 </style>

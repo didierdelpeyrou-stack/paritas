@@ -50,6 +50,7 @@ import {
   formatOrgDelta,
   freshOrganization
 } from '../org/organization';
+import { computeBudget } from '../org/treasury';
 import type { OrgAction, EngagedTalent, TalentGroup } from '../org/types';
 import { talentById } from '../org/talents';
 import { availableStrategies, strategyById } from '../strategy/catalog';
@@ -561,6 +562,9 @@ class RebirthGameStore {
       if (!s.organization.engagedTalents) {
         s.organization = { ...s.organization, engagedTalents: [] };
       }
+      if (!s.organization.budgetStrategy) {
+        s.organization = { ...s.organization, budgetStrategy: 'equilibre' };
+      }
       if (!s.activeStrategies) {
         s.activeStrategies = [];
       }
@@ -646,18 +650,12 @@ class RebirthGameStore {
 
   private applyOrganizationUpkeep(state: RebirthGameState): RebirthGameState {
     const org = state.organization;
-    const dues = expectedDuesIncome(org);
-    const staffCost = expectedStaffCost(org);
-    const assetUpkeep = org.assets
-      .map(id => assetById(id)?.upkeep ?? 0)
-      .reduce((sum, value) => sum + value, 0);
-    const net = dues - staffCost - assetUpkeep;
-    if (dues === 0 && staffCost === 0 && assetUpkeep === 0) return state;
+    /* Le module treasury produit un snapshot complet (lignes nommées,
+       multiplicateur de stratégie). On en applique le solde net. */
+    const budget = computeBudget(org, state.turn);
 
-    const cashAfter = org.treasury + net;
+    const cashAfter = org.treasury + budget.net;
     const broke = cashAfter < 0;
-    /* If the org cannot cover outflows, dip into cohesion and bleed
-       members rather than letting treasury go negative. */
     const cohesionHit = broke ? -3 : 0;
     const membershipHit = broke ? -Math.min(15, Math.ceil(-cashAfter / 4)) : 0;
 
@@ -668,7 +666,7 @@ class RebirthGameStore {
     const burnoutMilitants = org.mobilisationFatigue >= 70 ? -1 : 0;
 
     const organization = applyOrganizationDelta(org, {
-      treasury: net,
+      treasury: budget.net,
       cohesion: cohesionHit,
       membership: membershipHit + burnoutMembership,
       militants: burnoutMilitants,
@@ -680,6 +678,19 @@ class RebirthGameStore {
       : state.resources;
 
     return { ...state, organization, resources };
+  }
+
+  /** Change la stratégie budgétaire active. */
+  setBudgetStrategy(strategy: import('../org/types').BudgetStrategy) {
+    const s = this.state;
+    if (!s) return;
+    if (s.organization.budgetStrategy === strategy) return;
+    this.state = {
+      ...s,
+      organization: { ...s.organization, budgetStrategy: strategy }
+    };
+    this.log = [...this.log, `T${s.turn} — Stratégie budgétaire : ${strategy}.`].slice(-50);
+    this.persist();
   }
 }
 

@@ -125,7 +125,7 @@
 
   <!-- Instruction claire -->
   <div class="rounded-md bg-gold/5 border border-gold/30 px-3 py-2 text-xs text-parchment-dim/85 leading-relaxed">
-    <span class="text-gold font-display tracking-wider text-[0.65rem] uppercase">Comment jouer</span><br>
+    <span class="text-gold font-display tracking-wider text-[0.74rem] uppercase">Comment jouer</span><br>
     Lis l'événement, choisis une action. Les <b class="text-gold">lingots</b> sont tes savoir-faire : négocier, mobiliser, produire, convaincre, gouverner, expertiser.
     <button type="button" class="audio-toggle" onclick={toggleMusic}>
       {musicOn ? 'Couper la musique' : 'Activer une ambiance discrète'}
@@ -145,7 +145,7 @@
   <section>
     <h4 class="text-xs uppercase tracking-widest text-gold font-display mb-2 flex items-center justify-between">
       <span>Compétences</span>
-      <span class="text-[0.6rem] text-parchment-dim/50 normal-case tracking-normal italic">clique pour citation</span>
+      <span class="text-[0.72rem] text-parchment-dim/50 normal-case tracking-normal italic">clique pour citation</span>
     </h4>
     <div class="space-y-1.5">
       {#each SKILL_META as m}
@@ -179,7 +179,7 @@
   {#if game.state.activeTensions.length > 0}
     <div class="rounded-md border border-purple/40 bg-purple/5 p-3 text-xs"
          in:fade={{ duration: 250 }}>
-      <div class="font-display uppercase tracking-wider text-purple text-[0.65rem] mb-1.5">⚠ Alertes systémiques</div>
+      <div class="font-display uppercase tracking-wider text-purple text-[0.74rem] mb-1.5">⚠ Alertes systémiques</div>
       <ul class="space-y-0.5 text-parchment-dim">
         {#each game.state.activeTensions as t}
           <li>• {t}</li>
@@ -191,7 +191,7 @@
   <!-- Rival -->
   {#if game.state.rival.name}
     <div class="rounded-md border border-rose-500/30 bg-rose-500/5 p-3 text-xs">
-      <div class="font-display uppercase tracking-wider text-rose-300 text-[0.65rem] mb-1.5">Rival</div>
+      <div class="font-display uppercase tracking-wider text-rose-300 text-[0.74rem] mb-1.5">Rival</div>
       <div class="font-bold text-parchment">{game.state.rival.name}</div>
       <div class="h-1 bg-ink rounded-full mt-1 overflow-hidden">
         <div class="h-full bg-rose-400 transition-all duration-500"
@@ -366,7 +366,7 @@
   .mini-label {
     margin-top: 0.2rem;
     color: rgba(237, 228, 201, 0.58);
-    font-size: 0.66rem;
+    font-size: 0.74rem;
     line-height: 1.1;
     overflow: hidden;
     text-overflow: ellipsis;

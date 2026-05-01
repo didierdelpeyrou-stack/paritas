@@ -204,7 +204,7 @@
 
   .tier-stars {
     grid-area: stars;
-    font-size: 0.65rem;
+    font-size: 0.74rem;
     letter-spacing: 0.15em;
     color: rgba(255, 224, 144, 0.85);
     align-self: start;
@@ -317,7 +317,7 @@
     gap: 12px;
     flex-wrap: wrap;
     font-family: 'Cinzel', serif;
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     letter-spacing: 0.05em;
     color: rgba(200, 194, 177, 0.7);
   }

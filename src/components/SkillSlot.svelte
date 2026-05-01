@@ -270,7 +270,7 @@
   }
   .dc-orb span {
     color: rgba(237, 228, 201, 0.62);
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     letter-spacing: 0.16em;
   }
   .dc-orb strong {
@@ -442,7 +442,7 @@
   }
   .raw-result small {
     color: rgba(237, 228, 201, 0.5);
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     letter-spacing: 0.13em;
     text-transform: uppercase;
   }

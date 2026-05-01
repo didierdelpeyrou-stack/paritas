@@ -60,7 +60,7 @@
     display: block;
     margin-top: 0.12rem;
     color: rgba(237, 228, 201, 0.58);
-    font-size: 0.66rem;
+    font-size: 0.74rem;
   }
 
   .pipeline-row em {

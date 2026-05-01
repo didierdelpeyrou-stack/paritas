@@ -340,7 +340,7 @@
     padding: 0.16rem 0.6rem;
     color: #f4d58b;
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.65rem;
+    font-size: 0.74rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
   }
@@ -361,7 +361,7 @@
     background: transparent;
     color: rgba(237, 228, 201, 0.78);
     padding: 0.18rem 0.55rem;
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     transition: border-color 0.15s ease, color 0.15s ease;
   }
 
@@ -381,7 +381,7 @@
     background: rgba(13, 16, 20, 0.55);
     color: rgba(244, 213, 139, 0.85);
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.55rem;
+    font-size: 0.74rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     padding: 0.18rem 0.4rem;

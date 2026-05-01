@@ -149,7 +149,7 @@
   .strategy-risk {
     margin-top: 0.32rem;
     color: rgba(237, 228, 201, 0.55);
-    font-size: 0.66rem;
+    font-size: 0.74rem;
   }
 
   .strategy-button {

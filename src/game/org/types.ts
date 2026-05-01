@@ -19,6 +19,9 @@ export type OrgAssetType =
 
 export type TalentGroup = 'reflexion' | 'action' | 'communication';
 
+/** Stratégie budgétaire active. Modifie les multiplicateurs de flux. */
+export type BudgetStrategy = 'epargne' | 'equilibre' | 'distribution';
+
 export interface EngagedTalent {
   /** ID du talent (référence vers le catalogue). */
   catalogId: string;
@@ -52,6 +55,8 @@ export interface PlayerOrganization {
   assets: string[];
   /** Talents recrutés et leur affectation à un groupe (réflexion / action / communication). */
   engagedTalents: EngagedTalent[];
+  /** Stratégie budgétaire active. */
+  budgetStrategy: BudgetStrategy;
   actionHistory: string[];
 }
 

@@ -225,7 +225,7 @@
     background: transparent;
     color: rgba(237, 228, 201, 0.65);
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     padding: 0.5rem 0.45rem;
@@ -236,7 +236,7 @@
   .toggle-bar button em {
     color: #f4d58b;
     font-style: normal;
-    font-size: 0.6rem;
+    font-size: 0.72rem;
   }
 
   .toggle-bar button:hover {
@@ -288,14 +288,14 @@
     color: #f4d58b;
     font-family: 'Cinzel', Georgia, serif;
     font-style: normal;
-    font-size: 0.66rem;
+    font-size: 0.74rem;
     letter-spacing: 0.04em;
   }
 
   .card-btn .spec {
     color: rgba(244, 213, 139, 0.85);
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
@@ -339,20 +339,20 @@
   .group-head span {
     color: rgba(237, 228, 201, 0.6);
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.7rem;
+    font-size: 0.78rem;
   }
 
   .group-blurb {
     margin: 0.25rem 0 0.5rem;
     color: rgba(237, 228, 201, 0.7);
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     font-style: italic;
     line-height: 1.35;
   }
 
   .group-empty {
     color: rgba(237, 228, 201, 0.45);
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     font-style: italic;
   }
 
@@ -386,7 +386,7 @@
   .member-id span {
     color: rgba(237, 228, 201, 0.65);
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     letter-spacing: 0.04em;
     text-transform: uppercase;
   }
@@ -403,7 +403,7 @@
     background: rgba(201, 154, 64, 0.05);
     color: #f4d58b;
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     padding: 0.3rem 0.5rem;

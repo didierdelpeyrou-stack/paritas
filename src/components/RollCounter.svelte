@@ -98,7 +98,7 @@
     color: #5fb56b;
     font-weight: 700;
   }
-  .counter-rate .pct { font-size: 0.7rem; color: #5fb56b; opacity: 0.7; margin-left: 1px; }
+  .counter-rate .pct { font-size: 0.78rem; color: #5fb56b; opacity: 0.7; margin-left: 1px; }
 
   .counter-grid {
     display: grid;
@@ -116,7 +116,7 @@
   .cell.crit { border-color: rgba(192, 57, 43, 0.4); background: rgba(192, 57, 43, 0.04); }
 
   .cell-label {
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     letter-spacing: 0.06em;
     color: rgba(200, 194, 177, 0.65);
     text-transform: uppercase;

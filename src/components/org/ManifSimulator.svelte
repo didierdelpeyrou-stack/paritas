@@ -331,11 +331,11 @@
         Lancer la manifestation · {cost} caisse
       </button>
       {#if treasury < cost}
-        <p class="text-[0.7rem] italic text-rose-300">Caisse insuffisante.</p>
+        <p class="text-[0.78rem] italic text-rose-300">Caisse insuffisante.</p>
       {:else if cities.length < 1}
-        <p class="text-[0.7rem] italic text-rose-300">Choisis au moins une ville.</p>
+        <p class="text-[0.78rem] italic text-rose-300">Choisis au moins une ville.</p>
       {:else if militantsAlloc < 1}
-        <p class="text-[0.7rem] italic text-rose-300">Place au moins un militant.</p>
+        <p class="text-[0.78rem] italic text-rose-300">Place au moins un militant.</p>
       {/if}
     </div>
   {:else}
@@ -361,7 +361,7 @@
     gap: 0.4rem;
     color: rgba(237, 228, 201, 0.85);
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     margin-bottom: 0.2rem;
@@ -413,7 +413,7 @@
   .combo-btn small {
     display: block;
     color: rgba(237, 228, 201, 0.6);
-    font-size: 0.66rem;
+    font-size: 0.74rem;
     line-height: 1.3;
   }
 
@@ -484,7 +484,7 @@
   .result-score .lbl {
     color: rgba(237, 228, 201, 0.85);
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
   }
@@ -535,7 +535,7 @@
   .combo-line small {
     grid-column: 1;
     color: rgba(237, 228, 201, 0.78);
-    font-size: 0.66rem;
+    font-size: 0.74rem;
     line-height: 1.3;
     font-style: italic;
   }

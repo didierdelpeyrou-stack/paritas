@@ -261,7 +261,7 @@
           placeholder="ex. Tout est possible ! · Ce que vous appelez le coût du travail, nous l’appelons la vie."
           class="slogan-input"
         ></textarea>
-        <span class="text-[0.62rem] text-parchment-dim/65">{slogan.length}/120</span>
+        <span class="text-[0.72rem] text-parchment-dim/65">{slogan.length}/120</span>
       </label>
 
       <!-- Posture -->
@@ -285,7 +285,7 @@
         Tenir le meeting · {cost} caisse
       </button>
       {#if treasury < cost}
-        <p class="text-[0.7rem] italic text-rose-300">Caisse insuffisante.</p>
+        <p class="text-[0.78rem] italic text-rose-300">Caisse insuffisante.</p>
       {/if}
     </div>
   {:else}
@@ -322,7 +322,7 @@
     display: block;
     color: rgba(237, 228, 201, 0.85);
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
   }
@@ -389,7 +389,7 @@
     background: rgba(13, 16, 20, 0.5);
     color: #aedab5;
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.65rem;
+    font-size: 0.74rem;
     line-height: 1;
   }
 
@@ -459,7 +459,7 @@
   .result-score .lbl {
     color: rgba(237, 228, 201, 0.85);
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
   }
@@ -489,7 +489,7 @@
     display: block;
     color: rgba(237, 228, 201, 0.7);
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.6rem;
+    font-size: 0.72rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }

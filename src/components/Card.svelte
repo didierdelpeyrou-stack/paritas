@@ -42,7 +42,7 @@
 
     <!-- Date + Titre -->
     {#if event.date}
-      <div class="text-[0.7rem] uppercase tracking-[0.2em] text-amber-700 font-display mb-1">
+      <div class="text-[0.78rem] uppercase tracking-[0.2em] text-amber-700 font-display mb-1">
         {event.date}
       </div>
     {/if}
@@ -71,7 +71,7 @@
 
     {#if event.portee}
       <div class="text-sm text-slate-900 border border-slate-700/25 bg-slate-100/70 rounded-lg px-4 py-3 my-4">
-        <div class="text-[0.65rem] uppercase tracking-[0.16em] text-slate-700 font-display mb-1">
+        <div class="text-[0.74rem] uppercase tracking-[0.16em] text-slate-700 font-display mb-1">
           Portée socio-historique
         </div>
         <div class="leading-relaxed">{@html event.portee}</div>
@@ -87,7 +87,7 @@
 
     <!-- Choix -->
     <div class="mt-6 space-y-3">
-      <div class="text-[0.7rem] uppercase tracking-[0.15em] text-stone-700 font-display mb-2">
+      <div class="text-[0.78rem] uppercase tracking-[0.15em] text-stone-700 font-display mb-2">
         Quelle décision ?
       </div>
       {#each event.choices as ch, i}
@@ -124,12 +124,12 @@
               {/if}
             </div>
             {#if ch.recommended}
-              <span class="text-[0.65rem] uppercase tracking-wider text-emerald-700 font-display whitespace-nowrap shrink-0">
+              <span class="text-[0.74rem] uppercase tracking-wider text-emerald-700 font-display whitespace-nowrap shrink-0">
                 ★ Historien
               </span>
             {/if}
             {#if ch.risky}
-              <span class="text-[0.65rem] uppercase tracking-wider text-orange-700 font-display whitespace-nowrap shrink-0">
+              <span class="text-[0.74rem] uppercase tracking-wider text-orange-700 font-display whitespace-nowrap shrink-0">
                 ⚡ Risqué
               </span>
             {/if}

@@ -136,7 +136,7 @@
     border-radius: 999px;
     background: rgba(13, 16, 20, 0.45);
     color: rgba(244, 213, 139, 0.75);
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     line-height: 1;
   }
 
@@ -160,7 +160,7 @@
   .objective-line small {
     display: block;
     color: rgba(237, 228, 201, 0.62);
-    font-size: 0.66rem;
+    font-size: 0.74rem;
     line-height: 1.3;
     margin-top: 0.1rem;
   }
@@ -169,7 +169,7 @@
     flex-shrink: 0;
     font-style: normal;
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: #f4d58b;

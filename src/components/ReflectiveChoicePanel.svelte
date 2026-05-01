@@ -164,7 +164,7 @@
     display: block;
     color: #92400e;
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
@@ -241,7 +241,7 @@
   .effect-strip small {
     grid-column: 2 / 4;
     margin: 0;
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     opacity: 0.78;
   }
 

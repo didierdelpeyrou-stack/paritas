@@ -90,7 +90,7 @@
     gap: 0.3rem;
     color: rgba(237, 228, 201, 0.85);
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     margin-bottom: 0.18rem;

@@ -158,7 +158,7 @@
     border-top: 1px solid rgba(237, 228, 201, 0.08);
     padding-top: 0.45rem;
     color: rgba(237, 228, 201, 0.85);
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     line-height: 1.3;
     min-height: 2.4rem;
   }
@@ -184,7 +184,7 @@
     color: rgba(244, 213, 139, 0.7);
     font-family: 'Cinzel', Georgia, serif;
     font-style: normal;
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     letter-spacing: 0.05em;
   }
 

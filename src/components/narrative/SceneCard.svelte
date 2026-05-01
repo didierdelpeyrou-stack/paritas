@@ -204,7 +204,7 @@
 
   .choice-btn .lock-hint {
     color: rgba(237, 228, 201, 0.55);
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     font-style: italic;
   }
 
@@ -246,14 +246,14 @@
   .choice-btn .posture-tag {
     color: var(--accent);
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
   .choice-btn .posture-tag[data-mode='compulsif'] {
     opacity: 0.55;
-    font-size: 0.55rem;
+    font-size: 0.74rem;
   }
 
   .choice-btn .text {
@@ -289,20 +289,20 @@
     border-radius: 999px;
     background: rgba(13, 16, 20, 0.45);
     padding: 0.12rem 0.5rem;
-    font-size: 0.66rem;
+    font-size: 0.74rem;
     color: rgba(237, 228, 201, 0.78);
   }
 
   .choice-btn .preview em {
     font-family: 'Cinzel', Georgia, serif;
     font-style: normal;
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     color: rgba(237, 228, 201, 0.7);
   }
 
   .choice-btn .preview i {
     font-style: normal;
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     letter-spacing: -0.05em;
   }
 
@@ -367,7 +367,7 @@
     margin-top: 0.4rem;
     color: rgba(237, 228, 201, 0.7);
     font-style: normal;
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     letter-spacing: 0.04em;
   }
 </style>

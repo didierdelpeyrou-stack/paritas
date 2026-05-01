@@ -20,14 +20,9 @@ export const SKILL_QUOTES: Record<SkillKey, Quote[]> = {
       context: 'Discours à la jeunesse, lycée d\'Albi, 30 juillet 1903'
     },
     {
-      text: "Quand les hommes ne peuvent changer les choses, ils changent les mots.",
+      text: "Le courage, c'est de chercher la vérité et de la dire.",
       author: 'Jean Jaurès',
-      context: 'Études socialistes, 1901'
-    },
-    {
-      text: "L'unité ne se décrète pas, elle se construit.",
-      author: 'Edmond Maire',
-      context: 'Secrétaire général de la CFDT, 1971-1988'
+      context: 'Discours à la jeunesse, lycée d\'Albi, 30 juillet 1903'
     }
   ],
   politique: [
@@ -44,14 +39,14 @@ export const SKILL_QUOTES: Record<SkillKey, Quote[]> = {
   ],
   baratin: [
     {
-      text: "Un peu d'internationalisme éloigne de la patrie ; beaucoup y ramène.",
+      text: "Le courage, c'est de ne pas livrer sa volonté au hasard des impressions et des forces.",
       author: 'Jean Jaurès',
-      context: 'Discours à la jeunesse, Albi, 30 juillet 1903'
+      context: 'Discours à la jeunesse, lycée d\'Albi, 30 juillet 1903'
     },
     {
-      text: "Parler clair, parler vrai. La langue de bois, c'est la défaite avant le combat.",
-      author: 'Henri Krasucki',
-      context: "Secrétaire général de la CGT (1982-1992), résistant déporté"
+      text: "Citoyens dans la cité, les travailleurs doivent l'être aussi dans leur entreprise.",
+      author: 'Jean Auroux',
+      context: 'Rapport Les droits des travailleurs, 1981'
     }
   ],
   production: [
@@ -59,11 +54,6 @@ export const SKILL_QUOTES: Record<SkillKey, Quote[]> = {
       text: "Le patron ne doit pas être seulement un chef d'entreprise : il doit être un chef d'hommes.",
       author: 'Auguste Detoeuf',
       context: "Propos d'O.L. Barenton, confiseur, 1938"
-    },
-    {
-      text: "Il n'y a pas de prospérité économique durable sans confiance, et pas de confiance sans dialogue social.",
-      author: 'François Bloch-Lainé',
-      context: 'Inspecteur des finances, fondateur du paritarisme moderne (années 1950)'
     }
   ],
   mobilisation: [
@@ -84,11 +74,6 @@ export const SKILL_QUOTES: Record<SkillKey, Quote[]> = {
     }
   ],
   expertise: [
-    {
-      text: "On ne défend bien que ce qu'on connaît bien.",
-      author: 'Henri Krasucki',
-      context: 'Secrétaire général de la CGT (1982-1992)'
-    },
     {
       text: "La sécurité sociale est l'expression de la solidarité nationale.",
       author: 'Pierre Laroque',

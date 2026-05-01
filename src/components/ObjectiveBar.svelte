@@ -16,6 +16,10 @@
 </script>
 
 <div class="bordered-card p-3 mb-3">
+  <div class="mb-3 rounded-md border border-amber-500/25 bg-amber-500/5 px-3 py-2 text-xs text-parchment-dim/85 leading-relaxed">
+    <b class="text-amber-300 font-display uppercase tracking-wider text-[0.65rem]">À toi de jouer</b>
+    · Lis la situation, choisis une action. Les compétences renforcent tes décisions; les ressources et capitaux disent ce que ton camp gagne, use ou construit.
+  </div>
   <div class="grid grid-cols-3 gap-3">
     <div class="text-center">
       <div class="text-[0.65rem] uppercase tracking-widest text-parchment-dim/70 font-display">⚡ Puissance</div>

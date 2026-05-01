@@ -219,6 +219,7 @@
       inset 0 1px 0 rgba(255, 240, 190, 0.1),
       inset 0 0 80px rgba(0, 0, 0, 0.42);
     overflow: hidden;
+    will-change: transform;
   }
   .slot-shell::after {
     content: "";
@@ -371,6 +372,7 @@
       0 12px 24px rgba(0, 0, 0, 0.32);
     overflow: hidden;
     transition: opacity 0.24s, transform 0.24s;
+    will-change: transform;
   }
   .reel.hidden {
     opacity: 0.25;

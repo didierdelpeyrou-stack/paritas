@@ -118,7 +118,7 @@
   <!-- Instruction claire -->
   <div class="rounded-md bg-amber-500/5 border border-amber-500/30 px-3 py-2 text-xs text-parchment-dim/85 leading-relaxed">
     <span class="text-gold font-display tracking-wider text-[0.65rem] uppercase">Comment jouer</span><br>
-    Lis l'événement, choisis une option. En mode <b class="text-gold">Tirage</b>, la slot sort le brut, puis <b>tes lingots de compétence</b> renforcent le résultat.
+    Lis l'événement, choisis une action. Les <b class="text-gold">lingots</b> sont tes savoir-faire : négocier, mobiliser, produire, convaincre, gouverner, expertiser.
   </div>
 
   {#if profil}
@@ -144,9 +144,7 @@
   </section>
 
   <!-- Compteur de tirages -->
-  {#if game.state.rollStats.total > 0}
-    <RollCounter />
-  {/if}
+  <RollCounter />
 
   <!-- Ressources -->
   <section>

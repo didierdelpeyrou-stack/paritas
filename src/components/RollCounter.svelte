@@ -35,9 +35,7 @@
 <div class="counter">
   <div class="counter-head">
     <span class="counter-title">Palmarès du run</span>
-    {#if stats.total > 0}
-      <span class="counter-rate" class:pulse={pulseTotal}>{rate}<span class="pct">%</span></span>
-    {/if}
+    <span class="counter-rate" class:pulse={pulseTotal}>{rate}<span class="pct">%</span></span>
   </div>
 
   <div class="counter-grid">

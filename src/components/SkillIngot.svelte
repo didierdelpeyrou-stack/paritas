@@ -133,6 +133,7 @@
     font-family: 'Cinzel', Georgia, serif;
   }
   .ingot:hover { transform: translateY(-1px); border-color: #6a5430; box-shadow: 0 8px 16px rgba(0,0,0,0.4); }
+  .ingot.pop { box-shadow: 0 0 0 1px rgba(255,224,144,0.35), 0 0 28px rgba(255,224,144,0.28); }
   .ingot:active { transform: translateY(0); }
 
   /* Tiers : à mesure que la valeur monte, le lingot devient plus or */
@@ -248,10 +249,16 @@
 
   /* Pop sur changement de valeur */
   .pop .val { animation: ingot-pop 0.5s ease; }
+  .pop .sheen { animation: sheen-strike 0.62s ease-out 1; }
   @keyframes ingot-pop {
     0% { transform: scale(1); }
     50% { transform: scale(1.25); }
     100% { transform: scale(1); }
+  }
+  @keyframes sheen-strike {
+    0% { transform: translateX(0); opacity: 0; }
+    15% { opacity: 1; }
+    100% { transform: translateX(430%); opacity: 0; }
   }
 
   /* DeltaPops qui jaillissent au-dessus */

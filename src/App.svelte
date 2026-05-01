@@ -43,6 +43,7 @@
 
   /* confettis */
   let showConfetti = $state(false);
+  let flashDeltas = $state<Array<[string, number]>>([]);
 
   /* form intro */
   let formName = $state('');
@@ -184,6 +185,8 @@
 
     /* Visual deltas (pops "+5" sur les jauges/lingots) */
     fx.pushDeltas(deltas);
+    flashDeltas = deltas.filter(([, v]) => Math.round(v) !== 0).slice(0, 5);
+    setTimeout(() => (flashDeltas = []), 1300);
 
     /* journal */
     const dStr = deltas.map(([k, v]) => `${k}${v >= 0 ? '+' : ''}${Math.round(v)}`).join(' · ');
@@ -423,6 +426,26 @@
       </p>
       <div class="text-6xl font-display font-bold text-amber-400 mb-2">{game.scoreDialectic}<span class="text-2xl text-parchment-dim/60">/100</span></div>
       <p class="italic text-parchment-dim mb-6">Score dialectique</p>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-left mb-6">
+        <div class="rounded-md border border-amber-500/30 bg-amber-500/5 p-3">
+          <div class="text-parchment-dim/70 uppercase tracking-wider font-display text-[0.62rem]">Jets</div>
+          <div class="text-2xl text-amber-300 font-display">{game.state.rollStats.total}</div>
+        </div>
+        <div class="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3">
+          <div class="text-parchment-dim/70 uppercase tracking-wider font-display text-[0.62rem]">Réussite</div>
+          <div class="text-2xl text-emerald-300 font-display">
+            {game.state.rollStats.total ? Math.round((game.state.rollStats.success / game.state.rollStats.total) * 100) : 0}%
+          </div>
+        </div>
+        <div class="rounded-md border border-yellow-500/30 bg-yellow-500/5 p-3">
+          <div class="text-parchment-dim/70 uppercase tracking-wider font-display text-[0.62rem]">Meilleur brut</div>
+          <div class="text-2xl text-yellow-200 font-display">{game.state.rollStats.bestRoll || '—'}</div>
+        </div>
+        <div class="rounded-md border border-rose-500/30 bg-rose-500/5 p-3">
+          <div class="text-parchment-dim/70 uppercase tracking-wider font-display text-[0.62rem]">Série max</div>
+          <div class="text-2xl text-rose-200 font-display">{game.state.rollStats.longestStreak}</div>
+        </div>
+      </div>
       <button class="btn-primary" onclick={() => { game.reset(); started = false; }}>Rejouer</button>
     </div>
 
@@ -468,4 +491,52 @@
   {#if showConfetti}
     <Confetti count={50} colors={['#ffd700', '#c89b3c', '#ede4c9']} />
   {/if}
+
+  {#if flashDeltas.length}
+    <div class="choice-flash" aria-live="polite">
+      {#each flashDeltas as [k, v]}
+        <span class:up={v > 0} class:down={v < 0}>{k} {v > 0 ? '+' : ''}{Math.round(v)}</span>
+      {/each}
+    </div>
+  {/if}
 </main>
+
+<style>
+  .choice-flash {
+    position: fixed;
+    left: 50%;
+    top: 18%;
+    z-index: 60;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    width: min(720px, 92vw);
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .choice-flash span {
+    padding: 0.45rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 224, 144, 0.5);
+    background: rgba(13, 16, 20, 0.88);
+    color: #ede4c9;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35), 0 0 18px rgba(200, 155, 60, 0.18);
+    animation: flash-burst 1.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .choice-flash span.up { color: #7ff0b2; }
+  .choice-flash span.down { color: #ff9c91; }
+
+  @keyframes flash-burst {
+    0% { opacity: 0; transform: translateY(16px) scale(0.72); filter: brightness(1); }
+    18% { opacity: 1; transform: translateY(0) scale(1.12); filter: brightness(1.45); }
+    72% { opacity: 1; transform: translateY(-10px) scale(1); }
+    100% { opacity: 0; transform: translateY(-26px) scale(0.96); }
+  }
+</style>

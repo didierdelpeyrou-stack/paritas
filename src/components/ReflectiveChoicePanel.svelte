@@ -54,6 +54,7 @@
 </script>
 
 <div class:reflective-panel={!compact} class:reflective-panel-compact={compact}>
+  <div class="mentor-watermark" aria-hidden="true">{insight.mentor.name}</div>
   <div class="reflective-head">
     <div class="scene-mark">{choice.icon ?? '◆'}</div>
     <div>
@@ -98,12 +99,41 @@
 <style>
   .reflective-panel,
   .reflective-panel-compact {
+    position: relative;
     margin-top: 0.75rem;
     padding: 0.78rem;
     border-radius: 0.7rem;
     border: 1px solid rgba(120, 113, 108, 0.26);
     background:
       linear-gradient(135deg, rgba(255, 251, 235, 0.84), rgba(236, 253, 245, 0.56));
+  }
+
+  .mentor-watermark {
+    position: absolute;
+    right: 0.7rem;
+    top: 0.45rem;
+    max-width: 62%;
+    color: rgba(146, 64, 14, 0.08);
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: clamp(1.25rem, 4vw, 2.2rem);
+    font-weight: 900;
+    line-height: 1;
+    text-align: right;
+    text-transform: uppercase;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .reflective-panel-compact .mentor-watermark {
+    color: rgba(251, 191, 36, 0.08);
+  }
+
+  .reflective-head,
+  .effect-strip,
+  .theory-note,
+  .socio-story {
+    position: relative;
+    z-index: 1;
   }
 
   .reflective-panel-compact {

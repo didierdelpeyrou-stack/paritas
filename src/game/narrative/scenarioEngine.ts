@@ -9,13 +9,19 @@ export interface ScenarioPick {
   isFinal: boolean;
 }
 
+function matchesRole(scenario: Scenario, state: RebirthGameState): boolean {
+  if (scenario.campFilter && scenario.campFilter !== state.camp) return false;
+  if (scenario.personaFilter && !scenario.personaFilter.includes(state.legendaryId ?? '')) return false;
+  return true;
+}
+
 export function pickNextScenario(
   state: RebirthGameState
 ): ScenarioPick | null {
   const duePremium = ALL_SCENARIOS.filter(
     s =>
       !state.memory.playedScenarios.includes(s.id) &&
-      (!s.campFilter || s.campFilter === state.camp) &&
+      matchesRole(s, state) &&
       s.turn <= state.turn
   ).sort((a, b) => a.turn - b.turn);
 
@@ -32,7 +38,7 @@ export function pickNextScenario(
   const nextPremium = ALL_SCENARIOS.filter(
     s =>
       !state.memory.playedScenarios.includes(s.id) &&
-      (!s.campFilter || s.campFilter === state.camp) &&
+      matchesRole(s, state) &&
       s.turn > state.turn
   ).sort((a, b) => a.turn - b.turn)[0];
 

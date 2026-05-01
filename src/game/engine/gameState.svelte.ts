@@ -85,6 +85,7 @@ function freshRebirthState(
     name,
     camp,
     mode,
+    legendaryId: legendary?.id ?? null,
     turn: 1,
     era: eraForTurn(1).id,
     currentScenarioId: null,
@@ -475,6 +476,9 @@ class RebirthGameStore {
       }
       if (!s.objectives) {
         s.objectives = objectivesForRole(s.camp);
+      }
+      if (s.legendaryId === undefined) {
+        s.legendaryId = null;
       }
       s.objectiveProgress = evaluateObjectives(s, s.objectives, s.objectiveProgress ?? []);
       this.state = s;

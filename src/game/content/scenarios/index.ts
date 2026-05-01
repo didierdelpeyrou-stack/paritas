@@ -2,11 +2,13 @@ import type { Scenario } from '../../types';
 import { SCENARIO_1936_MATIGNON } from './1936-matignon';
 import { PREMIUM_SCENARIOS } from './premium';
 import { PATRON_SCENARIOS } from './patron';
+import { PERSONA_SCENARIOS } from './persona';
 
 export const ALL_SCENARIOS: Scenario[] = [
   ...PREMIUM_SCENARIOS,
   SCENARIO_1936_MATIGNON,
-  ...PATRON_SCENARIOS
+  ...PATRON_SCENARIOS,
+  ...PERSONA_SCENARIOS
 ].sort((a, b) => a.turn - b.turn);
 
 export function scenarioById(id: string): Scenario | undefined {

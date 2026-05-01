@@ -204,6 +204,9 @@ export interface Scenario {
   /** Filtre pour ne montrer ce scénario qu'à un camp donné (ou null = tous) */
   campFilter?: Camp | null;
 
+  /** Filtre pour ne montrer ce scénario qu'à certains personnages légendaires (ids). */
+  personaFilter?: string[];
+
   /** Marqué premium (12 scénarios premium V1) */
   premium?: boolean;
 }
@@ -240,6 +243,8 @@ export interface RebirthGameState {
   name: string;
   camp: Camp;
   mode: RenderMode;
+  /** Personnage légendaire incarné (id de legendaryCharacters), ou null. */
+  legendaryId: string | null;
 
   /* Progression */
   turn: number;          // 1..100

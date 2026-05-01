@@ -40,6 +40,7 @@ import {
 import type { OrgAction } from '../org/types';
 import { availableStrategies, strategyById } from '../strategy/catalog';
 import { startStrategy, tickStrategies } from '../strategy/resolver';
+import { freshWorldAI, tickWorldAI } from '../ai/worldAI';
 
 const SAVE_KEY = 'paritas_rebirth_save_v1';
 
@@ -70,6 +71,7 @@ function freshRebirthState(
     actors: freshActors(),
     organization: freshOrganization(camp, name),
     activeStrategies: [],
+    worldAI: freshWorldAI(),
     memory: freshMemory(),
     phase: 'idle',
     lastChoice: null,
@@ -165,10 +167,12 @@ class RebirthGameStore {
       return;
     }
     const advanced = this.applyOrganizationUpkeep(advanceTurn(s));
-    const ticked = tickStrategies(advanced);
-    this.state = ticked.state;
-    if (ticked.logs.length > 0) {
-      this.log = [...this.log, ...ticked.logs].slice(-50);
+    const strategyTick = tickStrategies(advanced);
+    const worldTick = tickWorldAI(strategyTick.state);
+    this.state = worldTick.state;
+    const logs = [...strategyTick.logs, ...worldTick.logs];
+    if (logs.length > 0) {
+      this.log = [...this.log, ...logs].slice(-50);
     }
     this.consequence = null;
     this.advanceToNextScenario();
@@ -322,6 +326,9 @@ class RebirthGameStore {
       }
       if (!s.activeStrategies) {
         s.activeStrategies = [];
+      }
+      if (!s.worldAI) {
+        s.worldAI = freshWorldAI();
       }
       this.state = s;
       this.log = data.log ?? [];

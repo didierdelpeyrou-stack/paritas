@@ -8,6 +8,7 @@
   import ActorPanel from '../simulation/ActorPanel.svelte';
   import OrganizationPanel from '../org/OrganizationPanel.svelte';
   import StrategyPanel from '../strategy/StrategyPanel.svelte';
+  import WorldStrategyPanel from '../world/WorldStrategyPanel.svelte';
   import EndingReport from '../feedback/EndingReport.svelte';
   import { eraForTurn } from '../../game/content/eras';
   import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
@@ -82,6 +83,8 @@
         organization={s.organization}
         activeStrategies={s.activeStrategies}
       />
+
+      <WorldStrategyPanel worldAI={s.worldAI} />
 
       <section class="bordered-card p-4 space-y-3">
         <div class="text-xs uppercase tracking-wider text-parchment-dim/60">

@@ -7,7 +7,11 @@
   import PipelinePanel from '../narrative/PipelinePanel.svelte';
   import ResourceGauge from '../simulation/ResourceGauge.svelte';
   import ActorPanel from '../simulation/ActorPanel.svelte';
-  import OrganisationTab from '../org/OrganisationTab.svelte';
+  import OrganizationPanel from '../org/OrganizationPanel.svelte';
+  import StrategyPanel from '../strategy/StrategyPanel.svelte';
+  import ManifSimulator from '../org/ManifSimulator.svelte';
+  import MeetingSimulator from '../org/MeetingSimulator.svelte';
+  import FormationTalentsPanel from '../org/FormationTalentsPanel.svelte';
   import ObjectivePanel from '../objectives/ObjectivePanel.svelte';
   import WorldStrategyPanel from '../world/WorldStrategyPanel.svelte';
   import EndingReport from '../feedback/EndingReport.svelte';
@@ -25,9 +29,37 @@
 
   const ACTOR_IDS: ActorId[] = ['base', 'adversaire', 'etat', 'opinion'];
 
-  type Tab = 'mandat' | 'organisation' | 'monde';
+  type Tab = 'mandat' | 'org' | 'manif' | 'meeting' | 'talents' | 'monde';
+  const TABS: Array<{ id: Tab; label: string }> = [
+    { id: 'mandat', label: 'Mandat' },
+    { id: 'org', label: 'Org' },
+    { id: 'manif', label: 'Manif' },
+    { id: 'meeting', label: 'Meeting' },
+    { id: 'talents', label: 'Talents' },
+    { id: 'monde', label: 'Monde' }
+  ];
 
-  let activeTab = $state<Tab>('mandat');
+  const TAB_KEY = 'paritas_active_tab_v1';
+  function loadActiveTab(): Tab {
+    try {
+      const v = localStorage.getItem(TAB_KEY);
+      if (v && TABS.some(t => t.id === v)) return v as Tab;
+    } catch {
+      /* ignore */
+    }
+    return 'mandat';
+  }
+
+  let activeTab = $state<Tab>(loadActiveTab());
+
+  function setActiveTab(t: Tab) {
+    activeTab = t;
+    try {
+      localStorage.setItem(TAB_KEY, t);
+    } catch {
+      /* ignore */
+    }
+  }
 
   const gameState = $derived(rebirth.state);
   const scenario = $derived(rebirth.currentScenario);
@@ -148,29 +180,17 @@
         <EraTimeline currentTurn={s.turn} />
       </section>
 
-      <!-- Onglets -->
+      <!-- Onglets : 6 boutons, scrollables horizontalement sur mobile -->
       <div class="tab-bar" role="tablist" aria-label="Sections de la sidebar">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'mandat'}
-          data-active={activeTab === 'mandat'}
-          onclick={() => (activeTab = 'mandat')}
-        >Mandat</button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'organisation'}
-          data-active={activeTab === 'organisation'}
-          onclick={() => (activeTab = 'organisation')}
-        >Organisation</button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'monde'}
-          data-active={activeTab === 'monde'}
-          onclick={() => (activeTab = 'monde')}
-        >Monde</button>
+        {#each TABS as t}
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === t.id}
+            data-active={activeTab === t.id}
+            onclick={() => setActiveTab(t.id)}
+          >{t.label}</button>
+        {/each}
       </div>
 
       <div class="space-y-3">
@@ -198,11 +218,22 @@
               />
             {/each}
           </section>
-        {:else if activeTab === 'organisation'}
-          <OrganisationTab gameState={s} />
+        {:else if activeTab === 'org'}
+          <OrganizationPanel organization={s.organization} turn={s.turn} />
+          <StrategyPanel
+            turn={s.turn}
+            camp={s.camp}
+            organization={s.organization}
+            activeStrategies={s.activeStrategies}
+          />
+        {:else if activeTab === 'manif'}
+          <ManifSimulator gameState={s} />
+        {:else if activeTab === 'meeting'}
+          <MeetingSimulator gameState={s} />
+        {:else if activeTab === 'talents'}
+          <FormationTalentsPanel gameState={s} />
         {:else}
           <WorldStrategyPanel worldAI={s.worldAI} />
-
           <PipelinePanel pipelines={s.activePipelines} />
         {/if}
       </div>
@@ -268,27 +299,42 @@
 
 <style>
   .tab-bar {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
     gap: 0;
     border: 1px solid rgba(237, 228, 201, 0.16);
     border-radius: 0.6rem;
     background: rgba(13, 16, 20, 0.32);
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+  }
+
+  .tab-bar::-webkit-scrollbar {
+    height: 0.18rem;
+  }
+
+  .tab-bar::-webkit-scrollbar-thumb {
+    background: rgba(244, 213, 139, 0.3);
+    border-radius: 999px;
   }
 
   .tab-bar button {
+    flex: 1 0 auto;
+    min-width: 4.5rem;
+    scroll-snap-align: start;
     border: 0;
     background: transparent;
     color: rgba(237, 228, 201, 0.6);
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.72rem;
-    letter-spacing: 0.06em;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
-    padding: 0.62rem 0.45rem;
+    padding: 0.62rem 0.55rem;
     cursor: pointer;
     transition: background 0.18s ease, color 0.18s ease;
     min-height: 44px;
+    white-space: nowrap;
   }
 
   .tab-bar button:hover {

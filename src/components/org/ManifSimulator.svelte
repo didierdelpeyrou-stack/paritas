@@ -2,6 +2,8 @@
   import { fade } from 'svelte/transition';
   import { rebirth } from '../../game/engine/gameState.svelte';
   import type { ActorId, RebirthGameState, Resources } from '../../game/types';
+  import ManifMap from './ManifMap.svelte';
+  import { MANIF_CITIES, findCombosFor } from '../../game/org/manifCities';
 
   interface Props {
     gameState: RebirthGameState;
@@ -11,7 +13,7 @@
 
   /* === Inputs joueur === */
   let lead = $state<3 | 7 | 14>(7); // jours de préparation
-  let lieu = $state<'paris' | 'regions' | 'nationale'>('paris');
+  let cities = $state<string[]>(['paris']);
   let militantsAlloc = $state(0);
   let cadresAlloc = $state(0);
   let juristes = $state(0);
@@ -38,11 +40,22 @@
   const maxJuristes = $derived(gs.organization.legalTeam);
   const maxMedias = $derived(gs.organization.mediaRelay);
 
-  /* Coût dynamique : caisse, plus élevé pour les manifs nationales et l'urgence (J+3). */
+  /* Sélection ville → cumul des coûts, des poids, et détection des combos. */
+  const selectedCities = $derived(
+    cities.map(id => MANIF_CITIES.find(c => c.id === id)).filter(c => !!c)
+  );
+  const cityCost = $derived(selectedCities.reduce((sum, c) => sum + c.cost, 0));
+  const cityWeight = $derived(
+    selectedCities.length === 0 ? 0 : selectedCities.reduce((sum, c) => sum + c.weight, 0)
+  );
+  const activeCombos = $derived(findCombosFor(cities));
+  const comboScoreBonus = $derived(activeCombos.reduce((s, c) => s + c.scoreBonus, 0));
+
+  /* Coût dynamique : caisse, plus élevé pour les manifs étendues et l'urgence. */
   const cost = $derived(
     Math.round(
-      8 +
-        (lieu === 'nationale' ? 6 : lieu === 'regions' ? 3 : 0) +
+      6 +
+        cityCost +
         (lead === 3 ? 4 : 0) +
         (preMeeting ? 3 : 0) +
         (tractMassif ? 4 : 0) +
@@ -51,10 +64,19 @@
     )
   );
 
+  function toggleCity(id: string) {
+    if (cities.includes(id)) {
+      cities = cities.filter(x => x !== id);
+    } else {
+      cities = [...cities, id];
+    }
+  }
+
   const treasury = $derived(gs.organization.treasury);
   const canRun = $derived(
     !result &&
       treasury >= cost &&
+      cities.length >= 1 &&
       militantsAlloc >= 1 &&
       militantsAlloc <= maxMilitants &&
       cadresAlloc <= maxCadres &&
@@ -71,9 +93,9 @@
     const cadreBoost = 1 + cadresAlloc * 0.18;
     const baseFoule = militantsAlloc * cadreBoost;
 
-    /* Lieu : Paris = portée nationale + coût visibilité, régions = ancrage,
-       nationale = max impact mais demande masse. */
-    const lieuMult = lieu === 'paris' ? 1.4 : lieu === 'regions' ? 1.0 : 1.8;
+    /* Multiplicateur selon les villes choisies : somme des poids
+       (Paris 1.6, Lyon 1.1, etc.) + bonus combo. */
+    const lieuMult = Math.max(0.8, cityWeight) + comboScoreBonus * 0.04;
 
     /* Combos */
     const comboBoost =
@@ -93,25 +115,35 @@
     /* Météo simulée (variance ±8). */
     const meteo = Math.round((Math.sin(gs.turn * 1.3 + militantsAlloc) * 0.5 + 0.5) * 16) - 8;
 
-    const rawScore = prep + baseFoule * lieuMult + comboBoost + mediaBoost + juristeBoost + sloganBonus + meteo;
+    const rawScore = prep + baseFoule * lieuMult + comboBoost + mediaBoost + juristeBoost + sloganBonus + meteo + comboScoreBonus;
     const score = Math.max(0, Math.min(100, Math.round(rawScore)));
-    const foule = Math.max(0, Math.round(baseFoule * lieuMult * 110 + comboBoost * 80));
+    const foule = Math.max(0, Math.round(baseFoule * lieuMult * 110 + comboBoost * 80 + comboScoreBonus * 60));
 
     return {
       score,
       foule,
-      headline: composeHeadline(score, foule, lieu),
+      headline: composeHeadline(score, foule),
       storyline: composeStoryline(score, prep, comboBoost)
     };
   }
 
-  function composeHeadline(score: number, foule: number, where: typeof lieu): string {
-    const lieuStr = where === 'paris' ? 'Paris' : where === 'nationale' ? 'la France entière' : 'les grandes villes';
-    if (score >= 75) return `${formatFoule(foule)} dans la rue, ${lieuStr} bloquée — la presse parle d’un tournant.`;
-    if (score >= 55) return `${formatFoule(foule)} défilent à ${lieuStr}, cortège long, slogans repris.`;
+  function composeHeadline(score: number, foule: number): string {
+    const lieuStr = composeLieuStr();
+    if (score >= 75) return `${formatFoule(foule)} dans la rue, ${lieuStr} — la presse parle d’un tournant.`;
+    if (score >= 55) return `${formatFoule(foule)} défilent à ${lieuStr}, cortèges longs, slogans repris.`;
     if (score >= 35) return `${formatFoule(foule)} mobilisés à ${lieuStr}, journée correcte sans débordement.`;
     if (score >= 20) return `${formatFoule(foule)} pour une manifestation que la presse jugera modeste.`;
     return `Faible mobilisation à ${lieuStr}. Les éditoriaux s’interrogent sur la suite du mouvement.`;
+  }
+
+  function composeLieuStr(): string {
+    if (selectedCities.length === 0) return 'aucune ville';
+    if (selectedCities.length === 1) return selectedCities[0]!.name;
+    if (selectedCities.length === 2) return `${selectedCities[0]!.name} et ${selectedCities[1]!.name}`;
+    if (selectedCities.length >= 5) return 'la France entière';
+    const names = selectedCities.map(c => c.name);
+    const last = names.pop();
+    return `${names.join(', ')} et ${last}`;
   }
 
   function composeStoryline(score: number, prep: number, combo: number): string {
@@ -208,14 +240,26 @@
         </div>
       </div>
 
-      <!-- Lieu -->
+      <!-- Carte stratégique : choix des villes -->
       <div>
-        <div class="meta-label">Lieu</div>
-        <div class="grid grid-cols-3 gap-1.5 mt-1">
-          <button type="button" class="opt-btn" data-active={lieu === 'paris'} onclick={() => (lieu = 'paris')}>Paris</button>
-          <button type="button" class="opt-btn" data-active={lieu === 'regions'} onclick={() => (lieu = 'regions')}>Régions</button>
-          <button type="button" class="opt-btn" data-active={lieu === 'nationale'} onclick={() => (lieu = 'nationale')}>Nationale</button>
+        <div class="meta-label">
+          Carte stratégique
+          <em class="not-italic text-gold-soft/85">{cities.length} ville{cities.length > 1 ? 's' : ''}</em>
         </div>
+        <div class="mt-1">
+          <ManifMap selected={cities} onToggle={toggleCity} />
+        </div>
+        {#if activeCombos.length > 0}
+          <div class="combo-list">
+            {#each activeCombos as cb}
+              <div class="combo-line">
+                <b>★ {cb.label}</b>
+                <small>{cb.description}</small>
+                <em>+{cb.scoreBonus}</em>
+              </div>
+            {/each}
+          </div>
+        {/if}
       </div>
 
       <!-- Allocation -->
@@ -279,6 +323,8 @@
       </button>
       {#if treasury < cost}
         <p class="text-[0.7rem] italic text-rose-300">Caisse insuffisante.</p>
+      {:else if cities.length < 1}
+        <p class="text-[0.7rem] italic text-rose-300">Choisis au moins une ville.</p>
       {:else if militantsAlloc < 1}
         <p class="text-[0.7rem] italic text-rose-300">Place au moins un militant.</p>
       {/if}
@@ -439,5 +485,49 @@
     font-family: 'Source Serif 4', Georgia, serif;
     font-size: 0.86rem;
     line-height: 1.45;
+  }
+
+  .combo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-top: 0.5rem;
+  }
+
+  .combo-line {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.4rem;
+    align-items: baseline;
+    border: 1px solid rgba(244, 213, 139, 0.4);
+    border-radius: 0.4rem;
+    background: rgba(201, 154, 64, 0.08);
+    padding: 0.4rem 0.55rem;
+  }
+
+  .combo-line b {
+    grid-column: 1;
+    color: #f4d58b;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+  }
+
+  .combo-line em {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    color: #aedab5;
+    font-family: 'Cinzel', Georgia, serif;
+    font-style: normal;
+    font-size: 0.85rem;
+  }
+
+  .combo-line small {
+    grid-column: 1;
+    color: rgba(237, 228, 201, 0.78);
+    font-size: 0.66rem;
+    line-height: 1.3;
+    font-style: italic;
   }
 </style>

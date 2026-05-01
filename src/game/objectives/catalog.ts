@@ -58,10 +58,10 @@ const PER_CHARACTER: Record<string, RoleObjective[]> = {
   ],
   griffuelhes: [
     {
-      id: 'griffuelhes-rapport-de-force',
-      label: 'Maintenir le rapport de force',
-      description: 'Garder un rapport de force d’au moins 65 jusqu’à la Charte d’Amiens (tour 16).',
-      condition: { kind: 'resource-min', resource: 'rapportDeForce', threshold: 65 },
+      id: 'griffuelhes-charte-amiens',
+      label: 'Tenir la Charte d’Amiens',
+      description: 'Refuser au moins 2 compromis avec l’État avant la Charte d’Amiens (tour 16).',
+      condition: { kind: 'refuse-compromise', count: 2 },
       byTurn: 16,
       weight: 2
     }
@@ -82,6 +82,13 @@ const PER_CHARACTER: Record<string, RoleObjective[]> = {
       description: 'Atteindre un capital institutionnel d’au moins 70 (CFDT recentrée).',
       condition: { kind: 'resource-min', resource: 'institution', threshold: 70 },
       weight: 3
+    },
+    {
+      id: 'maire-pas-de-trahison',
+      label: 'Sans trahir la base',
+      description: 'Conduire la modernisation sans trahir la base plus d’une fois.',
+      condition: { kind: 'no-betrayal', max: 1 },
+      weight: 1
     }
   ],
   souillot: [
@@ -105,20 +112,20 @@ const PER_CHARACTER: Record<string, RoleObjective[]> = {
   ],
   'lambert-ribot': [
     {
-      id: 'lambert-ribot-compromis',
-      label: 'Le compromis défensif',
-      description: 'Signer Matignon en encaissant le moins possible (caisse ≥ 45 au tour 22).',
-      condition: { kind: 'resource-min', resource: 'caisse', threshold: 45 },
+      id: 'lambert-ribot-signe-matignon',
+      label: 'Signer Matignon contraint',
+      description: 'Signer les accords Matignon avant la fin de l’occupation (tour 22).',
+      condition: { kind: 'flag-set', flag: 'signe-matignon' },
       byTurn: 22,
-      weight: 2
+      weight: 3
     }
   ],
   villiers: [
     {
-      id: 'villiers-paritarisme-recu',
+      id: 'villiers-cogestion',
       label: 'Reconnaître le paritarisme',
-      description: 'Rejoindre durablement les institutions paritaires (institution ≥ 60 d’ici tour 28).',
-      condition: { kind: 'resource-min', resource: 'institution', threshold: 60 },
+      description: 'Signer au moins 2 grands accords avant la fin de la Reconstruction (tour 28).',
+      condition: { kind: 'accords-signed', count: 2 },
       byTurn: 28,
       weight: 3
     }
@@ -140,6 +147,13 @@ const PER_CHARACTER: Record<string, RoleObjective[]> = {
       condition: { kind: 'resource-min', resource: 'legitimite', threshold: 65 },
       byTurn: 38,
       weight: 2
+    },
+    {
+      id: 'parisot-trait-tribun',
+      label: 'Modernisation par la voix',
+      description: 'Tribun comme trait dominant en fin de mandat.',
+      condition: { kind: 'trait-dominant', trait: 'tribun' },
+      weight: 1
     }
   ],
   'roux-de-bezieux': [

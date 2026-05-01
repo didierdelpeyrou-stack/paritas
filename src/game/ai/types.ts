@@ -4,7 +4,10 @@ export type StateStrategyId =
   | 'repression'
   | 'cooptation'
   | 'cadrage_budgetaire'
-  | 'temporisation';
+  | 'temporisation'
+  | 'ordonnances'
+  | 'article_49_3'
+  | 'refus_agrement';
 
 export type OpponentStrategyId =
   | 'compromis_limite'

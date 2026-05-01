@@ -7,7 +7,10 @@ const STRATEGY_LABELS: Record<StateStrategyId, string> = {
   repression: 'Maintien de l’ordre',
   cooptation: 'Cooptation',
   cadrage_budgetaire: 'Cadrage budgétaire',
-  temporisation: 'Temporisation'
+  temporisation: 'Temporisation',
+  ordonnances: 'Ordonnances',
+  article_49_3: 'Article 49.3',
+  refus_agrement: 'Refus d’agrément'
 };
 
 export const FACTION_LABELS: Record<StateFaction, string> = {
@@ -111,8 +114,24 @@ function pickStrategy(
     return { id: 'mediation', intensity: 35 };
   }
 
-  /* État segmenté : la faction dominante choisit son outil de prédilection. */
+  /* État segmenté : la faction dominante choisit son outil de prédilection.
+     Les outils lourds (ordonnances, 49.3) ne s'activent qu'à partir des
+     périodes historiques où ils existent : ordonnances très utilisées dès
+     1967 (≈ tour 28), 49.3 systématisé à partir des années 1990 (tour 38). */
+
   if (faction === 'elysee') {
+    /* Ordonnances : fin de mandat ou pré-élection avec impasse sociale. */
+    if (
+      state.turn >= 28 &&
+      (cycle === 'fin_mandat' || cycle === 'pre_election') &&
+      (r.rapportDeForce >= 55 || a.etat.patience <= 32)
+    ) {
+      return { id: 'ordonnances', intensity: 75 };
+    }
+    /* 49.3 : gouvernement minoritaire, légitimité parlementaire en panne. */
+    if (state.turn >= 38 && r.legitimite < 45 && r.rapportDeForce >= 50) {
+      return { id: 'article_49_3', intensity: 78 };
+    }
     if (r.rapportDeForce >= 70 || a.etat.patience <= 26) {
       return { id: r.legitimite < 35 ? 'repression' : 'decret', intensity: 72 };
     }
@@ -123,6 +142,12 @@ function pickStrategy(
   }
 
   if (faction === 'bercy') {
+    /* Refus d'agrément : Bercy bloque l'extension d'une convention
+       paritaire si l'institution du joueur est forte mais la caisse
+       publique est tendue. Pratique IGAS contemporaine (post-2003). */
+    if (state.turn >= 35 && r.institution >= 58 && r.caisse <= 38) {
+      return { id: 'refus_agrement', intensity: 62 };
+    }
     if (r.caisse <= 26 || r.institution >= 64) {
       return { id: 'cadrage_budgetaire', intensity: 62 };
     }
@@ -130,6 +155,11 @@ function pickStrategy(
   }
 
   /* travail */
+  if (state.turn >= 35 && r.institution >= 60 && a.etat.patience <= 35) {
+    /* Travail peut aussi refuser un agrément si l'accord paritaire
+       contredit la doctrine ministérielle. */
+    return { id: 'refus_agrement', intensity: 55 };
+  }
   if (org.reputation >= 60 && r.legitimite >= 50) {
     return { id: 'cooptation', intensity: 52 };
   }
@@ -166,6 +196,12 @@ function signalFor(
         return 'les chiffres tombent : les marges de négociation sont présentées comme déjà consommées.';
       case 'temporisation':
         return 'les jours s’allongent. On parie sur la fatigue plus que sur la conviction.';
+      case 'ordonnances':
+        return 'le gouvernement convoque une habilitation : les ordonnances passeront sans débat parlementaire ouvert.';
+      case 'article_49_3':
+        return 'le 49.3 est sorti du tiroir. La motion de censure est annoncée mais le texte sera adopté.';
+      case 'refus_agrement':
+        return 'la direction technique refuse l’agrément : la convention signée par les partenaires sociaux n’aura pas force de loi.';
     }
   })();
   return `${factionPrefix}${body}`;

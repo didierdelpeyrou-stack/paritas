@@ -100,6 +100,53 @@ function applyStateStrategy(state: RebirthGameState): RebirthGameState {
         resources: applyResourceDelta(state.resources, { santeSociale: -1, rapportDeForce: -1 }),
         actors: applyActorsDelta(state.actors, { base: { patience: -p }, opinion: { patience: -1 } })
       };
+    case 'ordonnances':
+      /* Le Parlement contourné : l'institution paritaire perd, mais la
+         contestation se massifie. */
+      return {
+        ...state,
+        resources: applyResourceDelta(state.resources, {
+          institution: -p - 1,
+          legitimite: -p,
+          rapportDeForce: 2,
+          confiance: 1
+        }),
+        actors: applyActorsDelta(state.actors, {
+          etat: { trust: -p, pressure: p + 1 },
+          base: { trust: 1, pressure: p },
+          opinion: { trust: -2 }
+        })
+      };
+    case 'article_49_3':
+      /* 49.3 : pure légitimité sacrifiée pour le passage en force. */
+      return {
+        ...state,
+        resources: applyResourceDelta(state.resources, {
+          legitimite: -p - 1,
+          institution: -1,
+          rapportDeForce: 3,
+          confiance: 2
+        }),
+        actors: applyActorsDelta(state.actors, {
+          etat: { trust: -p - 1, patience: -3 },
+          base: { trust: 2, pressure: p + 1 },
+          opinion: { trust: -p }
+        })
+      };
+    case 'refus_agrement':
+      /* L'État sape silencieusement le compromis paritaire. */
+      return {
+        ...state,
+        resources: applyResourceDelta(state.resources, {
+          institution: -p - 1,
+          caisse: -2,
+          confiance: -1
+        }),
+        actors: applyActorsDelta(state.actors, {
+          etat: { trust: -1 },
+          adversaire: { trust: 2 }
+        })
+      };
   }
 }
 

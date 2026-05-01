@@ -4,6 +4,7 @@
    ============================================================ */
 
 import type { Camp } from '../lib/types';
+import type { PlayerOrganization } from './org/types';
 
 /* ============================================================
    Identité du joueur — Rebirth
@@ -247,6 +248,7 @@ export interface RebirthGameState {
   /* Simulation */
   resources: Resources;
   actors: Actors;
+  organization: PlayerOrganization;
 
   /* Mémoire */
   memory: Memory;

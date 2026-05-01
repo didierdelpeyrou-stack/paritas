@@ -6,6 +6,7 @@
   import ConsequenceScene from '../narrative/ConsequenceScene.svelte';
   import ResourceGauge from '../simulation/ResourceGauge.svelte';
   import ActorPanel from '../simulation/ActorPanel.svelte';
+  import OrganizationPanel from '../org/OrganizationPanel.svelte';
   import EndingReport from '../feedback/EndingReport.svelte';
   import { eraForTurn } from '../../game/content/eras';
   import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
@@ -71,6 +72,8 @@
           {e.blurb}
         </p>
       </section>
+
+      <OrganizationPanel organization={s.organization} turn={s.turn} />
 
       <section class="bordered-card p-4 space-y-3">
         <div class="text-xs uppercase tracking-wider text-parchment-dim/60">

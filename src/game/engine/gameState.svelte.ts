@@ -12,7 +12,7 @@ import type {
   Scenario
 } from '../types';
 import { applyResourceDelta, freshResources } from '../simulation/resources';
-import { freshActors } from '../simulation/actors';
+import { applyActorsDelta, freshActors } from '../simulation/actors';
 import {
   applyTraitShift,
   computeDominantTrait,
@@ -30,6 +30,14 @@ import {
   legendaryById,
   type LegendaryCharacter
 } from '../content/legendaryCharacters';
+import { assetById, ORG_ACTIONS } from '../org/catalog';
+import {
+  applyOrganizationDelta,
+  canDevelopOrganization,
+  formatOrgDelta,
+  freshOrganization
+} from '../org/organization';
+import type { OrgAction } from '../org/types';
 
 const SAVE_KEY = 'paritas_rebirth_save_v1';
 
@@ -58,6 +66,7 @@ function freshRebirthState(
     dominantTrait: computeDominantTrait(traits),
     resources,
     actors: freshActors(),
+    organization: freshOrganization(camp, name),
     memory: freshMemory(),
     phase: 'idle',
     lastChoice: null,
@@ -152,9 +161,89 @@ class RebirthGameStore {
       this.endRun();
       return;
     }
-    this.state = advanceTurn(s);
+    this.state = this.applyOrganizationUpkeep(advanceTurn(s));
     this.consequence = null;
     this.advanceToNextScenario();
+    this.persist();
+  }
+
+  performOrgAction(actionId: string) {
+    const s = this.state;
+    if (!s || !canDevelopOrganization(s.turn, s.camp)) return;
+    const action = ORG_ACTIONS.find(item => item.id === actionId);
+    if (!action || !this.canUseOrgAction(action)) return;
+
+    const organization = applyOrganizationDelta(s.organization, {
+      ...action.orgDelta,
+      treasury: (action.orgDelta.treasury ?? 0) - action.cost
+    });
+    const resources = action.resourceDelta
+      ? applyResourceDelta(s.resources, action.resourceDelta)
+      : s.resources;
+    const actors = action.actorDelta ? applyActorsDelta(s.actors, action.actorDelta) : s.actors;
+
+    this.state = {
+      ...s,
+      resources,
+      actors,
+      organization: {
+        ...organization,
+        doctrine: action.doctrine ?? organization.doctrine,
+        actionHistory: [`T${s.turn} — ${action.label}`, ...organization.actionHistory].slice(0, 8)
+      }
+    };
+    this.log = [
+      ...this.log,
+      `T${s.turn} — Organisation : ${action.narrative} ${formatOrgDelta(action.orgDelta)}`
+    ].slice(-50);
+    this.persist();
+  }
+
+  buyAsset(assetId: string) {
+    const s = this.state;
+    if (!s || !canDevelopOrganization(s.turn, s.camp)) return;
+    const asset = assetById(assetId);
+    if (!asset || s.organization.assets.includes(asset.id)) return;
+    if (asset.unlockTurn > s.turn) return;
+    if (asset.camp && asset.camp !== 'any' && asset.camp !== s.camp) return;
+    if (s.organization.treasury < asset.purchaseCost) return;
+
+    const organization = applyOrganizationDelta(s.organization, {
+      ...asset.orgDelta,
+      treasury: (asset.orgDelta.treasury ?? 0) - asset.purchaseCost
+    });
+    this.state = {
+      ...s,
+      resources: asset.resourceDelta ? applyResourceDelta(s.resources, asset.resourceDelta) : s.resources,
+      organization: {
+        ...organization,
+        assets: [...organization.assets, asset.id],
+        actionHistory: [`T${s.turn} — Achat : ${asset.label}`, ...organization.actionHistory].slice(0, 8)
+      }
+    };
+    this.log = [...this.log, `T${s.turn} — Achat : ${asset.label}. ${asset.description}`].slice(-50);
+    this.persist();
+  }
+
+  sellAsset(assetId: string) {
+    const s = this.state;
+    if (!s) return;
+    const asset = assetById(assetId);
+    if (!asset || !s.organization.assets.includes(asset.id)) return;
+    const organization = applyOrganizationDelta(s.organization, {
+      treasury: asset.resaleValue,
+      reputation: -2,
+      cohesion: -1
+    });
+    this.state = {
+      ...s,
+      organization: {
+        ...organization,
+        assets: organization.assets.filter(id => id !== asset.id),
+        actionHistory: [`T${s.turn} — Vente : ${asset.label}`, ...organization.actionHistory].slice(0, 8)
+      }
+    };
+    this.log = [...this.log, `T${s.turn} — Vente : ${asset.label}. La caisse respire, l’organisation se contracte.`].slice(-50);
     this.persist();
   }
 
@@ -202,6 +291,9 @@ class RebirthGameStore {
       const data = JSON.parse(raw) as { state?: RebirthGameState; log?: string[] };
       const s = data.state;
       if (!s) return false;
+      if (!s.organization) {
+        s.organization = freshOrganization(s.camp, s.name);
+      }
       this.state = s;
       this.log = data.log ?? [];
       const pick = pickNextScenario(s);
@@ -213,6 +305,32 @@ class RebirthGameStore {
     } catch {
       return false;
     }
+  }
+
+  private canUseOrgAction(action: OrgAction): boolean {
+    const s = this.state;
+    if (!s) return false;
+    if (action.unlockTurn > s.turn) return false;
+    if (action.camp && action.camp !== 'any' && action.camp !== s.camp) return false;
+    return s.organization.treasury >= action.cost;
+  }
+
+  private applyOrganizationUpkeep(state: RebirthGameState): RebirthGameState {
+    const upkeep = state.organization.assets
+      .map(id => assetById(id)?.upkeep ?? 0)
+      .reduce((sum, value) => sum + value, 0);
+    if (upkeep <= 0) return state;
+    const organization = applyOrganizationDelta(state.organization, {
+      treasury: -upkeep,
+      cohesion: state.organization.treasury <= upkeep ? -2 : 0
+    });
+    return {
+      ...state,
+      organization,
+      resources: applyResourceDelta(state.resources, {
+        caisse: state.organization.treasury <= upkeep ? -2 : 0
+      })
+    };
   }
 }
 

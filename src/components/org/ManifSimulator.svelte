@@ -112,8 +112,9 @@
     const sl = motDOrdre.trim();
     const sloganBonus = sl.length >= 8 && sl.length <= 80 ? 6 : sl.length > 0 ? 2 : 0;
 
-    /* Météo simulée (variance ±8). */
-    const meteo = Math.round((Math.sin(gs.turn * 1.3 + militantsAlloc) * 0.5 + 0.5) * 16) - 8;
+    /* Météo : variance ±8 vraiment aléatoire (sinon le joueur farme en
+       ajustant militants pour optimiser la sin). */
+    const meteo = Math.round(Math.random() * 16) - 8;
 
     const rawScore = prep + baseFoule * lieuMult + comboBoost + mediaBoost + juristeBoost + sloganBonus + meteo + comboScoreBonus;
     const score = Math.max(0, Math.min(100, Math.round(rawScore)));
@@ -157,7 +158,13 @@
   function formatFoule(n: number): string {
     if (n >= 100_000) return `${Math.round(n / 1000)} 000`;
     if (n >= 10_000) return `${Math.round(n / 1000)} 000`;
-    if (n >= 1000) return `${(n / 1000).toFixed(1)} 000`.replace('.', ',');
+    if (n >= 1000) {
+      const milliers = Math.floor(n / 1000);
+      const centaines = Math.round((n % 1000) / 100);
+      return centaines === 0
+        ? `${milliers} 000`
+        : `${milliers},${centaines} 000`;
+    }
     return `${n}`;
   }
 

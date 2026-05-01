@@ -139,7 +139,9 @@
     /* Mediarelay augmente la portée presse. */
     opinion += Math.min(4, gs.organization.mediaRelay);
 
-    const score = Math.max(0, Math.min(100, 35 + (militants + opinion) * 1.4 + (sloganBonus + postureBonus)));
+    /* Le sloganBonus et le postureBonus sont déjà inclus dans `militants`
+       et `opinion` ci-dessus — on ne les ré-ajoute pas. */
+    const score = Math.max(0, Math.min(100, 35 + (militants + opinion) * 1.4));
 
     const pressLine = composePressLine(score, opinion);
 
@@ -174,7 +176,7 @@
       caisse: -r.cost,
       confiance: Math.round(r.audience.militants * 0.6),
       legitimite: Math.round(r.audience.opinion * 0.7),
-      rapportDeForce: Math.round(r.score >= 60 ? 2 : 0)
+      rapportDeForce: r.score >= 60 ? 2 : r.score < 25 ? -2 : 0
     };
     const actorDelta: Partial<Record<ActorId, { trust?: number; pressure?: number; patience?: number }>> = {
       base: { trust: Math.round(r.audience.militants * 0.5), patience: 3 },

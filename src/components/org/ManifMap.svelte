@@ -62,7 +62,13 @@
         onmouseleave={() => (hovered = null)}
       >
         <circle cx={c.x} cy={c.y} r={isSelected(c.id) ? 3.6 : 2.4} class="dot" />
-        <text x={c.x} y={c.y - 4.2} class="label" text-anchor="middle">{c.name}</text>
+        <!-- Si la ville est trop haute, on place le label en-dessous pour éviter qu'il soit coupé. -->
+        <text
+          x={c.x}
+          y={c.y < 12 ? c.y + 6 : c.y - 4.2}
+          class="label"
+          text-anchor="middle"
+        >{c.name}</text>
       </g>
     {/each}
   </svg>

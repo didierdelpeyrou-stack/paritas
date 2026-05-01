@@ -4,8 +4,9 @@
   import type { Resources } from '../../game/types';
   import { RESOURCE_LABELS } from '../../game/simulation/resources';
 
-  /* Snapshot précédent des ressources, pour comparer après chaque tick. */
-  let previous = $state<Resources | null>(null);
+  /* Snapshot précédent des ressources — non réactif pour ne pas re-trigger
+     l'effet sur écriture. */
+  let previous: Resources | null = null;
 
   interface Toast {
     id: number;
@@ -25,8 +26,15 @@
   }
 
   $effect(() => {
-    const cur = rebirth.state?.resources;
-    if (!cur) return;
+    const s = rebirth.state;
+    if (!s) {
+      /* Le joueur est sur StartScreen / a fait Rejouer : on remet
+         le snapshot à zéro pour ne pas comparer une nouvelle partie
+         avec la fin de l'ancienne. */
+      previous = null;
+      return;
+    }
+    const cur = s.resources;
     if (!previous) {
       previous = { ...cur };
       return;
@@ -38,7 +46,7 @@
         const sign = delta > 0 ? '+' : '';
         push(`${RESOURCE_LABELS[key]} ${sign}${Math.round(delta)}`, delta > 0 ? 'positive' : 'negative');
       }
-      /* Alerte de seuil critique. */
+      /* Alerte de seuil critique sur transition descendante uniquement. */
       if (cur[key] <= 18 && previous[key] > 18) {
         push(`${RESOURCE_LABELS[key]} en zone critique`, 'warning');
       }

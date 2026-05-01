@@ -45,7 +45,18 @@
     return entries.sort((a, b) => b.value - a.value).slice(0, 2);
   }
 
-  function openDetail(c: LegendaryCharacter) {
+  function pick(c: LegendaryCharacter) {
+    /* Clic carte = sélection directe (un seul clic au lieu de trois).
+       La bio reste accessible via le bouton "Bio". */
+    if (selected?.id === c.id) {
+      onSelect(null);
+    } else {
+      onSelect(c);
+    }
+  }
+
+  function openDetail(c: LegendaryCharacter, e?: Event) {
+    e?.stopPropagation();
     detail = c;
   }
 
@@ -111,9 +122,9 @@
     {#each visible as c, i (c.id)}
       <button
         type="button"
-        onclick={() => openDetail(c)}
+        onclick={() => pick(c)}
         in:fly={{ y: 6, duration: 220, delay: i * 18 }}
-        class="text-left rounded-lg p-2.5 border-2 transition-all
+        class="text-left rounded-lg p-2.5 border-2 transition-all relative
                {selected?.id === c.id
           ? 'border-amber-400 bg-gold/10 shadow-[0_0_0_1px_rgba(251,191,36,0.4)]'
           : rarityClass[c.rarity] + ' hover:border-gold/50 hover:bg-gold/5'}"
@@ -146,6 +157,15 @@
             « {c.signature} »
           </p>
         {/if}
+        <span
+          role="button"
+          tabindex="0"
+          class="bio-btn"
+          onclick={(e) => openDetail(c, e)}
+          onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); openDetail(c); } }}
+          aria-label={`Lire la biographie de ${c.name}`}
+          title="Lire la biographie complète"
+        >Bio</span>
       </button>
     {/each}
   </div>
@@ -153,7 +173,11 @@
   {#if selected}
     <div class="text-xs italic text-gold-soft/80 text-center flex items-center justify-center gap-2" in:fade>
       <span>Tu incarneras <span class="not-italic font-display text-gold">{selected.name}</span>.</span>
-      <button type="button" class="annul-btn" onclick={deselect}>Annuler</button>
+      <button type="button" class="annul-btn" onclick={deselect}>Désélectionner</button>
+    </div>
+  {:else}
+    <div class="text-xs italic text-parchment-dim/65 text-center" in:fade>
+      Clic sur une carte pour incarner ; bouton « Bio » pour lire la vie complète.
     </div>
   {/if}
 </div>
@@ -344,5 +368,32 @@
   .annul-btn:hover {
     border-color: rgba(244, 213, 139, 0.5);
     color: #f4d58b;
+  }
+
+  /* Petit lien "Bio" inline en bas-droite de chaque carte personnage.
+     Ne déclenche pas la sélection — ouvre la modale détaillée. */
+  .bio-btn {
+    position: absolute;
+    bottom: 0.4rem;
+    right: 0.5rem;
+    border: 1px solid rgba(244, 213, 139, 0.35);
+    border-radius: 0.3rem;
+    background: rgba(13, 16, 20, 0.55);
+    color: rgba(244, 213, 139, 0.85);
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.55rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.18rem 0.4rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  }
+
+  .bio-btn:hover,
+  .bio-btn:focus-visible {
+    border-color: #f4d58b;
+    color: #f4d58b;
+    background: rgba(201, 154, 64, 0.18);
+    outline: none;
   }
 </style>

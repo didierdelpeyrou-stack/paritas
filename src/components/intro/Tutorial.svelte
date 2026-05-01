@@ -93,7 +93,7 @@
         <button type="button" class="btn-ghost" onclick={back}>← Précédent</button>
       {/if}
       <button type="button" class="btn-primary" onclick={next}>
-        {step === TOTAL - 1 ? "Entrer dans l'histoire" : 'Suivant →'}
+        {step === TOTAL - 1 ? 'Choisir mon camp →' : 'Suivant →'}
       </button>
     </div>
   </footer>

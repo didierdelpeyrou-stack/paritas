@@ -7,9 +7,8 @@
   import PipelinePanel from '../narrative/PipelinePanel.svelte';
   import ResourceGauge from '../simulation/ResourceGauge.svelte';
   import ActorPanel from '../simulation/ActorPanel.svelte';
-  import OrganizationPanel from '../org/OrganizationPanel.svelte';
+  import OrganisationTab from '../org/OrganisationTab.svelte';
   import ObjectivePanel from '../objectives/ObjectivePanel.svelte';
-  import StrategyPanel from '../strategy/StrategyPanel.svelte';
   import WorldStrategyPanel from '../world/WorldStrategyPanel.svelte';
   import EndingReport from '../feedback/EndingReport.svelte';
   import EraTimeline from './EraTimeline.svelte';
@@ -149,14 +148,7 @@
             {/each}
           </section>
         {:else if activeTab === 'organisation'}
-          <OrganizationPanel organization={s.organization} turn={s.turn} />
-
-          <StrategyPanel
-            turn={s.turn}
-            camp={s.camp}
-            organization={s.organization}
-            activeStrategies={s.activeStrategies}
-          />
+          <OrganisationTab gameState={s} />
         {:else}
           <WorldStrategyPanel worldAI={s.worldAI} />
 

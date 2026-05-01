@@ -326,6 +326,32 @@ class RebirthGameStore {
     this.persist();
   }
 
+  /**
+   * Applique un delta générique (ressources / acteurs / organisation) issu
+   * d'un simulateur (meeting, manifestation, formation…) et inscrit une
+   * ligne dans le journal. Pas de gating turn-based ici : c'est au caller
+   * (le simulateur) de vérifier ses propres conditions.
+   */
+  applyOperation(input: {
+    label: string;
+    resourceDelta?: Partial<import('../types').Resources>;
+    actorDelta?: Partial<Record<import('../types').ActorId, { trust?: number; pressure?: number; patience?: number }>>;
+    organizationDelta?: import('../org/types').OrganizationDelta;
+  }) {
+    const s = this.state;
+    if (!s) return;
+    const resources = input.resourceDelta
+      ? applyResourceDelta(s.resources, input.resourceDelta)
+      : s.resources;
+    const actors = input.actorDelta ? applyActorsDelta(s.actors, input.actorDelta) : s.actors;
+    const organization = input.organizationDelta
+      ? applyOrganizationDelta(s.organization, input.organizationDelta)
+      : s.organization;
+    this.state = { ...s, resources, actors, organization };
+    this.log = [...this.log, `T${s.turn} — ${input.label}`].slice(-50);
+    this.persist();
+  }
+
   performOrgAction(actionId: string) {
     const s = this.state;
     if (!s || !canDevelopOrganization(s.turn, s.camp)) return;

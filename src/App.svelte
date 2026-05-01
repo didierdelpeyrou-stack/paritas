@@ -9,10 +9,10 @@
   import { fx } from '$lib/stores/fx.svelte';
   import { applyChoicePipeline } from '$lib/game/dialectic';
   import { rollDice, adjustEffectsByCriticals, type RollOutcome, type Bonus } from '$lib/game/dice';
+  import { EventGenerator } from '$lib/game/EventGenerator';
   import { audio } from '$lib/audio/audio';
 
-  import { ERAS, eraForTurn } from '$lib/data/eras';
-  import { EVENTS, GENERIC_EVENTS } from '$lib/data/events';
+  import { eraForTurn } from '$lib/data/eras';
   import { FIGURES, FIG_BY_UNLOCK } from '$lib/data/figures';
   import type { GameEvent, Choice, Camp, GameMode, Difficulty, SkillKey } from '$lib/types';
 
@@ -24,6 +24,7 @@
   import Confetti from '$components/Confetti.svelte';
 
   /* ============= state UI ============= */
+  const eventGenerator = new EventGenerator();
   let started = $state(false);
   let currentEvent = $state<GameEvent | null>(null);
   let seenIds = $state<Set<string>>(new Set());
@@ -51,15 +52,15 @@
 
   /* ============= sélection d'événement ============= */
   function pickEvent(): GameEvent {
-    const era = eraForTurn(game.state.turn);
-    const pool = [...EVENTS, ...GENERIC_EVENTS].filter(e => (e.era === era.id || e.era === -1) && !seenIds.has(e.id));
-    if (pool.length > 0 && Math.random() < 0.75) {
-      const ev = pool[Math.floor(Math.random() * pool.length)]!;
-      seenIds.add(ev.id);
-      return ev;
-    }
-    const fallback = GENERIC_EVENTS.filter(e => e.era === -1 || e.era === era.id);
-    return fallback[Math.floor(Math.random() * fallback.length)] ?? GENERIC_EVENTS[0]!;
+    const ev = eventGenerator.next({
+      turn: game.state.turn,
+      era: eraForTurn(game.state.turn).id,
+      camp: game.state.camp!,
+      state: game.state,
+      seenIds
+    });
+    seenIds.add(ev.id);
+    return ev;
   }
 
   /* ============= démarrage ============= */
@@ -345,9 +346,9 @@
         <ObjectiveBar />
         {#key currentEvent.id + '-' + game.state.turn}
           {#if currentEvent.format === 'suzerain'}
-            <DialogueScene event={currentEvent} camp={game.state.camp!} onChoose={onChoose} />
+            <DialogueScene event={currentEvent} camp={game.state.camp!} mode={game.state.mode} gameState={game.state} onChoose={onChoose} />
           {:else}
-            <Card event={currentEvent} camp={game.state.camp!} onChoose={onChoose} />
+            <Card event={currentEvent} camp={game.state.camp!} mode={game.state.mode} gameState={game.state} onChoose={onChoose} />
           {/if}
         {/key}
 

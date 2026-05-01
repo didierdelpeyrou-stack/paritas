@@ -3,17 +3,20 @@
      DialogueScene.svelte — Suzerain-style
      Dialogue multi-tours avec PNJ portraituré, puis choix
      Effet typewriter + sous-texte révélé en survol
-     ============================================================ */
+  ============================================================ */
   import { fade, fly } from 'svelte/transition';
-  import type { GameEvent, Choice } from '$lib/types';
+  import type { GameEvent, GameMode, GameState } from '$lib/types';
+  import ExpertChoicePanel from './ExpertChoicePanel.svelte';
 
   interface Props {
     event: GameEvent;
     camp: 'salarie' | 'patron';
+    mode: GameMode;
+    gameState: GameState;
     onChoose: (idx: number) => void;
   }
 
-  let { event, camp, onChoose }: Props = $props();
+  let { event, camp, mode, gameState, onChoose }: Props = $props();
   let stepIdx = $state(0);
   let showSubtext = $state(false);
   let typed = $state('');
@@ -151,6 +154,9 @@
                 <div class="flex-1">
                   <div class="font-medium text-parchment text-sm">{ch.text}</div>
                   {#if ch.why}<div class="text-xs italic text-parchment-dim/70 mt-0.5">{ch.why}</div>{/if}
+                  {#if mode === 'expert' && enabled}
+                    <ExpertChoicePanel choice={ch} event={event} gameState={gameState} camp={camp} compact />
+                  {/if}
                 </div>
                 {#if ch.recommended}<span class="text-[0.65rem] uppercase tracking-wider text-emerald-400 font-display whitespace-nowrap">★ Historien</span>{/if}
                 {#if ch.risky}<span class="text-[0.65rem] uppercase tracking-wider text-orange-400 font-display whitespace-nowrap">⚡ Risqué</span>{/if}

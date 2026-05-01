@@ -5,15 +5,18 @@
      ============================================================ */
   import { fade, fly } from 'svelte/transition';
   import { cubicOut } from 'svelte/easing';
-  import type { GameEvent } from '$lib/types';
+  import type { GameEvent, GameMode, GameState } from '$lib/types';
+  import ExpertChoicePanel from './ExpertChoicePanel.svelte';
 
   interface Props {
     event: GameEvent;
     camp: 'salarie' | 'patron';
+    mode: GameMode;
+    gameState: GameState;
     onChoose: (idx: number) => void;
   }
 
-  let { event, camp, onChoose }: Props = $props();
+  let { event, camp, mode, gameState, onChoose }: Props = $props();
 
   let situation = $derived(
     typeof event.situation === 'function' ? event.situation({ camp }) : event.situation
@@ -115,6 +118,9 @@
                 <div class="text-xs italic text-stone-500 mt-1">
                   — indisponible pour ton camp
                 </div>
+              {/if}
+              {#if mode === 'expert' && enabled}
+                <ExpertChoicePanel choice={ch} event={event} gameState={gameState} camp={camp} />
               {/if}
             </div>
             {#if ch.recommended}

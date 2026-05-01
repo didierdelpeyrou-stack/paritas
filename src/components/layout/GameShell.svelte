@@ -82,12 +82,24 @@
   }
 
   let sfxOn = $state(sfx.isEnabled());
+  let musicOn = $state(sfx.isMusicEnabled());
   $effect(() => sfx.onChange(v => (sfxOn = v)));
+  $effect(() => sfx.onMusicChange(v => (musicOn = v)));
 
   function toggleSfx() {
     sfx.toggle();
     if (sfx.isEnabled()) void sfx.play('click');
   }
+
+  function toggleMusic() {
+    sfx.toggleMusic();
+  }
+
+  /* Quand l'ère du jeu change, informe le moteur audio pour que la
+     boucle ambient switche de scale. */
+  $effect(() => {
+    if (era?.id) sfx.setEra(era.id);
+  });
 </script>
 
 {#if gameState && gameState.phase === 'ended' && ending}
@@ -110,16 +122,24 @@
         </div>
         <div class="flex items-baseline justify-between gap-2">
           <h3 class="font-display text-gold text-lg leading-tight">{e.name}</h3>
-          <div class="flex items-center gap-2.5">
+          <div class="flex items-center gap-1.5">
             <button
               type="button"
               class="sfx-toggle"
               data-on={sfxOn}
               onclick={toggleSfx}
-              aria-label={sfxOn ? 'Couper le son' : 'Activer le son'}
-              title={sfxOn ? 'Son activé — cliquer pour couper' : 'Son coupé — cliquer pour activer'}
+              aria-label={sfxOn ? 'Couper les effets sonores' : 'Activer les effets sonores'}
+              title={sfxOn ? 'Effets sonores actifs' : 'Effets sonores coupés'}
             >{sfxOn ? '♪' : '·'}</button>
-            <div class="text-right" title="Score provisoire — il bouge à chaque choix.">
+            <button
+              type="button"
+              class="sfx-toggle"
+              data-on={musicOn}
+              onclick={toggleMusic}
+              aria-label={musicOn ? 'Couper la musique' : 'Activer la musique'}
+              title={musicOn ? 'Musique active' : 'Musique coupée'}
+            >{musicOn ? '♫' : '·'}</button>
+            <div class="text-right ml-1" title="Score provisoire — il bouge à chaque choix.">
               <div class="font-display text-gold-soft text-base leading-none">{liveScore}<span class="text-[0.7rem] text-parchment-dim/60">/100</span></div>
               <div class="text-[0.6rem] uppercase tracking-wider text-parchment-dim/65">score</div>
             </div>

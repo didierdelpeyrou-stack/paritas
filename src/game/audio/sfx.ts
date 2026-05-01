@@ -7,7 +7,8 @@
  * Tous les sons sont synthétisés (pas de fichier audio à embarquer).
  */
 
-const STORAGE_KEY = 'paritas_sfx_v1';
+const SFX_KEY = 'paritas_sfx_v1';
+const MUSIC_KEY = 'paritas_music_v1';
 
 export type SfxName =
   | 'click'
@@ -27,22 +28,57 @@ interface AudioModule {
     fanfare: () => Promise<void>;
     impact: () => Promise<void>;
     dice: () => Promise<void>;
+    setMusicEnabled: (on: boolean) => void;
+    startMusic: (eraId: number) => Promise<void>;
+    stopMusic: () => void;
   };
 }
 
+import type { EraId } from '../types';
+
+/**
+ * Mapping EraId → index dans ERA_SCALES de audio.ts (4 scales actuelles).
+ * On reste large : on regroupe les époques par grande période.
+ */
+const ERA_TO_AUDIO: Record<EraId, number> = {
+  antiquite: 0,
+  medieval: 0,
+  revolution: 0,
+  xixe: 1,
+  belle_epoque: 2,
+  entre_deux_guerres: 2,
+  reconstruction: 3,
+  guerre_froide: 3,
+  trente_glorieuses: 3,
+  crise: 3,
+  mitterrand: 3,
+  cohabitations: 3,
+  sarkozy: 3,
+  hollande: 3,
+  macron_i: 3,
+  macron_ii: 3,
+  present: 3
+};
+
 class SfxClient {
   private enabled = false;
+  private musicEnabled = false;
+  private currentEraId: EraId | null = null;
   private modulePromise: Promise<AudioModule> | null = null;
   private listeners: Array<(enabled: boolean) => void> = [];
+  private musicListeners: Array<(enabled: boolean) => void> = [];
 
   constructor() {
     if (typeof localStorage === 'undefined') return;
     try {
-      this.enabled = localStorage.getItem(STORAGE_KEY) === 'on';
+      this.enabled = localStorage.getItem(SFX_KEY) === 'on';
+      this.musicEnabled = localStorage.getItem(MUSIC_KEY) === 'on';
     } catch {
       /* ignore */
     }
   }
+
+  /* === SFX === */
 
   isEnabled(): boolean {
     return this.enabled;
@@ -51,14 +87,11 @@ class SfxClient {
   setEnabled(on: boolean): void {
     this.enabled = on;
     try {
-      localStorage.setItem(STORAGE_KEY, on ? 'on' : 'off');
+      localStorage.setItem(SFX_KEY, on ? 'on' : 'off');
     } catch {
       /* ignore */
     }
-    if (on) {
-      /* Précharge le module pour la latence ; ne lance pas de son. */
-      void this.load();
-    }
+    if (on) void this.load();
     this.listeners.forEach(l => l(on));
   }
 
@@ -72,6 +105,70 @@ class SfxClient {
       this.listeners = this.listeners.filter(l => l !== listener);
     };
   }
+
+  /* === Music === */
+
+  isMusicEnabled(): boolean {
+    return this.musicEnabled;
+  }
+
+  async setMusicEnabled(on: boolean): Promise<void> {
+    this.musicEnabled = on;
+    try {
+      localStorage.setItem(MUSIC_KEY, on ? 'on' : 'off');
+    } catch {
+      /* ignore */
+    }
+    this.musicListeners.forEach(l => l(on));
+    if (!on) {
+      try {
+        const mod = await this.load();
+        mod.audio.setMusicEnabled(false);
+        mod.audio.stopMusic();
+      } catch {
+        /* ignore */
+      }
+      return;
+    }
+    /* Active la musique : load module, set enabled, start sur l'ère active. */
+    try {
+      const mod = await this.load();
+      mod.audio.setMusicEnabled(true);
+      const audioEra = this.currentEraId ? ERA_TO_AUDIO[this.currentEraId] : 0;
+      await mod.audio.startMusic(audioEra);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  toggleMusic(): void {
+    void this.setMusicEnabled(!this.musicEnabled);
+  }
+
+  /** À appeler quand l'ère in-game change. Si la musique est active, le
+   *  moteur switche vers la scale correspondante. */
+  setEra(eraId: EraId): void {
+    if (this.currentEraId === eraId) return;
+    this.currentEraId = eraId;
+    if (!this.musicEnabled) return;
+    void (async () => {
+      try {
+        const mod = await this.load();
+        await mod.audio.startMusic(ERA_TO_AUDIO[eraId]);
+      } catch {
+        /* ignore */
+      }
+    })();
+  }
+
+  onMusicChange(listener: (enabled: boolean) => void): () => void {
+    this.musicListeners.push(listener);
+    return () => {
+      this.musicListeners = this.musicListeners.filter(l => l !== listener);
+    };
+  }
+
+  /* === Loader === */
 
   private async load(): Promise<AudioModule> {
     if (!this.modulePromise) {

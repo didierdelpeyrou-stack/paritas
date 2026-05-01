@@ -14,6 +14,7 @@
 
   import { eraForTurn } from '$lib/data/eras';
   import { FIGURES, FIG_BY_UNLOCK } from '$lib/data/figures';
+  import { LEGENDARY_CHARACTERS, type LegendaryCharacter } from '$lib/data/legendaryCharacters';
   import type { GameEvent, Choice, Camp, GameMode, Difficulty, SkillKey } from '$lib/types';
 
   import Card from '$components/Card.svelte';
@@ -49,6 +50,19 @@
   let formMode = $state<GameMode>('jet');
   let formDifficulty = $state<Difficulty>(1);
   let formTrait = $state<SkillKey>('negociation');
+  let formLegendaryId = $state<string | null>(null);
+  let availableLegends = $derived(formCamp ? LEGENDARY_CHARACTERS.filter((character) => character.camp === formCamp) : []);
+  let selectedLegend = $derived(availableLegends.find((character) => character.id === formLegendaryId) ?? null);
+
+  $effect(() => {
+    if (!formCamp) {
+      formLegendaryId = null;
+      return;
+    }
+    if (!availableLegends.some((character) => character.id === formLegendaryId)) {
+      formLegendaryId = availableLegends[0]?.id ?? null;
+    }
+  });
 
   /* ============= sélection d'événement ============= */
   function pickEvent(): GameEvent {
@@ -66,11 +80,49 @@
   /* ============= démarrage ============= */
   function start() {
     if (!formName.trim() || !formCamp) return;
-    game.start({ name: formName.trim(), camp: formCamp, mode: formMode, difficulty: formDifficulty, trait: formTrait });
+    game.start({ name: formName.trim(), camp: formCamp, mode: formMode, difficulty: formDifficulty, trait: formTrait, legendaryId: formLegendaryId });
     seenIds = new Set();
     currentEvent = pickEvent();
     started = true;
     audio.startMusic(0).catch(() => {});
+  }
+
+  function skillBonusText(character: LegendaryCharacter): string {
+    return Object.entries(character.skillAffinity)
+      .map(([key, value]) => `${skillLabel(key as SkillKey)} +${Math.round((value ?? 0) * 5)}`)
+      .join(' · ');
+  }
+
+  function statBonusText(character: LegendaryCharacter): string {
+    return Object.entries(character.statBias)
+      .map(([key, value]) => `${statLabel(key)} ${(value ?? 0) >= 0 ? '+' : ''}${Math.round((value ?? 0) * 3)}`)
+      .join(' · ');
+  }
+
+  function skillLabel(skill: SkillKey): string {
+    return {
+      negociation: 'Négociation',
+      politique: 'Politique',
+      baratin: 'Tribune',
+      production: 'Production',
+      mobilisation: 'Mobilisation',
+      expertise: 'Expertise'
+    }[skill];
+  }
+
+  function statLabel(stat: string): string {
+    return {
+      prestige: 'Prestige',
+      caisse: 'Caisse',
+      soutien: 'Soutien',
+      influence: 'Influence',
+      sante: 'Santé',
+      economique: 'Cap. économique',
+      social: 'Cap. social',
+      militant: 'Cap. militant',
+      institutionnel: 'Cap. institutionnel',
+      symbolique: 'Cap. symbolique'
+    }[stat] ?? stat;
   }
 
   /* ============= choix ============= */
@@ -286,6 +338,43 @@
             </button>
           </div>
         </div>
+
+        {#if formCamp}
+          <div>
+            <span class="text-xs uppercase tracking-wider text-parchment-dim/70">Personnage légendaire</span>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-2">
+              {#each availableLegends as legend}
+                <button type="button" onclick={() => formLegendaryId = legend.id}
+                        class="rounded-lg p-3 text-left border-2 transition-all
+                               {formLegendaryId === legend.id ? 'border-amber-500 bg-amber-500/10' : 'border-line hover:border-amber-500/60 bg-ink/20'}">
+                  <div class="font-display text-amber-400 text-sm leading-tight">{legend.name}</div>
+                  <div class="text-xs text-parchment-dim/70 mt-1">{legend.archetype}</div>
+                  <div class="text-[0.68rem] text-parchment-dim/80 mt-2 leading-snug">{skillBonusText(legend)}</div>
+                </button>
+              {/each}
+            </div>
+
+            {#if selectedLegend}
+              <div class="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-3">
+                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                  <div>
+                    <div class="font-display text-amber-300 tracking-wider">{selectedLegend.name}</div>
+                    <p class="text-sm italic text-parchment-dim mt-1">{selectedLegend.signature}</p>
+                  </div>
+                  <div class="text-xs text-emerald-300 sm:text-right">{statBonusText(selectedLegend)}</div>
+                </div>
+                <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {#each selectedLegend.phases as phase}
+                    <div class="rounded-md border border-line/70 bg-ink/25 p-2">
+                      <div class="text-[0.65rem] uppercase tracking-wider text-gold font-display">{phase.label}</div>
+                      <div class="text-xs text-parchment-dim/80 mt-1 leading-snug">{phase.trial}</div>
+                    </div>
+                  {/each}
+                </div>
+              </div>
+            {/if}
+          </div>
+        {/if}
 
         <label class="block">
           <span class="text-xs uppercase tracking-wider text-parchment-dim/70">Mode de jeu</span>

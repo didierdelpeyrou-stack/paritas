@@ -3,6 +3,7 @@
    ============================================================ */
 
 import type { GameState, Camp, GameMode, Difficulty, SkillKey, StatKey } from '../types';
+import { LEGENDARY_CHARACTERS } from '../data/legendaryCharacters';
 
 const SAVE_KEY = 'paritas_save_v1';
 
@@ -10,6 +11,7 @@ function freshState(): GameState {
   return {
     name: '',
     camp: null,
+    legendaryId: null,
     mode: 'jet',
     difficulty: 1,
     turn: 1,
@@ -99,17 +101,30 @@ class GameStore {
 
   /* ============== mutations ============== */
 
-  start(opts: { name: string; camp: Camp; mode: GameMode; difficulty: Difficulty; trait: SkillKey }) {
+  start(opts: { name: string; camp: Camp; mode: GameMode; difficulty: Difficulty; trait: SkillKey; legendaryId?: string | null }) {
     const next = freshState();
     next.name = opts.name;
     next.camp = opts.camp;
+    next.legendaryId = opts.legendaryId ?? null;
     next.mode = opts.mode;
     next.difficulty = opts.difficulty;
     next.skills[opts.trait] += 10;
+    const legendary = LEGENDARY_CHARACTERS.find((character) => character.id === opts.legendaryId && character.camp === opts.camp);
+    if (legendary) {
+      for (const [key, value] of Object.entries(legendary.skillAffinity)) {
+        next.skills[key as SkillKey] = clamp(next.skills[key as SkillKey] + Math.round((value ?? 0) * 5), 0, 100);
+      }
+      for (const [key, value] of Object.entries(legendary.statBias)) {
+        const delta = Math.round((value ?? 0) * 3);
+        if (key in next.resources) next.resources[key as keyof typeof next.resources] = clamp(next.resources[key as keyof typeof next.resources] + delta, 0, 100);
+        else if (key in next.capitaux) next.capitaux[key as keyof typeof next.capitaux] = clamp(next.capitaux[key as keyof typeof next.capitaux] + delta, 0, 100);
+        else if (key in next.skills) next.skills[key as keyof typeof next.skills] = clamp(next.skills[key as keyof typeof next.skills] + delta, 0, 100);
+      }
+    }
     next.rival.name = pickRivalName(opts.camp);
     next.rival.score = 35 + opts.difficulty * 8;
     this.state = next;
-    this.log(`<b>${opts.name}</b> entre dans l'histoire — côté ${opts.camp === 'patron' ? 'patronal' : 'salarié'}, mode ${opts.mode}.`);
+    this.log(`<b>${opts.name}</b> entre dans l'histoire — côté ${opts.camp === 'patron' ? 'patronal' : 'salarié'}, mode ${opts.mode}${legendary ? `, lignée ${legendary.name}` : ''}.`);
     this.persist();
   }
 

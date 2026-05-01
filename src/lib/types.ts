@@ -165,6 +165,7 @@ export interface GameState {
   /* Identité */
   name: string;
   camp: Camp | null;
+  legendaryId: string | null;
   mode: GameMode;
   difficulty: Difficulty;
 

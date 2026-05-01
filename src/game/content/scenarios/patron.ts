@@ -330,5 +330,333 @@ export const PATRON_SCENARIOS: Scenario[] = [
         traitShift: { pragmatique: 2, paternaliste: 1 }
       }
     ]
+  },
+  {
+    id: 'grenelle-patron-1968',
+    turn: 29,
+    date: '27 mai 1968',
+    era: 'trente_glorieuses',
+    title: 'Grenelle, côté patronal',
+    subtitle: 'Le CNPF face aux usines occupées',
+    mood: 'tendu',
+    premium: true,
+    campFilter: 'patron',
+    historicalContext:
+      'À Grenelle, sous la pression de la grève générale et de l’occupation des usines, le CNPF négocie avec Georges Pompidou. Les protocoles prévoient un SMIG porté à 600 F (+35%), des hausses générales, le développement de la section syndicale d’entreprise. Côté patronal, l’option n’est plus de refuser, mais de doser ce qu’on donne et ce qu’on conserve.',
+    setup: {
+      reflechi:
+        'L’économie productive est arrêtée. Le patronat n’a plus le choix de la signature. Il a encore celui de son rythme, de ses contreparties et de la manière dont il raconte cette signature à ses adhérents.',
+      compulsif:
+        'Au siège, on calcule à voix haute le coût d’une journée de grève multipliée par dix millions de salariés. Personne n’ose calculer le coût politique de la signature qu’on s’apprête à apposer.'
+    },
+    actors: ['base', 'adversaire', 'etat', 'opinion'],
+    voices: [
+      { trait: 'pragmatique', text: 'On signe maintenant. La productivité rattrapera ce qu’on aura concédé.' },
+      { trait: 'rupture', text: 'Une signature obtenue sous occupation prépare la prochaine occupation.' }
+    ],
+    quotes: [
+      {
+        text: 'Mieux vaut une concession nette qu’un effondrement progressif de l’autorité dans l’usine.',
+        source: 'Esprit des notes patronales, mai 1968'
+      }
+    ],
+    choices: [
+      {
+        id: 'grenelle-patron-signer',
+        text: 'Signer Grenelle et étaler les hausses.',
+        intent: 'Sauver la rentrée économique.',
+        theoryHint: 'Stratégie d’institution : la signature stabilise le marché du travail à un coût lissé.',
+        effects: {
+          resources: { institution: 7, legitimite: 5, rapportDeForce: -3, caisse: -5 },
+          actors: { etat: { trust: 7 }, adversaire: { trust: 4, patience: 6 }, opinion: { trust: 5 } }
+        },
+        consequence: {
+          immediate:
+            'Les protocoles sont signés, la reprise s’organise. Quelques semaines plus tard, l’économie redémarre — et le coût de Grenelle commence à se diluer dans l’inflation.',
+          longterm:
+            'Cette signature ancrera, à droite comme à gauche, l’idée que le patronat sait reculer quand il faut.'
+        },
+        traitShift: { batisseur: 2, pragmatique: 1 },
+        flag: 'cgpf-cogestion'
+      },
+      {
+        id: 'grenelle-patron-rejeter',
+        text: 'Rejeter le protocole, demander l’intervention de l’État.',
+        intent: 'Refuser la cogestion sous occupation.',
+        theoryHint: 'Stratégie de rupture : externaliser la décision finale vers le pouvoir politique.',
+        effects: {
+          resources: { rapportDeForce: 6, legitimite: -4, santeSociale: -7, caisse: -3 },
+          actors: { etat: { trust: 2 }, adversaire: { trust: -10, pressure: 10 }, opinion: { trust: -6 } }
+        },
+        consequence: {
+          immediate:
+            'Le rejet patronal est connu en quelques heures. Pompidou réplique en assumant lui-même les protocoles. La signature aura lieu — sans toi.',
+          longterm:
+            'Le geste sera relu plus tard comme une démission stratégique. Le patronat perdra du terrain dans le récit social français pendant une décennie.'
+        },
+        traitShift: { rupture: 2 },
+        flag: 'epuise-mouvement'
+      },
+      {
+        id: 'grenelle-patron-section',
+        text: 'Accepter la section syndicale en exigeant la paix dans l’atelier.',
+        intent: 'Échanger reconnaissance contre stabilité.',
+        theoryHint: 'Stratégie de cooptation : reconnaître l’organisation syndicale comme partenaire de la régulation interne.',
+        effects: {
+          resources: { institution: 5, confiance: 4, rapportDeForce: -2 },
+          actors: { adversaire: { trust: 7 }, base: { trust: 5, patience: 5 }, etat: { trust: 4 } }
+        },
+        consequence: {
+          immediate:
+            'La section syndicale entre légalement dans l’entreprise. Les premiers délégués apprennent à négocier ; certains directeurs apprennent à négocier avec eux.',
+          longterm:
+            'Cette acceptation préparera, douze ans plus tard, l’accueil patronal pragmatique des lois Auroux.'
+        },
+        traitShift: { batisseur: 2, paternaliste: 1 }
+      }
+    ]
+  },
+  {
+    id: 'auroux-patron-1982',
+    turn: 32,
+    date: '4 août 1982',
+    era: 'mitterrand',
+    title: 'Auroux : encadrer ou subir',
+    subtitle: 'Le patronat face aux nouveaux droits',
+    mood: 'tendu',
+    premium: true,
+    campFilter: 'patron',
+    historicalContext:
+      'Les lois Auroux (1982) instaurent la négociation annuelle obligatoire, le CHSCT, le droit d’expression directe et collective des salariés, la sanctuarisation de la section syndicale. Le CNPF de Yvon Chotard puis François Périgot doit choisir comment vivre avec un cadre largement renforcé en faveur de la représentation salariée dans l’entreprise.',
+    setup: {
+      reflechi:
+        'Les lois sont votées. Reste à choisir si le patronat les conteste juridiquement, les met en œuvre en exigeant des contreparties, ou les internalise comme un nouveau standard de management.',
+      compulsif:
+        'Une circulaire interne au CNPF compare les textes Auroux à un "nouveau code du travail bis". Le ton est rude. Les industriels les plus modernes la trouvent déjà datée.'
+    },
+    actors: ['base', 'adversaire', 'etat', 'opinion'],
+    voices: [
+      { trait: 'rupture', text: 'Une loi qu’on n’attaque pas devient un cadre acquis.' },
+      { trait: 'batisseur', text: 'Une bonne DRH transforme un texte hostile en méthode de gestion.' }
+    ],
+    choices: [
+      {
+        id: 'auroux-patron-contester',
+        text: 'Engager une contestation publique et juridique.',
+        intent: 'Limiter la portée des lois.',
+        theoryHint: 'Stratégie de bornage : faire produire par la jurisprudence une interprétation restrictive.',
+        effects: {
+          resources: { rapportDeForce: 5, legitimite: -3, institution: -2, caisse: -3 },
+          actors: { etat: { trust: -5 }, adversaire: { trust: -6 }, opinion: { trust: -3 } }
+        },
+        consequence: {
+          immediate:
+            'Les recours partent. Les premiers arrêts arrivent, prudents. Quelques pans des lois sont durcis, d’autres sont confirmés sans bouger.',
+          longterm:
+            'Cette posture installera durablement l’idée d’un patronat structurellement hostile au droit du travail français.'
+        },
+        traitShift: { rupture: 2, technocrate: 1 },
+        flag: 'refuse-compromis'
+      },
+      {
+        id: 'auroux-patron-contreparties',
+        text: 'Accepter Auroux en exigeant flexibilité et compétitivité.',
+        intent: 'Croiser les concessions.',
+        theoryHint: 'Stratégie d’échange : reconnaître les nouveaux droits contre une marge de manœuvre productive.',
+        effects: {
+          resources: { institution: 6, legitimite: 4, caisse: 2, rapportDeForce: -1 },
+          actors: { etat: { trust: 5 }, adversaire: { trust: 4 }, opinion: { trust: 4 } }
+        },
+        consequence: {
+          immediate:
+            'Les négociations de branche se rouvrent. Quelques accords donnent-prennent voient le jour : journée de RTT contre annualisation, par exemple.',
+          longterm:
+            'Cette doctrine du donnant-donnant deviendra, dans les années 1990-2000, la grammaire dominante des accords de branche.'
+        },
+        traitShift: { batisseur: 2, pragmatique: 1 },
+        flag: 'cgpf-cogestion'
+      },
+      {
+        id: 'auroux-patron-drh',
+        text: 'Internaliser Auroux dans une nouvelle doctrine RH.',
+        intent: 'Transformer la contrainte en avantage gestionnaire.',
+        theoryHint: 'Stratégie d’acculturation : la fonction RH absorbe le droit du travail comme méthode managériale.',
+        effects: {
+          resources: { institution: 4, confiance: 3, legitimite: 3, caisse: -3 },
+          actors: { base: { trust: 4 }, adversaire: { trust: 3 }, opinion: { trust: 5 } }
+        },
+        consequence: {
+          immediate:
+            'Les écoles de commerce se mettent à enseigner les NAO et les CHSCT comme des outils. Une génération de DRH apprend à parler aux représentants du personnel sans avocat.',
+          longterm:
+            'Le management français des trente années suivantes naîtra largement de cette acculturation discrète.'
+        },
+        traitShift: { batisseur: 2, technocrate: 2 }
+      }
+    ]
+  },
+  {
+    id: 'loi-travail-patron-2016',
+    turn: 39,
+    date: '8 août 2016',
+    era: 'hollande',
+    title: 'Inversion des normes',
+    subtitle: 'La loi Travail s’ouvre, le patronat choisit',
+    mood: 'tendu',
+    premium: true,
+    campFilter: 'patron',
+    historicalContext:
+      'La loi Travail (El Khomri, 2016) consacre la primauté possible de l’accord d’entreprise sur l’accord de branche en matière de durée du travail et d’aménagement. Le MEDEF de Pierre Gattaz a obtenu un point doctrinal majeur. Reste à choisir comment l’utiliser sans casser la branche, qui sécurise jusque-là la concurrence loyale entre entreprises.',
+    setup: {
+      reflechi:
+        'L’inversion des normes ouvre trois usages : descendre les négociations au plus bas niveau, construire une doctrine de branche défensive, ou sécuriser les grands accords pour éviter une remise en cause permanente.',
+      compulsif:
+        'Une note du MEDEF circule : "ne pas trop sortir le bazooka tout de suite." Tu sais que d’autres notes, plus internes, disent exactement l’inverse.'
+    },
+    actors: ['base', 'adversaire', 'etat', 'opinion'],
+    voices: [
+      { trait: 'rupture', text: 'À quoi bon avoir gagné l’inversion si on ne s’en sert pas ?' },
+      { trait: 'batisseur', text: 'Une branche affaiblie, c’est une concurrence déréglée.' }
+    ],
+    choices: [
+      {
+        id: 'loi-travail-patron-entreprise',
+        text: 'Pousser systématiquement la négociation au niveau de l’entreprise.',
+        intent: 'Maximiser la flexibilité acquise.',
+        theoryHint: 'Stratégie de décentralisation : la primauté de l’accord d’entreprise comme nouveau standard.',
+        effects: {
+          resources: { rapportDeForce: 6, caisse: 4, institution: -4, legitimite: -3 },
+          actors: { etat: { trust: 2 }, adversaire: { trust: -8, patience: -4 }, base: { trust: -5 } }
+        },
+        consequence: {
+          immediate:
+            'Les premiers accords d’entreprise dérogeant à la branche sont publiés. Les TPE-PME demandent des modèles. Les syndicats accusent une concurrence à la baisse.',
+          longterm:
+            'Cette doctrine alimentera durablement les critiques du dialogue social français — y compris dans le camp patronal.'
+        },
+        traitShift: { rupture: 2, pragmatique: 1 },
+        flag: 'epuise-mouvement'
+      },
+      {
+        id: 'loi-travail-patron-branche',
+        text: 'Construire une doctrine de branche défensive.',
+        intent: 'Sécuriser la concurrence loyale.',
+        theoryHint: 'Stratégie de cadrage : la branche fixe les règles minimales pour éviter le dumping intra-sectoriel.',
+        effects: {
+          resources: { institution: 6, legitimite: 5, rapportDeForce: -2 },
+          actors: { etat: { trust: 4 }, adversaire: { trust: 5 }, opinion: { trust: 4 } }
+        },
+        consequence: {
+          immediate:
+            'Les fédérations rouvrent leurs accords cadres. Plusieurs branches publient des "verrous" : pas de dérogation possible sur certains seuils.',
+          longterm:
+            'La branche, qu’on disait morte, redevient un acteur central — au prix d’un patronat plus discipliné qu’il ne le souhaitait.'
+        },
+        traitShift: { batisseur: 2, pragmatique: 1 },
+        flag: 'refondation-paritaire'
+      },
+      {
+        id: 'loi-travail-patron-stabiliser',
+        text: 'Sécuriser les grands accords nationaux interprofessionnels.',
+        intent: 'Acheter de la stabilité.',
+        theoryHint: 'Stratégie d’institution : verrouiller les ANI pour éviter une remise en cause permanente.',
+        effects: {
+          resources: { institution: 7, legitimite: 4, caisse: -3 },
+          actors: { adversaire: { trust: 6 }, etat: { trust: 5 }, opinion: { trust: 3 } }
+        },
+        consequence: {
+          immediate:
+            'Une nouvelle vague d’ANI est négociée. Lent, technique, peu visible — mais le coût juridique pour les entreprises baisse réellement.',
+          longterm:
+            'Ce choix discret deviendra, vu de loin, l’une des contributions patronales les plus durables des années 2010.'
+        },
+        traitShift: { batisseur: 2, technocrate: 1 }
+      }
+    ]
+  },
+  {
+    id: 'retraites-patron-2023',
+    turn: 45,
+    date: '14 avril 2023',
+    era: 'macron_ii',
+    title: 'Retraites 2023, la position patronale',
+    subtitle: 'Soutenir, se taire ou refonder',
+    mood: 'grave',
+    premium: true,
+    campFilter: 'patron',
+    historicalContext:
+      'La réforme portant l’âge légal à 64 ans est promulguée le 14 avril 2023, après plusieurs mois de mobilisation intersyndicale unanime et le recours à l’article 49.3. Le MEDEF de Geoffroy Roux de Bézieux est plutôt favorable, mais la séquence laisse durablement dégradée la confiance dans le dialogue social. Reste à choisir comment le patronat capitalise — ou non — sur cette réforme.',
+    setup: {
+      reflechi:
+        'La réforme est passée. La question patronale est celle du jour d’après : soutenir publiquement la décision, se mettre en retrait pour préserver le dialogue futur, ou proposer un nouveau pacte social qui inclut les pertes politiques accumulées.',
+      compulsif:
+        'À l’avenue Bosquet, certains conseillers expliquent qu’"on a gagné la réforme et perdu le pays". D’autres haussent les épaules : c’est gagné, c’est suffisant.'
+    },
+    actors: ['base', 'adversaire', 'etat', 'opinion'],
+    voices: [
+      { trait: 'pragmatique', text: 'Une réforme passée vaut mieux qu’une réforme idéale qui ne passe pas.' },
+      { trait: 'batisseur', text: 'Si tu ne reconstruis pas le dialogue maintenant, la prochaine réforme se fera sans toi.' }
+    ],
+    quotes: [
+      {
+        text: 'Le dialogue social français est sorti abîmé de cette séquence.',
+        source: 'Constat partagé, partenaires sociaux, printemps 2023'
+      }
+    ],
+    choices: [
+      {
+        id: 'retraites-patron-soutenir',
+        text: 'Soutenir publiquement la réforme et son équilibre financier.',
+        intent: 'Capitaliser politiquement.',
+        theoryHint: 'Stratégie d’alignement : adosser la position patronale à la décision gouvernementale.',
+        effects: {
+          resources: { caisse: 4, rapportDeForce: 3, legitimite: -5, confiance: -4 },
+          actors: { etat: { trust: 6 }, adversaire: { trust: -8, patience: -6 }, opinion: { trust: -7 } }
+        },
+        consequence: {
+          immediate:
+            'La position est claire et lisible. Les opposants la lisent comme un alignement de circonstance, ce qui est souvent vrai.',
+          longterm:
+            'Cette séquence pèsera dans la perception patronale du dialogue social pour la décennie suivante.'
+        },
+        traitShift: { pragmatique: 1, paternaliste: 1 },
+        flag: 'epuise-mouvement'
+      },
+      {
+        id: 'retraites-patron-retrait',
+        text: 'Se mettre publiquement en retrait, défendre le paritarisme.',
+        intent: 'Préserver le dialogue futur.',
+        theoryHint: 'Stratégie de désengagement tactique : protéger le capital relationnel pour les négociations à venir.',
+        effects: {
+          resources: { legitimite: 5, institution: 4, rapportDeForce: -3 },
+          actors: { adversaire: { trust: 5 }, etat: { trust: -2 }, opinion: { trust: 3 } }
+        },
+        consequence: {
+          immediate:
+            'Une déclaration sobre rappelle l’attachement au paritarisme. Les syndicats, sans rien renier, prennent acte. Une table de discussion rouvre — modeste — sur la pénibilité.',
+          longterm:
+            'Ce repli mesuré préparera la possibilité d’accords interprofessionnels nouveaux dans les deux à trois ans.'
+        },
+        traitShift: { batisseur: 2, pragmatique: 1 },
+        flag: 'refondation-paritaire'
+      },
+      {
+        id: 'retraites-patron-pacte',
+        text: 'Proposer un nouveau pacte social paritaire.',
+        intent: 'Refonder par l’ambition.',
+        theoryHint: 'Stratégie de refondation : transformer la défaite politique en programme commun.',
+        effects: {
+          resources: { institution: 7, legitimite: 6, confiance: 4, caisse: -5 },
+          actors: { adversaire: { trust: 8, patience: 6 }, etat: { trust: 3 }, opinion: { trust: 6 } }
+        },
+        consequence: {
+          immediate:
+            'Le texte est ambitieux : pénibilité, transition écologique, formation. Il est lent à signer, mais il rouvre une grammaire commune.',
+          longterm:
+            'Cette tentative — réussie ou non — laissera trace : elle aura prouvé que le patronat peut prendre l’initiative quand il accepte d’en payer le prix.'
+        },
+        traitShift: { batisseur: 3, tribun: 1 }
+      }
+    ]
   }
 ];

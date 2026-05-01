@@ -1,0 +1,6 @@
+name = "paritas-narrative"
+main = "narrative.ts"
+compatibility_date = "2025-12-01"
+
+# Set the secret with: wrangler secret put ANTHROPIC_API_KEY
+# (do not store the key in this file)

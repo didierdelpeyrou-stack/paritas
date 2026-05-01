@@ -20,7 +20,16 @@ import {
 } from '../narrative/personalityEngine';
 import { freshMemory } from '../narrative/memoryEngine';
 import { resolveChoice } from './choiceResolver';
-import { buildConsequence, type ConsequenceRender } from './consequenceEngine';
+import {
+  applyNarrativeEnrichment,
+  buildConsequence,
+  type ConsequenceRender
+} from './consequenceEngine';
+import {
+  buildNarrativePromptInput,
+  fetchNarrativeEnrichment,
+  isNarrativeEnrichmentEnabled
+} from '../narrative/narrativeClient';
 import { advanceTurn, isFinalTurn } from './gameLoop';
 import { pickEnding, buildEnding, type EndingRender } from './endingEngine';
 import { pickNextScenario } from '../narrative/scenarioEngine';
@@ -101,6 +110,9 @@ class RebirthGameStore {
   /** Journal d'événements (texte court) */
   log = $state<string[]>([]);
 
+  /** Aborts the in-flight narrative enrichment, if any. */
+  private narrativeAbort: AbortController | null = null;
+
   /** Démarre une nouvelle partie. */
   start(opts: { name: string; camp: Camp; mode: RenderMode; legendaryId?: string }) {
     const legendary = opts.legendaryId ? legendaryById(opts.legendaryId) : undefined;
@@ -150,7 +162,7 @@ class RebirthGameStore {
     const scenario = this.currentScenario;
     if (!s || !scenario) return;
     const next = advancePipelineAfterScenario(resolveChoice(s, scenario, choice), scenario);
-    const render = buildConsequence(next, choice);
+    const render = buildConsequence(next, scenario, choice);
     const after: RebirthGameState = {
       ...next,
       phase: 'consequence',
@@ -164,12 +176,35 @@ class RebirthGameStore {
       `T${after.turn} — ${scenario.title} : ${choice.text}`
     ].slice(-50);
     this.persist();
+    this.requestNarrativeEnrichment(after, scenario, choice);
+  }
+
+  private requestNarrativeEnrichment(
+    state: RebirthGameState,
+    scenario: Scenario,
+    choice: Choice
+  ) {
+    this.narrativeAbort?.abort();
+    if (!isNarrativeEnrichmentEnabled()) return;
+    const controller = new AbortController();
+    this.narrativeAbort = controller;
+    const input = buildNarrativePromptInput(state, scenario, choice);
+    const scenarioId = scenario.id;
+    void fetchNarrativeEnrichment(input, controller.signal).then(output => {
+      if (controller.signal.aborted || !output) return;
+      const current = this.consequence;
+      if (!current) return;
+      if (this.state?.lastChoice?.scenarioId !== scenarioId) return;
+      this.consequence = applyNarrativeEnrichment(current, output);
+    });
   }
 
   /** Continue après la phase 'consequence' : avance le tour, charge la suite. */
   continueAfterConsequence() {
     const s = this.state;
     if (!s) return;
+    this.narrativeAbort?.abort();
+    this.narrativeAbort = null;
     if (isFinalTurn(s)) {
       this.endRun();
       return;

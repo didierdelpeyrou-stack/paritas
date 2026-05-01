@@ -1,5 +1,5 @@
 import type { RebirthGameState, Scenario } from '../types';
-import { ALL_SCENARIOS } from '../content/scenarios';
+import { getAllScenarios } from '../content/scenarios';
 import { buildTransitionScenario } from '../content/eventTemplates';
 import { buildPipelineScenario } from './pipelineEngine';
 
@@ -18,7 +18,7 @@ function matchesRole(scenario: Scenario, state: RebirthGameState): boolean {
 export function pickNextScenario(
   state: RebirthGameState
 ): ScenarioPick | null {
-  const duePremium = ALL_SCENARIOS.filter(
+  const duePremium = getAllScenarios().filter(
     s =>
       !state.memory.playedScenarios.includes(s.id) &&
       matchesRole(s, state) &&
@@ -35,7 +35,7 @@ export function pickNextScenario(
     return { scenario: pipelineScenario, isFinal: false };
   }
 
-  const nextPremium = ALL_SCENARIOS.filter(
+  const nextPremium = getAllScenarios().filter(
     s =>
       !state.memory.playedScenarios.includes(s.id) &&
       matchesRole(s, state) &&

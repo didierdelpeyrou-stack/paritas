@@ -10,8 +10,15 @@
   import StartScreen from './components/intro/StartScreen.svelte';
   import Tutorial from './components/intro/Tutorial.svelte';
   import GameShell from './components/layout/GameShell.svelte';
+  import { loadAllScenarios } from './game/content/scenarios';
+  import { loadPipelineContent } from './game/narrative/pipelineContent';
 
   const TUTORIAL_KEY = 'paritas_tutorial_seen_v1';
+
+  /* Préload des chunks narratifs en parallèle de l'affichage du
+     StartScreen — par le temps que le joueur lit/choisit, les ~95 KB
+     de scénarios et 60 KB de contenu pipeline sont déjà arrivés. */
+  const contentReady = Promise.all([loadAllScenarios(), loadPipelineContent()]);
 
   type Phase = 'start' | 'tutorial' | 'game';
 
@@ -39,12 +46,13 @@
     }
   }
 
-  function handleStart(opts: {
+  async function handleStart(opts: {
     name: string;
     camp: Camp;
     mode: RenderMode;
     legendaryId?: string;
   }) {
+    await contentReady;
     if (tutorialAlreadySeen()) {
       rebirth.start(opts);
       phase = 'game';
@@ -54,11 +62,12 @@
     phase = 'tutorial';
   }
 
-  function handleTutorialDone() {
+  async function handleTutorialDone() {
     if (!pendingStart) {
       phase = 'start';
       return;
     }
+    await contentReady;
     markTutorialSeen();
     rebirth.start(pendingStart);
     pendingStart = null;

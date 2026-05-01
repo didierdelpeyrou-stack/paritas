@@ -1,5 +1,5 @@
 /* ============================================================
-   Paritas — personnages legendaires pour le mode expert
+   Paritas — personnages legendaires pour la lecture reflechie
    ============================================================ */
 
 import type { Camp, SkillKey, StatKey } from '../types';

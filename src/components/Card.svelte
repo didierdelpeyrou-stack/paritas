@@ -6,7 +6,7 @@
   import { fade, fly } from 'svelte/transition';
   import { cubicOut } from 'svelte/easing';
   import type { GameEvent, GameMode, GameState } from '$lib/types';
-  import ExpertChoicePanel from './ExpertChoicePanel.svelte';
+  import ReflectiveChoicePanel from './ReflectiveChoicePanel.svelte';
 
   interface Props {
     event: GameEvent;
@@ -119,8 +119,8 @@
                   — indisponible pour ton camp
                 </div>
               {/if}
-              {#if mode === 'expert' && enabled}
-                <ExpertChoicePanel choice={ch} event={event} gameState={gameState} camp={camp} />
+              {#if mode === 'reflechi' && enabled}
+                <ReflectiveChoicePanel choice={ch} event={event} gameState={gameState} camp={camp} />
               {/if}
             </div>
             {#if ch.recommended}

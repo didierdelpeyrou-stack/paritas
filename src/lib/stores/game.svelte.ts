@@ -12,7 +12,7 @@ function freshState(): GameState {
     name: '',
     camp: null,
     legendaryId: null,
-    mode: 'jet',
+    mode: 'compulsif',
     difficulty: 1,
     turn: 1,
     era: 0,
@@ -124,7 +124,7 @@ class GameStore {
     next.rival.name = pickRivalName(opts.camp);
     next.rival.score = 35 + opts.difficulty * 8;
     this.state = next;
-    this.log(`<b>${opts.name}</b> entre dans l'histoire — côté ${opts.camp === 'patron' ? 'patronal' : 'salarié'}, mode ${opts.mode}${legendary ? `, lignée ${legendary.name}` : ''}.`);
+    this.log(`<b>${opts.name}</b> entre dans l'histoire — côté ${opts.camp === 'patron' ? 'patronal' : 'salarié'}, mode ${opts.mode === 'reflechi' ? 'réfléchi' : 'compulsif'}${legendary ? `, lignée ${legendary.name}` : ''}.`);
     this.persist();
   }
 
@@ -195,7 +195,12 @@ class GameStore {
     try {
       const data = localStorage.getItem(SAVE_KEY);
       if (!data) return false;
-      this.state = JSON.parse(data);
+      const loaded = JSON.parse(data) as Record<string, unknown>;
+      if (loaded.mode === 'jet') loaded.mode = 'compulsif';
+      if (loaded.mode === 'expert' || loaded.mode === 'perspicacite') loaded.mode = 'reflechi';
+      if (loaded.mode !== 'reflechi' && loaded.mode !== 'compulsif') loaded.mode = 'compulsif';
+      if (!('legendaryId' in loaded)) loaded.legendaryId = null;
+      this.state = loaded as unknown as GameState;
       return true;
     } catch {
       return false;

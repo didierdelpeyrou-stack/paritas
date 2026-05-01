@@ -6,7 +6,7 @@
   ============================================================ */
   import { fade, fly } from 'svelte/transition';
   import type { GameEvent, GameMode, GameState } from '$lib/types';
-  import ExpertChoicePanel from './ExpertChoicePanel.svelte';
+  import ReflectiveChoicePanel from './ReflectiveChoicePanel.svelte';
 
   interface Props {
     event: GameEvent;
@@ -154,8 +154,8 @@
                 <div class="flex-1">
                   <div class="font-medium text-parchment text-sm">{ch.text}</div>
                   {#if ch.why}<div class="text-xs italic text-parchment-dim/70 mt-0.5">{ch.why}</div>{/if}
-                  {#if mode === 'expert' && enabled}
-                    <ExpertChoicePanel choice={ch} event={event} gameState={gameState} camp={camp} compact />
+                  {#if mode === 'reflechi' && enabled}
+                    <ReflectiveChoicePanel choice={ch} event={event} gameState={gameState} camp={camp} compact />
                   {/if}
                 </div>
                 {#if ch.recommended}<span class="text-[0.65rem] uppercase tracking-wider text-emerald-400 font-display whitespace-nowrap">★ Historien</span>{/if}

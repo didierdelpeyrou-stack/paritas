@@ -47,7 +47,7 @@
   /* form intro */
   let formName = $state('');
   let formCamp = $state<Camp | null>(null);
-  let formMode = $state<GameMode>('jet');
+  let formMode = $state<GameMode>('compulsif');
   let formDifficulty = $state<Difficulty>(1);
   let formTrait = $state<SkillKey>('negociation');
   let formLegendaryId = $state<string | null>(null);
@@ -134,7 +134,7 @@
     audio.click();
 
     /* mode tirage avec slot animé */
-    if (game.state.mode === 'jet' && ch.skillUp) {
+    if (game.state.mode === 'compulsif' && ch.skillUp) {
       const skillVal = game.state.skills[ch.skillUp];
       const dc = ch.dc ?? 50;
       diceLabel = ch.skillUp;
@@ -380,9 +380,8 @@
           <span class="text-xs uppercase tracking-wider text-parchment-dim/70">Mode de jeu</span>
           <select bind:value={formMode}
                   class="mt-1 w-full px-3 py-2 bg-ink border border-line rounded-md text-parchment">
-            <option value="perspicacite">Perspicacité — voir les conséquences avant</option>
-            <option value="jet">Tirage de compétences — RPG (recommandé)</option>
-            <option value="expert">Expert — théorie des jeux</option>
+            <option value="reflechi">Réfléchi — induction, effets et rappels théoriques</option>
+            <option value="compulsif">Compulsif — tirage de compétences, rythme RPG</option>
           </select>
         </label>
 

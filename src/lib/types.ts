@@ -4,7 +4,7 @@
 
 export type Camp = 'salarie' | 'patron';
 
-export type GameMode = 'perspicacite' | 'jet' | 'expert';
+export type GameMode = 'reflechi' | 'compulsif';
 
 export type Difficulty = 0 | 1 | 2;
 

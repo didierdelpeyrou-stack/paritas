@@ -1,5 +1,5 @@
 /* ============================================================
-   Paritas — lecture expert: jeux, Harvard, perspectives, agence
+   Paritas — lecture reflechie: jeux, Harvard, perspectives, agence
    ============================================================ */
 
 import { mentorForSkill, type LegendaryCharacter } from '../data/legendaryCharacters';

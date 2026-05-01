@@ -402,7 +402,7 @@ function makeSimulationState(camp: Camp): GameState {
     name: 'Simulation',
     camp,
     legendaryId: null,
-    mode: 'jet',
+    mode: 'compulsif',
     difficulty: 1,
     turn: 1,
     era: 0,

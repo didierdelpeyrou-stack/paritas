@@ -28,9 +28,10 @@ import {
 } from './consequenceEngine';
 import {
   buildNarrativePromptInput,
-  fetchNarrativeEnrichment,
-  isNarrativeEnrichmentEnabled
+  isNarrativeEnrichmentEnabled,
+  streamNarrativeEnrichment
 } from '../narrative/narrativeClient';
+import type { NarrativePromptOutput } from '../narrative/narrativeClient';
 import { advanceTurn, isFinalTurn } from './gameLoop';
 import { pickEnding, buildEnding, type EndingRender } from './endingEngine';
 import { pickNextScenario } from '../narrative/scenarioEngine';
@@ -202,15 +203,42 @@ class RebirthGameStore {
     const controller = new AbortController();
     this.narrativeAbort = controller;
     const input = buildNarrativePromptInput(state, scenario, choice);
-    void fetchNarrativeEnrichment(input, controller.signal).then(output => {
-      if (controller.signal.aborted) return;
-      const current = this.consequence;
-      if (!current) return;
-      if (this.state?.lastChoice?.scenarioId !== scenarioId) return;
-      this.consequence = output
-        ? applyNarrativeEnrichment(current, output)
-        : applyNarrativeFallback(current, state, scenario, choice);
-    });
+
+    const isStillCurrent = () =>
+      !controller.signal.aborted &&
+      this.consequence !== null &&
+      this.state?.lastChoice?.scenarioId === scenarioId;
+
+    void streamNarrativeEnrichment(
+      input,
+      {
+        onUpdate: snapshot => {
+          if (!isStillCurrent()) return;
+          const current = this.consequence;
+          if (!current) return;
+          this.consequence = applyNarrativeEnrichment(current, snapshotToOutput(snapshot, current));
+        },
+        onComplete: output => {
+          if (!isStillCurrent()) return;
+          const current = this.consequence;
+          if (!current) return;
+          if (output) {
+            this.consequence = applyNarrativeEnrichment(current, output);
+          } else if (!current.enriched) {
+            this.consequence = applyNarrativeFallback(current, state, scenario, choice);
+          }
+        },
+        onError: () => {
+          if (!isStillCurrent()) return;
+          const current = this.consequence;
+          if (!current) return;
+          if (!current.enriched) {
+            this.consequence = applyNarrativeFallback(current, state, scenario, choice);
+          }
+        }
+      },
+      controller.signal
+    );
   }
 
   private applyFallbackEnrichment(
@@ -487,6 +515,25 @@ function campaignLabel(move: ElectionCampaignMove): string {
     professionnaliser: 'preuve par les dossiers',
     terrain: 'tournée des sections'
   }[move];
+}
+
+/**
+ * Turns a partial streaming snapshot into a NarrativePromptOutput
+ * suitable for applyNarrativeEnrichment. Falls back to the current
+ * consequence text when the streamed `consequence` section hasn't
+ * started arriving yet — so partial updates can flow without losing
+ * the immediate text already shown to the player.
+ */
+function snapshotToOutput(
+  snapshot: Partial<NarrativePromptOutput>,
+  current: ConsequenceRender
+): NarrativePromptOutput {
+  return {
+    consequence: snapshot.consequence ?? current.text,
+    innerVoice: snapshot.innerVoice,
+    newspaperHeadline: snapshot.newspaperHeadline,
+    memoryLine: snapshot.memoryLine
+  };
 }
 
 export const rebirth = new RebirthGameStore();

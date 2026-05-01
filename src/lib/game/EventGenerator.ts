@@ -41,6 +41,49 @@ const TYPE_LABEL: Record<HistoricalConflictType, string> = {
   innovation: 'innovation sociale'
 };
 
+const CONTEXT_BY_TYPE: Record<HistoricalConflictType, string[]> = {
+  negociation: [
+    'La négociation ne porte jamais seulement sur un chiffre : elle révèle qui est reconnu comme interlocuteur.',
+    'Dans une branche, un accord change parfois moins les salaires immédiats que les habitudes de discussion.'
+  ],
+  institution: [
+    'Une institution sociale transforme un conflit ponctuel en règle durable, mais elle crée aussi ses propres lenteurs.',
+    'Les caisses, commissions et conseils ne sont pas des décors : ce sont des lieux où le pouvoir se redistribue.'
+  ],
+  greve: [
+    'Une grève est un pari sur le temps : plus elle dure, plus elle peut devenir symbole ou épuisement.',
+    'Le rapport de force donne de la voix aux invisibles, mais il expose les corps, les caisses et les réputations.'
+  ],
+  loi: [
+    'Une loi sociale fixe un compromis provisoire entre liberté économique, protection et ordre public.',
+    'Quand le droit change, les acteurs doivent apprendre une nouvelle grammaire du conflit.'
+  ],
+  alliance: [
+    'Une alliance sociale tient rarement par affection : elle tient parce que plusieurs intérêts se croisent au bon moment.',
+    'La coalition est une force, mais aussi une fragilité : chacun y apporte sa cause et son calendrier.'
+  ],
+  historique: [
+    'Les grands moments ne tombent pas du ciel : ils cristallisent des décennies de tensions accumulées.',
+    'Un événement historique devient fondateur quand les acteurs peuvent ensuite s’en réclamer.'
+  ],
+  succession: [
+    'La relève est une épreuve silencieuse : transmettre sans figer, renouveler sans rompre.',
+    'Le mandat change de mains, et avec lui la manière de parler au nom des autres.'
+  ],
+  innovation: [
+    'L’innovation sociale naît souvent d’un problème très concret que les anciennes institutions ne savent plus absorber.',
+    'Former, adapter, reconvertir : ces mots techniques déplacent en réalité la frontière du pouvoir.'
+  ]
+};
+
+const TWISTS: Array<{ label: string; text: string; effects: Effects }> = [
+  { label: 'Fuite dans la presse', text: 'Un brouillon circule avant la réunion : chacun durcit sa posture devant son public.', effects: { prestige: -2, soutien: 2, negociation: -1 } },
+  { label: 'Base impatiente', text: 'Des militants exigent un geste visible avant même la fin des discussions.', effects: { mobilisation: 3, sante: -2, institutionnel: -1 } },
+  { label: 'Chiffres contestés', text: 'Une note technique remet en cause les données sur lesquelles reposait le compromis.', effects: { expertise: 2, influence: -2, prestige: -1 } },
+  { label: 'Médiateur inattendu', text: 'Un tiers propose une sortie honorable que personne n’avait osé formuler.', effects: { negociation: 2, social: 2, militant: -1 } },
+  { label: 'Mémoire réveillée', text: 'Un ancien conflit revient dans les discours et transforme la décision en symbole.', effects: { symbolique: 3, soutien: 1, caisse: -1 } }
+];
+
 const STAT_KEYS = new Set<StatKey>([
   'negociation',
   'politique',
@@ -148,10 +191,12 @@ export class EventGenerator {
   private buildGeneratedEvent(item: HistoricalMilestone, input: NextEventInput): GameEvent {
     const era = ERAS.find((entry) => entry.id === input.era) ?? eraForTurn(input.turn);
     const institution = item.institution ? ` autour de ${item.institution}` : '';
+    const context = this.pickContext(item);
+    const twist = this.pickTwist(input, item);
     const situation =
       input.camp === 'patron'
-        ? `Ton organisation patronale doit prendre position${institution}. ${item.summary}`
-        : `Ton camp doit choisir comment transformer le rapport de force${institution}. ${item.summary}`;
+        ? `Ton organisation patronale doit prendre position${institution}. ${item.summary} ${context}${twist ? ` Rebondissement : ${twist.text}` : ''}`
+        : `Ton camp doit choisir comment transformer le rapport de force${institution}. ${item.summary} ${context}${twist ? ` Rebondissement : ${twist.text}` : ''}`;
 
     return {
       id: this.generatedId(input.era, item),
@@ -161,22 +206,22 @@ export class EventGenerator {
       date: `${item.year}, ${era.name}`,
       situation,
       historical: this.historicalText(item),
-      portee: this.scopeText(item),
-      choices: this.buildChoices(item, input),
+      portee: this.scopeText(item, twist?.label),
+      choices: this.buildChoices(item, input, twist),
       unlocks: item.unlocks,
       illus: this.illustrationFor(item)
     };
   }
 
-  private buildChoices(item: HistoricalMilestone, input: NextEventInput): Choice[] {
+  private buildChoices(item: HistoricalMilestone, input: NextEventInput, twist: { label: string; text: string; effects: Effects } | null): Choice[] {
     const compromiseSkill = pickFirstSkill(item, ['negociation', 'expertise', 'politique']) ?? 'negociation';
     const forceSkill = pickFirstSkill(item, ['mobilisation', 'baratin', 'politique']) ?? 'mobilisation';
     const technicalSkill = pickFirstSkill(item, ['expertise', 'production', 'politique']) ?? 'expertise';
     const baseDc = baseDcFor(item.type, input.state.difficulty);
 
-    return [
+    const choices: Choice[] = [
       {
-        text: compromiseText(item, input.camp),
+        text: this.variant(compromiseTexts(item, input.camp)),
         icon: '⚖️',
         recommended: true,
         tag: item.tags.includes('signe') ? 'signe' : 'negocie',
@@ -189,11 +234,11 @@ export class EventGenerator {
           negociation: 2
         }),
         effectsFail: normalizeEffects({ soutien: -4, prestige: -3, institutionnel: 1 }),
-        explanation: 'Tu cherches la legitimite par l’accord et la reconnaissance mutuelle.',
-        longterm: 'La decision renforce les routines de dialogue, mais elle expose aux critiques des plus impatients.'
+        explanation: `Tu transformes ${item.title} en compromis lisible : chacun obtient une prise, personne ne sort totalement vaincu.`,
+        longterm: 'La décision renforce les routines de dialogue, mais elle expose aux critiques des plus impatients.'
       },
       {
-        text: forceText(item, input.camp),
+        text: this.variant(forceTexts(item, input.camp)),
         icon: input.camp === 'salarie' ? '✊' : '⚔️',
         risky: true,
         tag: item.tags.includes('greve') ? 'greve' : item.tags.includes('mobilise') ? 'mobilise' : 'dur',
@@ -208,11 +253,11 @@ export class EventGenerator {
           sante: -6
         }),
         effectsFail: normalizeEffects({ soutien: -7, prestige: -6, sante: -8, influence: -3 }),
-        explanation: 'Tu transformes le dossier en epreuve de force ouverte.',
-        longterm: 'Le symbole peut survivre a la defaite, mais le cout humain et organisationnel monte vite.'
+        explanation: `Tu fais de ${item.title} un test public : ce qui était dossier devient rapport de force.`,
+        longterm: 'Le symbole peut survivre à la défaite, mais le coût humain et organisationnel monte vite.'
       },
       {
-        text: technicalText(item, input.camp),
+        text: this.variant(technicalTexts(item, input.camp)),
         icon: '📚',
         tag: item.tags.includes('institution') ? 'institution' : item.tags.includes('production') ? 'production' : 'lobbying',
         skillUp: technicalSkill,
@@ -225,10 +270,19 @@ export class EventGenerator {
           soutien: -2
         }),
         effectsFail: normalizeEffects({ expertise: 1, caisse: -5, soutien: -4 }),
-        explanation: 'Tu fais passer le conflit par les textes, les donnees et les circuits administratifs.',
-        longterm: 'Le dispositif devient plus solide, mais aussi plus difficile a expliquer a la base.'
+        explanation: `Tu déplaces ${item.title} vers l’expertise : la preuve, la procédure et la branche deviennent tes armes.`,
+        longterm: 'Le dispositif devient plus solide, mais aussi plus difficile à expliquer à la base.'
       }
     ];
+
+    if (twist) {
+      const target = choices[Math.floor(this.rng() * choices.length)]!;
+      target.text = `${target.text} malgré ${twist.label.toLowerCase()}`;
+      target.effects = normalizeEffects({ ...target.effects, ...twist.effects });
+      target.explanation = `${target.explanation} ${twist.text}`;
+    }
+
+    return choices;
   }
 
   private pickGeneric(input: NextEventInput, seenIds: Set<string>): GameEvent {
@@ -274,8 +328,25 @@ export class EventGenerator {
     return `${item.summary}${institution}${actors}`;
   }
 
-  private scopeText(item: HistoricalMilestone): string {
-    return `Ce jalon travaille le paritarisme comme ${TYPE_LABEL[item.type]} : il met en tension pouvoir economique, legitimite sociale et capacite institutionnelle.`;
+  private scopeText(item: HistoricalMilestone, twistLabel?: string): string {
+    const base = `Ce jalon travaille le paritarisme comme ${TYPE_LABEL[item.type]} : il met en tension pouvoir économique, légitimité sociale et capacité institutionnelle.`;
+    return twistLabel ? `${base} Le rebondissement "${twistLabel}" oblige à arbitrer entre récit public et solidité de l’accord.` : base;
+  }
+
+  private pickContext(item: HistoricalMilestone): string {
+    return this.variant(CONTEXT_BY_TYPE[item.type]);
+  }
+
+  private pickTwist(input: NextEventInput, item: HistoricalMilestone) {
+    const earlyChance = input.era === 0 ? 0.42 : 0.32;
+    const tensionBonus = input.state.activeTensions.length * 0.08;
+    if (this.rng() > earlyChance + tensionBonus) return null;
+    const pool = TWISTS.filter((twist) => item.type !== 'innovation' || twist.label !== 'Mémoire réveillée');
+    return pool[Math.floor(this.rng() * pool.length)] ?? null;
+  }
+
+  private variant<T>(items: T[]): T {
+    return items[Math.floor(this.rng() * items.length)]!;
   }
 
   private illustrationFor(item: HistoricalMilestone): string {
@@ -342,19 +413,43 @@ function baseDcFor(type: HistoricalConflictType, difficulty: 0 | 1 | 2): number 
   return byType[type] + difficulty * 5;
 }
 
-function compromiseText(item: HistoricalMilestone, camp: Camp): string {
-  if (camp === 'patron') return `Signer un compromis encadre sur ${item.title}`;
-  return `Obtenir un accord paritaire sur ${item.title}`;
+function compromiseTexts(item: HistoricalMilestone, camp: Camp): string[] {
+  if (camp === 'patron') return [
+    `Signer un compromis encadré sur ${item.title}`,
+    `Ouvrir une table de branche autour de ${item.title}`,
+    `Concéder un accord limité mais vérifiable`
+  ];
+  return [
+    `Obtenir un accord paritaire sur ${item.title}`,
+    `Transformer la revendication en texte signé`,
+    `Faire reconnaître le mandat de la base à la table`
+  ];
 }
 
-function forceText(item: HistoricalMilestone, camp: Camp): string {
-  if (camp === 'patron') return `Durcir la ligne et tester le rapport de force`;
-  return `Mobiliser la base jusqu’au rapport de force`;
+function forceTexts(item: HistoricalMilestone, camp: Camp): string[] {
+  if (camp === 'patron') return [
+    `Durcir la ligne et tester le rapport de force`,
+    `Tenir le front patronal sans concession immédiate`,
+    `Forcer l’autre camp à révéler sa vraie MESORE`
+  ];
+  return [
+    `Mobiliser la base jusqu’au rapport de force`,
+    `Faire monter la pression avant de négocier`,
+    `Transformer l’attente en démonstration collective`
+  ];
 }
 
-function technicalText(item: HistoricalMilestone, camp: Camp): string {
-  if (camp === 'patron') return `Passer par l’expertise et la branche professionnelle`;
-  return `Construire un dossier technique incontestable`;
+function technicalTexts(item: HistoricalMilestone, camp: Camp): string[] {
+  if (camp === 'patron') return [
+    `Passer par l’expertise et la branche professionnelle`,
+    `Commander un chiffrage avant tout engagement`,
+    `Déplacer le conflit vers une commission technique`
+  ];
+  return [
+    `Construire un dossier technique incontestable`,
+    `Documenter le coût social avant la réunion`,
+    `Former des représentants capables de tenir les chiffres`
+  ];
 }
 
 function scaleEffects(effects: Effects, ratio: number): Effects {

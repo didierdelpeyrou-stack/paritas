@@ -44,6 +44,7 @@
   /* confettis */
   let showConfetti = $state(false);
   let flashDeltas = $state<Array<[string, number]>>([]);
+  let consequenceCard = $state<{ title: string; body: string; longterm?: string; tone: 'good' | 'bad' | 'mixed' } | null>(null);
 
   /* form intro */
   let formName = $state('');
@@ -85,7 +86,6 @@
     seenIds = new Set();
     currentEvent = pickEvent();
     started = true;
-    audio.startMusic(0).catch(() => {});
   }
 
   function skillBonusText(character: LegendaryCharacter): string {
@@ -192,6 +192,14 @@
     const dStr = deltas.map(([k, v]) => `${k}${v >= 0 ? '+' : ''}${Math.round(v)}`).join(' · ');
     game.log(`<b>T${game.state.turn} — ${ev.title}.</b> ${ch.text}. <span class="text-emerald-400">${dStr}</span>`);
     if (tensions.length) game.log(`<i class="text-violet-300">⚠ ${tensions.join(' · ')}</i>`);
+    const totalDelta = deltas.reduce((sum, [, v]) => sum + v, 0);
+    consequenceCard = {
+      title: totalDelta >= 5 ? 'Le rapport de force se déplace' : totalDelta <= -5 ? 'Le coût devient visible' : 'La situation se recompose',
+      body: ch.explanation ?? narrativeConsequence(ch, deltas),
+      longterm: ch.longterm,
+      tone: totalDelta >= 5 ? 'good' : totalDelta <= -5 ? 'bad' : 'mixed'
+    };
+    setTimeout(() => (consequenceCard = null), 5200);
 
     /* flag */
     if (ch.flag) game.state.flags[ch.flag] = game.state.turn;
@@ -272,6 +280,14 @@
       }
     }
     return out;
+  }
+
+  function narrativeConsequence(ch: Choice, deltas: Array<[string, number]>): string {
+    const strongest = deltas.slice().sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0];
+    if (!strongest) return `Le choix "${ch.text}" laisse surtout une trace politique.`;
+    const [key, value] = strongest;
+    if (value > 0) return `${key} progresse : ta décision crée une ressource nouvelle que ton camp pourra réinvestir.`;
+    return `${key} recule : la décision produit un coût social qui pèsera dans les tours suivants.`;
   }
 </script>
 
@@ -472,6 +488,21 @@
             {/each}
           </div>
         {/if}
+
+        {#if consequenceCard}
+          <div class="consequence-card {consequenceCard.tone}" in:fly={{ y: 12, duration: 260 }}>
+            <div class="consequence-icon">
+              {consequenceCard.tone === 'good' ? '🌿' : consequenceCard.tone === 'bad' ? '⚠' : '⚖'}
+            </div>
+            <div>
+              <div class="font-display uppercase tracking-wider text-[0.68rem] text-amber-300">{consequenceCard.title}</div>
+              <p>{consequenceCard.body}</p>
+              {#if consequenceCard.longterm}
+                <small>{consequenceCard.longterm}</small>
+              {/if}
+            </div>
+          </div>
+        {/if}
       </div>
     </div>
   {/if}
@@ -538,5 +569,46 @@
     18% { opacity: 1; transform: translateY(0) scale(1.12); filter: brightness(1.45); }
     72% { opacity: 1; transform: translateY(-10px) scale(1); }
     100% { opacity: 0; transform: translateY(-26px) scale(0.96); }
+  }
+
+  .consequence-card {
+    display: grid;
+    grid-template-columns: 2.3rem 1fr;
+    gap: 0.75rem;
+    align-items: start;
+    padding: 0.9rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(201, 154, 64, 0.28);
+    background: linear-gradient(135deg, rgba(26, 31, 38, 0.96), rgba(13, 16, 20, 0.92));
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 240, 190, 0.05);
+  }
+
+  .consequence-card.good { border-color: rgba(95, 181, 107, 0.35); }
+  .consequence-card.bad { border-color: rgba(224, 122, 110, 0.38); }
+
+  .consequence-icon {
+    width: 2.3rem;
+    height: 2.3rem;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(201, 154, 64, 0.11);
+    border: 1px solid rgba(201, 154, 64, 0.24);
+  }
+
+  .consequence-card p {
+    margin-top: 0.25rem;
+    color: rgba(237, 228, 201, 0.86);
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
+  .consequence-card small {
+    display: block;
+    margin-top: 0.35rem;
+    color: rgba(237, 228, 201, 0.62);
+    font-size: 0.78rem;
+    font-style: italic;
+    line-height: 1.35;
   }
 </style>

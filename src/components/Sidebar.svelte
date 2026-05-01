@@ -5,6 +5,7 @@
      ============================================================ */
   import { fade } from 'svelte/transition';
   import { game } from '$lib/stores/game.svelte';
+  import { audio } from '$lib/audio/audio';
   import { PROFILS } from '$lib/data/profils';
   import type { SkillKey } from '$lib/types';
   import Gauge from './Gauge.svelte';
@@ -38,6 +39,13 @@
 
   let initial = $derived(game.state.name.trim().charAt(0).toUpperCase() || '?');
   let profil = $derived(game.state.profil ? PROFILS[game.state.profil] : null);
+  let musicOn = $state(false);
+
+  function toggleMusic() {
+    musicOn = !musicOn;
+    audio.setMusicEnabled(musicOn);
+    if (musicOn) audio.setMusicVolume(0.08);
+  }
 </script>
 
 <aside class="mobile-dash lg:hidden">
@@ -119,6 +127,9 @@
   <div class="rounded-md bg-amber-500/5 border border-amber-500/30 px-3 py-2 text-xs text-parchment-dim/85 leading-relaxed">
     <span class="text-gold font-display tracking-wider text-[0.65rem] uppercase">Comment jouer</span><br>
     Lis l'événement, choisis une action. Les <b class="text-gold">lingots</b> sont tes savoir-faire : négocier, mobiliser, produire, convaincre, gouverner, expertiser.
+    <button type="button" class="audio-toggle" onclick={toggleMusic}>
+      {musicOn ? 'Couper la musique' : 'Activer une ambiance discrète'}
+    </button>
   </div>
 
   {#if profil}
@@ -257,6 +268,14 @@
     color: #7ff0b2;
     font-family: 'Cinzel', Georgia, serif;
     font-weight: 800;
+  }
+
+  .audio-toggle {
+    display: block;
+    margin-top: 0.45rem;
+    color: #f7c95c;
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .mobile-score span {

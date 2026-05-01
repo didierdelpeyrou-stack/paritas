@@ -21,9 +21,9 @@ const ERA_SCALES: EraScale[] = [
 class AudioEngine {
   private started = false;
   private currentEra = 0;
-  private isMusicOn = true;
-  private musicVol = 0.3;
-  private sfxVol = 0.5;
+  private isMusicOn = false;
+  private musicVol = 0.08;
+  private sfxVol = 0.42;
 
   // Synths
   private bassSynth?: Tone.Synth;
@@ -71,24 +71,21 @@ class AudioEngine {
       // basse continue
       const bass = scale.bass[this.step % scale.bass.length]!;
       this.bassSynth?.triggerAttackRelease(bass, '8n', now);
-      // voix militante (1 fois sur 2)
-      if (this.step % 2 === 1) {
+      // voix rare, pour eviter la boucle insistante
+      if (this.step % 8 === 5) {
         const v = scale.voice[this.step % scale.voice.length]!;
-        this.voiceSynth?.triggerAttackRelease(v, '8n', now + 0.05);
+        this.voiceSynth?.triggerAttackRelease(v, '16n', now + 0.05);
       }
-      // brass tous les 8 pas
-      if (this.step % 8 === 0) {
+      // brass discret
+      if (this.step % 16 === 0) {
         const r = scale.root * 2;
-        this.brassSynth?.triggerAttackRelease([r, r * 1.25, r * 1.5], '8n', now + 0.1);
+        this.brassSynth?.triggerAttackRelease([r, r * 1.25], '16n', now + 0.1);
       }
-      // kick tous les 2 pas, snare décalé
-      if (this.step % 2 === 0) this.kickSynth?.triggerAttackRelease('C2', '16n', now);
-      if (this.step % 4 === 2) this.noiseSynth?.triggerAttackRelease('16n', now + 0.05);
+      if (this.step % 8 === 0) this.kickSynth?.triggerAttackRelease('C2', '32n', now);
       this.step++;
     };
 
-    // 4 notes par seconde (~120 bpm)
-    this.loopId = window.setInterval(playStep, 250);
+    this.loopId = window.setInterval(playStep, 620);
   }
 
   stopMusic() {

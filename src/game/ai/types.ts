@@ -42,8 +42,17 @@ export interface StateWorldStrategy extends WorldStrategy<StateStrategyId> {
   cycle: PoliticalCycle;
 }
 
+export interface OpponentWorldStrategy extends WorldStrategy<OpponentStrategyId> {
+  /** Identifiant de la faction historique qui incarne l'adversaire. */
+  factionId: string;
+  /** Nom long affiché (ex. "Comité des Forges", "CGT et CGTU"). */
+  factionName: string;
+  /** Nom court pour les en-têtes serrés. */
+  factionShort: string;
+}
+
 export interface WorldAIState {
   state: StateWorldStrategy;
-  opponent: WorldStrategy<OpponentStrategyId>;
+  opponent: OpponentWorldStrategy;
   lastSignals: string[];
 }

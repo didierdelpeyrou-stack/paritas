@@ -480,6 +480,17 @@ class RebirthGameStore {
           state: { ...s.worldAI.state, faction: 'unitaire', cycle: 'mid_term' }
         };
       }
+      if (!s.worldAI.opponent.factionId) {
+        s.worldAI = {
+          ...s.worldAI,
+          opponent: {
+            ...s.worldAI.opponent,
+            factionId: 'patronat',
+            factionName: s.camp === 'salarie' ? 'Patronat' : 'Syndicats',
+            factionShort: s.camp === 'salarie' ? 'Patronat' : 'Syndicats'
+          }
+        };
+      }
       if (!s.activePipelines) {
         s.activePipelines = [];
       }

@@ -25,7 +25,10 @@ export function freshWorldAI(): WorldAIState {
       id: 'compromis_limite',
       label: 'Compromis limité',
       intensity: 34,
-      signal: 'L’autre camp garde une porte entrouverte, sans renoncer à ses intérêts.'
+      signal: 'L’autre camp garde une porte entrouverte, sans renoncer à ses intérêts.',
+      factionId: 'patronat',
+      factionName: 'Patronat',
+      factionShort: 'Patronat'
     },
     lastSignals: []
   };

@@ -38,8 +38,11 @@
 
   <div class="world-card opponent">
     <div class="flex items-start justify-between gap-2">
-      <div>
-        <b>Adversaire — {worldAI.opponent.label}</b>
+      <div class="min-w-0">
+        <div class="state-header">
+          <span class="opponent-faction">{worldAI.opponent.factionName}</span>
+        </div>
+        <b>{worldAI.opponent.label}</b>
         <p>{worldAI.opponent.signal}</p>
       </div>
       <em>{Math.round(worldAI.opponent.intensity)}</em>
@@ -111,6 +114,10 @@
 
   .state-header .cycle {
     color: rgba(237, 228, 201, 0.55);
+  }
+
+  .state-header .opponent-faction {
+    color: #e8a09b;
   }
 
   .world-card b {

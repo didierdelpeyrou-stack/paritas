@@ -1,5 +1,6 @@
 import type { RebirthGameState } from '../types';
-import type { OpponentStrategyId, WorldStrategy } from './types';
+import { currentOpponentFaction } from './opponentFactions';
+import type { OpponentStrategyId, OpponentWorldStrategy } from './types';
 
 const LABELS: Record<OpponentStrategyId, string> = {
   compromis_limite: 'Compromis limité',
@@ -10,10 +11,11 @@ const LABELS: Record<OpponentStrategyId, string> = {
   deplacement_production: 'Déplacement économique'
 };
 
-export function chooseOpponentStrategy(state: RebirthGameState): WorldStrategy<OpponentStrategyId> {
+export function chooseOpponentStrategy(state: RebirthGameState): OpponentWorldStrategy {
   const r = state.resources;
   const a = state.actors;
   const org = state.organization;
+  const faction = currentOpponentFaction(state.turn, state.camp);
   let id: OpponentStrategyId = 'compromis_limite';
   let intensity = 34;
 
@@ -38,23 +40,34 @@ export function chooseOpponentStrategy(state: RebirthGameState): WorldStrategy<O
     id,
     label: LABELS[id],
     intensity,
-    signal: signalFor(id)
+    signal: signalFor(id, faction.shortName, state.camp),
+    factionId: faction.id,
+    factionName: faction.displayName,
+    factionShort: faction.shortName
   };
 }
 
-function signalFor(id: OpponentStrategyId): string {
+function signalFor(
+  id: OpponentStrategyId,
+  factionShort: string,
+  playerCamp: 'salarie' | 'patron'
+): string {
+  /* Le signal nomme l'organisation adverse pour éviter le "l'autre camp"
+     générique des versions précédentes. */
   switch (id) {
     case 'compromis_limite':
-      return 'L’autre camp teste une concession étroite, assez visible pour séduire, trop faible pour régler le fond.';
+      return `${factionShort} teste une concession étroite — assez visible pour séduire, trop faible pour régler le fond.`;
     case 'division':
-      return 'Des messages différents arrivent à tes alliés. Quelqu’un cherche à séparer les modérés des durs.';
+      return playerCamp === 'salarie'
+        ? `${factionShort} vient parler aux modérés sans toi. Une partie des sections reçoit des invitations.`
+        : `${factionShort} cherche à diviser les fédérations patronales : grandes maisons contre PME.`;
     case 'campagne_media':
-      return 'La presse reprend les mots de l’adversaire avant les tiens. Le cadrage public se déplace.';
+      return `${factionShort} occupe les éditoriaux. La presse reprend leurs mots avant les tiens.`;
     case 'juridicisation':
-      return 'Les réponses deviennent procédurales. On ne te dit plus non : on te demande des pièces.';
+      return `${factionShort} bascule en mode procédural : recours, mémoires, expertises. On ne dit plus non — on demande des pièces.`;
     case 'ligne_dure':
-      return 'La délégation adverse parle peu, note beaucoup, et refuse les apartés.';
+      return `${factionShort} durcit la délégation. Peu d’apartés, beaucoup de notes, regards qui ne lâchent pas.`;
     case 'deplacement_production':
-      return 'Des sites alternatifs, sous-traitants ou reports d’investissement entrent dans la conversation.';
+      return `${factionShort} évoque sous-traitance et délocalisation. La pression économique entre dans la salle.`;
   }
 }

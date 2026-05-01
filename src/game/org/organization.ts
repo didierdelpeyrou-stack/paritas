@@ -17,6 +17,7 @@ export function freshOrganization(camp: Camp, playerName: string): PlayerOrganiz
     localSections: salarie ? 2 : 1,
     cohesion: 58,
     reputation: 42,
+    mobilisationFatigue: 18,
     factions: freshFactions(salarie),
     election: null,
     assets: [],
@@ -41,7 +42,8 @@ export function applyOrganizationDelta(
     mediaRelay: Math.max(0, Math.round(org.mediaRelay + (delta.mediaRelay ?? 0))),
     localSections: Math.max(0, Math.round(org.localSections + (delta.localSections ?? 0))),
     cohesion: clamp(org.cohesion + (delta.cohesion ?? 0)),
-    reputation: clamp(org.reputation + (delta.reputation ?? 0))
+    reputation: clamp(org.reputation + (delta.reputation ?? 0)),
+    mobilisationFatigue: clamp(org.mobilisationFatigue + (delta.mobilisationFatigue ?? 0))
   };
 }
 
@@ -76,7 +78,8 @@ export function formatOrgDelta(delta: OrganizationDelta): string {
     mediaRelay: 'Médias',
     localSections: 'Sections',
     cohesion: 'Cohésion',
-    reputation: 'Réputation'
+    reputation: 'Réputation',
+    mobilisationFatigue: 'Fatigue'
   };
   return (Object.entries(delta) as Array<[keyof OrganizationDelta, number]>)
     .filter(([, value]) => value !== 0)

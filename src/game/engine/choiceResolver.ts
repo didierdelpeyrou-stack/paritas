@@ -17,6 +17,7 @@ import {
   addAccord,
   addInstitution
 } from '../narrative/memoryEngine';
+import { applyOrganizationDelta } from '../org/organization';
 
 export function resolveChoice(
   state: RebirthGameState,
@@ -62,6 +63,16 @@ export function resolveChoice(
     nextMemory = { ...nextMemory, exhaustedMovements: nextMemory.exhaustedMovements + 1 };
   }
 
+  // 4. Fatigue militante : croît avec mouvements épuisés et grosses
+  // poussées de rapport de force ; récupère sinon dans applyOrganizationUpkeep.
+  let fatigueGain = 0;
+  if (choice.flag === 'epuise-mouvement') fatigueGain += 25;
+  const rapportDelta = choice.effects.resources?.rapportDeForce ?? 0;
+  if (rapportDelta >= 6) fatigueGain += Math.min(15, Math.round(rapportDelta));
+  const nextOrganization = fatigueGain > 0
+    ? applyOrganizationDelta(state.organization, { mobilisationFatigue: fatigueGain })
+    : state.organization;
+
   return {
     ...state,
     resources: nextResources,
@@ -69,6 +80,7 @@ export function resolveChoice(
     traits: nextTraits,
     dominantTrait: nextDominant,
     memory: nextMemory,
+    organization: nextOrganization,
     lastChoice: { scenarioId: scenario.id, choiceId: choice.id }
   };
 }

@@ -30,6 +30,8 @@ export interface PlayerOrganization {
   localSections: number;
   cohesion: number;
   reputation: number;
+  /** Fatigue militante (0-100). Faible = militants frais ; haute = épuisement, désengagement. */
+  mobilisationFatigue: number;
   factions: InternalFaction[];
   election: InternalElectionState | null;
   assets: string[];
@@ -65,6 +67,7 @@ export interface OrganizationDelta {
   localSections?: number;
   cohesion?: number;
   reputation?: number;
+  mobilisationFatigue?: number;
 }
 
 export interface OrgAction {

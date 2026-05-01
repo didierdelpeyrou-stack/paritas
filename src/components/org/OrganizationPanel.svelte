@@ -79,6 +79,19 @@
     <div class="org-chip"><b>{organization.reputation}</b><span>réputation</span></div>
   </div>
 
+  <div class="fatigue-bar" data-burnout={organization.mobilisationFatigue >= 70}>
+    <div class="fatigue-label">
+      <span>Fatigue militante</span>
+      <em>{Math.round(organization.mobilisationFatigue)}</em>
+    </div>
+    <div class="fatigue-track">
+      <i style="width: {Math.max(2, Math.min(100, organization.mobilisationFatigue))}%"></i>
+    </div>
+    {#if organization.mobilisationFatigue >= 70}
+      <div class="fatigue-warn">Désengagement en cours · militants se retirent.</div>
+    {/if}
+  </div>
+
   <details class="space-y-2">
     <summary class="cursor-pointer text-xs uppercase tracking-wider text-parchment-dim/70">
       Factions internes
@@ -366,5 +379,58 @@
   .mini-action:hover {
     border-color: rgba(126, 180, 255, 0.55);
     background: rgba(46, 94, 138, 0.18);
+  }
+
+  .fatigue-bar {
+    border: 1px solid rgba(237, 228, 201, 0.12);
+    border-radius: 0.5rem;
+    background: rgba(13, 16, 20, 0.32);
+    padding: 0.45rem 0.55rem;
+  }
+
+  .fatigue-bar[data-burnout='true'] {
+    border-color: rgba(224, 122, 110, 0.4);
+    background: rgba(224, 122, 110, 0.06);
+  }
+
+  .fatigue-label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    color: rgba(237, 228, 201, 0.7);
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .fatigue-label em {
+    color: #f4d58b;
+    font-family: 'Cinzel', Georgia, serif;
+    font-style: normal;
+    font-size: 0.78rem;
+  }
+
+  .fatigue-track {
+    margin-top: 0.4rem;
+    height: 0.28rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(13, 16, 20, 0.6);
+  }
+
+  .fatigue-track i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #aedab5, #f4d58b 60%, #e0796f);
+    transition: width 0.3s ease;
+  }
+
+  .fatigue-warn {
+    margin-top: 0.4rem;
+    color: #e8a09b;
+    font-size: 0.66rem;
+    font-style: italic;
   }
 </style>

@@ -465,6 +465,9 @@ class RebirthGameStore {
           election: null
         };
       }
+      if (typeof s.organization.mobilisationFatigue !== 'number') {
+        s.organization = { ...s.organization, mobilisationFatigue: 18 };
+      }
       if (!s.activeStrategies) {
         s.activeStrategies = [];
       }
@@ -527,10 +530,18 @@ class RebirthGameStore {
     const cohesionHit = broke ? -3 : 0;
     const membershipHit = broke ? -Math.min(15, Math.ceil(-cashAfter / 4)) : 0;
 
+    /* Mobilisation recovers slowly each turn (-3) ; if fatigue stays high
+       (≥70), militants drift away — the social cost of overexertion. */
+    const fatigueRecovery = -3;
+    const burnoutMembership = org.mobilisationFatigue >= 70 ? -3 : 0;
+    const burnoutMilitants = org.mobilisationFatigue >= 70 ? -1 : 0;
+
     const organization = applyOrganizationDelta(org, {
       treasury: net,
       cohesion: cohesionHit,
-      membership: membershipHit
+      membership: membershipHit + burnoutMembership,
+      militants: burnoutMilitants,
+      mobilisationFatigue: fatigueRecovery
     });
 
     const resources = broke

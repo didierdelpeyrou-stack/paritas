@@ -1,6 +1,7 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import { rebirth } from '../../game/engine/gameState.svelte';
+  import { sfx } from '../../game/audio/sfx';
   import type { Camp } from '$lib/types';
   import type { ActorId, RebirthGameState, Resources } from '../../game/types';
 
@@ -190,6 +191,7 @@
       resourceDelta,
       actorDelta
     });
+    void sfx.play(r.score >= 65 ? 'success' : r.score < 30 ? 'fail' : 'click');
   }
 
   function reset() {

@@ -16,6 +16,7 @@
   import { eraForTurn, yearForTurn } from '../../game/content/eras';
   import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
   import { computeFinalScore } from '../../game/simulation/scoring';
+  import { sfx } from '../../game/audio/sfx';
 
   interface Props {
     onReplay: () => void;
@@ -56,7 +57,9 @@
   };
 
   function handleChoose(choice: Choice) {
+    void sfx.play('click');
     rebirth.choose(choice);
+    setTimeout(() => void sfx.play('consequence'), 280);
   }
 
   function subtitleFor(id: ActorId, s: typeof gameState): string | undefined {
@@ -74,7 +77,16 @@
   }
 
   function handleContinue() {
+    void sfx.play('pageTurn');
     rebirth.continueAfterConsequence();
+  }
+
+  let sfxOn = $state(sfx.isEnabled());
+  $effect(() => sfx.onChange(v => (sfxOn = v)));
+
+  function toggleSfx() {
+    sfx.toggle();
+    if (sfx.isEnabled()) void sfx.play('click');
   }
 </script>
 
@@ -98,9 +110,19 @@
         </div>
         <div class="flex items-baseline justify-between gap-2">
           <h3 class="font-display text-gold text-lg leading-tight">{e.name}</h3>
-          <div class="text-right" title="Score provisoire — il bouge à chaque choix.">
-            <div class="font-display text-gold-soft text-base leading-none">{liveScore}<span class="text-[0.7rem] text-parchment-dim/60">/100</span></div>
-            <div class="text-[0.6rem] uppercase tracking-wider text-parchment-dim/65">score</div>
+          <div class="flex items-center gap-2.5">
+            <button
+              type="button"
+              class="sfx-toggle"
+              data-on={sfxOn}
+              onclick={toggleSfx}
+              aria-label={sfxOn ? 'Couper le son' : 'Activer le son'}
+              title={sfxOn ? 'Son activé — cliquer pour couper' : 'Son coupé — cliquer pour activer'}
+            >{sfxOn ? '♪' : '·'}</button>
+            <div class="text-right" title="Score provisoire — il bouge à chaque choix.">
+              <div class="font-display text-gold-soft text-base leading-none">{liveScore}<span class="text-[0.7rem] text-parchment-dim/60">/100</span></div>
+              <div class="text-[0.6rem] uppercase tracking-wider text-parchment-dim/65">score</div>
+            </div>
           </div>
         </div>
         <EraTimeline currentTurn={s.turn} />
@@ -262,5 +284,33 @@
 
   .tab-bar button + button {
     border-left: 1px solid rgba(237, 228, 201, 0.08);
+  }
+
+  .sfx-toggle {
+    width: 1.8rem;
+    height: 1.8rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(237, 228, 201, 0.18);
+    border-radius: 999px;
+    background: rgba(13, 16, 20, 0.5);
+    color: rgba(237, 228, 201, 0.5);
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.85rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+  }
+
+  .sfx-toggle[data-on='true'] {
+    border-color: rgba(244, 213, 139, 0.55);
+    color: #f4d58b;
+    background: rgba(201, 154, 64, 0.13);
+  }
+
+  .sfx-toggle:hover {
+    border-color: rgba(244, 213, 139, 0.45);
+    color: #f4d58b;
   }
 </style>

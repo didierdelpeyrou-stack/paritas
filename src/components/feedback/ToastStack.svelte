@@ -3,6 +3,7 @@
   import { rebirth } from '../../game/engine/gameState.svelte';
   import type { Resources } from '../../game/types';
   import { RESOURCE_LABELS } from '../../game/simulation/resources';
+  import { sfx } from '../../game/audio/sfx';
 
   /* Snapshot précédent des ressources — non réactif pour ne pas re-trigger
      l'effet sur écriture. */
@@ -49,6 +50,7 @@
       /* Alerte de seuil critique sur transition descendante uniquement. */
       if (cur[key] <= 18 && previous[key] > 18) {
         push(`${RESOURCE_LABELS[key]} en zone critique`, 'warning');
+        void sfx.play('criticalAlert');
       }
     }
     previous = { ...cur };

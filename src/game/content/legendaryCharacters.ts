@@ -78,7 +78,7 @@ Il meurt en 1954, président de FO, dans un appartement modeste du XIVe arrondis
     bio:
       `Né en Savoie en 1901, fils d’un mineur invalide, Croizat entre en usine à treize ans. Il sera tourneur sur métaux toute sa vie ouvrière. La métallurgie l’élève secrétaire général de sa fédération en 1936 ; le Parti communiste, dont il est membre depuis 1928, en fait son visage syndical.
 
-La guerre le rattrape. Vichy l’interne en Algérie ; Alger le libère et l’élit député. Il rentre en France à pied, par le métro de Marseille, dans un costume usé.
+La guerre le rattrape. Vichy l’interne en Algérie ; Alger le libère et l’élit député. Il rentre en France par le port de Marseille, dans un costume usé.
 
 Le 21 novembre 1945, il devient ministre du Travail et de la Sécurité sociale. Il a quarante-quatre ans, six mois pour faire voter, écrire, organiser ce que Pierre Laroque a conçu : un système où l’on cotise selon ses moyens et où l’on est soigné selon ses besoins. Les caisses paritaires sortent de terre dans des préfabriqués, les premiers administrateurs sont élus en mai 1946 ; un million d’ouvriers signent leur premier bulletin de cotisation comme on signe un acte de naissance.
 
@@ -124,7 +124,7 @@ Il meurt en 1922, à quarante-huit ans, dans une chambre d’hôtel parisienne. 
     blurb:
       'Premier secrétaire général de FO (1948-1963). Réformiste assumé, doctrine d’indépendance face à tous les pouvoirs.',
     bio:
-      `Né dans le Loiret en 1901, fils de boulanger, Bothereau passe de l’instruction publique à la fédération des fonctionnaires CGT, puis à l’appareil confédéral. Il est de ceux qui, dès l’entre-deux-guerres, méfient des prises de parole vibrantes : il préfère la note interne, l’amendement, la contre-proposition chiffrée.
+      `Né dans le Loiret en 1901, fils de boulanger, Bothereau passe de l’instruction publique à la fédération des fonctionnaires CGT, puis à l’appareil confédéral. Il est de ceux qui, dès l’entre-deux-guerres, se méfient des prises de parole vibrantes : il préfère la note interne, l’amendement, la contre-proposition chiffrée.
 
 Décembre 1947 : la CGT vient d’éclater sur la question de l’alignement communiste. Léon Jouhaux fonde Force ouvrière. Bothereau en est le premier secrétaire général. Il a quarante-six ans, un costume gris, et la conviction qu’un syndicalisme libre s’écrit en lettres minuscules — par la négociation et par la cotisation.
 
@@ -197,7 +197,7 @@ Sa vraie ligne, lisible à toute interview : la défense des **réserves paritai
 
 À l’UGICT-CGT (Union générale des ingénieurs, cadres et techniciens), elle pilote pendant dix ans des dossiers techniques — égalité femmes-hommes, télétravail, classification des cadres. Sa fiche signalétique au siège de Montreuil dit : « Construit des dossiers étanches. »
 
-Mars 2023 : la CGT organise son 53e congrès dans un climat tendu. Philippe Martinez quitte son mandat ; sa dauphine annoncée trébuche sur des accusations de violences politiques internes. Le congrès, dans un retournement inédit, plébiscite Sophie Binet — alors qu’elle n’était même pas candidate trois jours plus tôt. Elle a quarante-et-un ans, et devient la première femme à diriger la CGT depuis sa fondation en 1895.
+Mars 2023 : la CGT organise son 53e congrès dans un climat tendu. Philippe Martinez quitte son mandat ; sa dauphine annoncée trébuche sur des accusations de violences politiques internes. Le congrès, dans un retournement inédit, plébiscite Sophie Binet — alors qu’elle n’était même pas candidate trois jours plus tôt. Elle a quarante et un ans, et devient la première femme à diriger la CGT depuis sa fondation en 1895.
 
 Elle prend ses fonctions au pic de la mobilisation contre la réforme des retraites. Pendant six mois, elle fédère une intersyndicale unanime — fait historique — puis l’encaisse, après le 49.3, comme une défaite politique partagée. Depuis, elle pilote la CGT à travers la longue traversée d’après — comment maintenir une centrale combative dans un cycle gouvernemental qui systématise l’ordonnance et l’article 49 alinéa 3.
 
@@ -247,7 +247,7 @@ L’histoire patronale française aurait préféré un autre signataire à Matig
 
 Pendant vingt ans, il assoit la doctrine d’un libéralisme d’ordre : reconnaître la Sécurité sociale paritaire, siéger dans les caisses, négocier convention par convention. Il refuse les coups d’éclat ; il dit non aux grandes manœuvres politiques contre le Plan Mendès-France ou contre De Gaulle. Sous sa présidence, le patronat français devient une institution républicaine — interlocuteur reconnu de l’État et des syndicats, partenaire des grands accords interprofessionnels qui refondent les retraites complémentaires (Agirc 1947, Arrco 1961) et l’assurance-chômage (Unédic 1958).
 
-Quand il quitte le CNPF en 1966, il a quatre-vingts millions d’ouvriers à la Sécu, six grandes confédérations en face de lui, et le sentiment d’avoir, sans bruit, transformé la culture du capitalisme français.
+Quand il quitte le CNPF en 1966, il a une Sécurité sociale qui couvre désormais l’écrasante majorité des salariés français, six grandes confédérations en face de lui, et le sentiment d’avoir, sans bruit, transformé la culture du capitalisme français.
 
 Il meurt en 1982 dans la maison familiale de la Croix-Rousse. Son épitaphe pourrait être : *celui qui a fait dire au patronat français qu’il acceptait la table*.`,
     traitBonus: { paternaliste: 3, batisseur: 2 },

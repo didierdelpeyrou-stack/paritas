@@ -37,7 +37,7 @@
 
   {#if step === 0}
     <div in:fly={{ y: 8, duration: 240 }}>
-      <h2 class="font-display text-2xl text-amber-400 mb-3">Le paritarisme, en deux phrases</h2>
+      <h2 class="font-display text-2xl text-gold mb-3">Le paritarisme, en deux phrases</h2>
       <p class="text-parchment leading-relaxed text-sm sm:text-base">
         Patron et salarié sont en désaccord, presque toujours.
         Quand ils acceptent malgré tout de s'asseoir à la même table et d'écrire des règles communes — sur les salaires, le chômage, la santé, la retraite — ils font du paritarisme.
@@ -49,7 +49,7 @@
     </div>
   {:else if step === 1}
     <div in:fly={{ y: 8, duration: 240 }}>
-      <h2 class="font-display text-2xl text-amber-400 mb-3">Six ressources, un mandat</h2>
+      <h2 class="font-display text-2xl text-gold mb-3">Six ressources, un mandat</h2>
       <p class="text-parchment-dim leading-relaxed text-sm mb-3">
         Six jauges (0–100) suivent ton organisation. Aucun choix ne les bouge toutes : il faut arbitrer.
       </p>
@@ -62,12 +62,12 @@
         <li class="res-line"><b>Institution</b><span>solidité de ce qui est construit pour durer</span></li>
       </ul>
       <p class="mt-3 text-parchment-dim leading-relaxed text-sm">
-        À côté, ton <b class="text-amber-300">mandat</b> liste 2 à 3 objectifs nommés assignés à ton rôle. C'est ce qui mesure une partie réussie.
+        À côté, ton <b class="text-gold-soft">mandat</b> liste 2 à 3 objectifs nommés assignés à ton rôle. C'est ce qui mesure une partie réussie.
       </p>
     </div>
   {:else}
     <div in:fly={{ y: 8, duration: 240 }}>
-      <h2 class="font-display text-2xl text-amber-400 mb-3">Six postures, un trait dominant</h2>
+      <h2 class="font-display text-2xl text-gold mb-3">Six postures, un trait dominant</h2>
       <p class="text-parchment-dim leading-relaxed text-sm mb-3">
         Chaque choix relève d'une <b>posture</b> politique. Le glyphe à gauche du bouton t'indique laquelle.
       </p>
@@ -81,7 +81,7 @@
         {/each}
       </ul>
       <p class="mt-3 text-parchment-dim leading-relaxed text-sm">
-        Tes choix successifs sculptent un <b class="text-amber-300">trait dominant</b>. Certaines options sont réservées à ce trait — un syndicaliste pragmatique ne dispose pas des mêmes leviers qu'un syndicaliste de rupture.
+        Tes choix successifs sculptent un <b class="text-gold-soft">trait dominant</b>. Certaines options sont réservées à ce trait — un syndicaliste pragmatique ne dispose pas des mêmes leviers qu'un syndicaliste de rupture.
       </p>
     </div>
   {/if}

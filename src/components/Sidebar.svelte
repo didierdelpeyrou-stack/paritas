@@ -124,7 +124,7 @@
   </div>
 
   <!-- Instruction claire -->
-  <div class="rounded-md bg-amber-500/5 border border-amber-500/30 px-3 py-2 text-xs text-parchment-dim/85 leading-relaxed">
+  <div class="rounded-md bg-gold/5 border border-gold/30 px-3 py-2 text-xs text-parchment-dim/85 leading-relaxed">
     <span class="text-gold font-display tracking-wider text-[0.65rem] uppercase">Comment jouer</span><br>
     Lis l'événement, choisis une action. Les <b class="text-gold">lingots</b> sont tes savoir-faire : négocier, mobiliser, produire, convaincre, gouverner, expertiser.
     <button type="button" class="audio-toggle" onclick={toggleMusic}>

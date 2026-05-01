@@ -15,7 +15,7 @@
       ? 'text-rose-400'
       : actor.stance === 'instable'
       ? 'text-violet-300'
-      : 'text-amber-400'
+      : 'text-gold'
   );
 </script>
 

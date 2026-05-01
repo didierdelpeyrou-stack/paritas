@@ -13,7 +13,7 @@
 
   const alertHue: Record<TensionAlert['level'], string> = {
     info: 'border-cyan-500/40 bg-cyan-500/5 text-cyan-200',
-    warning: 'border-amber-500/40 bg-amber-500/5 text-amber-200',
+    warning: 'border-gold/40 bg-gold/5 text-amber-200',
     critical: 'border-rose-500/40 bg-rose-500/5 text-rose-200'
   };
 </script>
@@ -39,7 +39,7 @@
       class="border border-line/60 bg-ink/40 rounded-md px-3 py-2 text-xs"
     >
       <div class="uppercase tracking-wider text-parchment-dim/80">À la une</div>
-      <div class="font-display text-amber-300/90 mt-0.5">« {consequence.newspaperHeadline} »</div>
+      <div class="font-display text-gold-soft/90 mt-0.5">« {consequence.newspaperHeadline} »</div>
     </div>
   {/if}
 

@@ -53,10 +53,10 @@
       <div class="text-xs uppercase tracking-wider text-parchment-dim/80">
         {organization.camp === 'salarie' ? 'Développer ton syndicat' : 'Développer ton organisation'}
       </div>
-      <h3 class="font-display text-amber-400 text-base leading-tight">{organization.name}</h3>
+      <h3 class="font-display text-gold text-base leading-tight">{organization.name}</h3>
     </div>
     <div class="text-right">
-      <div class="font-display text-amber-300 text-lg leading-none">{Math.round(organization.treasury)}</div>
+      <div class="font-display text-gold-soft text-lg leading-none">{Math.round(organization.treasury)}</div>
       <div class="text-[0.65rem] text-parchment-dim/80 uppercase">caisse</div>
       <div
         class="text-[0.62rem] mt-0.5"

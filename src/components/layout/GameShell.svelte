@@ -78,7 +78,7 @@
           </span>
           <span class="text-xs italic text-parchment-dim/80">{e.period}</span>
         </div>
-        <h3 class="font-display text-amber-400 text-lg leading-tight">{e.name}</h3>
+        <h3 class="font-display text-gold text-lg leading-tight">{e.name}</h3>
       </section>
 
       <!-- Onglets -->
@@ -150,7 +150,7 @@
         </div>
         <div class="text-sm">
           <span class="text-parchment-dim/85">Trait dominant —</span>
-          <span class="text-amber-400 font-display ml-1">
+          <span class="text-gold font-display ml-1">
             {TRAIT_LABELS[s.dominantTrait]}
           </span>
         </div>

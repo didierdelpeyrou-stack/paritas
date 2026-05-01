@@ -24,11 +24,11 @@
     <div class="text-xs uppercase tracking-wider text-parchment-dim/85">
       Épilogue · {ending.stats.turnsPlayed} tours joués
     </div>
-    <h2 class="font-display text-3xl text-amber-400">{ending.title}</h2>
+    <h2 class="font-display text-3xl text-gold">{ending.title}</h2>
   </header>
 
   <div class="text-center">
-    <div class="font-display text-6xl text-amber-400 leading-none">
+    <div class="font-display text-6xl text-gold leading-none">
       {ending.score}<span class="text-2xl text-parchment-dim/80">/100</span>
     </div>
     <p class="text-xs italic text-parchment-dim/85 mt-1">Score final</p>
@@ -39,7 +39,7 @@
   </p>
 
   <div class="border-t border-line/60 pt-4 space-y-1.5 text-sm">
-    <div class="font-display uppercase tracking-wider text-amber-400 text-xs">
+    <div class="font-display uppercase tracking-wider text-gold text-xs">
       Ton style — {TRAIT_LABELS[trait]}
     </div>
     <p class="italic text-parchment-dim leading-snug">
@@ -49,7 +49,7 @@
 
   {#if ending.objectives.length > 0}
     <div class="border-t border-line/60 pt-4 space-y-2">
-      <div class="font-display uppercase tracking-wider text-amber-400 text-xs">
+      <div class="font-display uppercase tracking-wider text-gold text-xs">
         Mandat — bilan
       </div>
       <ul class="space-y-1.5">
@@ -75,25 +75,25 @@
   <div class="grid grid-cols-2 gap-3 text-xs">
     <div class="rounded-md border border-line/60 p-2">
       <div class="text-parchment-dim/85 uppercase">Institutions</div>
-      <div class="font-display text-amber-400 text-lg">
+      <div class="font-display text-gold text-lg">
         {ending.stats.institutionsBuilt}
       </div>
     </div>
     <div class="rounded-md border border-line/60 p-2">
       <div class="text-parchment-dim/85 uppercase">Compromis refusés</div>
-      <div class="font-display text-amber-400 text-lg">
+      <div class="font-display text-gold text-lg">
         {ending.stats.refusedCompromise}
       </div>
     </div>
     <div class="rounded-md border border-line/60 p-2">
       <div class="text-parchment-dim/85 uppercase">Base trahie</div>
-      <div class="font-display text-amber-400 text-lg">
+      <div class="font-display text-gold text-lg">
         {ending.stats.betrayedBase}
       </div>
     </div>
     <div class="rounded-md border border-line/60 p-2">
       <div class="text-parchment-dim/85 uppercase">Mouvements épuisés</div>
-      <div class="font-display text-amber-400 text-lg">
+      <div class="font-display text-gold text-lg">
         {ending.stats.exhaustedMovements}
       </div>
     </div>

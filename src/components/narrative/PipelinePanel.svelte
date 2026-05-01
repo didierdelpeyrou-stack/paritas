@@ -19,7 +19,7 @@
   <section class="bordered-card p-4 space-y-3">
     <div>
       <div class="text-xs uppercase tracking-wider text-parchment-dim/60">Traces narratives</div>
-      <h3 class="font-display text-amber-400 text-base">Ce que l’histoire retient</h3>
+      <h3 class="font-display text-gold text-base">Ce que l’histoire retient</h3>
     </div>
 
     <div class="space-y-2">

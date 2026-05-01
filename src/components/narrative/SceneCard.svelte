@@ -29,7 +29,7 @@
   const showVoices = $derived(mode === 'compulsif' && (scenario.voices?.length ?? 0) > 0);
   const moodHue: Record<string, string> = {
     calme: 'border-cyan-500/40 bg-cyan-500/5',
-    tendu: 'border-amber-500/40 bg-amber-500/5',
+    tendu: 'border-gold/40 bg-gold/5',
     grave: 'border-rose-500/40 bg-rose-500/5',
     euphorique: 'border-emerald-500/40 bg-emerald-500/5',
     melancolique: 'border-violet-500/40 bg-violet-500/5'
@@ -46,7 +46,7 @@
       <span>{scenario.date}</span>
       <span class="italic">{scenario.subtitle ?? ''}</span>
     </div>
-    <h2 class="font-display text-2xl text-amber-400">{scenario.title}</h2>
+    <h2 class="font-display text-2xl text-gold">{scenario.title}</h2>
   </header>
 
   <div class="text-parchment leading-relaxed whitespace-pre-line text-sm sm:text-base">
@@ -69,9 +69,10 @@
   {#if scenario.quotes && scenario.quotes.length > 0}
     <div class="space-y-1.5">
       {#each scenario.quotes as q}
-        <blockquote class="border-l-2 border-amber-500/60 pl-3 italic text-sm text-parchment-dim">
-          « {q.text} »
-          <div class="text-xs not-italic text-parchment-dim/80 mt-0.5">— {q.source}</div>
+        <blockquote class="historical-quote">
+          <span class="quote-mark" aria-hidden="true">«</span>
+          <p>{q.text}</p>
+          <footer>— {q.source}</footer>
         </blockquote>
       {/each}
     </div>
@@ -320,5 +321,46 @@
 
   .choice-btn .preview[data-magnitude='major'] {
     font-weight: 600;
+  }
+
+  /* Citations historiques : esquisse de parchemin, sans renverser le mode sombre. */
+  .historical-quote {
+    position: relative;
+    border: 1px solid rgba(200, 155, 60, 0.35);
+    border-radius: 0.5rem;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(200, 155, 60, 0.16) 0%, transparent 55%),
+      radial-gradient(ellipse at 70% 80%, rgba(192, 57, 43, 0.08) 0%, transparent 50%),
+      linear-gradient(180deg, rgba(237, 228, 201, 0.08), rgba(237, 228, 201, 0.04));
+    padding: 0.85rem 1rem 0.75rem 2.2rem;
+    color: #ede4c9;
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-style: italic;
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+
+  .historical-quote .quote-mark {
+    position: absolute;
+    top: 0.4rem;
+    left: 0.85rem;
+    color: #c89b3c;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 1.6rem;
+    font-style: normal;
+    line-height: 1;
+    opacity: 0.7;
+  }
+
+  .historical-quote p {
+    margin: 0;
+  }
+
+  .historical-quote footer {
+    margin-top: 0.4rem;
+    color: rgba(237, 228, 201, 0.7);
+    font-style: normal;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
   }
 </style>

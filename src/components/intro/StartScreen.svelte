@@ -55,7 +55,7 @@
 
 <div class="max-w-3xl mx-auto bordered-card p-6 sm:p-8 space-y-6" in:fade={{ duration: 400 }}>
   <header class="space-y-1">
-    <h1 class="font-display text-4xl uppercase tracking-widest text-amber-400">
+    <h1 class="font-display text-4xl uppercase tracking-widest text-gold">
       Paritas
     </h1>
     <p class="text-parchment-dim text-sm sm:text-base">
@@ -63,7 +63,7 @@
     </p>
   </header>
 
-  <div class="bg-ink/40 border-l-2 border-amber-500 px-4 py-3 text-parchment-dim leading-relaxed text-sm">
+  <div class="bg-ink/40 border-l-2 border-gold px-4 py-3 text-parchment-dim leading-relaxed text-sm">
     Cent décisions, deux camps, deux siècles. Lois Le Chapelier, accords Matignon, Sécurité sociale, Mai 68, Auroux, Refondation sociale, Retraites 2023.
     À chaque tour, tu prends parti. Aucun choix n'est neutre.
     <span class="block mt-2 italic text-parchment-dim/80">Ce n'est pas un divertissement, c'est une simulation historique narrative.</span>
@@ -89,7 +89,7 @@
         bind:value={name}
         oninput={onNameInput}
         placeholder="ex. Marguerite, Léon…"
-        class="mt-1 w-full px-3 py-2 bg-ink border border-line rounded-md text-parchment focus:border-amber-500 focus:outline-none"
+        class="mt-1 w-full px-3 py-2 bg-ink border border-line rounded-md text-parchment focus:border-gold focus:outline-none"
       />
     </label>
 
@@ -104,7 +104,7 @@
             ? 'border-rose-500 bg-rose-500/10'
             : 'border-line hover:border-line/80'}"
         >
-          <div class="font-display text-amber-400">Côté salarié 🚩</div>
+          <div class="font-display text-gold">Côté salarié 🚩</div>
           <div class="text-xs text-parchment-dim/85 mt-1">
             Délégué, syndicaliste
           </div>
@@ -117,7 +117,7 @@
             ? 'border-blue-500 bg-blue-500/10'
             : 'border-line hover:border-line/80'}"
         >
-          <div class="font-display text-amber-400">Côté patronal 🏛️</div>
+          <div class="font-display text-gold">Côté patronal 🏛️</div>
           <div class="text-xs text-parchment-dim/85 mt-1">
             Industriel, dirigeant patronal
           </div>
@@ -145,7 +145,7 @@
               ? 'border-emerald-500 bg-emerald-500/10'
               : 'border-line hover:border-line/80'}"
           >
-            <div class="font-display text-amber-400 text-sm">Réfléchi</div>
+            <div class="font-display text-gold text-sm">Réfléchi</div>
             <div class="text-xs text-parchment-dim/85 mt-1 leading-snug">
               Tu vois l'intention de chaque choix et un rappel théorique. Idéal
               pédagogie / atelier.
@@ -159,7 +159,7 @@
               ? 'border-violet-500 bg-violet-500/10'
               : 'border-line hover:border-line/80'}"
           >
-            <div class="font-display text-amber-400 text-sm">Compulsif</div>
+            <div class="font-display text-gold text-sm">Compulsif</div>
             <div class="text-xs text-parchment-dim/85 mt-1 leading-snug">
               Plus de suspense, voix intérieures, moins de filets. Le jeu te
               parle.

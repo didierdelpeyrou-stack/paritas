@@ -54,7 +54,7 @@
   let inChoiceMode = $derived(stepIdx >= dialogue.length);
 
   function speakerColor(who: string): string {
-    if (who === 'pnj') return 'text-amber-300';
+    if (who === 'pnj') return 'text-gold-soft';
     if (who === 'self') return 'text-rose-300';
     return 'text-violet-300';
   }
@@ -64,9 +64,9 @@
   <div class="bordered-card p-6 relative overflow-hidden">
     <!-- Header : époque + titre + PNJ -->
     {#if event.date}
-      <div class="text-[0.7rem] uppercase tracking-[0.2em] text-amber-400 font-display mb-1">{event.date}</div>
+      <div class="text-[0.7rem] uppercase tracking-[0.2em] text-gold font-display mb-1">{event.date}</div>
     {/if}
-    <h2 class="font-display text-2xl text-amber-300 leading-tight mb-4">{event.title}</h2>
+    <h2 class="font-display text-2xl text-gold-soft leading-tight mb-4">{event.title}</h2>
 
     {#if event.pnj}
       <div class="flex items-center gap-3 mb-4 pb-4 border-b border-line/60">
@@ -126,7 +126,7 @@
         <p class="text-sm italic text-parchment-dim/80 mb-4 leading-relaxed">{@html situation}</p>
 
         {#if event.historical}
-          <div class="text-xs text-parchment-dim/80 italic border-l-2 border-amber-500/60 pl-3 my-4">
+          <div class="text-xs text-parchment-dim/80 italic border-l-2 border-gold/60 pl-3 my-4">
             📜 {@html event.historical}
           </div>
         {/if}
@@ -145,7 +145,7 @@
             {@const enabled = !ch.req || ch.req({ camp })}
             <button type="button"
                     class="w-full text-left px-4 py-3 rounded-lg border-2 transition-all
-                           {ch.recommended ? 'border-emerald-500/60 hover:border-emerald-400 bg-emerald-900/10' : ch.risky ? 'border-orange-500/60 hover:border-orange-400 bg-orange-900/10' : 'border-line hover:border-amber-500 bg-surface-2/50'}
+                           {ch.recommended ? 'border-emerald-500/60 hover:border-emerald-400 bg-emerald-900/10' : ch.risky ? 'border-orange-500/60 hover:border-orange-400 bg-orange-900/10' : 'border-line hover:border-gold bg-surface-2/50'}
                            {!enabled ? 'opacity-40 cursor-not-allowed' : 'hover:translate-x-1'}"
                     disabled={!enabled}
                     onclick={() => onChoose(i)}>

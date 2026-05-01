@@ -11,7 +11,7 @@
   let { resource, value, hue = 'amber' }: Props = $props();
 
   const hueMap: Record<string, { bar: string; track: string; text: string }> = {
-    amber: { bar: 'bg-amber-500', track: 'bg-amber-500/10', text: 'text-amber-400' },
+    amber: { bar: 'bg-amber-500', track: 'bg-gold/10', text: 'text-gold' },
     rose: { bar: 'bg-rose-500', track: 'bg-rose-500/10', text: 'text-rose-400' },
     emerald: { bar: 'bg-emerald-500', track: 'bg-emerald-500/10', text: 'text-emerald-400' },
     violet: { bar: 'bg-violet-500', track: 'bg-violet-500/10', text: 'text-violet-400' },

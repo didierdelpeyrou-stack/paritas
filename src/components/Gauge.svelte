@@ -36,7 +36,7 @@
   };
   const ZONE_TEXT: Record<string, string> = {
     opt: 'text-emerald-400',
-    good: 'text-amber-400',
+    good: 'text-gold',
     warn: 'text-orange-400',
     crit: 'text-red-400'
   };
@@ -59,7 +59,7 @@
 
 <button
   type="button"
-  class="gauge-row w-full text-left px-2 py-1.5 rounded-md hover:bg-amber-500/5 transition-colors flex flex-col gap-1 group relative {z}"
+  class="gauge-row w-full text-left px-2 py-1.5 rounded-md hover:bg-gold/5 transition-colors flex flex-col gap-1 group relative {z}"
   class:pulse
   onclick={onClick}>
   <div class="flex items-baseline gap-2 text-sm">

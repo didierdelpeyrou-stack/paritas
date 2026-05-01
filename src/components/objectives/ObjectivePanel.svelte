@@ -33,7 +33,7 @@
   <section class="bordered-card p-4 space-y-3">
     <div>
       <div class="text-xs uppercase tracking-wider text-parchment-dim/80">Mandat</div>
-      <h3 class="font-display text-amber-400 text-base">Ce qu’on attend de toi</h3>
+      <h3 class="font-display text-gold text-base">Ce qu’on attend de toi</h3>
     </div>
 
     <ul class="space-y-2">

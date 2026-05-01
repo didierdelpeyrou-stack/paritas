@@ -24,7 +24,7 @@
 
   const rarityClass: Record<LegendaryCharacter['rarity'], string> = {
     legendaire: 'border-amber-400/70 bg-gradient-to-br from-amber-500/10 to-amber-500/0',
-    or: 'border-amber-500/40',
+    or: 'border-gold/40',
     argent: 'border-line/70'
   };
 
@@ -55,7 +55,7 @@
 <div class="space-y-3" in:fade={{ duration: 240 }}>
   <header class="flex items-center justify-between gap-3">
     <div>
-      <h3 class="font-display uppercase tracking-wider text-amber-400 text-sm">
+      <h3 class="font-display uppercase tracking-wider text-gold text-sm">
         Incarner une figure légendaire
       </h3>
       <p class="text-xs italic text-parchment-dim/70">
@@ -66,7 +66,7 @@
       <button
         type="button"
         class="px-2 py-1 rounded border transition
-               {filter === 'all' ? 'border-amber-500 text-amber-400' : 'border-line text-parchment-dim/70 hover:border-line/80'}"
+               {filter === 'all' ? 'border-gold text-gold' : 'border-line text-parchment-dim/70 hover:border-line/80'}"
         onclick={() => (filter = 'all')}
       >
         Tous
@@ -98,11 +98,11 @@
         in:fly={{ y: 6, duration: 220, delay: i * 18 }}
         class="text-left rounded-lg p-2.5 border-2 transition-all
                {selected?.id === c.id
-          ? 'border-amber-400 bg-amber-500/10 shadow-[0_0_0_1px_rgba(251,191,36,0.4)]'
-          : rarityClass[c.rarity] + ' hover:border-amber-500/50 hover:bg-amber-500/5'}"
+          ? 'border-amber-400 bg-gold/10 shadow-[0_0_0_1px_rgba(251,191,36,0.4)]'
+          : rarityClass[c.rarity] + ' hover:border-gold/50 hover:bg-gold/5'}"
       >
         <div class="flex items-start gap-2">
-          <div class="shrink-0 w-9 h-9 rounded-full bg-ink/60 border border-line/60 flex items-center justify-center font-display text-amber-400 text-sm">
+          <div class="shrink-0 w-9 h-9 rounded-full bg-ink/60 border border-line/60 flex items-center justify-center font-display text-gold text-sm">
             {c.init}
           </div>
           <div class="min-w-0 flex-1">
@@ -125,7 +125,7 @@
           {/each}
         </div>
         {#if c.signature}
-          <p class="text-[10px] italic text-amber-300/70 mt-1.5 line-clamp-2">
+          <p class="text-[10px] italic text-gold-soft/70 mt-1.5 line-clamp-2">
             « {c.signature} »
           </p>
         {/if}
@@ -134,8 +134,8 @@
   </div>
 
   {#if selected}
-    <div class="text-xs italic text-amber-300/80 text-center" in:fade>
-      Tu incarneras <span class="not-italic font-display text-amber-400">{selected.name}</span>.
+    <div class="text-xs italic text-gold-soft/80 text-center" in:fade>
+      Tu incarneras <span class="not-italic font-display text-gold">{selected.name}</span>.
       Clique à nouveau sur sa carte pour annuler.
     </div>
   {/if}

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import { rebirth } from '../../game/engine/gameState.svelte';
+  import { currencyForEra } from '../../game/content/eras';
   import type { RebirthGameState } from '../../game/types';
   import type { BudgetStrategy } from '../../game/org/types';
   import { computeBudget, strategyDescription, strategyLabel } from '../../game/org/treasury';
@@ -13,6 +14,7 @@
 
   const budget = $derived(computeBudget(gs.organization, gs.turn));
   const strategies: BudgetStrategy[] = ['epargne', 'equilibre', 'distribution'];
+  const currency = $derived(currencyForEra(gs.era));
 
   /* === Actions ponctuelles de gestion === */
   interface Action {
@@ -25,11 +27,11 @@
     enabled: () => boolean;
   }
 
-  const ACTIONS: Action[] = [
+  const ACTIONS: Action[] = $derived([
     {
       id: 'campagne-souscription',
       label: 'Lancer une campagne de souscription',
-      blurb: '« Donnez vingt francs pour la grève. » Lettres aux fédérations, presse interne. Un coup d’avance.',
+      blurb: `« Donnez vingt ${currency} pour la grève. » Lettres aux fédérations, presse interne. Un coup d’avance.`,
       cost: 4,
       enabled: () => gs.organization.treasury >= 4 && gs.organization.mediaRelay >= 1,
       effect: () => {
@@ -96,7 +98,7 @@
         });
       }
     }
-  ];
+  ]);
 
   function setStrategy(s: BudgetStrategy) {
     rebirth.setBudgetStrategy(s);
@@ -189,7 +191,7 @@
         in:fade={{ duration: 180 }}
       >
         <span class="lbl">{a.label}</span>
-        <em>{a.cost > 0 ? `${a.cost} caisse` : 'gratuit'}</em>
+        <em>{a.cost > 0 ? `${a.cost} ${currency}` : 'gratuit'}</em>
         <small>{a.blurb}</small>
       </button>
     {/each}

@@ -203,7 +203,7 @@
               Ressources
             </div>
             {#each ALL_RESOURCES as r}
-              <ResourceGauge resource={r} value={s.resources[r]} hue={hueByEra[e.id]} />
+              <ResourceGauge resource={r} value={s.resources[r]} hue={hueByEra[e.id]} era={e.id} />
             {/each}
           </section>
 

@@ -191,6 +191,50 @@ export function eraById(id: EraId): EraDef {
 }
 
 /**
+ * Nom de la monnaie en circulation pour une ère donnée. Sert à libeller
+ * les coûts de la caisse dans l'UI selon la période historique.
+ *
+ * - Antiquité  : sesterces (Rome impériale)
+ * - Médiéval & Révolution : livres tournois (la livre tournois reste la
+ *   monnaie de compte courante jusqu'à l'introduction du franc germinal en
+ *   l'an III ; pour la lisibilité du joueur, on la garde sur tout 1789-1799)
+ * - 1800 → ~2000 : francs (germinal puis francs anciens, nouveaux francs
+ *   à partir de 1960 — on garde "francs" pour ne pas surcharger)
+ * - Sarkozy → présent : euros (l'euro fiduciaire entre en circulation
+ *   en 2002 mais c'est sous Sarkozy qu'il devient le repère du quotidien)
+ */
+export function currencyForEra(eraId: EraId): string {
+  switch (eraId) {
+    case 'antiquite':
+      return 'sesterces';
+    case 'medieval':
+    case 'revolution':
+      return 'livres';
+    case 'sarkozy':
+    case 'hollande':
+    case 'macron_i':
+    case 'macron_ii':
+    case 'present':
+      return 'euros';
+    default:
+      return 'francs';
+  }
+}
+
+/** Idem mais singulier (pour les coûts à 1 unité). */
+export function currencyForEraSingular(eraId: EraId): string {
+  const c = currencyForEra(eraId);
+  // sesterces → sesterce, livres → livre, francs → franc, euros → euro
+  return c.replace(/s$/, '');
+}
+
+/** Libellé d'un coût en monnaie de l'époque ("12 livres", "1 sesterce"…). */
+export function formatCurrency(cost: number, eraId: EraId): string {
+  const word = Math.abs(cost) === 1 ? currencyForEraSingular(eraId) : currencyForEra(eraId);
+  return `${cost} ${word}`;
+}
+
+/**
  * Année historique représentée par un tour donné — interpole linéairement
  * entre `firstYear` de l'ère active et `firstYear` de la suivante. Renvoie
  * `null` pour les ères pré-modernes (Antiquité, Moyen Âge) qui s'expriment

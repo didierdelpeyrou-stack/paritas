@@ -7,12 +7,13 @@
  */
 
 import type { Camp } from '../../lib/types';
-import type { Choice, ResourceKey } from '../types';
+import type { Choice, EraId, ResourceKey } from '../types';
+import { currencyForEra } from '../content/eras';
 
 interface MeasureContext {
   camp: Camp;
   choice: Choice;
-  era: string;
+  era: EraId;
   /** Année historique au tour courant (ou null pour les ères pré-modernes). */
   year: number | null;
 }
@@ -29,14 +30,16 @@ function pickPhrase(
   const q = (factor: number) => ag(amount * factor);
 
   switch (resource) {
-    case 'caisse':
+    case 'caisse': {
+      const cur = currencyForEra(ctx.era);
       return sign === 'plus'
         ? ctx.camp === 'salarie'
-          ? `${q(220).toLocaleString('fr-FR')} francs versés au fonds de solidarité.`
-          : `${q(420).toLocaleString('fr-FR')} francs collectés auprès des fédérations.`
+          ? `${q(220).toLocaleString('fr-FR')} ${cur} versés au fonds de solidarité.`
+          : `${q(420).toLocaleString('fr-FR')} ${cur} collectés auprès des fédérations.`
         : ctx.camp === 'salarie'
-          ? `Les caisses de secours s'allègent de ${q(180).toLocaleString('fr-FR')} francs.`
-          : `Les comptes accusent ${q(280).toLocaleString('fr-FR')} francs en moins.`;
+          ? `Les caisses de secours s'allègent de ${q(180).toLocaleString('fr-FR')} ${cur}.`
+          : `Les comptes accusent ${q(280).toLocaleString('fr-FR')} ${cur} en moins.`;
+    }
 
     case 'confiance':
       return sign === 'plus'
@@ -76,7 +79,7 @@ function pickPhrase(
 }
 
 export function composeConcreteMeasures(
-  state: { camp: Camp; era: string; turn: number },
+  state: { camp: Camp; era: EraId; turn: number },
   choice: Choice,
   yearForTurn: number | null
 ): string[] {

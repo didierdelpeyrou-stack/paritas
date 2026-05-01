@@ -1,6 +1,7 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import { rebirth } from '../../game/engine/gameState.svelte';
+  import { currencyForEra } from '../../game/content/eras';
   import type { ActorId, RebirthGameState, Resources } from '../../game/types';
   import type { OrganizationDelta, TalentGroup } from '../../game/org/types';
   import { GROUP_BLURBS, GROUP_LABELS, talentsForCamp } from '../../game/org/talents';
@@ -78,6 +79,7 @@
   const catalog = $derived(talentsForCamp(gs.camp));
   const engaged = $derived(gs.organization.engagedTalents);
   const engagedIds = $derived(new Set(engaged.map(e => e.catalogId)));
+  const currency = $derived(currencyForEra(gs.era));
 
   const groups: TalentGroup[] = ['reflexion', 'action', 'communication'];
 
@@ -89,7 +91,7 @@
   function takeCursus(c: Cursus) {
     if (gs.organization.treasury < c.cost) return;
     rebirth.applyOperation({
-      label: `Formation : ${c.label} (${c.duree}, ${c.cost} caisse).`,
+      label: `Formation : ${c.label} (${c.duree}, ${c.cost} ${currency}).`,
       resourceDelta: { ...c.resourceDelta, caisse: -c.cost },
       organizationDelta: c.organizationDelta,
       actorDelta: c.actorDelta
@@ -119,7 +121,7 @@
         <button type="button" class="card-btn" disabled={disabled} onclick={() => takeCursus(c)}>
           <div class="flex items-baseline justify-between gap-2">
             <b>{c.label}</b>
-            <em>{c.cost} caisse · {c.duree}</em>
+            <em>{c.cost} {currency} · {c.duree}</em>
           </div>
           <small>{c.description}</small>
         </button>
@@ -134,7 +136,7 @@
                 onclick={() => rebirth.engageTalent(t.id)}>
           <div class="flex items-baseline justify-between gap-2">
             <b>{t.nom}</b>
-            <em>{already ? 'engagé·e' : `${t.cost} caisse`}</em>
+            <em>{already ? 'engagé·e' : `${t.cost} ${currency}`}</em>
           </div>
           <span class="spec">{t.specialite}</span>
           <small>{t.blurb}</small>

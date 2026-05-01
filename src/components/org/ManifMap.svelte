@@ -6,9 +6,11 @@
     /** Ids des villes actuellement sélectionnées. */
     selected: string[];
     onToggle: (cityId: string) => void;
+    /** Nom de la monnaie de l'ère courante (sesterces, livres, francs, euros). */
+    currency?: string;
   }
 
-  let { selected, onToggle }: Props = $props();
+  let { selected, onToggle, currency = 'caisse' }: Props = $props();
 
   let hovered = $state<ManifCity | null>(null);
 
@@ -77,7 +79,7 @@
     <div class="map-tooltip" in:fade={{ duration: 150 }}>
       <b>{hovered.name}</b>
       <small>{hovered.tradition}</small>
-      <em>poids ×{hovered.weight} · +{hovered.cost} caisse</em>
+      <em>poids ×{hovered.weight} · +{hovered.cost} {currency}</em>
     </div>
   {:else}
     <div class="map-hint">

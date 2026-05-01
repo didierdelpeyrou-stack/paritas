@@ -8,6 +8,7 @@
 import type { Choice, Effects, RenderMode, RebirthGameState } from '../types';
 import { RESOURCE_LABELS } from '../simulation/resources';
 import { ACTOR_LABELS } from '../simulation/actors';
+import { currencyForEra } from '../content/eras';
 
 export interface ConsequenceComposition {
   /** Texte principal (toujours présent) */
@@ -25,20 +26,19 @@ export function composeConsequence(
 ): ConsequenceComposition {
   const text = choice.consequence.immediate;
   const numericSummary =
-    mode === 'reflechi' ? formatEffectsSummary(choice.effects) : null;
+    mode === 'reflechi' ? formatEffectsSummary(choice.effects, state) : null;
   const voice = pickVoice(state, choice);
   return { text, numericSummary, voice };
 }
 
-function formatEffectsSummary(effects: Effects): string | null {
+function formatEffectsSummary(effects: Effects, state: RebirthGameState): string | null {
   const parts: string[] = [];
   if (effects.resources) {
     for (const [k, v] of Object.entries(effects.resources)) {
       if (typeof v !== 'number' || v === 0) continue;
       const sign = v > 0 ? '+' : '';
-      parts.push(
-        `${RESOURCE_LABELS[k as keyof typeof RESOURCE_LABELS]} ${sign}${Math.round(v)}`
-      );
+      const lbl = resourceLabel(k as keyof typeof RESOURCE_LABELS, state);
+      parts.push(`${lbl} ${sign}${Math.round(v)}`);
     }
   }
   if (effects.actors) {
@@ -59,6 +59,14 @@ function formatEffectsSummary(effects: Effects): string | null {
     }
   }
   return parts.length ? parts.join(' · ') : null;
+}
+
+function resourceLabel(key: keyof typeof RESOURCE_LABELS, state: RebirthGameState): string {
+  if (key === 'caisse') {
+    const c = currencyForEra(state.era);
+    return c.charAt(0).toUpperCase() + c.slice(1);
+  }
+  return RESOURCE_LABELS[key];
 }
 
 function pickVoice(state: RebirthGameState, choice: Choice): string | null {

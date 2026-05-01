@@ -1,9 +1,18 @@
 <script lang="ts">
   import { fade, fly } from 'svelte/transition';
   import { rebirth } from '../../game/engine/gameState.svelte';
-  import type { Resources } from '../../game/types';
+  import type { EraId, Resources } from '../../game/types';
   import { RESOURCE_LABELS } from '../../game/simulation/resources';
+  import { currencyForEra } from '../../game/content/eras';
   import { sfx } from '../../game/audio/sfx';
+
+  function resourceLabel(key: keyof Resources, era: EraId): string {
+    if (key === 'caisse') {
+      const c = currencyForEra(era);
+      return c.charAt(0).toUpperCase() + c.slice(1);
+    }
+    return RESOURCE_LABELS[key];
+  }
 
   /* Snapshot précédent des ressources — non réactif pour ne pas re-trigger
      l'effet sur écriture. */
@@ -43,13 +52,14 @@
     /* Compare et émet pour les deltas significatifs (≥4). */
     for (const key of Object.keys(cur) as Array<keyof Resources>) {
       const delta = cur[key] - previous[key];
+      const lbl = resourceLabel(key, s.era);
       if (Math.abs(delta) >= 4) {
         const sign = delta > 0 ? '+' : '';
-        push(`${RESOURCE_LABELS[key]} ${sign}${Math.round(delta)}`, delta > 0 ? 'positive' : 'negative');
+        push(`${lbl} ${sign}${Math.round(delta)}`, delta > 0 ? 'positive' : 'negative');
       }
       /* Alerte de seuil critique sur transition descendante uniquement. */
       if (cur[key] <= 18 && previous[key] > 18) {
-        push(`${RESOURCE_LABELS[key]} en zone critique`, 'warning');
+        push(`${lbl} en zone critique`, 'warning');
         void sfx.play('criticalAlert');
       }
     }

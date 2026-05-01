@@ -1,14 +1,27 @@
 <script lang="ts">
-  import type { ResourceKey } from '../../game/types';
+  import type { EraId, ResourceKey } from '../../game/types';
   import { RESOURCE_LABELS, RESOURCE_TOOLTIPS } from '../../game/simulation/resources';
+  import { currencyForEra } from '../../game/content/eras';
 
   interface Props {
     resource: ResourceKey;
     value: number;
     /** Couleur clé tailwind ('amber','rose','emerald','violet','cyan') */
     hue?: 'amber' | 'rose' | 'emerald' | 'violet' | 'cyan' | 'slate';
+    /** Si fourni, la jauge `caisse` affiche la monnaie de l'ère plutôt que "Caisse". */
+    era?: EraId;
   }
-  let { resource, value, hue = 'amber' }: Props = $props();
+  let { resource, value, hue = 'amber', era }: Props = $props();
+
+  const label = $derived(
+    resource === 'caisse' && era
+      ? capitalize(currencyForEra(era))
+      : RESOURCE_LABELS[resource]
+  );
+
+  function capitalize(s: string): string {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
 
   const hueMap: Record<string, { bar: string; track: string; text: string }> = {
     amber: { bar: 'bg-amber-500', track: 'bg-gold/10', text: 'text-gold' },
@@ -24,7 +37,7 @@
 
 <div class="space-y-1" title={RESOURCE_TOOLTIPS[resource]}>
   <div class="flex items-center justify-between text-xs">
-    <span class="uppercase tracking-wider {c.text}">{RESOURCE_LABELS[resource]}</span>
+    <span class="uppercase tracking-wider {c.text}">{label}</span>
     <span class="text-parchment-dim/80 tabular-nums">{Math.round(value)}</span>
   </div>
   <div class="h-1.5 rounded-full {c.track} overflow-hidden">

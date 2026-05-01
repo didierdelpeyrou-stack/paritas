@@ -49,7 +49,7 @@ export const RESOURCE_LABELS: Record<ResourceKey, string> = {
 
 export const RESOURCE_TOOLTIPS: Record<ResourceKey, string> = {
   confiance: 'La base croit-elle en toi ?',
-  caisse: 'Réserves financières et institutionnelles défendues.',
+  caisse: 'Réserves financières — sesterces, livres tournois, francs ou euros selon l\'époque.',
   santeSociale: 'Santé du tissu social : trop bas → grèves, sabotage.',
   legitimite: 'Comment l\'opinion publique te perçoit.',
   rapportDeForce: 'Capacité à imposer dans la négociation.',

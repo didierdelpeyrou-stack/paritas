@@ -2,6 +2,7 @@
   import { fade } from 'svelte/transition';
   import { rebirth } from '../../game/engine/gameState.svelte';
   import { sfx } from '../../game/audio/sfx';
+  import { currencyForEra } from '../../game/content/eras';
   import type { Camp } from '$lib/types';
   import type { ActorId, RebirthGameState, Resources } from '../../game/types';
 
@@ -110,6 +111,7 @@
   const treasury = $derived(gs.organization.treasury);
   const cost = 8;
   const canHold = $derived(treasury >= cost && selectedArgs.length >= 1 && !result);
+  const currency = $derived(currencyForEra(gs.era));
 
   function compute(): MeetingResult {
     let militants = 0;
@@ -206,7 +208,7 @@
     <div class="text-xs uppercase tracking-wider text-parchment-dim/85">Simulateur</div>
     <h3 class="font-display text-gold text-base">Tenir un meeting</h3>
     <p class="text-xs text-parchment-dim/85 mt-1">
-      Choisis le thème, deux ou trois arguments, écris ton mot d’ordre. Coût : {cost} caisse.
+      Choisis le thème, deux ou trois arguments, écris ton mot d’ordre. Coût : {cost} {currency}.
     </p>
   </div>
 
@@ -282,7 +284,7 @@
 
       <button type="button" class="btn-primary w-full disabled:opacity-40 disabled:cursor-not-allowed"
               disabled={!canHold} onclick={hold}>
-        Tenir le meeting · {cost} caisse
+        Tenir le meeting · {cost} {currency}
       </button>
       {#if treasury < cost}
         <p class="text-[0.78rem] italic text-rose-300">Caisse insuffisante.</p>

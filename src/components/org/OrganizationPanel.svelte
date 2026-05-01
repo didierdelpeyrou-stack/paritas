@@ -7,6 +7,7 @@
     expectedStaffCost,
     organizationUnlockLabel
   } from '../../game/org/organization';
+  import { currencyForEra, eraForTurn } from '../../game/content/eras';
   import type { ElectionCampaignMove } from '../../game/org/internalElections';
   import type { PlayerOrganization } from '../../game/org/types';
 
@@ -35,8 +36,10 @@
       .filter(asset => !!asset)
   );
 
+  const currency = $derived(currencyForEra(eraForTurn(turn).id));
+
   function money(value: number): string {
-    return `${Math.round(value)} caisse`;
+    return `${Math.round(value)} ${currency}`;
   }
 
   const campaignMoves: Array<{ id: ElectionCampaignMove; label: string }> = [
@@ -57,7 +60,7 @@
     </div>
     <div class="text-right">
       <div class="font-display text-gold-soft text-lg leading-none">{Math.round(organization.treasury)}</div>
-      <div class="text-[0.74rem] text-parchment-dim/80 uppercase">caisse</div>
+      <div class="text-[0.74rem] text-parchment-dim/80 uppercase">{currency}</div>
       <div
         class="text-[0.72rem] mt-0.5"
         class:text-emerald-300={net > 0}

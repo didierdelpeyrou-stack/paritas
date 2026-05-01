@@ -2,6 +2,7 @@
   import { fade } from 'svelte/transition';
   import { rebirth } from '../../game/engine/gameState.svelte';
   import { sfx } from '../../game/audio/sfx';
+  import { currencyForEra } from '../../game/content/eras';
   import type { ActorId, RebirthGameState, Resources } from '../../game/types';
   import ManifMap from './ManifMap.svelte';
   import { MANIF_CITIES, findCombosFor } from '../../game/org/manifCities';
@@ -74,6 +75,7 @@
   }
 
   const treasury = $derived(gs.organization.treasury);
+  const currency = $derived(currencyForEra(gs.era));
   const canRun = $derived(
     !result &&
       treasury >= cost &&
@@ -228,7 +230,7 @@
     <div class="text-xs uppercase tracking-wider text-parchment-dim/85">Simulateur</div>
     <h3 class="font-display text-gold text-base">Préparer une manifestation</h3>
     <p class="text-xs text-parchment-dim/85 mt-1">
-      Choisis la date, le lieu, alloue les forces, active les combinaisons. Coût indicatif : {cost} caisse.
+      Choisis la date, le lieu, alloue les forces, active les combinaisons. Coût indicatif : {cost} {currency}.
     </p>
   </div>
 
@@ -256,7 +258,7 @@
           <em class="not-italic text-gold-soft/85">{cities.length} ville{cities.length > 1 ? 's' : ''}</em>
         </div>
         <div class="mt-1">
-          <ManifMap selected={cities} onToggle={toggleCity} />
+          <ManifMap selected={cities} onToggle={toggleCity} {currency} />
         </div>
         {#if activeCombos.length > 0}
           <div class="combo-list">
@@ -297,19 +299,19 @@
         <div class="grid grid-cols-2 gap-1.5 mt-1">
           <button type="button" class="combo-btn" data-active={preMeeting}
                   onclick={() => (preMeeting = !preMeeting)}>
-            <b>Pré-meeting J-3</b><small>+ mobilisation, +3 caisse</small>
+            <b>Pré-meeting J-3</b><small>+ mobilisation, +3 {currency}</small>
           </button>
           <button type="button" class="combo-btn" data-active={tractMassif}
                   onclick={() => (tractMassif = !tractMassif)}>
-            <b>Tractage massif</b><small>+ opinion, +4 caisse</small>
+            <b>Tractage massif</b><small>+ opinion, +4 {currency}</small>
           </button>
           <button type="button" class="combo-btn" data-active={saisineJuridique}
                   onclick={() => (saisineJuridique = !saisineJuridique)}>
-            <b>Saisine juridique</b><small>pression État, +2 caisse</small>
+            <b>Saisine juridique</b><small>pression État, +2 {currency}</small>
           </button>
           <button type="button" class="combo-btn" data-active={caisseGreve}
                   onclick={() => (caisseGreve = !caisseGreve)}>
-            <b>Caisse de grève ouverte</b><small>tient les corps, +6 caisse</small>
+            <b>Caisse de grève ouverte</b><small>tient les corps, +6 {currency}</small>
           </button>
         </div>
       </div>
@@ -328,7 +330,7 @@
 
       <button type="button" class="btn-primary w-full disabled:opacity-40 disabled:cursor-not-allowed"
               disabled={!canRun} onclick={run}>
-        Lancer la manifestation · {cost} caisse
+        Lancer la manifestation · {cost} {currency}
       </button>
       {#if treasury < cost}
         <p class="text-[0.78rem] italic text-rose-300">Caisse insuffisante.</p>

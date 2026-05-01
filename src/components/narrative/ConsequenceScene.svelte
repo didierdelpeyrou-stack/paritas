@@ -2,6 +2,7 @@
   import { fade } from 'svelte/transition';
   import type { ConsequenceRender } from '../../game/engine/consequenceEngine';
   import type { TensionAlert } from '../../game/simulation/tensions';
+  import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
 
   interface Props {
     consequence: ConsequenceRender;
@@ -58,6 +59,20 @@
     </div>
   {/if}
 
+  {#if consequence.traitChange}
+    <div class="trait-change">
+      <span class="from">{TRAIT_LABELS[consequence.traitChange.from]}</span>
+      <span class="arrow">→</span>
+      <span class="to">{TRAIT_LABELS[consequence.traitChange.to]}</span>
+      <span class="hint">Tu deviens autre chose.</span>
+    </div>
+  {:else if consequence.traitShift}
+    <div class="trait-shift">
+      Trait : <b>{TRAIT_LABELS[consequence.traitShift.trait]}</b>
+      <em>+{consequence.traitShift.delta}</em>
+    </div>
+  {/if}
+
   {#if consequence.numericSummary}
     <div class="text-xs uppercase tracking-wider text-parchment-dim/70 border-t border-line/60 pt-3">
       {consequence.numericSummary}
@@ -81,3 +96,66 @@
     </button>
   </div>
 </article>
+
+<style>
+  .trait-change {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    border: 1px solid rgba(244, 213, 139, 0.45);
+    border-radius: 0.55rem;
+    background: rgba(201, 154, 64, 0.1);
+    padding: 0.55rem 0.7rem;
+  }
+
+  .trait-change .from {
+    color: rgba(237, 228, 201, 0.55);
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.78rem;
+    text-decoration: line-through;
+  }
+
+  .trait-change .arrow {
+    color: rgba(244, 213, 139, 0.7);
+    font-family: 'Cinzel', Georgia, serif;
+  }
+
+  .trait-change .to {
+    color: #f4d58b;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .trait-change .hint {
+    flex-basis: 100%;
+    color: rgba(237, 228, 201, 0.6);
+    font-size: 0.7rem;
+    font-style: italic;
+  }
+
+  .trait-shift {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: rgba(237, 228, 201, 0.7);
+    font-size: 0.74rem;
+  }
+
+  .trait-shift b {
+    color: #ede4c9;
+    font-family: 'Cinzel', Georgia, serif;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+  }
+
+  .trait-shift em {
+    color: #aedab5;
+    font-family: 'Cinzel', Georgia, serif;
+    font-style: normal;
+  }
+</style>

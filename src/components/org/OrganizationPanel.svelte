@@ -2,6 +2,7 @@
   import { rebirth } from '../../game/engine/gameState.svelte';
   import { availableOrgActions, availableOrgAssets, assetById } from '../../game/org/catalog';
   import { canDevelopOrganization, organizationUnlockLabel } from '../../game/org/organization';
+  import type { ElectionCampaignMove } from '../../game/org/internalElections';
   import type { PlayerOrganization } from '../../game/org/types';
 
   interface Props {
@@ -23,6 +24,13 @@
   function money(value: number): string {
     return `${Math.round(value)} caisse`;
   }
+
+  const campaignMoves: Array<{ id: ElectionCampaignMove; label: string }> = [
+    { id: 'rassembler', label: 'Rassembler' },
+    { id: 'promettre_rupture', label: 'Promettre rupture' },
+    { id: 'professionnaliser', label: 'Professionnaliser' },
+    { id: 'terrain', label: 'Tournée terrain' }
+  ];
 </script>
 
 <section class="bordered-card p-4 space-y-3">
@@ -48,11 +56,64 @@
     <div class="org-chip"><b>{organization.reputation}</b><span>réputation</span></div>
   </div>
 
+  <details class="space-y-2">
+    <summary class="cursor-pointer text-xs uppercase tracking-wider text-parchment-dim/70">
+      Factions internes
+    </summary>
+    <div class="space-y-2 pt-2">
+      {#each organization.factions as faction}
+        <div class="faction-row">
+          <div>
+            <b>{faction.label}</b>
+            <small>{faction.demand}</small>
+          </div>
+          <div class="faction-score">
+            <span>{Math.round(faction.influence)}%</span>
+            <em>{Math.round(faction.loyalty)} loy.</em>
+          </div>
+        </div>
+      {/each}
+    </div>
+  </details>
+
   {#if !unlocked}
     <div class="rounded-md border border-line/70 bg-ink/35 px-3 py-2 text-xs text-parchment-dim/75 leading-snug">
       {organizationUnlockLabel(organization.camp)}
     </div>
   {:else}
+    <details open={!!organization.election?.active} class="space-y-2">
+      <summary class="cursor-pointer text-xs uppercase tracking-wider text-parchment-dim/70">
+        Élection interne
+      </summary>
+      <div class="pt-2 space-y-2">
+        {#if organization.election?.active}
+          <div class="election-box">
+            <b>{organization.election.issue}</b>
+            <small>
+              Reste {organization.election.roundsLeft} tour{organization.election.roundsLeft > 1 ? 's' : ''} ·
+              toi {Math.round(organization.election.playerMomentum)} /
+              opposition {Math.round(organization.election.oppositionMomentum)}
+            </small>
+            <div class="grid grid-cols-2 gap-1.5 mt-2">
+              {#each campaignMoves as move}
+                <button type="button" class="mini-action" onclick={() => rebirth.campaignInternalElection(move.id)}>
+                  {move.label}
+                </button>
+              {/each}
+            </div>
+          </div>
+        {:else}
+          <button type="button" class="org-button" onclick={() => rebirth.startInternalElection()}>
+            <span>
+              <b>Demander un mandat clair</b>
+              <small>Ouvre une élection interne avant qu’une crise ne l’impose.</small>
+            </span>
+            <em>politique</em>
+          </button>
+        {/if}
+      </div>
+    </details>
+
     <details open class="space-y-2">
       <summary class="cursor-pointer text-xs uppercase tracking-wider text-parchment-dim/70">
         Actions d’organisation
@@ -212,5 +273,75 @@
   .org-button.sell {
     border-color: rgba(224, 122, 110, 0.25);
     background: rgba(224, 122, 110, 0.05);
+  }
+
+  .faction-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.6rem;
+    align-items: center;
+    border: 1px solid rgba(237, 228, 201, 0.1);
+    border-radius: 0.5rem;
+    background: rgba(13, 16, 20, 0.22);
+    padding: 0.5rem 0.55rem;
+  }
+
+  .faction-row b,
+  .election-box b {
+    display: block;
+    color: #ede4c9;
+    font-size: 0.75rem;
+    line-height: 1.2;
+  }
+
+  .faction-row small,
+  .election-box small {
+    display: block;
+    margin-top: 0.14rem;
+    color: rgba(237, 228, 201, 0.6);
+    font-size: 0.66rem;
+    line-height: 1.25;
+  }
+
+  .faction-score {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .faction-score span,
+  .faction-score em {
+    display: block;
+    font-size: 0.66rem;
+    font-style: normal;
+  }
+
+  .faction-score span {
+    color: #f4d58b;
+  }
+
+  .faction-score em {
+    color: rgba(237, 228, 201, 0.55);
+  }
+
+  .election-box {
+    border: 1px solid rgba(126, 180, 255, 0.24);
+    border-radius: 0.6rem;
+    background: rgba(46, 94, 138, 0.1);
+    padding: 0.6rem;
+  }
+
+  .mini-action {
+    border: 1px solid rgba(126, 180, 255, 0.24);
+    border-radius: 0.45rem;
+    background: rgba(13, 16, 20, 0.3);
+    color: #b8d6ff;
+    padding: 0.35rem 0.4rem;
+    font-size: 0.66rem;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .mini-action:hover {
+    border-color: rgba(126, 180, 255, 0.55);
+    background: rgba(46, 94, 138, 0.18);
   }
 </style>

@@ -41,6 +41,12 @@ import type { OrgAction } from '../org/types';
 import { availableStrategies, strategyById } from '../strategy/catalog';
 import { startStrategy, tickStrategies } from '../strategy/resolver';
 import { freshWorldAI, tickWorldAI } from '../ai/worldAI';
+import {
+  campaignInternalElection,
+  startInternalElection,
+  tickInternalElection,
+  type ElectionCampaignMove
+} from '../org/internalElections';
 
 const SAVE_KEY = 'paritas_rebirth_save_v1';
 
@@ -169,8 +175,9 @@ class RebirthGameStore {
     const advanced = this.applyOrganizationUpkeep(advanceTurn(s));
     const strategyTick = tickStrategies(advanced);
     const worldTick = tickWorldAI(strategyTick.state);
-    this.state = worldTick.state;
-    const logs = [...strategyTick.logs, ...worldTick.logs];
+    const electionTick = tickInternalElection(worldTick.state);
+    this.state = electionTick.state;
+    const logs = [...strategyTick.logs, ...worldTick.logs, ...electionTick.logs];
     if (logs.length > 0) {
       this.log = [...this.log, ...logs].slice(-50);
     }
@@ -194,6 +201,22 @@ class RebirthGameStore {
       ...this.log,
       `T${s.turn} — Stratégie lancée : ${definition.label}. ${definition.description}`
     ].slice(-50);
+    this.persist();
+  }
+
+  startInternalElection() {
+    const s = this.state;
+    if (!s || !canDevelopOrganization(s.turn, s.camp)) return;
+    this.state = startInternalElection(s);
+    this.log = [...this.log, `T${s.turn} — Élection interne : tu demandes un mandat clair.`].slice(-50);
+    this.persist();
+  }
+
+  campaignInternalElection(move: ElectionCampaignMove) {
+    const s = this.state;
+    if (!s?.organization.election?.active) return;
+    this.state = campaignInternalElection(s, move);
+    this.log = [...this.log, `T${s.turn} — Campagne interne : ${campaignLabel(move)}.`].slice(-50);
     this.persist();
   }
 
@@ -324,6 +347,13 @@ class RebirthGameStore {
       if (!s.organization) {
         s.organization = freshOrganization(s.camp, s.name);
       }
+      if (!s.organization.factions) {
+        s.organization = {
+          ...s.organization,
+          factions: freshOrganization(s.camp, s.name).factions,
+          election: null
+        };
+      }
       if (!s.activeStrategies) {
         s.activeStrategies = [];
       }
@@ -368,6 +398,15 @@ class RebirthGameStore {
       })
     };
   }
+}
+
+function campaignLabel(move: ElectionCampaignMove): string {
+  return {
+    rassembler: 'motion de rassemblement',
+    promettre_rupture: 'ligne de rupture',
+    professionnaliser: 'preuve par les dossiers',
+    terrain: 'tournée des sections'
+  }[move];
 }
 
 export const rebirth = new RebirthGameStore();

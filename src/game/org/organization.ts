@@ -1,6 +1,6 @@
 import type { Camp } from '../../lib/types';
 import { clamp } from '../simulation/resources';
-import type { PlayerOrganization, OrganizationDelta } from './types';
+import type { FactionId, PlayerOrganization, OrganizationDelta } from './types';
 
 export function freshOrganization(camp: Camp, playerName: string): PlayerOrganization {
   const salarie = camp === 'salarie';
@@ -17,6 +17,8 @@ export function freshOrganization(camp: Camp, playerName: string): PlayerOrganiz
     localSections: salarie ? 2 : 1,
     cohesion: 58,
     reputation: 42,
+    factions: freshFactions(salarie),
+    election: null,
     assets: [],
     actionHistory: []
   };
@@ -66,4 +68,51 @@ export function formatOrgDelta(delta: OrganizationDelta): string {
     .filter(([, value]) => value !== 0)
     .map(([key, value]) => `${labels[key]} ${value > 0 ? '+' : ''}${value}`)
     .join(' · ');
+}
+
+function freshFactions(salarie: boolean): PlayerOrganization['factions'] {
+  const labels: Record<FactionId, string> = salarie
+    ? {
+        reformistes: 'Réformistes',
+        radicaux: 'Radicaux',
+        institutionnels: 'Gestionnaires',
+        territoriaux: 'Sections locales'
+      }
+    : {
+        reformistes: 'Sociaux-libéraux',
+        radicaux: 'Ligne dure',
+        institutionnels: 'Fédérations',
+        territoriaux: 'Territoires industriels'
+      };
+
+  return [
+    {
+      id: 'reformistes',
+      label: labels.reformistes,
+      influence: 28,
+      loyalty: 58,
+      demand: salarie ? 'des accords visibles et applicables' : 'des compromis qui évitent la rupture'
+    },
+    {
+      id: 'radicaux',
+      label: labels.radicaux,
+      influence: 24,
+      loyalty: 48,
+      demand: salarie ? 'un rapport de force assumé' : 'une ligne ferme contre les concessions'
+    },
+    {
+      id: 'institutionnels',
+      label: labels.institutionnels,
+      influence: 26,
+      loyalty: 62,
+      demand: 'des dossiers solides et des mandats maîtrisés'
+    },
+    {
+      id: 'territoriaux',
+      label: labels.territoriaux,
+      influence: 22,
+      loyalty: 54,
+      demand: 'des moyens concrets sur le terrain'
+    }
+  ];
 }

@@ -30,8 +30,29 @@ export interface PlayerOrganization {
   localSections: number;
   cohesion: number;
   reputation: number;
+  factions: InternalFaction[];
+  election: InternalElectionState | null;
   assets: string[];
   actionHistory: string[];
+}
+
+export type FactionId = 'reformistes' | 'radicaux' | 'institutionnels' | 'territoriaux';
+
+export interface InternalFaction {
+  id: FactionId;
+  label: string;
+  influence: number;
+  loyalty: number;
+  demand: string;
+}
+
+export interface InternalElectionState {
+  active: boolean;
+  startedTurn: number;
+  roundsLeft: number;
+  playerMomentum: number;
+  oppositionMomentum: number;
+  issue: string;
 }
 
 export interface OrganizationDelta {

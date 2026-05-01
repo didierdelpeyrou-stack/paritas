@@ -97,9 +97,9 @@
           <span class="glyph" aria-hidden="true">{style.glyph}</span>
 
           <span class="body">
-            {#if mode === 'reflechi'}
-              <span class="posture-tag">{style.label} · {ch.intent}</span>
-            {/if}
+            <span class="posture-tag" data-mode={mode}>
+              {#if mode === 'reflechi'}{style.label} · {ch.intent}{:else}{style.label}{/if}
+            </span>
             <span class="text">{ch.text}</span>
             {#if locked && ch.requiresTrait}
               <span class="lock-hint">
@@ -241,6 +241,11 @@
     font-size: 0.62rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+  }
+
+  .choice-btn .posture-tag[data-mode='compulsif'] {
+    opacity: 0.55;
+    font-size: 0.55rem;
   }
 
   .choice-btn .text {

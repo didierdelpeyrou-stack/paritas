@@ -17,6 +17,21 @@ export type OrgAssetType =
   | 'lobbying'
   | 'research';
 
+export type TalentGroup = 'reflexion' | 'action' | 'communication';
+
+export interface EngagedTalent {
+  /** ID du talent (référence vers le catalogue). */
+  catalogId: string;
+  /** Nom affiché (snapshot pour rester stable même si le catalogue bouge). */
+  nom: string;
+  /** Spécialité affichée. */
+  specialite: string;
+  /** Tour auquel le talent a été engagé. */
+  hiredTurn: number;
+  /** Groupe auquel le talent est affecté, ou null si en réserve. */
+  group: TalentGroup | null;
+}
+
 export interface PlayerOrganization {
   name: string;
   camp: Camp;
@@ -35,6 +50,8 @@ export interface PlayerOrganization {
   factions: InternalFaction[];
   election: InternalElectionState | null;
   assets: string[];
+  /** Talents recrutés et leur affectation à un groupe (réflexion / action / communication). */
+  engagedTalents: EngagedTalent[];
   actionHistory: string[];
 }
 

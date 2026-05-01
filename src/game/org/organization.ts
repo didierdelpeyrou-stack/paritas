@@ -21,6 +21,7 @@ export function freshOrganization(camp: Camp, playerName: string): PlayerOrganiz
     factions: freshFactions(salarie),
     election: null,
     assets: [],
+    engagedTalents: [],
     actionHistory: []
   };
 }

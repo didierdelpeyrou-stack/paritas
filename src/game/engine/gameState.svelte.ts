@@ -50,7 +50,8 @@ import {
   formatOrgDelta,
   freshOrganization
 } from '../org/organization';
-import type { OrgAction } from '../org/types';
+import type { OrgAction, EngagedTalent, TalentGroup } from '../org/types';
+import { talentById } from '../org/talents';
 import { availableStrategies, strategyById } from '../strategy/catalog';
 import { startStrategy, tickStrategies } from '../strategy/resolver';
 import { freshWorldAI, tickWorldAI } from '../ai/worldAI';
@@ -270,7 +271,8 @@ class RebirthGameStore {
       this.endRun();
       return;
     }
-    const advanced = this.applyOrganizationUpkeep(advanceTurn(s));
+    const upkept = this.applyOrganizationUpkeep(advanceTurn(s));
+    const advanced = this.applyTalentGroupBonuses(upkept);
     const strategyTick = tickStrategies(advanced);
     const worldTick = tickWorldAI(strategyTick.state);
     const electionTick = tickInternalElection(worldTick.state);
@@ -349,6 +351,68 @@ class RebirthGameStore {
       : s.organization;
     this.state = { ...s, resources, actors, organization };
     this.log = [...this.log, `T${s.turn} — ${input.label}`].slice(-50);
+    this.persist();
+  }
+
+  /** Engage un talent. Coût caisse + bonus immédiat + ajout au pool. */
+  engageTalent(catalogId: string) {
+    const s = this.state;
+    if (!s) return;
+    const t = talentById(catalogId);
+    if (!t) return;
+    if (t.camp !== s.camp) return;
+    if (s.organization.engagedTalents.some(e => e.catalogId === catalogId)) return;
+    if (s.organization.treasury < t.cost) return;
+
+    const orgWithBonus = applyOrganizationDelta(s.organization, {
+      ...t.hireOrg,
+      treasury: -(t.cost) + (t.hireOrg?.treasury ?? 0)
+    });
+    const resources = t.hireResource ? applyResourceDelta(s.resources, t.hireResource) : s.resources;
+    const newEngaged: EngagedTalent = {
+      catalogId: t.id,
+      nom: t.nom,
+      specialite: t.specialite,
+      hiredTurn: s.turn,
+      group: null
+    };
+
+    this.state = {
+      ...s,
+      resources,
+      organization: {
+        ...orgWithBonus,
+        engagedTalents: [...orgWithBonus.engagedTalents, newEngaged]
+      }
+    };
+    this.log = [...this.log, `T${s.turn} — Engagement : ${t.nom} (${t.specialite}) rejoint l’équipe.`].slice(-50);
+    this.persist();
+  }
+
+  /** Affecte un talent à un groupe (ou le remet en réserve avec null). */
+  assignTalent(catalogId: string, group: TalentGroup | null) {
+    const s = this.state;
+    if (!s) return;
+    const next = s.organization.engagedTalents.map(e =>
+      e.catalogId === catalogId ? { ...e, group } : e
+    );
+    this.state = {
+      ...s,
+      organization: { ...s.organization, engagedTalents: next }
+    };
+    this.persist();
+  }
+
+  /** Retire un talent du pool (rare — généralement on le réaffecte plutôt). */
+  dismissTalent(catalogId: string) {
+    const s = this.state;
+    if (!s) return;
+    const next = s.organization.engagedTalents.filter(e => e.catalogId !== catalogId);
+    this.state = {
+      ...s,
+      organization: { ...s.organization, engagedTalents: next }
+    };
+    this.log = [...this.log, `T${s.turn} — Départ d’un talent du pool.`].slice(-50);
     this.persist();
   }
 
@@ -494,6 +558,9 @@ class RebirthGameStore {
       if (typeof s.organization.mobilisationFatigue !== 'number') {
         s.organization = { ...s.organization, mobilisationFatigue: 18 };
       }
+      if (!s.organization.engagedTalents) {
+        s.organization = { ...s.organization, engagedTalents: [] };
+      }
       if (!s.activeStrategies) {
         s.activeStrategies = [];
       }
@@ -554,6 +621,27 @@ class RebirthGameStore {
     if (action.unlockTurn > s.turn) return false;
     if (action.camp && action.camp !== 'any' && action.camp !== s.camp) return false;
     return s.organization.treasury >= action.cost;
+  }
+
+  private applyTalentGroupBonuses(state: RebirthGameState): RebirthGameState {
+    const engaged = state.organization.engagedTalents.filter(t => t.group !== null);
+    if (engaged.length === 0) return state;
+
+    let resources = state.resources;
+    let actors = state.actors;
+    let organization = state.organization;
+
+    for (const e of engaged) {
+      const def = talentById(e.catalogId);
+      if (!def || !e.group) continue;
+      const bonus = def.perTurn[e.group];
+      if (!bonus) continue;
+      if (bonus.resources) resources = applyResourceDelta(resources, bonus.resources);
+      if (bonus.actors) actors = applyActorsDelta(actors, bonus.actors);
+      if (bonus.organization) organization = applyOrganizationDelta(organization, bonus.organization);
+    }
+
+    return { ...state, resources, actors, organization };
   }
 
   private applyOrganizationUpkeep(state: RebirthGameState): RebirthGameState {

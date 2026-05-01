@@ -20,18 +20,17 @@ export interface ConsequenceRender {
 
 export function buildConsequence(
   state: RebirthGameState,
-  scenario: Scenario,
+  _scenario: Scenario,
   choice: Choice
 ): ConsequenceRender {
   const base = composeConsequence(state, choice, state.mode);
-  const fallback = composeNarrativeFallback(state, scenario, choice);
   return {
     text: base.text,
     numericSummary: base.numericSummary,
     voice: base.voice,
-    innerVoice: fallback.innerVoice ?? null,
-    newspaperHeadline: fallback.newspaperHeadline ?? null,
-    memoryLine: fallback.memoryLine ?? null,
+    innerVoice: null,
+    newspaperHeadline: null,
+    memoryLine: null,
     enriched: false
   };
 }
@@ -47,5 +46,21 @@ export function applyNarrativeEnrichment(
     newspaperHeadline: output.newspaperHeadline ?? current.newspaperHeadline,
     memoryLine: output.memoryLine ?? current.memoryLine,
     enriched: true
+  };
+}
+
+export function applyNarrativeFallback(
+  current: ConsequenceRender,
+  state: RebirthGameState,
+  scenario: Scenario,
+  choice: Choice
+): ConsequenceRender {
+  const fallback = composeNarrativeFallback(state, scenario, choice);
+  return {
+    ...current,
+    innerVoice: fallback.innerVoice ?? current.innerVoice,
+    newspaperHeadline: fallback.newspaperHeadline ?? current.newspaperHeadline,
+    memoryLine: fallback.memoryLine ?? current.memoryLine,
+    enriched: false
   };
 }

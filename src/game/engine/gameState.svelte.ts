@@ -22,6 +22,7 @@ import { freshMemory } from '../narrative/memoryEngine';
 import { resolveChoice } from './choiceResolver';
 import {
   applyNarrativeEnrichment,
+  applyNarrativeFallback,
   buildConsequence,
   type ConsequenceRender
 } from './consequenceEngine';
@@ -193,17 +194,36 @@ class RebirthGameStore {
     choice: Choice
   ) {
     this.narrativeAbort?.abort();
-    if (!isNarrativeEnrichmentEnabled()) return;
+    const scenarioId = scenario.id;
+    if (!isNarrativeEnrichmentEnabled()) {
+      this.applyFallbackEnrichment(state, scenario, choice, scenarioId);
+      return;
+    }
     const controller = new AbortController();
     this.narrativeAbort = controller;
     const input = buildNarrativePromptInput(state, scenario, choice);
-    const scenarioId = scenario.id;
     void fetchNarrativeEnrichment(input, controller.signal).then(output => {
-      if (controller.signal.aborted || !output) return;
+      if (controller.signal.aborted) return;
       const current = this.consequence;
       if (!current) return;
       if (this.state?.lastChoice?.scenarioId !== scenarioId) return;
-      this.consequence = applyNarrativeEnrichment(current, output);
+      this.consequence = output
+        ? applyNarrativeEnrichment(current, output)
+        : applyNarrativeFallback(current, state, scenario, choice);
+    });
+  }
+
+  private applyFallbackEnrichment(
+    state: RebirthGameState,
+    scenario: Scenario,
+    choice: Choice,
+    scenarioId: string
+  ) {
+    queueMicrotask(() => {
+      const current = this.consequence;
+      if (!current) return;
+      if (this.state?.lastChoice?.scenarioId !== scenarioId) return;
+      this.consequence = applyNarrativeFallback(current, state, scenario, choice);
     });
   }
 

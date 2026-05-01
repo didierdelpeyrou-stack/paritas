@@ -1,23 +1,34 @@
 <script lang="ts">
   import type { WorldAIState } from '../../game/ai/types';
+  import { CYCLE_LABELS, FACTION_LABELS } from '../../game/ai/stateStrategy';
 
   interface Props {
     worldAI: WorldAIState;
   }
 
   let { worldAI }: Props = $props();
+
+  const factionLabel = $derived(FACTION_LABELS[worldAI.state.faction]);
+  const cycleLabel = $derived(CYCLE_LABELS[worldAI.state.cycle]);
+  const segmented = $derived(worldAI.state.faction !== 'unitaire');
 </script>
 
 <section class="bordered-card p-4 space-y-3">
   <div>
-    <div class="text-xs uppercase tracking-wider text-parchment-dim/60">État & adversaire</div>
+    <div class="text-xs uppercase tracking-wider text-parchment-dim/80">État & adversaire</div>
     <h3 class="font-display text-gold text-base">Signaux stratégiques</h3>
   </div>
 
-  <div class="world-card state">
+  <div class="world-card state" data-faction={worldAI.state.faction}>
     <div class="flex items-start justify-between gap-2">
-      <div>
-        <b>État — {worldAI.state.label}</b>
+      <div class="min-w-0">
+        <div class="state-header">
+          <span class="faction" data-faction={worldAI.state.faction}>{factionLabel}</span>
+          {#if segmented}
+            <span class="cycle">· {cycleLabel}</span>
+          {/if}
+        </div>
+        <b>{worldAI.state.label}</b>
         <p>{worldAI.state.signal}</p>
       </div>
       <em>{Math.round(worldAI.state.intensity)}</em>
@@ -50,9 +61,56 @@
     background: rgba(46, 94, 138, 0.09);
   }
 
+  .world-card.state[data-faction='bercy'] {
+    border-color: rgba(141, 180, 168, 0.32);
+    background: rgba(141, 180, 168, 0.06);
+  }
+
+  .world-card.state[data-faction='travail'] {
+    border-color: rgba(126, 180, 255, 0.32);
+    background: rgba(46, 94, 138, 0.09);
+  }
+
+  .world-card.state[data-faction='elysee'] {
+    border-color: rgba(244, 213, 139, 0.4);
+    background: rgba(201, 154, 64, 0.08);
+  }
+
   .world-card.opponent {
     border-color: rgba(224, 122, 110, 0.22);
     background: rgba(224, 122, 110, 0.06);
+  }
+
+  .state-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    color: rgba(237, 228, 201, 0.85);
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.18rem;
+  }
+
+  .state-header .faction[data-faction='bercy'] {
+    color: #aedab5;
+  }
+
+  .state-header .faction[data-faction='travail'] {
+    color: #b8d6ff;
+  }
+
+  .state-header .faction[data-faction='elysee'] {
+    color: #f4d58b;
+  }
+
+  .state-header .faction[data-faction='unitaire'] {
+    color: rgba(237, 228, 201, 0.7);
+  }
+
+  .state-header .cycle {
+    color: rgba(237, 228, 201, 0.55);
   }
 
   .world-card b {
@@ -64,9 +122,9 @@
 
   .world-card p {
     margin-top: 0.22rem;
-    color: rgba(237, 228, 201, 0.66);
-    font-size: 0.7rem;
-    line-height: 1.3;
+    color: rgba(237, 228, 201, 0.78);
+    font-size: 0.72rem;
+    line-height: 1.35;
   }
 
   .world-card em {
@@ -90,6 +148,14 @@
     border-radius: inherit;
     background: linear-gradient(90deg, #7eb4ff, #f4d58b);
     transition: width 0.3s ease;
+  }
+
+  .world-card.state[data-faction='bercy'] .world-track i {
+    background: linear-gradient(90deg, #aedab5, #f4d58b);
+  }
+
+  .world-card.state[data-faction='elysee'] .world-track i {
+    background: linear-gradient(90deg, #f4d58b, #e07a3a);
   }
 
   .world-card.opponent .world-track i {

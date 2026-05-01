@@ -1,7 +1,12 @@
 <script lang="ts">
   import { rebirth } from '../../game/engine/gameState.svelte';
   import { availableOrgActions, availableOrgAssets, assetById } from '../../game/org/catalog';
-  import { canDevelopOrganization, organizationUnlockLabel } from '../../game/org/organization';
+  import {
+    canDevelopOrganization,
+    expectedDuesIncome,
+    expectedStaffCost,
+    organizationUnlockLabel
+  } from '../../game/org/organization';
   import type { ElectionCampaignMove } from '../../game/org/internalElections';
   import type { PlayerOrganization } from '../../game/org/types';
 
@@ -11,6 +16,15 @@
   }
 
   let { organization, turn }: Props = $props();
+
+  const dues = $derived(expectedDuesIncome(organization));
+  const staff = $derived(expectedStaffCost(organization));
+  const upkeep = $derived(
+    organization.assets
+      .map(id => assetById(id)?.upkeep ?? 0)
+      .reduce((sum, value) => sum + value, 0)
+  );
+  const net = $derived(dues - staff - upkeep);
 
   const unlocked = $derived(canDevelopOrganization(turn, organization.camp));
   const actions = $derived(availableOrgActions(turn, organization.camp).slice(0, 4));
@@ -44,6 +58,15 @@
     <div class="text-right">
       <div class="font-display text-amber-300 text-lg leading-none">{Math.round(organization.treasury)}</div>
       <div class="text-[0.65rem] text-parchment-dim/60 uppercase">caisse</div>
+      <div
+        class="text-[0.62rem] mt-0.5"
+        class:text-emerald-300={net > 0}
+        class:text-rose-300={net < 0}
+        class:text-parchment-dim={net === 0}
+        title={`Cotisations +${dues} · Permanents −${staff} · Actifs −${upkeep}`}
+      >
+        {net >= 0 ? `+${net}` : net}/tour
+      </div>
     </div>
   </div>
 

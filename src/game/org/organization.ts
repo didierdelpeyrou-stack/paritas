@@ -24,13 +24,16 @@ export function freshOrganization(camp: Camp, playerName: string): PlayerOrganiz
   };
 }
 
+/** Trésorerie : pas de plafond bas-niveau ; un cap doux à 300 évite l'inflation visuelle. */
+export const TREASURY_SOFT_CAP = 300;
+
 export function applyOrganizationDelta(
   org: PlayerOrganization,
   delta: OrganizationDelta
 ): PlayerOrganization {
   return {
     ...org,
-    treasury: clamp(org.treasury + (delta.treasury ?? 0)),
+    treasury: Math.max(0, Math.min(TREASURY_SOFT_CAP, org.treasury + (delta.treasury ?? 0))),
     membership: Math.max(0, Math.round(org.membership + (delta.membership ?? 0))),
     militants: Math.max(0, Math.round(org.militants + (delta.militants ?? 0))),
     permanentStaff: Math.max(0, Math.round(org.permanentStaff + (delta.permanentStaff ?? 0))),
@@ -40,6 +43,17 @@ export function applyOrganizationDelta(
     cohesion: clamp(org.cohesion + (delta.cohesion ?? 0)),
     reputation: clamp(org.reputation + (delta.reputation ?? 0))
   };
+}
+
+/** Flux de trésorerie entrant par tour, calibré selon le camp. */
+export function expectedDuesIncome(org: PlayerOrganization): number {
+  const rate = org.camp === 'salarie' ? 0.04 : 0.32;
+  return Math.round(org.membership * rate);
+}
+
+/** Flux sortant par tour : salaires des permanents et juristes. */
+export function expectedStaffCost(org: PlayerOrganization): number {
+  return org.permanentStaff * 2 + org.legalTeam * 1;
 }
 
 export function canDevelopOrganization(turn: number, camp: Camp): boolean {

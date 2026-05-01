@@ -45,6 +45,8 @@ import { assetById, ORG_ACTIONS } from '../org/catalog';
 import {
   applyOrganizationDelta,
   canDevelopOrganization,
+  expectedDuesIncome,
+  expectedStaffCost,
   formatOrgDelta,
   freshOrganization
 } from '../org/organization';
@@ -504,21 +506,33 @@ class RebirthGameStore {
   }
 
   private applyOrganizationUpkeep(state: RebirthGameState): RebirthGameState {
-    const upkeep = state.organization.assets
+    const org = state.organization;
+    const dues = expectedDuesIncome(org);
+    const staffCost = expectedStaffCost(org);
+    const assetUpkeep = org.assets
       .map(id => assetById(id)?.upkeep ?? 0)
       .reduce((sum, value) => sum + value, 0);
-    if (upkeep <= 0) return state;
-    const organization = applyOrganizationDelta(state.organization, {
-      treasury: -upkeep,
-      cohesion: state.organization.treasury <= upkeep ? -2 : 0
+    const net = dues - staffCost - assetUpkeep;
+    if (dues === 0 && staffCost === 0 && assetUpkeep === 0) return state;
+
+    const cashAfter = org.treasury + net;
+    const broke = cashAfter < 0;
+    /* If the org cannot cover outflows, dip into cohesion and bleed
+       members rather than letting treasury go negative. */
+    const cohesionHit = broke ? -3 : 0;
+    const membershipHit = broke ? -Math.min(15, Math.ceil(-cashAfter / 4)) : 0;
+
+    const organization = applyOrganizationDelta(org, {
+      treasury: net,
+      cohesion: cohesionHit,
+      membership: membershipHit
     });
-    return {
-      ...state,
-      organization,
-      resources: applyResourceDelta(state.resources, {
-        caisse: state.organization.treasury <= upkeep ? -2 : 0
-      })
-    };
+
+    const resources = broke
+      ? applyResourceDelta(state.resources, { caisse: -2, confiance: -1 })
+      : state.resources;
+
+    return { ...state, organization, resources };
   }
 }
 

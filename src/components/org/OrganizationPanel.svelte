@@ -50,14 +50,14 @@
 <section class="bordered-card p-4 space-y-3">
   <div class="flex items-start justify-between gap-2">
     <div>
-      <div class="text-xs uppercase tracking-wider text-parchment-dim/60">
+      <div class="text-xs uppercase tracking-wider text-parchment-dim/80">
         {organization.camp === 'salarie' ? 'Développer ton syndicat' : 'Développer ton organisation'}
       </div>
       <h3 class="font-display text-amber-400 text-base leading-tight">{organization.name}</h3>
     </div>
     <div class="text-right">
       <div class="font-display text-amber-300 text-lg leading-none">{Math.round(organization.treasury)}</div>
-      <div class="text-[0.65rem] text-parchment-dim/60 uppercase">caisse</div>
+      <div class="text-[0.65rem] text-parchment-dim/80 uppercase">caisse</div>
       <div
         class="text-[0.62rem] mt-0.5"
         class:text-emerald-300={net > 0}
@@ -93,7 +93,7 @@
   </div>
 
   <details class="space-y-2">
-    <summary class="cursor-pointer text-xs uppercase tracking-wider text-parchment-dim/70">
+    <summary class="cursor-pointer text-xs uppercase tracking-wider text-parchment-dim/85">
       Factions internes
     </summary>
     <div class="space-y-2 pt-2">
@@ -118,7 +118,7 @@
     </div>
   {:else}
     <details open={!!organization.election?.active} class="space-y-2">
-      <summary class="cursor-pointer text-xs uppercase tracking-wider text-parchment-dim/70">
+      <summary class="cursor-pointer text-xs uppercase tracking-wider text-parchment-dim/85">
         Élection interne
       </summary>
       <div class="pt-2 space-y-2">
@@ -151,7 +151,7 @@
     </details>
 
     <details open class="space-y-2">
-      <summary class="cursor-pointer text-xs uppercase tracking-wider text-parchment-dim/70">
+      <summary class="cursor-pointer text-xs uppercase tracking-wider text-parchment-dim/85">
         Actions d’organisation
       </summary>
       <div class="space-y-2 pt-2">
@@ -175,12 +175,12 @@
     </details>
 
     <details class="space-y-2">
-      <summary class="cursor-pointer text-xs uppercase tracking-wider text-parchment-dim/70">
+      <summary class="cursor-pointer text-xs uppercase tracking-wider text-parchment-dim/85">
         Acheter / vendre
       </summary>
       <div class="space-y-2 pt-2">
         {#if assets.length === 0 && ownedAssets.length === 0}
-          <div class="text-xs italic text-parchment-dim/60">Aucun actif disponible pour l’instant.</div>
+          <div class="text-xs italic text-parchment-dim/80">Aucun actif disponible pour l’instant.</div>
         {/if}
 
         {#each assets as asset}
@@ -220,7 +220,7 @@
 
   {#if organization.actionHistory.length > 0}
     <details class="text-xs">
-      <summary class="cursor-pointer uppercase tracking-wider text-parchment-dim/60">Historique interne</summary>
+      <summary class="cursor-pointer uppercase tracking-wider text-parchment-dim/80">Historique interne</summary>
       <ul class="mt-2 space-y-1 text-parchment-dim/75">
         {#each organization.actionHistory.slice(0, 4) as item}
           <li>{item}</li>
@@ -367,12 +367,13 @@
   }
 
   .mini-action {
+    min-height: 44px;
     border: 1px solid rgba(126, 180, 255, 0.24);
     border-radius: 0.45rem;
     background: rgba(13, 16, 20, 0.3);
     color: #b8d6ff;
-    padding: 0.35rem 0.4rem;
-    font-size: 0.66rem;
+    padding: 0.55rem 0.6rem;
+    font-size: 0.72rem;
     transition: border-color 0.15s ease, background 0.15s ease;
   }
 

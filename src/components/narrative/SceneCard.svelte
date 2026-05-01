@@ -42,7 +42,7 @@
   in:fade={{ duration: 240 }}
 >
   <header class="space-y-1">
-    <div class="flex items-center justify-between text-xs uppercase tracking-wider text-parchment-dim/70">
+    <div class="flex items-center justify-between text-xs uppercase tracking-wider text-parchment-dim/85">
       <span>{scenario.date}</span>
       <span class="italic">{scenario.subtitle ?? ''}</span>
     </div>
@@ -54,7 +54,7 @@
   </div>
 
   {#if mode === 'reflechi'}
-    <div class="text-xs italic text-parchment-dim/70 border-l-2 border-line pl-3 py-1">
+    <div class="text-xs italic text-parchment-dim/85 border-l-2 border-line pl-3 py-1">
       <span class="not-italic uppercase tracking-wider text-parchment-dim/80 mr-1">
         Contexte —
       </span>
@@ -71,13 +71,13 @@
       {#each scenario.quotes as q}
         <blockquote class="border-l-2 border-amber-500/60 pl-3 italic text-sm text-parchment-dim">
           « {q.text} »
-          <div class="text-xs not-italic text-parchment-dim/60 mt-0.5">— {q.source}</div>
+          <div class="text-xs not-italic text-parchment-dim/80 mt-0.5">— {q.source}</div>
         </blockquote>
       {/each}
     </div>
   {/if}
 
-  <ul class="space-y-2.5 mt-3">
+  <ul class="space-y-2.5 mt-3" aria-label="Choix disponibles">
     {#each scenario.choices as ch, i}
       {@const posture = derivePosture(ch)}
       {@const style = POSTURE_STYLES[posture]}

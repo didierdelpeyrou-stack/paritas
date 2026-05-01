@@ -18,9 +18,15 @@
   };
 </script>
 
-<article class="bordered-card p-5 space-y-4" in:fade={{ duration: 280 }}>
+<article
+  class="bordered-card p-5 space-y-4"
+  in:fade={{ duration: 280 }}
+  role="region"
+  aria-label="Conséquence de ton choix"
+  aria-live="polite"
+>
   <header>
-    <div class="text-xs uppercase tracking-wider text-parchment-dim/70">Conséquence</div>
+    <div class="text-xs uppercase tracking-wider text-parchment-dim/85">Conséquence</div>
   </header>
 
   <div class="text-parchment leading-relaxed whitespace-pre-line">
@@ -32,7 +38,7 @@
       in:fade={{ duration: 380 }}
       class="border border-line/60 bg-ink/40 rounded-md px-3 py-2 text-xs"
     >
-      <div class="uppercase tracking-wider text-parchment-dim/60">À la une</div>
+      <div class="uppercase tracking-wider text-parchment-dim/80">À la une</div>
       <div class="font-display text-amber-300/90 mt-0.5">« {consequence.newspaperHeadline} »</div>
     </div>
   {/if}
@@ -53,7 +59,7 @@
   {#if consequence.memoryLine}
     <div
       in:fade={{ duration: 380 }}
-      class="text-xs italic text-parchment-dim/70 border-t border-line/40 pt-2"
+      class="text-xs italic text-parchment-dim/85 border-t border-line/40 pt-2"
     >
       {consequence.memoryLine}
     </div>
@@ -74,7 +80,7 @@
   {/if}
 
   {#if consequence.numericSummary}
-    <div class="text-xs uppercase tracking-wider text-parchment-dim/70 border-t border-line/60 pt-3">
+    <div class="text-xs uppercase tracking-wider text-parchment-dim/85 border-t border-line/60 pt-3">
       {consequence.numericSummary}
     </div>
   {/if}

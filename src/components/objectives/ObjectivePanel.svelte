@@ -32,7 +32,7 @@
 {#if objectives.length > 0}
   <section class="bordered-card p-4 space-y-3">
     <div>
-      <div class="text-xs uppercase tracking-wider text-parchment-dim/60">Mandat</div>
+      <div class="text-xs uppercase tracking-wider text-parchment-dim/80">Mandat</div>
       <h3 class="font-display text-amber-400 text-base">Ce qu’on attend de toi</h3>
     </div>
 
@@ -47,8 +47,10 @@
               <b>{objective.label}</b>
               <small>{objective.description}</small>
             </div>
-            <span class="status-pill" data-status={s}>
-              {#if s === 'satisfied'}atteint{:else if s === 'failed'}manqué{:else}{pct}%{/if}
+            <span class="status-pill" data-status={s} aria-label={s === 'satisfied' ? 'objectif atteint' : s === 'failed' ? 'objectif manqué' : `progression ${pct}%`}>
+              <span aria-hidden="true">
+                {#if s === 'satisfied'}✓ atteint{:else if s === 'failed'}✗ manqué{:else}{pct}%{/if}
+              </span>
             </span>
           </div>
           <div class="track">

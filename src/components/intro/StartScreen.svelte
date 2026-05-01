@@ -73,7 +73,7 @@
   <LegendaryCharacterPicker selected={legendary} onSelect={handleLegendarySelect} />
 
   <!-- Séparateur -->
-  <div class="flex items-center gap-3 text-xs uppercase tracking-wider text-parchment-dim/60">
+  <div class="flex items-center gap-3 text-xs uppercase tracking-wider text-parchment-dim/80">
     <span class="flex-1 h-px bg-line"></span>
     <span>ou crée ton propre personnage</span>
     <span class="flex-1 h-px bg-line"></span>
@@ -82,7 +82,7 @@
   <!-- Form libre -->
   <div class="space-y-4">
     <label class="block">
-      <span class="text-xs uppercase tracking-wider text-parchment-dim/70">
+      <span class="text-xs uppercase tracking-wider text-parchment-dim/85">
         Nom du protagoniste
       </span>
       <input
@@ -94,7 +94,7 @@
     </label>
 
     <div>
-      <span class="text-xs uppercase tracking-wider text-parchment-dim/70">Camp</span>
+      <span class="text-xs uppercase tracking-wider text-parchment-dim/85">Camp</span>
       <div class="grid grid-cols-2 gap-3 mt-2">
         <button
           type="button"
@@ -105,7 +105,7 @@
             : 'border-line hover:border-line/80'}"
         >
           <div class="font-display text-amber-400">Côté salarié 🚩</div>
-          <div class="text-xs text-parchment-dim/70 mt-1">
+          <div class="text-xs text-parchment-dim/85 mt-1">
             Délégué, syndicaliste
           </div>
         </button>
@@ -118,7 +118,7 @@
             : 'border-line hover:border-line/80'}"
         >
           <div class="font-display text-amber-400">Côté patronal 🏛️</div>
-          <div class="text-xs text-parchment-dim/70 mt-1">
+          <div class="text-xs text-parchment-dim/85 mt-1">
             Industriel, dirigeant patronal
           </div>
         </button>
@@ -128,7 +128,7 @@
     <div>
       <button
         type="button"
-        class="w-full text-left text-xs uppercase tracking-wider text-parchment-dim/70 flex items-center justify-between"
+        class="w-full text-left text-xs uppercase tracking-wider text-parchment-dim/85 flex items-center justify-between"
         onclick={() => (modeOpen = !modeOpen)}
       >
         <span>Style de jeu — {mode === 'reflechi' ? 'Réfléchi' : 'Compulsif'}</span>
@@ -146,7 +146,7 @@
               : 'border-line hover:border-line/80'}"
           >
             <div class="font-display text-amber-400 text-sm">Réfléchi</div>
-            <div class="text-xs text-parchment-dim/70 mt-1 leading-snug">
+            <div class="text-xs text-parchment-dim/85 mt-1 leading-snug">
               Tu vois l'intention de chaque choix et un rappel théorique. Idéal
               pédagogie / atelier.
             </div>
@@ -160,7 +160,7 @@
               : 'border-line hover:border-line/80'}"
           >
             <div class="font-display text-amber-400 text-sm">Compulsif</div>
-            <div class="text-xs text-parchment-dim/70 mt-1 leading-snug">
+            <div class="text-xs text-parchment-dim/85 mt-1 leading-snug">
               Plus de suspense, voix intérieures, moins de filets. Le jeu te
               parle.
             </div>

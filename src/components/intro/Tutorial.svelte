@@ -27,7 +27,7 @@
 
 <div class="max-w-3xl mx-auto bordered-card p-6 sm:p-8 space-y-6" in:fade={{ duration: 320 }}>
   <header class="flex items-center justify-between gap-3">
-    <div class="text-xs uppercase tracking-wider text-parchment-dim/70">Avant d'entrer · {step + 1}/{TOTAL}</div>
+    <div class="text-xs uppercase tracking-wider text-parchment-dim/85">Avant d'entrer · {step + 1}/{TOTAL}</div>
     <div class="flex gap-1">
       {#each Array(TOTAL) as _, i}
         <span class="dot" data-active={i <= step}></span>

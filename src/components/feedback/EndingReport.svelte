@@ -21,7 +21,7 @@
 
 <article class="bordered-card p-6 space-y-4 max-w-2xl mx-auto" in:fade={{ duration: 360 }}>
   <header class="text-center space-y-1">
-    <div class="text-xs uppercase tracking-wider text-parchment-dim/70">
+    <div class="text-xs uppercase tracking-wider text-parchment-dim/85">
       Épilogue · {ending.stats.turnsPlayed} tours joués
     </div>
     <h2 class="font-display text-3xl text-amber-400">{ending.title}</h2>
@@ -29,9 +29,9 @@
 
   <div class="text-center">
     <div class="font-display text-6xl text-amber-400 leading-none">
-      {ending.score}<span class="text-2xl text-parchment-dim/60">/100</span>
+      {ending.score}<span class="text-2xl text-parchment-dim/80">/100</span>
     </div>
-    <p class="text-xs italic text-parchment-dim/70 mt-1">Score final</p>
+    <p class="text-xs italic text-parchment-dim/85 mt-1">Score final</p>
   </div>
 
   <p class="text-parchment leading-relaxed text-sm whitespace-pre-line">
@@ -56,7 +56,9 @@
         {#each ending.objectives as objective}
           {@const s = statusOf(objective.id)}
           <li class="objective-line" data-status={s}>
-            <span class="dot"></span>
+            <span class="dot" aria-hidden="true">
+              {#if s === 'satisfied'}✓{:else if s === 'failed'}✗{:else}·{/if}
+            </span>
             <div class="min-w-0 flex-1">
               <b>{objective.label}</b>
               <small>{objective.description}</small>
@@ -72,25 +74,25 @@
 
   <div class="grid grid-cols-2 gap-3 text-xs">
     <div class="rounded-md border border-line/60 p-2">
-      <div class="text-parchment-dim/70 uppercase">Institutions</div>
+      <div class="text-parchment-dim/85 uppercase">Institutions</div>
       <div class="font-display text-amber-400 text-lg">
         {ending.stats.institutionsBuilt}
       </div>
     </div>
     <div class="rounded-md border border-line/60 p-2">
-      <div class="text-parchment-dim/70 uppercase">Compromis refusés</div>
+      <div class="text-parchment-dim/85 uppercase">Compromis refusés</div>
       <div class="font-display text-amber-400 text-lg">
         {ending.stats.refusedCompromise}
       </div>
     </div>
     <div class="rounded-md border border-line/60 p-2">
-      <div class="text-parchment-dim/70 uppercase">Base trahie</div>
+      <div class="text-parchment-dim/85 uppercase">Base trahie</div>
       <div class="font-display text-amber-400 text-lg">
         {ending.stats.betrayedBase}
       </div>
     </div>
     <div class="rounded-md border border-line/60 p-2">
-      <div class="text-parchment-dim/70 uppercase">Mouvements épuisés</div>
+      <div class="text-parchment-dim/85 uppercase">Mouvements épuisés</div>
       <div class="font-display text-amber-400 text-lg">
         {ending.stats.exhaustedMovements}
       </div>
@@ -125,19 +127,27 @@
   }
 
   .objective-line .dot {
-    width: 0.45rem;
-    height: 0.45rem;
+    width: 1rem;
+    height: 1rem;
     flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 999px;
-    background: rgba(244, 213, 139, 0.65);
+    background: rgba(13, 16, 20, 0.45);
+    color: rgba(244, 213, 139, 0.75);
+    font-size: 0.7rem;
+    line-height: 1;
   }
 
   .objective-line[data-status='satisfied'] .dot {
-    background: #aedab5;
+    background: rgba(95, 181, 107, 0.16);
+    color: #aedab5;
   }
 
   .objective-line[data-status='failed'] .dot {
-    background: #e8a09b;
+    background: rgba(224, 122, 110, 0.16);
+    color: #e8a09b;
   }
 
   .objective-line b {

@@ -73,10 +73,10 @@
       <!-- Bandeau ère, toujours visible -->
       <section class="bordered-card p-4 space-y-1.5">
         <div class="flex items-baseline justify-between">
-          <span class="text-xs uppercase tracking-wider text-parchment-dim/60">
+          <span class="text-xs uppercase tracking-wider text-parchment-dim/80">
             Tour {s.turn} / 100
           </span>
-          <span class="text-xs italic text-parchment-dim/60">{e.period}</span>
+          <span class="text-xs italic text-parchment-dim/80">{e.period}</span>
         </div>
         <h3 class="font-display text-amber-400 text-lg leading-tight">{e.name}</h3>
       </section>
@@ -111,7 +111,7 @@
           <ObjectivePanel objectives={s.objectives} progress={s.objectiveProgress} turn={s.turn} />
 
           <section class="bordered-card p-4 space-y-3">
-            <div class="text-xs uppercase tracking-wider text-parchment-dim/60">
+            <div class="text-xs uppercase tracking-wider text-parchment-dim/80">
               Ressources
             </div>
             {#each ALL_RESOURCES as r}
@@ -120,7 +120,7 @@
           </section>
 
           <section class="bordered-card p-4 space-y-2">
-            <div class="text-xs uppercase tracking-wider text-parchment-dim/60">
+            <div class="text-xs uppercase tracking-wider text-parchment-dim/80">
               Acteurs
             </div>
             {#each ACTOR_IDS as id}
@@ -145,16 +145,16 @@
 
       <!-- Identité, toujours en pied -->
       <section class="bordered-card p-3 space-y-1">
-        <div class="text-xs uppercase tracking-wider text-parchment-dim/60">
+        <div class="text-xs uppercase tracking-wider text-parchment-dim/80">
           {s.name}
         </div>
         <div class="text-sm">
-          <span class="text-parchment-dim/70">Trait dominant —</span>
+          <span class="text-parchment-dim/85">Trait dominant —</span>
           <span class="text-amber-400 font-display ml-1">
             {TRAIT_LABELS[s.dominantTrait]}
           </span>
         </div>
-        <div class="text-xs text-parchment-dim/60">
+        <div class="text-xs text-parchment-dim/80">
           {s.camp === 'patron' ? 'Côté patronal' : 'Côté salarié'} ·
           mode {s.mode === 'reflechi' ? 'Réfléchi' : 'Compulsif'}
         </div>
@@ -184,7 +184,7 @@
 
       {#if rebirth.log.length > 0}
         <details class="bordered-card p-3 text-xs">
-          <summary class="cursor-pointer text-parchment-dim/70 uppercase tracking-wider">
+          <summary class="cursor-pointer text-parchment-dim/85 uppercase tracking-wider">
             Journal · {rebirth.log.length}
           </summary>
           <ul class="mt-2 space-y-1 max-h-40 overflow-y-auto text-parchment-dim/80">

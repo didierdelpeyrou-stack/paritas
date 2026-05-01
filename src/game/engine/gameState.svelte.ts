@@ -47,6 +47,7 @@ import {
   tickInternalElection,
   type ElectionCampaignMove
 } from '../org/internalElections';
+import { advancePipelineAfterScenario, syncPipelines } from '../narrative/pipelineEngine';
 
 const SAVE_KEY = 'paritas_rebirth_save_v1';
 
@@ -78,6 +79,7 @@ function freshRebirthState(
     organization: freshOrganization(camp, name),
     activeStrategies: [],
     worldAI: freshWorldAI(),
+    activePipelines: [],
     memory: freshMemory(),
     phase: 'idle',
     lastChoice: null,
@@ -147,7 +149,7 @@ class RebirthGameStore {
     const s = this.state;
     const scenario = this.currentScenario;
     if (!s || !scenario) return;
-    const next = resolveChoice(s, scenario, choice);
+    const next = advancePipelineAfterScenario(resolveChoice(s, scenario, choice), scenario);
     const render = buildConsequence(next, choice);
     const after: RebirthGameState = {
       ...next,
@@ -176,7 +178,8 @@ class RebirthGameStore {
     const strategyTick = tickStrategies(advanced);
     const worldTick = tickWorldAI(strategyTick.state);
     const electionTick = tickInternalElection(worldTick.state);
-    this.state = electionTick.state;
+    const pipelineState = syncPipelines(electionTick.state);
+    this.state = pipelineState;
     const logs = [...strategyTick.logs, ...worldTick.logs, ...electionTick.logs];
     if (logs.length > 0) {
       this.log = [...this.log, ...logs].slice(-50);
@@ -359,6 +362,9 @@ class RebirthGameStore {
       }
       if (!s.worldAI) {
         s.worldAI = freshWorldAI();
+      }
+      if (!s.activePipelines) {
+        s.activePipelines = [];
       }
       this.state = s;
       this.log = data.log ?? [];

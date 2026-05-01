@@ -7,6 +7,7 @@ import type { Camp } from '../lib/types';
 import type { PlayerOrganization } from './org/types';
 import type { ActiveStrategy } from './strategy/types';
 import type { WorldAIState } from './ai/types';
+import type { ActivePipeline } from './narrative/pipelineTypes';
 
 /* ============================================================
    Identité du joueur — Rebirth
@@ -253,6 +254,7 @@ export interface RebirthGameState {
   organization: PlayerOrganization;
   activeStrategies: ActiveStrategy[];
   worldAI: WorldAIState;
+  activePipelines: ActivePipeline[];
 
   /* Mémoire */
   memory: Memory;

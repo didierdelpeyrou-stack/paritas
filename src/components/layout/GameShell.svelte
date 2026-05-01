@@ -4,6 +4,7 @@
   import { ALL_RESOURCES } from '../../game/types';
   import SceneCard from '../narrative/SceneCard.svelte';
   import ConsequenceScene from '../narrative/ConsequenceScene.svelte';
+  import PipelinePanel from '../narrative/PipelinePanel.svelte';
   import ResourceGauge from '../simulation/ResourceGauge.svelte';
   import ActorPanel from '../simulation/ActorPanel.svelte';
   import OrganizationPanel from '../org/OrganizationPanel.svelte';
@@ -85,6 +86,8 @@
       />
 
       <WorldStrategyPanel worldAI={s.worldAI} />
+
+      <PipelinePanel pipelines={s.activePipelines} />
 
       <section class="bordered-card p-4 space-y-3">
         <div class="text-xs uppercase tracking-wider text-parchment-dim/60">

@@ -1,6 +1,13 @@
 <script lang="ts">
   import { fade, fly } from 'svelte/transition';
   import type { Choice, RenderMode, Scenario } from '../../game/types';
+  import {
+    POSTURE_STYLES,
+    RESOURCE_SHORT_LABEL,
+    derivePosture,
+    previewResources,
+    resourceGlyph
+  } from '../../game/narrative/choicePosture';
   import VoicePanel from './VoicePanel.svelte';
 
   interface Props {
@@ -64,31 +71,206 @@
     </div>
   {/if}
 
-  <ul class="space-y-2 mt-3">
+  <ul class="space-y-2.5 mt-3">
     {#each scenario.choices as ch, i}
+      {@const posture = derivePosture(ch)}
+      {@const style = POSTURE_STYLES[posture]}
+      {@const previews = mode === 'reflechi' ? previewResources(ch) : []}
       <li>
         <button
           type="button"
-          class="w-full text-left rounded-md border border-line hover:border-amber-500/70 hover:bg-amber-500/5
-                 transition-colors px-3.5 py-3 group"
+          class="choice-btn"
+          data-posture={posture}
+          style="--accent: {style.accent}; --accent-soft: {style.accentSoft}; --accent-muted: {style.accentMuted};"
           onclick={() => onChoose(ch)}
           in:fly={{ y: 8, duration: 240, delay: 60 + i * 40 }}
         >
-          {#if mode === 'reflechi'}
-            <div class="text-[11px] uppercase tracking-wider text-parchment-dim/60 mb-1">
-              {ch.intent}
-            </div>
-          {/if}
-          <div class="text-parchment group-hover:text-amber-200 transition-colors">
-            {ch.text}
-          </div>
-          {#if mode === 'reflechi' && ch.theoryHint}
-            <div class="text-xs italic text-parchment-dim/60 mt-1.5">
-              {ch.theoryHint}
-            </div>
-          {/if}
+          <span class="glyph" aria-hidden="true">{style.glyph}</span>
+
+          <span class="body">
+            {#if mode === 'reflechi'}
+              <span class="posture-tag">{style.label} · {ch.intent}</span>
+            {/if}
+            <span class="text">{ch.text}</span>
+            {#if mode === 'reflechi' && ch.theoryHint}
+              <span class="hint">{ch.theoryHint}</span>
+            {/if}
+            {#if previews.length > 0}
+              <span class="previews">
+                {#each previews as p}
+                  <span class="preview" data-direction={p.direction} data-magnitude={p.magnitude}>
+                    <em>{resourceGlyph(p.resource)}</em>
+                    <span>{RESOURCE_SHORT_LABEL[p.resource]}</span>
+                    <i>{p.direction === 'up' ? '▲' : '▼'}{p.magnitude === 'major' ? p.direction === 'up' ? '▲' : '▼' : ''}</i>
+                  </span>
+                {/each}
+              </span>
+            {/if}
+          </span>
         </button>
       </li>
     {/each}
   </ul>
 </article>
+
+<style>
+  .choice-btn {
+    display: grid;
+    grid-template-columns: 2.4rem 1fr;
+    gap: 0.75rem;
+    align-items: stretch;
+    width: 100%;
+    border: 1px solid var(--accent-muted);
+    border-left-width: 2px;
+    border-radius: 0.55rem;
+    background: var(--accent-soft);
+    padding: 0.7rem 0.85rem 0.7rem 0.65rem;
+    color: #ede4c9;
+    text-align: left;
+    transition:
+      border-color 0.18s ease,
+      background 0.18s ease,
+      transform 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+
+  .choice-btn:hover,
+  .choice-btn:focus-visible {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    transform: translateX(2px);
+    box-shadow: -2px 0 0 0 var(--accent);
+    outline: none;
+  }
+
+  .choice-btn[data-posture='rupture']:hover {
+    transform: translateX(2px) skewX(-0.4deg);
+  }
+
+  .choice-btn[data-posture='institution']:hover {
+    transform: translateX(2px) translateY(-1px);
+  }
+
+  .choice-btn[data-posture='compromis']:hover {
+    transform: translateX(2px);
+  }
+
+  .choice-btn[data-posture='expertise']:hover {
+    transform: translateX(1px) translateY(-0.5px);
+  }
+
+  .choice-btn[data-posture='opinion']:hover .glyph {
+    transform: scale(1.1);
+  }
+
+  .choice-btn .glyph {
+    align-self: center;
+    justify-self: center;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--accent-muted);
+    border-radius: 50%;
+    background: rgba(13, 16, 20, 0.5);
+    color: var(--accent);
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 1rem;
+    line-height: 1;
+    transition: transform 0.2s ease, border-color 0.18s ease;
+  }
+
+  .choice-btn:hover .glyph {
+    border-color: var(--accent);
+  }
+
+  .choice-btn .body {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.28rem;
+  }
+
+  .choice-btn .posture-tag {
+    color: var(--accent);
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .choice-btn .text {
+    color: #ede4c9;
+    font-size: 0.94rem;
+    line-height: 1.35;
+    transition: color 0.18s ease;
+  }
+
+  .choice-btn:hover .text {
+    color: var(--accent);
+  }
+
+  .choice-btn .hint {
+    color: rgba(237, 228, 201, 0.6);
+    font-size: 0.74rem;
+    font-style: italic;
+    line-height: 1.35;
+  }
+
+  .choice-btn .previews {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.2rem;
+  }
+
+  .choice-btn .preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.28rem;
+    border: 1px solid rgba(237, 228, 201, 0.16);
+    border-radius: 999px;
+    background: rgba(13, 16, 20, 0.45);
+    padding: 0.12rem 0.5rem;
+    font-size: 0.66rem;
+    color: rgba(237, 228, 201, 0.78);
+  }
+
+  .choice-btn .preview em {
+    font-family: 'Cinzel', Georgia, serif;
+    font-style: normal;
+    font-size: 0.7rem;
+    color: rgba(237, 228, 201, 0.7);
+  }
+
+  .choice-btn .preview i {
+    font-style: normal;
+    font-size: 0.62rem;
+    letter-spacing: -0.05em;
+  }
+
+  .choice-btn .preview[data-direction='up'] {
+    border-color: rgba(95, 181, 107, 0.35);
+    color: #aedab5;
+  }
+
+  .choice-btn .preview[data-direction='up'] em,
+  .choice-btn .preview[data-direction='up'] i {
+    color: #aedab5;
+  }
+
+  .choice-btn .preview[data-direction='down'] {
+    border-color: rgba(224, 122, 110, 0.35);
+    color: #e8a09b;
+  }
+
+  .choice-btn .preview[data-direction='down'] em,
+  .choice-btn .preview[data-direction='down'] i {
+    color: #e8a09b;
+  }
+
+  .choice-btn .preview[data-magnitude='major'] {
+    font-weight: 600;
+  }
+</style>

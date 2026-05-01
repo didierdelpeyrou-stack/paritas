@@ -58,17 +58,15 @@
     <h1 class="font-display text-4xl uppercase tracking-widest text-amber-400">
       Paritas
     </h1>
-    <p class="text-parchment-dim italic">
-      Vingt-cinq siècles de paritarisme — 100 tours, douze nuits qui décident
+    <p class="text-parchment-dim text-sm sm:text-base">
+      Tu négocies à la place des syndicats ou des patrons. Tes choix font l'histoire.
     </p>
   </header>
 
-  <div class="bg-ink/40 border-l-2 border-amber-500 px-4 py-3 italic text-parchment-dim leading-relaxed text-sm">
-    Ce jeu ne transforme pas la lutte sociale en divertissement.<br />
-    Il propose une simulation historique narrative.<br /><br />
-    Le paritarisme n'est pas un décor : c'est une forme fragile de civilisation
-    sociale, qui naît quand des adversaires acceptent de se reconnaître comme
-    interlocuteurs.
+  <div class="bg-ink/40 border-l-2 border-amber-500 px-4 py-3 text-parchment-dim leading-relaxed text-sm">
+    Cent décisions, deux camps, deux siècles. Lois Le Chapelier, accords Matignon, Sécurité sociale, Mai 68, Auroux, Refondation sociale, Retraites 2023.
+    À chaque tour, tu prends parti. Aucun choix n'est neutre.
+    <span class="block mt-2 italic text-parchment-dim/80">Ce n'est pas un divertissement, c'est une simulation historique narrative.</span>
   </div>
 
   <!-- Sélecteur de figure légendaire -->

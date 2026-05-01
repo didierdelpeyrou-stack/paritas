@@ -12,6 +12,8 @@ export interface EraDef {
   period: string;
   /** Tour minimum auquel cette ère devient active */
   fromTurn: number;
+  /** Première année représentée par cette ère (pour le bandeau temporel). */
+  firstYear?: number;
   /** Description courte (mode Réfléchi en intro d'ère) */
   blurb: string;
   /** Mood ambiance UI */
@@ -41,6 +43,7 @@ export const ERAS: EraDef[] = [
     name: 'Révolution',
     period: '1789 — 1799',
     fromTurn: 7,
+    firstYear: 1789,
     blurb: 'Le décret d\'Allarde abolit les corporations ; la loi Le Chapelier interdit toute coalition.',
     hue: 'rose'
   },
@@ -49,6 +52,7 @@ export const ERAS: EraDef[] = [
     name: 'XIXe industriel',
     period: '1800 — 1900',
     fromTurn: 9,
+    firstYear: 1800,
     blurb: 'Ligues clandestines, prud\'hommes, Canuts, Ollivier, Waldeck-Rousseau. Le syndicalisme remonte.',
     hue: 'rose'
   },
@@ -57,6 +61,7 @@ export const ERAS: EraDef[] = [
     name: 'Belle Époque',
     period: '1900 — 1914',
     fromTurn: 15,
+    firstYear: 1900,
     blurb: 'CGT, Charte d\'Amiens. Le syndicalisme révolutionnaire pose son indépendance vis-à-vis des partis.',
     hue: 'emerald'
   },
@@ -65,6 +70,7 @@ export const ERAS: EraDef[] = [
     name: 'Entre-deux-guerres',
     period: '1919 — 1939',
     fromTurn: 18,
+    firstYear: 1919,
     blurb: 'Conventions collectives 1919. Front populaire 1936. Premier paritarisme ascendant.',
     hue: 'emerald'
   },
@@ -73,6 +79,7 @@ export const ERAS: EraDef[] = [
     name: 'Reconstruction',
     period: '1944 — 1947',
     fromTurn: 22,
+    firstYear: 1944,
     blurb: 'Programme du CNR "Les Jours heureux". Ordonnances Sécurité sociale du 4 octobre 1945.',
     hue: 'violet'
   },
@@ -81,6 +88,7 @@ export const ERAS: EraDef[] = [
     name: 'Guerre froide',
     period: '1947 — 1958',
     fromTurn: 24,
+    firstYear: 1947,
     blurb: 'Scission CGT / FO. Constitution de FO. Deux confédérations rivales.',
     hue: 'violet'
   },
@@ -89,6 +97,7 @@ export const ERAS: EraDef[] = [
     name: 'Trente Glorieuses',
     period: '1958 — 1973',
     fromTurn: 26,
+    firstYear: 1958,
     blurb: 'Unédic 1958, Jeanneney 1967, Grenelle 1968. Apogée du paritarisme.',
     hue: 'cyan'
   },
@@ -97,6 +106,7 @@ export const ERAS: EraDef[] = [
     name: 'Crise pétrolière',
     period: '1973 — 1981',
     fromTurn: 30,
+    firstYear: 1973,
     blurb: 'Chômage de masse. Patronat cherche à réduire les coûts.',
     hue: 'slate'
   },
@@ -105,6 +115,7 @@ export const ERAS: EraDef[] = [
     name: 'Mitterrand',
     period: '1981 — 1995',
     fromTurn: 31,
+    firstYear: 1981,
     blurb: 'Lois Auroux 1982. Abstention massive 1983. Cohabitations.',
     hue: 'rose'
   },
@@ -113,6 +124,7 @@ export const ERAS: EraDef[] = [
     name: 'Cohabitations',
     period: '1986 — 2002',
     fromTurn: 34,
+    firstYear: 1995,
     blurb: 'Plan Juppé, 35h Aubry, MEDEF Seillière. Refondation sociale.',
     hue: 'slate'
   },
@@ -121,6 +133,7 @@ export const ERAS: EraDef[] = [
     name: 'Sarkozy',
     period: '2007 — 2012',
     fromTurn: 37,
+    firstYear: 2007,
     blurb: 'Loi Larcher. Reprise étatique de la formation professionnelle.',
     hue: 'slate'
   },
@@ -129,6 +142,7 @@ export const ERAS: EraDef[] = [
     name: 'Hollande',
     period: '2012 — 2017',
     fromTurn: 39,
+    firstYear: 2012,
     blurb: 'Loi El Khomri 2016. Premières inversions de la hiérarchie des normes.',
     hue: 'slate'
   },
@@ -137,6 +151,7 @@ export const ERAS: EraDef[] = [
     name: 'Macron I',
     period: '2017 — 2022',
     fromTurn: 40,
+    firstYear: 2017,
     blurb: 'Ordonnances Macron, CSE, "lettre de cadrage" Unédic.',
     hue: 'slate'
   },
@@ -145,6 +160,7 @@ export const ERAS: EraDef[] = [
     name: 'Macron II',
     period: '2022 — 2026',
     fromTurn: 44,
+    firstYear: 2022,
     blurb: 'Réforme retraites 2023. Triple ponction Agirc-Arrco / Action Logement / Unédic.',
     hue: 'slate'
   },
@@ -153,6 +169,7 @@ export const ERAS: EraDef[] = [
     name: 'Présent',
     period: '2026 →',
     fromTurn: 48,
+    firstYear: 2026,
     blurb: 'Bras de fer en cours. Le paritarisme à la croisée des chemins.',
     hue: 'amber'
   }
@@ -171,4 +188,23 @@ export function eraForTurn(turn: number): EraDef {
 /** Renvoie la définition d'ère par id, ou la 1re si non trouvée. */
 export function eraById(id: EraId): EraDef {
   return ERAS.find(e => e.id === id) ?? ERAS[0]!;
+}
+
+/**
+ * Année historique représentée par un tour donné — interpole linéairement
+ * entre `firstYear` de l'ère active et `firstYear` de la suivante. Renvoie
+ * `null` pour les ères pré-modernes (Antiquité, Moyen Âge) qui s'expriment
+ * en siècles.
+ */
+export function yearForTurn(turn: number): number | null {
+  const era = eraForTurn(turn);
+  if (era.firstYear === undefined) return null;
+  const idx = ERAS.indexOf(era);
+  const nextWithYear = ERAS.slice(idx + 1).find(e => e.firstYear !== undefined);
+  if (!nextWithYear || nextWithYear.firstYear === undefined) return era.firstYear;
+  const span = nextWithYear.fromTurn - era.fromTurn;
+  if (span <= 0) return era.firstYear;
+  const yearsSpan = nextWithYear.firstYear - era.firstYear;
+  const offset = (turn - era.fromTurn) / span;
+  return Math.round(era.firstYear + offset * yearsSpan);
 }

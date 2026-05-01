@@ -12,7 +12,8 @@
   import StrategyPanel from '../strategy/StrategyPanel.svelte';
   import WorldStrategyPanel from '../world/WorldStrategyPanel.svelte';
   import EndingReport from '../feedback/EndingReport.svelte';
-  import { eraForTurn } from '../../game/content/eras';
+  import EraTimeline from './EraTimeline.svelte';
+  import { eraForTurn, yearForTurn } from '../../game/content/eras';
   import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
 
   interface Props {
@@ -67,18 +68,20 @@
 {:else if gameState && era}
   {@const s = gameState}
   {@const e = era}
+  {@const year = yearForTurn(s.turn)}
   <div class="grid lg:grid-cols-[300px_1fr] gap-4">
     <!-- Sidebar : 3 onglets repliables + identité fixe -->
     <aside class="space-y-3 order-2 lg:order-1">
       <!-- Bandeau ère, toujours visible -->
-      <section class="bordered-card p-4 space-y-1.5">
-        <div class="flex items-baseline justify-between">
+      <section class="bordered-card p-4 space-y-2">
+        <div class="flex items-baseline justify-between gap-2">
           <span class="text-xs uppercase tracking-wider text-parchment-dim/80">
-            Tour {s.turn} / 100
+            Tour {s.turn} / 100{#if year} · {year}{/if}
           </span>
           <span class="text-xs italic text-parchment-dim/80">{e.period}</span>
         </div>
         <h3 class="font-display text-gold text-lg leading-tight">{e.name}</h3>
+        <EraTimeline currentTurn={s.turn} />
       </section>
 
       <!-- Onglets -->

@@ -18,9 +18,15 @@ export interface LegendaryCharacter {
   id: string;
   name: string;
   camp: Camp;
+  years: string;
+  rarity: 'argent' | 'or' | 'legendaire';
   archetype: string;
   theoryBias: TheorySchool;
   signature: string;
+  signatureKind: 'formule-de-jeu' | 'citation-attestee' | 'paraphrase';
+  sourceLabel: string;
+  sourceUrl: string;
+  bio: string;
   skillAffinity: Partial<Record<SkillKey, number>>;
   statBias: Partial<Record<StatKey, number>>;
   phases: LegendaryPhase[];
@@ -31,9 +37,15 @@ export const LEGENDARY_CHARACTERS: LegendaryCharacter[] = [
     id: 'bastiat',
     name: 'Frederic Bastiat',
     camp: 'patron',
+    years: '1801-1850',
+    rarity: 'or',
     archetype: 'Liberal de combat',
     theoryBias: 'jeux',
     signature: 'Voir le cout cache derriere chaque concession visible.',
+    signatureKind: 'formule-de-jeu',
+    sourceLabel: 'Britannica Money - Frederic Bastiat',
+    sourceUrl: 'https://www.britannica.com/money/Frederic-Bastiat',
+    bio: 'Economiste liberal et parlementaire de la IIe Republique. Dans Paritas, il incarne la lecture par les incitations, les couts caches et le cadrage public.',
     skillAffinity: { politique: 2, baratin: 2, negociation: 1 },
     statBias: { economique: 2, influence: 1, symbolique: 1 },
     phases: [
@@ -46,9 +58,15 @@ export const LEGENDARY_CHARACTERS: LegendaryCharacter[] = [
     id: 'schneider',
     name: 'Eugene Schneider',
     camp: 'patron',
+    years: '1805-1875',
+    rarity: 'legendaire',
     archetype: 'Industriel paternaliste',
     theoryBias: 'agence',
     signature: 'Tenir la production sans rompre le pacte social local.',
+    signatureKind: 'formule-de-jeu',
+    sourceLabel: 'Archives nationales - Schneider et Cie',
+    sourceUrl: 'https://francearchives.gouv.fr/fr/agent/19187269',
+    bio: 'Grand patron du Creusot, symbole du paternalisme industriel. Il donne une partie plus forte en production et en caisse, mais expose a la crise de legitimite.',
     skillAffinity: { production: 2, politique: 1, expertise: 1 },
     statBias: { economique: 2, caisse: 2, social: 1 },
     phases: [
@@ -61,9 +79,15 @@ export const LEGENDARY_CHARACTERS: LegendaryCharacter[] = [
     id: 'mercier',
     name: 'Ernest Mercier',
     camp: 'patron',
+    years: '1878-1955',
+    rarity: 'or',
     archetype: 'Modernisateur technocrate',
     theoryBias: 'harvard',
     signature: 'Convertir le conflit social en architecture d’organisation.',
+    signatureKind: 'formule-de-jeu',
+    sourceLabel: 'Encyclopaedia Universalis - Ernest Mercier',
+    sourceUrl: 'https://www.universalis.fr/encyclopedie/ernest-mercier/',
+    bio: 'Ingenieur, dirigeant et organisateur patronal. Dans le jeu, il pousse vers l’expertise, la negotiation integrative et les compromis institutionnels.',
     skillAffinity: { negociation: 2, expertise: 2, production: 1 },
     statBias: { institutionnel: 2, economique: 1, prestige: 1 },
     phases: [
@@ -76,9 +100,15 @@ export const LEGENDARY_CHARACTERS: LegendaryCharacter[] = [
     id: 'blanqui',
     name: 'Auguste Blanqui',
     camp: 'salarie',
+    years: '1805-1881',
+    rarity: 'legendaire',
     archetype: 'Insurge permanent',
     theoryBias: 'jeux',
     signature: 'Faire monter la pression jusqu’au point ou l’autre camp doit choisir.',
+    signatureKind: 'formule-de-jeu',
+    sourceLabel: 'Larousse - Auguste Blanqui',
+    sourceUrl: 'https://www.larousse.fr/encyclopedie/personnage/Louis_Auguste_Blanqui/109315',
+    bio: 'Revolutionnaire du XIXe siecle, figure de la rupture et de la prison politique. Il donne beaucoup de mobilisation, mais use la sante collective.',
     skillAffinity: { mobilisation: 2, baratin: 2, politique: 1 },
     statBias: { militant: 2, symbolique: 2, sante: -1 },
     phases: [
@@ -91,9 +121,15 @@ export const LEGENDARY_CHARACTERS: LegendaryCharacter[] = [
     id: 'guesde',
     name: 'Jules Guesde',
     camp: 'salarie',
+    years: '1845-1922',
+    rarity: 'or',
     archetype: 'Doctrine et parti',
     theoryBias: 'agence',
     signature: 'Garder l’agent syndical aligne sur la cause collective.',
+    signatureKind: 'formule-de-jeu',
+    sourceLabel: 'Assemblee nationale - Jules Guesde',
+    sourceUrl: 'https://www2.assemblee-nationale.fr/sycomore/fiche/3638?legislature=35',
+    bio: 'Socialiste marxiste et organisateur politique. Il renforce la discipline collective, le mandat et la lecture des conflits d’agence.',
     skillAffinity: { politique: 2, mobilisation: 1, baratin: 1 },
     statBias: { militant: 2, institutionnel: 1, soutien: 1 },
     phases: [
@@ -106,9 +142,15 @@ export const LEGENDARY_CHARACTERS: LegendaryCharacter[] = [
     id: 'laroque',
     name: 'Pierre Laroque',
     camp: 'salarie',
+    years: '1907-1997',
+    rarity: 'legendaire',
     archetype: 'Architecte de protection sociale',
     theoryBias: 'harvard',
     signature: 'Transformer les interets opposes en institution durable.',
+    signatureKind: 'formule-de-jeu',
+    sourceLabel: 'Vie-publique - creation de la Securite sociale',
+    sourceUrl: 'https://www.vie-publique.fr/eclairage/19474-la-securite-sociale-creation-et-fonctionnement',
+    bio: 'Haut fonctionnaire associe a l’architecture de la Securite sociale de 1945. Il favorise l’expertise, la confiance et les institutions durables.',
     skillAffinity: { expertise: 2, negociation: 2, politique: 1 },
     statBias: { institutionnel: 2, social: 2, sante: 1 },
     phases: [

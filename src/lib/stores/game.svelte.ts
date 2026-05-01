@@ -125,6 +125,9 @@ class GameStore {
     next.rival.score = 35 + opts.difficulty * 8;
     this.state = next;
     this.log(`<b>${opts.name}</b> entre dans l'histoire — côté ${opts.camp === 'patron' ? 'patronal' : 'salarié'}, mode ${opts.mode === 'reflechi' ? 'réfléchi' : 'compulsif'}${legendary ? `, lignée ${legendary.name}` : ''}.`);
+    if (legendary) {
+      this.log(`<i>${legendary.signature}</i> <span class="text-parchment-dim/60">(${legendary.sourceLabel})</span>`);
+    }
     this.persist();
   }
 

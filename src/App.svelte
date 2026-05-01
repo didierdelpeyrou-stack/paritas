@@ -53,16 +53,18 @@
   let formDifficulty = $state<Difficulty>(1);
   let formTrait = $state<SkillKey>('negociation');
   let formLegendaryId = $state<string | null>(null);
-  let availableLegends = $derived(formCamp ? LEGENDARY_CHARACTERS.filter((character) => character.camp === formCamp) : []);
-  let selectedLegend = $derived(availableLegends.find((character) => character.id === formLegendaryId) ?? null);
+  let legendFilter = $state<'all' | Camp>('all');
+  let visibleLegends = $derived(
+    LEGENDARY_CHARACTERS.filter((character) => legendFilter === 'all' || character.camp === legendFilter)
+  );
+  let selectedLegend = $derived(LEGENDARY_CHARACTERS.find((character) => character.id === formLegendaryId) ?? null);
 
   $effect(() => {
-    if (!formCamp) {
-      formLegendaryId = null;
-      return;
+    if (formLegendaryId && selectedLegend && formCamp !== selectedLegend.camp) {
+      formCamp = selectedLegend.camp;
     }
-    if (!availableLegends.some((character) => character.id === formLegendaryId)) {
-      formLegendaryId = availableLegends[0]?.id ?? null;
+    if (formLegendaryId && !selectedLegend) {
+      formLegendaryId = null;
     }
   });
 
@@ -86,6 +88,21 @@
     seenIds = new Set();
     currentEvent = pickEvent();
     started = true;
+  }
+
+  function chooseLegend(legend: LegendaryCharacter) {
+    if (formLegendaryId === legend.id) {
+      formLegendaryId = null;
+      return;
+    }
+    formLegendaryId = legend.id;
+    formCamp = legend.camp;
+    if (!formName.trim()) formName = legend.name;
+  }
+
+  function clearLegendIfWrongCamp(camp: Camp) {
+    formCamp = camp;
+    if (selectedLegend && selectedLegend.camp !== camp) formLegendaryId = null;
   }
 
   function skillBonusText(character: LegendaryCharacter): string {
@@ -124,6 +141,33 @@
       institutionnel: 'Cap. institutionnel',
       symbolique: 'Cap. symbolique'
     }[stat] ?? stat;
+  }
+
+  function theoryLabel(theory: LegendaryCharacter['theoryBias']): string {
+    return {
+      jeux: 'Theorie des jeux',
+      harvard: 'Negociation raisonnée',
+      perspectives: 'Economie comportementale',
+      agence: 'Theorie de l’agence'
+    }[theory];
+  }
+
+  function rarityLabel(rarity: LegendaryCharacter['rarity']): string {
+    return {
+      legendaire: 'Legendaire',
+      or: 'Or',
+      argent: 'Argent'
+    }[rarity];
+  }
+
+  function initials(name: string): string {
+    return name
+      .split(' ')
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
   }
 
   /* ============= choix ============= */
@@ -332,6 +376,68 @@
         ⚠ Désaligner ces 3 axes pénalise ton score final.
       </p>
 
+      <div class="mt-7 rounded-xl border border-amber-500/25 bg-ink/35 p-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h3 class="font-display text-amber-400 uppercase tracking-wider">Incarner une figure légendaire</h3>
+            <p class="text-sm text-parchment-dim/75 mt-1">
+              Choisis une lignée historique pour démarrer avec des compétences propres, ou crée ton protagoniste librement.
+            </p>
+          </div>
+          <div class="grid grid-cols-3 gap-1 rounded-lg border border-line bg-ink/50 p-1 text-xs">
+            <button type="button" class:active-filter={legendFilter === 'all'} onclick={() => legendFilter = 'all'}>Tous</button>
+            <button type="button" class:active-filter={legendFilter === 'salarie'} onclick={() => legendFilter = 'salarie'}>Salariés</button>
+            <button type="button" class:active-filter={legendFilter === 'patron'} onclick={() => legendFilter = 'patron'}>Patronat</button>
+          </div>
+        </div>
+
+        <div class="legend-grid mt-4">
+          {#each visibleLegends as legend}
+            <button type="button" onclick={() => chooseLegend(legend)}
+                    class="legend-card {legend.rarity} {formLegendaryId === legend.id ? 'selected' : ''}">
+              <div class="legend-avatar">{initials(legend.name)}</div>
+              <div class="legend-main">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <div class="legend-name">{legend.name}</div>
+                    <div class="legend-meta">
+                      {legend.years} · {legend.camp === 'salarie' ? 'Salarié' : 'Patronat'} · {rarityLabel(legend.rarity)}
+                    </div>
+                  </div>
+                  <span class="legend-theory">{theoryLabel(legend.theoryBias)}</span>
+                </div>
+                <p class="legend-bio">{legend.bio}</p>
+                <p class="legend-signature">"{legend.signature}"</p>
+                <div class="legend-bonus">{skillBonusText(legend)}</div>
+              </div>
+            </button>
+          {/each}
+        </div>
+
+        {#if selectedLegend}
+          <div class="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-3">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+              <div>
+                <div class="font-display text-amber-300 tracking-wider">{selectedLegend.name} entre dans la partie</div>
+                <p class="text-sm text-parchment-dim mt-1">
+                  Formule de jeu inspirée du parcours historique, pas une citation littérale.
+                  Source de contexte : <a class="text-amber-300 underline decoration-amber-300/30" href={selectedLegend.sourceUrl} target="_blank" rel="noreferrer">{selectedLegend.sourceLabel}</a>.
+                </p>
+              </div>
+              <div class="text-xs text-emerald-300 sm:text-right">{statBonusText(selectedLegend)}</div>
+            </div>
+            <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {#each selectedLegend.phases as phase}
+                <div class="rounded-md border border-line/70 bg-ink/25 p-2">
+                  <div class="text-[0.65rem] uppercase tracking-wider text-gold font-display">{phase.label}</div>
+                  <div class="text-xs text-parchment-dim/80 mt-1 leading-snug">{phase.trial}</div>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/if}
+      </div>
+
       <!-- form -->
       <div class="space-y-3 mt-6">
         <label class="block">
@@ -343,13 +449,13 @@
         <div>
           <span class="text-xs uppercase tracking-wider text-parchment-dim/70">Camp</span>
           <div class="grid grid-cols-2 gap-3 mt-2">
-            <button type="button" onclick={() => formCamp = 'salarie'}
+            <button type="button" onclick={() => clearLegendIfWrongCamp('salarie')}
                     class="rounded-lg p-4 text-center border-2 transition-all
                            {formCamp === 'salarie' ? 'border-rose-500 bg-rose-500/10' : 'border-line hover:border-line/80'}">
               <div class="font-display text-amber-400">Côté salarié 🚩</div>
               <div class="text-xs text-parchment-dim/70 mt-1">Délégué, syndicaliste</div>
             </button>
-            <button type="button" onclick={() => formCamp = 'patron'}
+            <button type="button" onclick={() => clearLegendIfWrongCamp('patron')}
                     class="rounded-lg p-4 text-center border-2 transition-all
                            {formCamp === 'patron' ? 'border-blue-500 bg-blue-500/10' : 'border-line hover:border-line/80'}">
               <div class="font-display text-amber-400">Côté patronal 🏛️</div>
@@ -357,43 +463,6 @@
             </button>
           </div>
         </div>
-
-        {#if formCamp}
-          <div>
-            <span class="text-xs uppercase tracking-wider text-parchment-dim/70">Personnage légendaire</span>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-2">
-              {#each availableLegends as legend}
-                <button type="button" onclick={() => formLegendaryId = legend.id}
-                        class="rounded-lg p-3 text-left border-2 transition-all
-                               {formLegendaryId === legend.id ? 'border-amber-500 bg-amber-500/10' : 'border-line hover:border-amber-500/60 bg-ink/20'}">
-                  <div class="font-display text-amber-400 text-sm leading-tight">{legend.name}</div>
-                  <div class="text-xs text-parchment-dim/70 mt-1">{legend.archetype}</div>
-                  <div class="text-[0.68rem] text-parchment-dim/80 mt-2 leading-snug">{skillBonusText(legend)}</div>
-                </button>
-              {/each}
-            </div>
-
-            {#if selectedLegend}
-              <div class="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-3">
-                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                  <div>
-                    <div class="font-display text-amber-300 tracking-wider">{selectedLegend.name}</div>
-                    <p class="text-sm italic text-parchment-dim mt-1">{selectedLegend.signature}</p>
-                  </div>
-                  <div class="text-xs text-emerald-300 sm:text-right">{statBonusText(selectedLegend)}</div>
-                </div>
-                <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  {#each selectedLegend.phases as phase}
-                    <div class="rounded-md border border-line/70 bg-ink/25 p-2">
-                      <div class="text-[0.65rem] uppercase tracking-wider text-gold font-display">{phase.label}</div>
-                      <div class="text-xs text-parchment-dim/80 mt-1 leading-snug">{phase.trial}</div>
-                    </div>
-                  {/each}
-                </div>
-              </div>
-            {/if}
-          </div>
-        {/if}
 
         <label class="block">
           <span class="text-xs uppercase tracking-wider text-parchment-dim/70">Mode de jeu</span>
@@ -428,7 +497,7 @@
         </label>
 
         <button type="button" class="btn-primary w-full mt-4" onclick={start}>
-          Entrer dans l'histoire
+          {selectedLegend ? `Entrer dans l'histoire en ${selectedLegend.name}` : "Entrer dans l'histoire"}
         </button>
       </div>
     </div>
@@ -563,6 +632,105 @@
 
   .choice-flash span.up { color: #7ff0b2; }
   .choice-flash span.down { color: #ff9c91; }
+
+  .active-filter {
+    border-radius: 0.45rem;
+    background: rgba(200, 155, 60, 0.18);
+    color: #f4d58b;
+  }
+
+  .legend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .legend-card {
+    display: grid;
+    grid-template-columns: 2.7rem 1fr;
+    gap: 0.75rem;
+    min-height: 12.5rem;
+    padding: 0.85rem;
+    border: 1px solid rgba(237, 228, 201, 0.12);
+    border-radius: 0.75rem;
+    background: rgba(13, 16, 20, 0.34);
+    color: inherit;
+    text-align: left;
+    transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+  }
+
+  .legend-card:hover,
+  .legend-card.selected {
+    transform: translateY(-1px);
+    border-color: rgba(244, 213, 139, 0.72);
+    background: rgba(200, 155, 60, 0.08);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28), 0 0 20px rgba(200, 155, 60, 0.12);
+  }
+
+  .legend-card.legendaire.selected {
+    box-shadow: 0 16px 42px rgba(0, 0, 0, 0.34), 0 0 28px rgba(244, 213, 139, 0.22);
+  }
+
+  .legend-avatar {
+    width: 2.7rem;
+    height: 2.7rem;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    border: 1px solid rgba(244, 213, 139, 0.42);
+    background: radial-gradient(circle at 30% 20%, rgba(244, 213, 139, 0.22), rgba(13, 16, 20, 0.72));
+    color: #f4d58b;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.9rem;
+    font-weight: 800;
+  }
+
+  .legend-name {
+    color: #f4d58b;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.95rem;
+    line-height: 1.2;
+  }
+
+  .legend-meta,
+  .legend-bonus {
+    color: rgba(237, 228, 201, 0.62);
+    font-size: 0.7rem;
+    line-height: 1.25;
+  }
+
+  .legend-theory {
+    flex: 0 0 auto;
+    max-width: 7rem;
+    border: 1px solid rgba(126, 180, 255, 0.25);
+    border-radius: 999px;
+    padding: 0.15rem 0.4rem;
+    color: #b8d6ff;
+    background: rgba(46, 94, 138, 0.14);
+    font-size: 0.62rem;
+    line-height: 1.15;
+    text-align: center;
+  }
+
+  .legend-bio {
+    margin-top: 0.55rem;
+    color: rgba(237, 228, 201, 0.78);
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+
+  .legend-signature {
+    margin-top: 0.55rem;
+    color: #f1c66c;
+    font-size: 0.76rem;
+    font-style: italic;
+    line-height: 1.3;
+  }
+
+  .legend-bonus {
+    margin-top: 0.55rem;
+    color: #8de8b5;
+  }
 
   @keyframes flash-burst {
     0% { opacity: 0; transform: translateY(16px) scale(0.72); filter: brightness(1); }

@@ -7,6 +7,8 @@ import type { Choice, PlayerTrait, RebirthGameState, Scenario, TraitScores } fro
 import { composeConsequence } from '../narrative/consequenceWriter';
 import { composeNarrativeFallback } from '../narrative/narrativeFallback';
 import type { NarrativePromptOutput } from '../narrative/narrativeClient';
+import { composeConcreteMeasures } from '../narrative/concreteMeasures';
+import { yearForTurn } from '../content/eras';
 
 export interface TraitShiftSummary {
   /** Trait du delta positif le plus important pour ce choix. */
@@ -32,6 +34,8 @@ export interface ConsequenceRender {
   traitShift: TraitShiftSummary | null;
   /** Changement de trait dominant déclenché par ce choix (rare, marquant). */
   traitChange: TraitChange | null;
+  /** Mesures concrètes traduisant les deltas en chiffres et lieux. */
+  concreteMeasures: string[];
 }
 
 export function buildConsequence(
@@ -46,6 +50,11 @@ export function buildConsequence(
     previousDominantTrait !== state.dominantTrait
       ? { from: previousDominantTrait, to: state.dominantTrait }
       : null;
+  const concreteMeasures = composeConcreteMeasures(
+    { camp: state.camp, era: state.era, turn: state.turn },
+    choice,
+    yearForTurn(state.turn)
+  );
   return {
     text: base.text,
     numericSummary: base.numericSummary,
@@ -55,7 +64,8 @@ export function buildConsequence(
     memoryLine: null,
     enriched: false,
     traitShift,
-    traitChange
+    traitChange,
+    concreteMeasures
   };
 }
 

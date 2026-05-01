@@ -33,6 +33,14 @@
     {consequence.text}
   </div>
 
+  {#if consequence.concreteMeasures.length > 0}
+    <ul class="concrete-list">
+      {#each consequence.concreteMeasures as m}
+        <li>· {m}</li>
+      {/each}
+    </ul>
+  {/if}
+
   {#if consequence.newspaperHeadline}
     <div
       in:fade={{ duration: 380 }}
@@ -163,5 +171,24 @@
     color: #aedab5;
     font-family: 'Cinzel', Georgia, serif;
     font-style: normal;
+  }
+
+  .concrete-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.55rem 0.75rem;
+    border-left: 2px solid rgba(244, 213, 139, 0.45);
+    background: rgba(201, 154, 64, 0.06);
+    border-radius: 0 0.45rem 0.45rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.28rem;
+  }
+
+  .concrete-list li {
+    color: rgba(237, 228, 201, 0.92);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 0.86rem;
+    line-height: 1.4;
   }
 </style>

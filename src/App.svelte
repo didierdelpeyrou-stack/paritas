@@ -10,6 +10,7 @@
   import StartScreen from './components/intro/StartScreen.svelte';
   import Tutorial from './components/intro/Tutorial.svelte';
   import GameShell from './components/layout/GameShell.svelte';
+  import ToastStack from './components/feedback/ToastStack.svelte';
   import { loadAllScenarios } from './game/content/scenarios';
   import { loadPipelineContent } from './game/narrative/pipelineContent';
 
@@ -83,6 +84,8 @@
 <svelte:head>
   <title>Paritas — 25 siècles de paritarisme</title>
 </svelte:head>
+
+<ToastStack />
 
 <main class="min-h-dvh px-4 py-6 max-w-7xl mx-auto">
   {#if phase === 'start'}

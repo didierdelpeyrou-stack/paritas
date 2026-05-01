@@ -11,9 +11,11 @@
   import ObjectivePanel from '../objectives/ObjectivePanel.svelte';
   import WorldStrategyPanel from '../world/WorldStrategyPanel.svelte';
   import EndingReport from '../feedback/EndingReport.svelte';
+  import ToastStack from '../feedback/ToastStack.svelte';
   import EraTimeline from './EraTimeline.svelte';
   import { eraForTurn, yearForTurn } from '../../game/content/eras';
   import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
+  import { computeFinalScore } from '../../game/simulation/scoring';
 
   interface Props {
     onReplay: () => void;
@@ -82,6 +84,7 @@
   {@const s = gameState}
   {@const e = era}
   {@const year = yearForTurn(s.turn)}
+  {@const liveScore = computeFinalScore(s)}
   <div class="grid lg:grid-cols-[300px_1fr] gap-4">
     <!-- Sidebar : 3 onglets repliables + identité fixe -->
     <aside class="space-y-3 order-2 lg:order-1">
@@ -93,7 +96,13 @@
           </span>
           <span class="text-xs italic text-parchment-dim/80">{e.period}</span>
         </div>
-        <h3 class="font-display text-gold text-lg leading-tight">{e.name}</h3>
+        <div class="flex items-baseline justify-between gap-2">
+          <h3 class="font-display text-gold text-lg leading-tight">{e.name}</h3>
+          <div class="text-right" title="Score provisoire — il bouge à chaque choix.">
+            <div class="font-display text-gold-soft text-base leading-none">{liveScore}<span class="text-[0.7rem] text-parchment-dim/60">/100</span></div>
+            <div class="text-[0.6rem] uppercase tracking-wider text-parchment-dim/65">score</div>
+          </div>
+        </div>
         <EraTimeline currentTurn={s.turn} />
       </section>
 

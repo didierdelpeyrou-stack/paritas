@@ -170,6 +170,7 @@ class RebirthGameStore {
     const s = this.state;
     const scenario = this.currentScenario;
     if (!s || !scenario) return;
+    if (choice.requiresTrait && choice.requiresTrait !== s.dominantTrait) return;
     const next = advancePipelineAfterScenario(resolveChoice(s, scenario, choice), scenario);
     const render = buildConsequence(next, scenario, choice);
     const after: RebirthGameState = {

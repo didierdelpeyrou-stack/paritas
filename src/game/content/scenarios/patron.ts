@@ -63,7 +63,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
           longterm:
             'Le paternalisme aura sa réussite — Le Creusot, Mulhouse — et son échec : il ne survivra pas à la première grande grève du XXe siècle.'
         },
-        traitShift: { paternaliste: 3, batisseur: 1 }
+        traitShift: { paternaliste: 3, batisseur: 1 },
+        requiresTrait: 'paternaliste'
       },
       {
         id: 'forges-repression',
@@ -491,7 +492,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
           longterm:
             'Le management français des trente années suivantes naîtra largement de cette acculturation discrète.'
         },
-        traitShift: { batisseur: 2, technocrate: 2 }
+        traitShift: { batisseur: 2, technocrate: 2 },
+        requiresTrait: 'technocrate'
       }
     ]
   },

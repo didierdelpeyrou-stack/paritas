@@ -1,6 +1,6 @@
 <script lang="ts">
   import { fade, fly } from 'svelte/transition';
-  import type { Choice, RenderMode, Scenario } from '../../game/types';
+  import type { Choice, PlayerTrait, RenderMode, Scenario } from '../../game/types';
   import {
     POSTURE_STYLES,
     RESOURCE_SHORT_LABEL,
@@ -8,14 +8,20 @@
     previewResources,
     resourceGlyph
   } from '../../game/narrative/choicePosture';
+  import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
   import VoicePanel from './VoicePanel.svelte';
 
   interface Props {
     scenario: Scenario;
     mode: RenderMode;
+    dominantTrait: PlayerTrait;
     onChoose: (choice: Choice) => void;
   }
-  let { scenario, mode, onChoose }: Props = $props();
+  let { scenario, mode, dominantTrait, onChoose }: Props = $props();
+
+  function isLocked(choice: Choice): boolean {
+    return !!choice.requiresTrait && choice.requiresTrait !== dominantTrait;
+  }
 
   const setupText = $derived(
     mode === 'reflechi' ? scenario.setup.reflechi : scenario.setup.compulsif
@@ -76,11 +82,14 @@
       {@const posture = derivePosture(ch)}
       {@const style = POSTURE_STYLES[posture]}
       {@const previews = mode === 'reflechi' ? previewResources(ch) : []}
+      {@const locked = isLocked(ch)}
       <li>
         <button
           type="button"
           class="choice-btn"
           data-posture={posture}
+          data-locked={locked}
+          disabled={locked}
           style="--accent: {style.accent}; --accent-soft: {style.accentSoft}; --accent-muted: {style.accentMuted};"
           onclick={() => onChoose(ch)}
           in:fly={{ y: 8, duration: 240, delay: 60 + i * 40 }}
@@ -92,10 +101,15 @@
               <span class="posture-tag">{style.label} · {ch.intent}</span>
             {/if}
             <span class="text">{ch.text}</span>
-            {#if mode === 'reflechi' && ch.theoryHint}
+            {#if locked && ch.requiresTrait}
+              <span class="lock-hint">
+                Réservé au trait <b>{TRAIT_LABELS[ch.requiresTrait]}</b>
+              </span>
+            {/if}
+            {#if !locked && mode === 'reflechi' && ch.theoryHint}
               <span class="hint">{ch.theoryHint}</span>
             {/if}
-            {#if previews.length > 0}
+            {#if !locked && previews.length > 0}
               <span class="previews">
                 {#each previews as p}
                   <span class="preview" data-direction={p.direction} data-magnitude={p.magnitude}>
@@ -161,6 +175,35 @@
 
   .choice-btn[data-posture='opinion']:hover .glyph {
     transform: scale(1.1);
+  }
+
+  .choice-btn[data-locked='true'] {
+    cursor: not-allowed;
+    opacity: 0.45;
+    filter: grayscale(0.3);
+  }
+
+  .choice-btn[data-locked='true']:hover {
+    transform: none;
+    box-shadow: none;
+    background: var(--accent-soft);
+    border-color: var(--accent-muted);
+  }
+
+  .choice-btn[data-locked='true']:hover .glyph {
+    transform: none;
+  }
+
+  .choice-btn .lock-hint {
+    color: rgba(237, 228, 201, 0.55);
+    font-size: 0.7rem;
+    font-style: italic;
+  }
+
+  .choice-btn .lock-hint b {
+    color: var(--accent);
+    font-style: normal;
+    font-weight: 600;
   }
 
   .choice-btn .glyph {

@@ -146,6 +146,8 @@ export interface Choice {
   traitShift?: Partial<TraitScores>;
   /** Pose un drapeau historique nommé (mémoire) */
   flag?: string;
+  /** Nécessite que ce trait soit dominant pour être sélectionnable. Sinon, le bouton apparaît verrouillé. */
+  requiresTrait?: PlayerTrait;
 }
 
 /* ============================================================

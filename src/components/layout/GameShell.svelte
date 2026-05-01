@@ -130,7 +130,12 @@
     <!-- Main column : scène ou conséquence -->
     <main class="space-y-4">
       {#if s.phase === 'scene' && scenario}
-        <SceneCard {scenario} mode={s.mode} onChoose={handleChoose} />
+        <SceneCard
+          {scenario}
+          mode={s.mode}
+          dominantTrait={s.dominantTrait}
+          onChoose={handleChoose}
+        />
       {:else if s.phase === 'consequence' && consequence}
         <ConsequenceScene
           {consequence}

@@ -56,7 +56,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         theoryHint: 'Cadrage : tu changes la manière dont le public nomme le problème.',
         effects: { resources: { legitimite: 7, rapportDeForce: 2, caisse: -3 }, actors: { opinion: { trust: 9 }, etat: { pressure: 6 } } },
         consequence: { immediate: 'Le texte circule, recopié à la main. Il ne change pas la loi, mais il donne aux humiliations quotidiennes une phrase qu’on peut retenir.' },
-        traitShift: { tribun: 2 }
+        traitShift: { tribun: 2 },
+        requiresTrait: 'tribun'
       }
     ]
   },
@@ -249,7 +250,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         theoryHint: 'Harvard : distinguer position affichée et intérêts durables.',
         effects: { resources: { institution: 8, legitimite: 6, rapportDeForce: 2 }, actors: { base: { trust: -2, patience: 5 }, adversaire: { trust: 5 } } },
         consequence: { immediate: 'La formulation passe difficilement. Les puristes grincent. Mais tu laisses une porte : la grève comme horizon, la convention comme outil.' },
-        traitShift: { pragmatique: 2, technocrate: 1 }
+        traitShift: { pragmatique: 2, technocrate: 1 },
+        requiresTrait: 'pragmatique'
       }
     ]
   },
@@ -325,7 +327,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         effects: { resources: { institution: 18, santeSociale: 14, legitimite: 10, caisse: -5 }, actors: { base: { trust: 14 }, etat: { trust: 10 }, opinion: { trust: 12 }, adversaire: { trust: 2 } } },
         consequence: { immediate: 'On ouvre les guichets avant même que tout soit parfaitement stable. Les assurés arrivent avec des papiers froissés, des maladies anciennes, une espérance neuve.', longterm: 'Les caisses deviennent un cœur institutionnel du modèle social français.' },
         traitShift: { batisseur: 4, technocrate: 2 },
-        flag: 'cree-secu'
+        flag: 'cree-secu',
+        requiresTrait: 'batisseur'
       },
       {
         id: 'secu-etat',

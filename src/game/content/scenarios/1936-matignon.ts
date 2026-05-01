@@ -184,7 +184,8 @@ export const SCENARIO_1936_MATIGNON: Scenario = {
           'Sans Matignon, sans accord paritaire, le modèle français glisse vers le décret. Les conventions collectives auront du mal à se généraliser. La Sécurité sociale, en 1945, en portera la marque.'
       },
       traitShift: { rupture: +3, tribun: +2 },
-      flag: 'epuise-mouvement'
+      flag: 'epuise-mouvement',
+      requiresTrait: 'rupture'
     }
   ]
 };

@@ -13,6 +13,7 @@
 
 import type { Camp } from '../../lib/types';
 import type { Choice, RebirthGameState, Scenario, SceneMood } from '../types';
+import { buildPlayerProfile, readModePreference } from '../learning/playerProfile';
 
 export interface NarrativePromptInput {
   scenario: PublicScenarioSummary;
@@ -20,6 +21,14 @@ export interface NarrativePromptInput {
   choice: PublicChoiceSummary;
   numericOutcome: ResolvedOutcome;
   tone: SceneMood;
+  /** Mode rédactionnel souhaité.
+   *  - 'falc' (par défaut) : phrases courtes, vocabulaire simple,
+   *    italique-glossaire automatique, esprit du document _VOIX.md
+   *  - 'litteraire' : style dense, métaphores, phrases longues OK
+   */
+  mode?: 'falc' | 'litteraire';
+  /** Profil compact du joueur pour adapter ton + difficulté. */
+  player?: PlayerProfile;
 }
 
 export interface PublicScenarioSummary {
@@ -37,6 +46,19 @@ export interface PublicGameStateSummary {
   dominantTrait: string;
   organizationName: string;
   organizationDoctrine: string;
+}
+
+/** Profil du joueur courant — sert au worker Haiku pour adapter
+ *  le ton, la difficulté et les références personnalisées. */
+export interface PlayerProfile {
+  /** Nombre de parties terminées avec ce slot/save. */
+  partiesPlayed: number;
+  /** Tension interne actuelle 0-100 (CK3-style). */
+  personalityStress: number;
+  /** Si le joueur a 3+ défaites consécutives, on adoucit. */
+  recentDifficulty: 'easy' | 'normal' | 'hard';
+  /** Hash anonyme du profil (pour télémétrie). */
+  anonId: string;
 }
 
 export interface PublicChoiceSummary {
@@ -279,7 +301,9 @@ export function buildNarrativePromptInput(
       immediate: choice.consequence.immediate,
       longterm: choice.consequence.longterm
     },
-    tone: scenario.mood
+    tone: scenario.mood,
+    mode: readModePreference(),
+    player: buildPlayerProfile(state)
   };
 }
 

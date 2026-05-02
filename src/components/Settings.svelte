@@ -26,12 +26,22 @@
   let colorBlindFriendly = $state<boolean>(loadColorBlind());
   let reducedMotion = $state<boolean>(loadReducedMotion());
   let swipeEnabled = $state<boolean>(loadSwipeEnabled());
+  let textMode = $state<'falc' | 'litteraire'>(loadTextMode());
 
   const TS_KEY = 'paritas_text_size';
   const HC_KEY = 'paritas_high_contrast';
   const CB_KEY = 'paritas_color_blind';
   const RM_KEY = 'paritas_reduced_motion';
   const SW_KEY = 'paritas_swipe_enabled';
+  const TM_KEY = 'paritas_text_mode';
+
+  function loadTextMode(): 'falc' | 'litteraire' {
+    try {
+      return localStorage.getItem(TM_KEY) === 'litteraire' ? 'litteraire' : 'falc';
+    } catch {
+      return 'falc';
+    }
+  }
 
   function loadTextSize(): TextSize {
     try {
@@ -73,6 +83,7 @@
       localStorage.setItem(CB_KEY, colorBlindFriendly ? 'true' : 'false');
       localStorage.setItem(RM_KEY, reducedMotion ? 'true' : 'false');
       localStorage.setItem(SW_KEY, swipeEnabled ? 'true' : 'false');
+      localStorage.setItem(TM_KEY, textMode);
     } catch {
       /* ignore */
     }
@@ -80,7 +91,7 @@
 
   /* Réapplique à chaque changement (hooks Svelte 5). */
   $effect(() => {
-    void textSize; void highContrast; void colorBlindFriendly; void reducedMotion; void swipeEnabled;
+    void textSize; void highContrast; void colorBlindFriendly; void reducedMotion; void swipeEnabled; void textMode;
     apply();
   });
 
@@ -172,6 +183,30 @@
             <small>Active le swipe pour choisir : gauche / haut / droite. <b>Désactivé par défaut</b> — gardé pour les joueurs habitués au geste tactile. Sinon, taper le bouton fonctionne toujours.</small>
           </span>
         </label>
+      </section>
+
+      <section class="opt-group">
+        <h3>Style d'écriture</h3>
+        <div class="seg-control" role="radiogroup">
+          <button
+            type="button"
+            role="radio"
+            aria-checked={textMode === 'falc'}
+            data-active={textMode === 'falc'}
+            onclick={() => (textMode = 'falc')}
+          >FALC</button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={textMode === 'litteraire'}
+            data-active={textMode === 'litteraire'}
+            onclick={() => (textMode = 'litteraire')}
+          >Littéraire</button>
+        </div>
+        <p class="opt-hint">
+          <b>FALC</b> : phrases courtes, vocabulaire simple, pédagogique. <b>Littéraire</b> :
+          style dense (uniquement quand Haiku enrichit la scène — sinon le contenu écrit est en FALC).
+        </p>
       </section>
     </div>
   </div>

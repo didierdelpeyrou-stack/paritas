@@ -14,7 +14,9 @@
   const trait = $derived(ending.stats.finalDominantTrait);
 
   /* UX-N5 : incrémente le compteur de parties terminées pour que
-     le tutoriel passe en mode express au prochain démarrage. */
+     le tutoriel passe en mode express au prochain démarrage.
+     Appelle aussi la boucle d'apprentissage pour suivre les
+     défaites consécutives (modération de difficulté). */
   onMount(() => {
     try {
       const v = localStorage.getItem('paritas_played_count');
@@ -24,6 +26,9 @@
     } catch {
       /* ignore */
     }
+    void import('../../game/learning/playerProfile').then(({ recordEnding }) => {
+      recordEnding(ending.id);
+    }).catch(() => {});
   });
 
   function statusOf(id: string): 'satisfied' | 'failed' | 'pending' {

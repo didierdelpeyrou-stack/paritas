@@ -1,12 +1,13 @@
 <script lang="ts">
   /* ============================================================
      Paritas — entrée principale
-     Intro narrative → tutoriel (1ère fois) → boucle → épilogue.
+     Landing → tutoriel (1ère fois) → slot → start → boucle → épilogue.
      ============================================================ */
   import { fade } from 'svelte/transition';
   import type { Camp } from '$lib/types';
   import type { RenderMode } from './game/types';
   import { rebirth, setActiveSlot } from './game/engine/gameState.svelte';
+  import Landing from './components/intro/Landing.svelte';
   import StartScreen from './components/intro/StartScreen.svelte';
   import Tutorial from './components/intro/Tutorial.svelte';
   import SlotPicker from './components/intro/SlotPicker.svelte';
@@ -16,6 +17,7 @@
   import { loadPipelineContent } from './game/narrative/pipelineContent';
 
   const TUTORIAL_KEY = 'paritas_tutorial_seen_v1';
+  const LANDING_KEY = 'paritas_landing_seen_v1';
 
   /* Préload des chunks narratifs en parallèle de l'affichage du
      tutoriel / StartScreen — par le temps que le joueur lit/choisit,
@@ -23,32 +25,42 @@
      arrivés. */
   const contentReady = Promise.all([loadAllScenarios(), loadPipelineContent()]);
 
-  type Phase = 'intro' | 'slot' | 'start' | 'game';
+  type Phase = 'landing' | 'intro' | 'slot' | 'start' | 'game';
 
-  function tutorialAlreadySeen(): boolean {
+  function flag(key: string): boolean {
     try {
-      return localStorage.getItem(TUTORIAL_KEY) === '1';
+      return localStorage.getItem(key) === '1';
     } catch {
       return false;
     }
   }
 
-  function markTutorialSeen() {
+  function setFlag(key: string) {
     try {
-      localStorage.setItem(TUTORIAL_KEY, '1');
+      localStorage.setItem(key, '1');
     } catch {
       /* ignore */
     }
   }
 
-  /* Tutoriel d'abord pour les nouveaux joueurs : on explique le
-     paritarisme et les postures AVANT de demander de choisir un camp
-     ou un personnage. Ceux qui sont déjà passés vont droit à
-     StartScreen. */
-  let phase = $state<Phase>(tutorialAlreadySeen() ? 'slot' : 'intro');
+  /* Premier affichage : page d'accueil immersive (titre + pitch + CTA).
+     Une fois entrée, on passe au tutoriel pour les nouveaux, ou direct
+     au slot picker pour ceux qui sont déjà passés. */
+  function initialPhase(): Phase {
+    if (!flag(LANDING_KEY)) return 'landing';
+    if (!flag(TUTORIAL_KEY)) return 'intro';
+    return 'slot';
+  }
+
+  let phase = $state<Phase>(initialPhase());
+
+  function handleLandingDone() {
+    setFlag(LANDING_KEY);
+    phase = flag(TUTORIAL_KEY) ? 'slot' : 'intro';
+  }
 
   function handleIntroDone() {
-    markTutorialSeen();
+    setFlag(TUTORIAL_KEY);
     phase = 'slot';
   }
 
@@ -87,7 +99,11 @@
 <ToastStack />
 
 <main class="min-h-dvh px-4 py-6 max-w-7xl mx-auto">
-  {#if phase === 'intro'}
+  {#if phase === 'landing'}
+    <div in:fade={{ duration: 300 }}>
+      <Landing onEnter={handleLandingDone} />
+    </div>
+  {:else if phase === 'intro'}
     <div in:fade={{ duration: 300 }}>
       <Tutorial onDone={handleIntroDone} />
     </div>

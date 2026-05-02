@@ -69,15 +69,18 @@
     <span class="block mt-2 italic text-parchment-dim/80">Ce n'est pas un divertissement, c'est une simulation historique narrative.</span>
   </div>
 
-  <!-- Sélecteur de figure légendaire -->
-  <LegendaryCharacterPicker selected={legendary} onSelect={handleLegendarySelect} />
-
-  <!-- Séparateur -->
-  <div class="flex items-center gap-3 text-xs uppercase tracking-wider text-parchment-dim/80">
-    <span class="flex-1 h-px bg-line"></span>
-    <span>ou crée ton propre personnage</span>
-    <span class="flex-1 h-px bg-line"></span>
+  <!-- UX-7 : voie principale recommandée — incarner une figure légendaire -->
+  <div class="recommended-path">
+    <span class="reco-tag">Voie recommandée</span>
+    <LegendaryCharacterPicker selected={legendary} onSelect={handleLegendarySelect} />
   </div>
+
+  <!-- Séparateur — voie secondaire, moins mise en avant -->
+  <details class="custom-character-fold">
+    <summary class="custom-summary">
+      <span>Plutôt créer un personnage de zéro</span>
+      <em class="text-parchment-dim/55 italic">(option avancée)</em>
+    </summary>
 
   <!-- Form libre -->
   <div class="space-y-4">
@@ -168,14 +171,77 @@
         </div>
       {/if}
     </div>
+    </div>
+  </details>
 
-    <button
-      type="button"
-      class="btn-primary w-full mt-4 disabled:opacity-40 disabled:cursor-not-allowed"
-      disabled={!canStart}
-      onclick={start}
-    >
-      {legendary ? `Entrer dans l'histoire en ${legendary.name}` : "Entrer dans l'histoire"}
-    </button>
-  </div>
+  <button
+    type="button"
+    class="btn-primary w-full disabled:opacity-40 disabled:cursor-not-allowed"
+    disabled={!canStart}
+    onclick={start}
+  >
+    {legendary ? `Entrer dans l'histoire en ${legendary.name}` : "Entrer dans l'histoire"}
+  </button>
 </div>
+
+<style>
+  .recommended-path {
+    position: relative;
+    border: 1px solid rgba(244, 213, 139, 0.3);
+    border-radius: 0.7rem;
+    background: rgba(201, 154, 64, 0.06);
+    padding: 1rem 0.85rem 0.65rem;
+  }
+
+  .reco-tag {
+    position: absolute;
+    top: -0.65rem;
+    left: 1rem;
+    color: #f4d58b;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: linear-gradient(180deg, #1a1f26, #232a33);
+    padding: 0.18rem 0.55rem;
+    border-radius: 0.35rem;
+    border: 1px solid rgba(244, 213, 139, 0.4);
+  }
+
+  .custom-character-fold {
+    border-top: 1px solid rgba(237, 228, 201, 0.08);
+    padding-top: 0.5rem;
+  }
+
+  .custom-summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    cursor: pointer;
+    list-style: none;
+    color: rgba(237, 228, 201, 0.65);
+    font-size: 0.82rem;
+    padding: 0.4rem 0.2rem;
+    transition: color 0.15s ease;
+  }
+
+  .custom-summary:hover {
+    color: #ede4c9;
+  }
+
+  .custom-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .custom-summary::before {
+    content: '▸';
+    margin-right: 0.4rem;
+    color: rgba(244, 213, 139, 0.5);
+    transition: transform 0.18s ease;
+    display: inline-block;
+  }
+
+  details[open] .custom-summary::before {
+    transform: rotate(90deg);
+  }
+</style>

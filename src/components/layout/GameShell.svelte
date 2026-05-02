@@ -31,29 +31,72 @@
 
   const ACTOR_IDS: ActorId[] = ['base', 'adversaire', 'etat', 'opinion'];
 
-  type Tab = 'mandat' | 'org' | 'manif' | 'meeting' | 'talents' | 'monde';
+  /* Trois familles d'onglets (UX-3) : la sidebar n'a plus 6 onglets
+     dispersés mais 3 grandes familles. Manif/Meeting/Talents sont
+     regroupés sous « Organisation » avec une sous-navigation. */
+  type Tab = 'mandat' | 'organisation' | 'monde';
+  type OrgSubTab = 'org' | 'manif' | 'meeting' | 'talents';
   const TABS: Array<{ id: Tab; label: string }> = [
     { id: 'mandat', label: 'Mandat' },
-    { id: 'org', label: 'Org' },
-    { id: 'manif', label: 'Manif' },
-    { id: 'meeting', label: 'Meeting' },
-    { id: 'talents', label: 'Talents' },
+    { id: 'organisation', label: 'Organisation' },
     { id: 'monde', label: 'Monde' }
   ];
+  const ORG_SUBTABS: Array<{ id: OrgSubTab; label: string }> = [
+    { id: 'org', label: 'Trésorerie' },
+    { id: 'manif', label: 'Manifestation' },
+    { id: 'meeting', label: 'Meeting' },
+    { id: 'talents', label: 'Talents' }
+  ];
 
-  const TAB_KEY = 'paritas_active_tab_v1';
+  const TAB_KEY = 'paritas_active_tab_v2';
+  const SUB_TAB_KEY = 'paritas_org_subtab_v1';
+  const FOCUS_KEY = 'paritas_focus_mode_v1';
+
   function loadActiveTab(): Tab {
     try {
       const v = localStorage.getItem(TAB_KEY);
       if (v && TABS.some(t => t.id === v)) return v as Tab;
+      // Migration v1 → v2 : org/manif/meeting/talents → organisation
+      const old = localStorage.getItem('paritas_active_tab_v1');
+      if (old === 'org' || old === 'manif' || old === 'meeting' || old === 'talents') {
+        return 'organisation';
+      }
+      if (old === 'mandat' || old === 'monde') return old as Tab;
     } catch {
       /* ignore */
     }
     return 'mandat';
   }
 
+  function loadOrgSubTab(): OrgSubTab {
+    try {
+      const v = localStorage.getItem(SUB_TAB_KEY);
+      if (v && ORG_SUBTABS.some(t => t.id === v)) return v as OrgSubTab;
+      // Reprend l'ancien onglet manif/meeting/talents s'il existait
+      const old = localStorage.getItem('paritas_active_tab_v1');
+      if (old === 'manif' || old === 'meeting' || old === 'talents' || old === 'org') {
+        return old as OrgSubTab;
+      }
+    } catch {
+      /* ignore */
+    }
+    return 'org';
+  }
+
+  function loadFocusMode(): boolean {
+    try {
+      return localStorage.getItem(FOCUS_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  }
+
   let activeTab = $state<Tab>(loadActiveTab());
+  let orgSubTab = $state<OrgSubTab>(loadOrgSubTab());
   let glossaryOpen = $state(false);
+  /* UX-1 : mode lecture-scène. Replie la sidebar pour que la scène
+     respire. Auto-activé en phase consequence (DMN priority). */
+  let focusMode = $state<boolean>(loadFocusMode());
 
   function setActiveTab(t: Tab) {
     activeTab = t;
@@ -63,6 +106,28 @@
       /* ignore */
     }
   }
+
+  function setOrgSubTab(t: OrgSubTab) {
+    orgSubTab = t;
+    try {
+      localStorage.setItem(SUB_TAB_KEY, t);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function toggleFocus() {
+    focusMode = !focusMode;
+    try {
+      localStorage.setItem(FOCUS_KEY, focusMode ? 'true' : 'false');
+    } catch {
+      /* ignore */
+    }
+  }
+
+  /* Phase consequence = mode focus auto pour la révélation étagée. */
+  const isConsequencePhase = $derived(rebirth.state?.phase === 'consequence');
+  const effectiveFocus = $derived(focusMode || isConsequencePhase);
 
   const gameState = $derived(rebirth.state);
   const scenario = $derived(rebirth.currentScenario);
@@ -144,9 +209,9 @@
   {@const e = era}
   {@const year = yearForTurn(s.turn)}
   {@const liveScore = computeFinalScore(s)}
-  <div class="grid lg:grid-cols-[300px_1fr] gap-4">
+  <div class="game-grid gap-4" data-focus={effectiveFocus}>
     <!-- Sidebar : 3 onglets repliables + identité fixe -->
-    <aside class="space-y-3 order-2 lg:order-1">
+    <aside class="space-y-3 order-2 lg:order-1 sidebar-panel">
       <!-- Bandeau ère, toujours visible -->
       <section class="bordered-card p-4 space-y-2">
         <div class="flex items-baseline justify-between gap-2">
@@ -181,16 +246,12 @@
               aria-label="Ouvrir le glossaire"
               title="Glossaire — termes syndicaux et paritaires"
             >?</button>
-            <div class="text-right ml-1" title="Score provisoire — il bouge à chaque choix.">
-              <div class="font-display text-gold-soft text-base leading-none">{liveScore}<span class="text-[0.78rem] text-parchment-dim/60">/100</span></div>
-              <div class="text-[0.72rem] uppercase tracking-wider text-parchment-dim/65">score</div>
-            </div>
           </div>
         </div>
         <EraTimeline currentTurn={s.turn} />
       </section>
 
-      <!-- Onglets : 6 boutons, scrollables horizontalement sur mobile -->
+      <!-- Onglets : 3 grandes familles -->
       <div class="tab-bar" role="tablist" aria-label="Sections de la sidebar">
         {#each TABS as t}
           <button
@@ -228,21 +289,36 @@
               />
             {/each}
           </section>
-        {:else if activeTab === 'org'}
-          <TreasuryPanel gameState={s} />
-          <OrganizationPanel organization={s.organization} turn={s.turn} />
-          <StrategyPanel
-            turn={s.turn}
-            camp={s.camp}
-            organization={s.organization}
-            activeStrategies={s.activeStrategies}
-          />
-        {:else if activeTab === 'manif'}
-          <ManifSimulator gameState={s} />
-        {:else if activeTab === 'meeting'}
-          <MeetingSimulator gameState={s} />
-        {:else if activeTab === 'talents'}
-          <FormationTalentsPanel gameState={s} />
+        {:else if activeTab === 'organisation'}
+          <!-- Sous-navigation pour les 4 outils d'organisation -->
+          <div class="sub-tab-bar" role="tablist" aria-label="Sous-sections de l'organisation">
+            {#each ORG_SUBTABS as sub}
+              <button
+                type="button"
+                role="tab"
+                aria-selected={orgSubTab === sub.id}
+                data-active={orgSubTab === sub.id}
+                onclick={() => setOrgSubTab(sub.id)}
+              >{sub.label}</button>
+            {/each}
+          </div>
+
+          {#if orgSubTab === 'org'}
+            <TreasuryPanel gameState={s} />
+            <OrganizationPanel organization={s.organization} turn={s.turn} />
+            <StrategyPanel
+              turn={s.turn}
+              camp={s.camp}
+              organization={s.organization}
+              activeStrategies={s.activeStrategies}
+            />
+          {:else if orgSubTab === 'manif'}
+            <ManifSimulator gameState={s} />
+          {:else if orgSubTab === 'meeting'}
+            <MeetingSimulator gameState={s} />
+          {:else if orgSubTab === 'talents'}
+            <FormationTalentsPanel gameState={s} />
+          {/if}
         {:else}
           <WorldStrategyPanel worldAI={s.worldAI} />
           <PipelinePanel pipelines={s.activePipelines} />
@@ -269,6 +345,25 @@
 
     <!-- Main column : scène ou conséquence (passe en premier sur mobile) -->
     <main class="space-y-4 order-1 lg:order-2">
+      <!-- Mini barre d'outils main : score proéminent (UX-4) + focus (UX-1) -->
+      <div class="main-toolbar">
+        <div class="score-pill" title="Score provisoire — il évolue à chaque choix.">
+          <span class="score-num">{liveScore}</span>
+          <span class="score-den">/100</span>
+        </div>
+        <div class="flex-1"></div>
+        <button
+          type="button"
+          class="focus-btn"
+          data-active={focusMode}
+          onclick={toggleFocus}
+          aria-label={focusMode ? 'Quitter le mode lecture' : 'Mode lecture (replier la sidebar)'}
+          title={focusMode ? 'Quitter le mode lecture (la sidebar revient)' : 'Mode lecture — sidebar masquée pour respirer'}
+        >
+          {focusMode ? '⤢ Quitter' : '⤡ Lecture'}
+        </button>
+      </div>
+
       {#if s.phase === 'scene' && scenario}
         <SceneCard
           {scenario}
@@ -311,6 +406,138 @@
 <Glossary open={glossaryOpen} onClose={() => (glossaryOpen = false)} />
 
 <style>
+  /* === Grille principale (UX-1) ===
+     En mode focus, la sidebar est repliée et la colonne principale
+     prend toute la largeur — le récit et les choix respirent.
+     Auto-déclenché en phase consequence (DMN priority). */
+  .game-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 1024px) {
+    .game-grid {
+      grid-template-columns: 300px 1fr;
+      transition: grid-template-columns 0.32s ease;
+    }
+    .game-grid[data-focus='true'] {
+      grid-template-columns: 0 1fr;
+    }
+    .game-grid[data-focus='true'] .sidebar-panel {
+      opacity: 0;
+      pointer-events: none;
+      visibility: hidden;
+      transform: translateX(-12px);
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+  }
+
+  .sidebar-panel {
+    transition: opacity 0.32s ease, transform 0.32s ease;
+  }
+
+  /* === Barre d'outils du main (UX-4) ===
+     Score proéminent (au lieu de minuscule en haut-droite de la
+     sidebar), bouton focus à droite. Hierarchy: lit-vu en 1s. */
+  .main-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.4rem 0.2rem;
+  }
+
+  .score-pill {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.25rem;
+    border: 1px solid rgba(244, 213, 139, 0.45);
+    border-radius: 999px;
+    background: rgba(201, 154, 64, 0.1);
+    padding: 0.3rem 0.85rem 0.35rem;
+    font-family: 'Cinzel', Georgia, serif;
+  }
+
+  .score-num {
+    color: #f4d58b;
+    font-size: 1.15rem;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .score-den {
+    color: rgba(237, 228, 201, 0.55);
+    font-size: 0.78rem;
+  }
+
+  .focus-btn {
+    border: 1px solid rgba(237, 228, 201, 0.18);
+    border-radius: 0.45rem;
+    background: rgba(13, 16, 20, 0.55);
+    color: rgba(237, 228, 201, 0.78);
+    padding: 0.35rem 0.7rem;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.74rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  }
+
+  .focus-btn:hover {
+    border-color: rgba(244, 213, 139, 0.5);
+    color: #f4d58b;
+  }
+
+  .focus-btn[data-active='true'] {
+    border-color: rgba(244, 213, 139, 0.65);
+    color: #f4d58b;
+    background: rgba(201, 154, 64, 0.13);
+  }
+
+  /* Sous-onglets « Trésorerie / Manif / Meeting / Talents »
+     dans la famille Organisation (UX-3, regroupement par familles). */
+  .sub-tab-bar {
+    display: flex;
+    gap: 0;
+    border: 1px solid rgba(237, 228, 201, 0.1);
+    border-radius: 0.5rem;
+    background: rgba(13, 16, 20, 0.22);
+    overflow-x: auto;
+    margin-bottom: 0.25rem;
+  }
+
+  .sub-tab-bar button {
+    flex: 1 0 auto;
+    min-width: 5rem;
+    border: 0;
+    background: transparent;
+    color: rgba(237, 228, 201, 0.55);
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.5rem 0.45rem;
+    min-height: 38px;
+    cursor: pointer;
+    transition: color 0.18s ease, background 0.18s ease;
+    white-space: nowrap;
+  }
+
+  .sub-tab-bar button:hover {
+    color: #ede4c9;
+    background: rgba(201, 154, 64, 0.05);
+  }
+
+  .sub-tab-bar button[data-active='true'] {
+    color: #f4d58b;
+    background: rgba(201, 154, 64, 0.1);
+    box-shadow: inset 0 -2px 0 0 rgba(200, 155, 60, 0.65);
+  }
+
+  .sub-tab-bar button + button {
+    border-left: 1px solid rgba(237, 228, 201, 0.05);
+  }
+
   .tab-bar {
     display: flex;
     gap: 0;

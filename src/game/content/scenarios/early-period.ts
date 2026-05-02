@@ -115,7 +115,7 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
         intent: 'Revendication concrète des compagnons.',
         theoryHint: "Stratégie d'institutionnalisation précoce : transformer une exigence ouvrière en proposition de loi.",
         effects: {
-          resources: { institution: 6, legitimite: 5, confiance: 4 },
+          resources: { institution: 6, legitimite: 5, confiance: 4, rapportDeForce: -2 },
           actors: { etat: { trust: 4 }, base: { trust: 5 } }
         },
         consequence: {
@@ -194,7 +194,7 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
           immediate:
             "Quelques imprimeurs complaisants, beaucoup de courage. Quatre ouvriers sont arrêtés au bout de six mois ; une centaine continue."
         },
-        traitShift: { rupture: 2, batisseur: 1 },
+        traitShift: { rupture: 2, technocrate: 1 },
         flag: 'trahit-base'
       },
       {
@@ -218,7 +218,7 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
         intent: 'Solidarité matérielle.',
         theoryHint: "Stratégie mutualiste : la solidarité financière comme première institution syndicale.",
         effects: {
-          resources: { caisse: 4, confiance: 6, santeSociale: 4 },
+          resources: { caisse: -2, confiance: 6, santeSociale: 4, institution: 3 },
           actors: { base: { trust: 7, patience: 5 } }
         },
         consequence: {
@@ -259,12 +259,12 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
         intent: 'Discrétion stratégique.',
         theoryHint: "Stratégie de longue durée : durer plutôt que briller.",
         effects: {
-          resources: { caisse: 5, institution: 4, santeSociale: 5 },
-          actors: { etat: { trust: 4 }, opinion: { trust: 3 } }
+          resources: { institution: 4, santeSociale: 3, legitimite: -1, rapportDeForce: -2 },
+          actors: { opinion: { trust: 2 }, base: { patience: 4 } }
         },
         consequence: {
           immediate:
-            "La société rassemble 38 cotisants en trois ans. Trois enterrements payés, deux veuves nourries. Personne ne dérange."
+            "La société rassemble 38 cotisants en trois ans. Trois enterrements payés, deux veuves nourries. Personne ne dérange — personne ne te connaît."
         },
         traitShift: { batisseur: 3 },
         flag: 'cree-mutuelle-1864'
@@ -297,7 +297,7 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
           immediate:
             "Trois sociétés de Lyon, Saint-Étienne et Roanne fusionnent en Caisse régionale du Devoir. Le préfet demande à voir le registre, repart sans rien à reprocher."
         },
-        traitShift: { batisseur: 2, pragmatique: 1 }
+        traitShift: { technocrate: 2, batisseur: 1 }
       }
     ]
   },
@@ -353,7 +353,7 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
           immediate:
             "La souscription rassemble 2 800 francs en six mois. Onze familles d'ouvriers emprisonnés tiennent l'hiver."
         },
-        traitShift: { batisseur: 3 }
+        traitShift: { batisseur: 2, paternaliste: 2 }
       },
       {
         id: 'proces-presse',
@@ -368,7 +368,7 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
           immediate:
             "Trois journaux ouvriers reprennent l'affaire pendant deux mois. Un député républicain interpelle le garde des Sceaux à la Chambre."
         },
-        traitShift: { tribun: 2, batisseur: 1 }
+        traitShift: { technocrate: 2, tribun: 1 }
       }
     ]
   }

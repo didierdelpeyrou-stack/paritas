@@ -254,6 +254,7 @@ class AudioEngine {
   private fileShelf?: Tone.Filter;
   private distanceFilter?: Tone.Filter;
   private distanceReverb?: Tone.Reverb;
+  private masterLimiter?: Tone.Limiter;
   /** Multiplicateurs de duck (1 = pas de duck, 0.4 = -8dB env). */
   private musicDuckFactor = 1;
   private sfxDuckFactor = 1;
@@ -281,7 +282,13 @@ class AudioEngine {
     /* Chaîne d'effets musique : Synth → Filter (passe-bas) →
        Reverb (large) → Gain → Destination. Sépare la voix
        artisanale du reverb pour ne pas la noyer. */
-    this.musicGain = new Tone.Gain(this.musicVol).toDestination();
+    /* Master limiter à -0.5 dB en sortie : protège contre le
+       clipping quand toutes les couches se cumulent (musique +
+       pad + SFX + TTS + générative simultanés). Standard pro,
+       inaudible quand tout est bien gainstaging. */
+    this.masterLimiter = new Tone.Limiter(-0.5).toDestination();
+
+    this.musicGain = new Tone.Gain(this.musicVol).connect(this.masterLimiter);
     this.musicReverb = new Tone.Reverb({ decay: 4, wet: 0.45 }).connect(this.musicGain);
     this.musicFilter = new Tone.Filter({ frequency: 2400, type: 'lowpass', rolloff: -12 }).connect(this.musicReverb);
     /* Routing musique fichier — chaîne pro :
@@ -289,7 +296,7 @@ class AudioEngine {
        → fileShelf (highshelf -2.5 dB > 4 kHz) → fileGain → destination
        Le high-shelf laisse de la place perceptuelle aux voix TTS
        (1-3 kHz) et aux SFX one-shots (1-5 kHz). */
-    this.fileGain = new Tone.Gain(this.fileVol).toDestination();
+    this.fileGain = new Tone.Gain(this.fileVol).connect(this.masterLimiter);
     this.fileShelf = new Tone.Filter({
       type: 'highshelf',
       frequency: 4000,
@@ -308,7 +315,7 @@ class AudioEngine {
       attack: 0.005,
       release: 0.12,
       knee: 6,
-    }).toDestination();
+    }).connect(this.masterLimiter);
     this.sfxGain = new Tone.Gain(this.sfxVol).connect(this.sfxComp);
 
     /* Bus "distance" pour les sons qu'on veut éloignés (foule
@@ -747,22 +754,58 @@ class AudioEngine {
 
   /** Mood courant — modulateur global.
    *
-   *  Si on joue un fichier : tente de swap entre default et alt selon
-   *  le nouveau mood. Le swap est debouncé 4 s pour éviter le thrash
-   *  sur des moods qui oscillent. Crossfade fluide géré par fadeIn
-   *  du nouveau player.
+   *  Outre le swap default/alt (gros effet), le mood pilote aussi
+   *  des paramètres FX : reverb wet, high-shelf gain. Permet de
+   *  donner une couleur émotionnelle au même fichier sans le changer
+   *  (RTPC-like, technique Wwise — Karim Dehmani panel d'experts) :
+   *    - calme       : reverb large, présence atténuée
+   *    - tendu       : reverb sec, attaque préservée
+   *    - grave       : reverb profonde, low-end favorisé
+   *    - euphorique  : reverb modérée, présence ouverte
+   *    - mélancolique: reverb très large, voile éthéré
    *
-   *  Si on joue de la générative : crossfade restart pour appliquer
-   *  les nouveaux paramètres tempo/voice. */
+   *  Si on joue un fichier : swap variant (debouncé 4 s) +
+   *  automation reverb/shelf.
+   *  Si générative : crossfade restart classique. */
   async setMood(mood: AudioMood, opts?: { reducedMotion?: boolean }) {
     if (this.currentMood === mood) return;
     this.currentMood = mood;
+    this.applyMoodFx();
     if (!this.isMusicOn) return;
     if (this.filePlayer) {
       void this.maybeSwapMoodVariant();
       return;
     }
     await this.crossfadeRestart(opts?.reducedMotion ? 200 : 700);
+  }
+
+  /** Applique les paramètres FX dérivés du mood courant.
+   *  Ramps en 1.5 s pour rester organique. */
+  private applyMoodFx() {
+    if (!this.fileReverb || !this.fileShelf) return;
+    const t = 1.5;
+    /* Reverb wet selon mood — plus c'est mélancolique/grave, plus
+       on est immergé ; plus c'est tendu, plus on est sec. */
+    const wetByMood: Record<AudioMood, number> = {
+      calme: 0.16,
+      tendu: 0.05,
+      grave: 0.20,
+      euphorique: 0.10,
+      melancolique: 0.26,
+    };
+    /* High-shelf gain : tendu = présence (-1 dB), grave = retrait
+       (-3.5 dB), mélancolique = voile (-4 dB). */
+    const shelfByMood: Record<AudioMood, number> = {
+      calme: -2.5,
+      tendu: -1.0,
+      grave: -3.5,
+      euphorique: -1.5,
+      melancolique: -4.0,
+    };
+    try {
+      this.fileReverb.wet.rampTo(wetByMood[this.currentMood] ?? 0.10, t);
+      this.fileShelf.gain.rampTo(shelfByMood[this.currentMood] ?? -2.5, t);
+    } catch { /* ignore */ }
   }
 
   /** Trait dominant — couleur de timbre. Pas de restart, on laisse

@@ -40,6 +40,10 @@ export const BELLE_EPOQUE_SCENARIOS: Scenario[] = [
       {
         text: "Le syndicalisme se suffit à lui-même. Cette déclaration est, à nos yeux, la reconnaissance de la lutte de classe.",
         source: "Charte d'Amiens, motion Griffuelhes, 13 octobre 1906"
+      },
+      {
+        text: "Le Congrès considère que cette double besogne, quotidienne et d'avenir, découle de la situation des salariés qui pèse sur la classe ouvrière et qui fait à tous les travailleurs, quelles que soient leurs opinions ou leurs tendances politiques ou philosophiques, le devoir d'appartenir au groupement essentiel qu'est le syndicat.",
+        source: "Charte d'Amiens, IXe Congrès confédéral CGT, 13 octobre 1906"
       }
     ],
     choices: [
@@ -125,6 +129,10 @@ export const BELLE_EPOQUE_SCENARIOS: Scenario[] = [
       {
         text: "Si la patrie était en danger, on appellerait les réservistes. Eh bien, elle l'est : nous appelons les réservistes.",
         source: 'Aristide Briand, président du Conseil, 11 octobre 1910'
+      },
+      {
+        text: "Quand la loi a été violée par ceux qui devaient la défendre, quand le pouvoir s'est servi de l'armée contre les citoyens en grève, il ne nous reste que la grève générale.",
+        source: "Émile Pouget, La Voix du peuple, octobre 1910"
       }
     ],
     choices: [
@@ -207,6 +215,10 @@ export const BELLE_EPOQUE_SCENARIOS: Scenario[] = [
       { trait: 'batisseur', text: 'Les caisses paritaires de 45 sont notre bien commun. Qui les défendra ?' }
     ],
     quotes: [
+      {
+        text: "Le syndicat libre n'a pas à recevoir un mot d'ordre venant d'ailleurs que de la base ouvrière elle-même.",
+        source: "Manifeste des Douze, FO clandestine, 15 novembre 1940"
+      },
       {
         text: "Notre mot d'ordre est et restera l'indépendance syndicale. Nous refusons d'être les supplétifs d'un parti, quel qu'il soit.",
         source: 'Léon Jouhaux, communiqué de rupture, 19 décembre 1947'

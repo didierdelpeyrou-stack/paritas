@@ -26,12 +26,18 @@ export const SCENARIO_1936_MATIGNON: Scenario = {
   premium: true,
 
   historicalContext:
-    'Front populaire au pouvoir depuis le 4 juin. Plus de deux millions de grévistes occupent les usines. Blum convoque CGT et CGPF à Matignon. Sur la table : 40h, deux semaines de congés payés, conventions collectives, hausses de salaires de 7 à 15%, délégués du personnel. La nuit qui suivra fondera durablement le paritarisme français de négociation.',
+    "Le Front populaire est au pouvoir depuis le 4 juin 1936. Plus de deux millions de grévistes occupent les usines. Blum convoque CGT et CGPF à Matignon. Sur la table : semaine de 40 heures, deux semaines de congés payés, conventions collectives, hausses de salaires de 7 à 15%, délégués du personnel. La nuit qui suit fondera le paritarisme français de négociation.",
 
   setup: {
-    reflechi: `Hôtel Matignon, 19h. Blum a convoqué CGT et CGPF. Léon Jouhaux et Benoît Frachon mènent la délégation CGT, Alfred Lambert-Ribot représente la CGPF. Sur la table : semaine de 40h, deux semaines de congés payés, conventions collectives obligatoires, hausses de salaires de 7 à 15%, délégués du personnel.\n\nDehors, plus de deux millions de grévistes occupent les usines. Une décision est attendue avant minuit.`,
+    reflechi: `Hôtel Matignon, 19h. Blum a convoqué CGT et CGPF. Léon Jouhaux et Benoît Frachon mènent la délégation CGT. Alfred Lambert-Ribot représente la CGPF. Sur la table : 40h hebdo, deux semaines de congés payés, conventions collectives obligatoires, hausses de 7 à 15%, délégués du personnel.
 
-    compulsif: `Tu as cinquante-six ans, et c'est la première fois.\n\nTrois étages plus bas, Paris attend. Un Paris d'usines occupées, de machines arrêtées, de drapeaux rouges aux fenêtres des locaux. Blum est calme, presque las. À ta gauche, Frachon prend des notes en silence : la CGTU réunifiée surveille chaque virgule. En face, Lambert-Ribot a le regard d'un homme qui sent l'histoire glisser entre ses doigts.\n\nTu pourrais signer ce soir et sauver des semaines. Tu pourrais aussi pousser le patronat dans ses retranchements et obtenir l'échelle mobile des salaires.\n\nVoix intérieure, *Pragmatique* : « Deux millions d'ouvriers veulent rentrer chez eux ce soir. »\nVoix intérieure, *Tribun* : « Deux millions d'ouvriers veulent davantage que ce soir. »`
+Dehors, plus de deux millions de grévistes occupent les usines. Une décision est attendue avant minuit.`,
+
+    compulsif: `Tu as cinquante-six ans. C'est la première fois.
+
+Trois étages plus bas, Paris attend. Un Paris d'usines occupées. De machines arrêtées. De drapeaux rouges aux fenêtres. Blum est calme, presque las. À ta gauche, Frachon prend des notes en silence : la CGTU réunifiée surveille chaque virgule. En face, Lambert-Ribot a le regard d'un homme qui sent l'histoire glisser entre ses doigts.
+
+Tu pourrais signer ce soir et sauver des semaines. Tu pourrais aussi pousser le patronat dans ses retranchements.`
   },
 
   actors: ['base', 'adversaire', 'etat', 'opinion'],
@@ -59,6 +65,14 @@ export const SCENARIO_1936_MATIGNON: Scenario = {
     {
       text: 'Tout est possible !',
       source: 'Léon Jouhaux à la sortie de Matignon, 7 juin 1936'
+    },
+    {
+      text: "Il faut donner aux travailleurs le sentiment qu'on leur a accordé quelque chose. Sinon, l'usine restera fermée pendant des mois.",
+      source: "Alfred Lambert-Ribot, délégué CGPF, mémoire interne, juin 1936"
+    },
+    {
+      text: "Pour la dignité du travail, il fallait élever le niveau de vie. Pour la santé du peuple, il fallait raccourcir le temps de la peine.",
+      source: "Léon Blum, Discours à la Chambre, 6 juin 1936"
     }
   ],
 

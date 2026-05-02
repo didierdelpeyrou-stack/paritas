@@ -148,29 +148,35 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
     mood: 'tendu',
     premium: true,
     historicalContext:
-      'La loi Ollivier abroge le délit de coalition. La grève cesse d’être automatiquement pénale, mais l’organisation syndicale n’est pas encore reconnue.',
+      "Le 25 mai 1864, la loi Ollivier abroge le délit de coalition. La grève cesse d'être automatiquement pénale. Mais l'organisation syndicale, elle, n'est toujours pas reconnue. C'est un demi-pas en avant.",
     setup: {
-      reflechi: 'Une porte s’ouvre sans devenir un droit complet. Le conflit collectif entre dans une zone grise.',
-      compulsif: 'La prison recule d’un pas. Elle n’a pas disparu. Elle attend au coin du texte.'
+      reflechi: "Une porte s'ouvre. Pas un droit complet, pas encore. Le conflit collectif entre dans une zone grise. À toi de décider comment tu y entres.",
+      compulsif: "La prison recule d'un pas. Elle n'a pas disparu. Elle attend au coin du texte de loi."
     },
     actors: ['base', 'etat', 'adversaire'],
+    quotes: [
+      {
+        text: "Sera punie d'un emprisonnement de six jours à trois ans toute personne qui, à l'aide de violences, voies de fait, menaces ou manœuvres frauduleuses, aura amené ou maintenu une cessation concertée de travail.",
+        source: 'Loi du 25 mai 1864, article 414 nouveau (post-Ollivier)'
+      }
+    ],
     choices: [
       {
         id: 'ollivier-greve-limitee',
         text: 'Tester le nouveau cadre par une grève courte.',
         intent: 'Mesurer la marge réelle.',
-        theoryHint: 'Expérimentation contrôlée : apprendre sans brûler toutes les ressources.',
+        theoryHint: "Apprendre sans brûler toutes ses ressources : c'est l'expérimentation contrôlée.",
         effects: { resources: { rapportDeForce: 8, confiance: 6, santeSociale: -4 }, actors: { base: { trust: 8 }, adversaire: { pressure: 8 }, etat: { pressure: 5 } } },
-        consequence: { immediate: 'La grève dure deux jours. La police observe plus qu’elle ne frappe. L’atelier découvre que la peur a changé de forme.' },
+        consequence: { immediate: "La grève dure deux jours. La police observe plus qu'elle ne frappe. L'atelier découvre que la peur a changé de forme." },
         traitShift: { pragmatique: 2, rupture: 1 }
       },
       {
         id: 'ollivier-mutuelle',
-        text: 'Fonder une caisse mutuelle avant d’affronter.',
+        text: 'Fonder une caisse mutuelle avant d\'affronter.',
         intent: 'Construire la durée avant le choc.',
-        theoryHint: 'MESORE collective : meilleure solution de rechange si la négociation échoue.',
+        theoryHint: "Meilleure solution de rechange si la négociation échoue : la MESORE collective.",
         effects: { resources: { caisse: 10, institution: 6, rapportDeForce: -2 }, actors: { base: { patience: 10, trust: 5 } } },
-        consequence: { immediate: 'La caisse ne fait pas trembler les patrons. Pas encore. Mais le prochain refus se négociera avec quelques semaines de pain d’avance.' },
+        consequence: { immediate: "La caisse ne fait pas trembler les patrons. Pas encore. Mais le prochain refus se négociera avec quelques semaines de pain d'avance." },
         traitShift: { batisseur: 3 },
         flag: 'cree-mutuelle-1864'
       },
@@ -178,9 +184,9 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         id: 'ollivier-attendre',
         text: 'Attendre une vraie légalisation syndicale.',
         intent: 'Éviter la zone grise.',
-        theoryHint: 'Aversion à la perte : parfois on surestime le coût d’un premier mouvement.',
+        theoryHint: "Parfois on surestime le coût d'un premier mouvement. C'est l'aversion à la perte.",
         effects: { resources: { legitimite: 3, confiance: -6, rapportDeForce: -5 }, actors: { etat: { trust: 4 }, base: { trust: -8 } } },
-        consequence: { immediate: 'Rien ne casse. Rien ne naît non plus. La base apprend que la prudence peut ressembler à une disparition.' },
+        consequence: { immediate: "Rien ne casse. Rien ne naît non plus. La base apprend que la prudence peut ressembler à une disparition." },
         traitShift: { pragmatique: 1, tribun: -1 }
       }
     ]
@@ -195,20 +201,26 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
     mood: 'calme',
     premium: true,
     historicalContext:
-      'La loi Waldeck-Rousseau autorise les syndicats professionnels. Elle transforme l’action ouvrière : on peut désormais durer, signer, administrer.',
+      "Le 21 mars 1884, la loi Waldeck-Rousseau autorise les syndicats professionnels. C'est une rupture historique. L'action ouvrière sort de la clandestinité. Désormais, les ouvriers peuvent durer, signer, administrer en leur nom propre.",
     setup: {
-      reflechi: 'Le syndicat légal change la nature du conflit : l’adversaire peut être reconnu, surveillé, parfois invité.',
-      compulsif: 'Le local sent l’encre fraîche. Sur la porte, pour la première fois, le nom n’a plus besoin de se cacher.'
+      reflechi: "Le syndicat légal change la nature du conflit. L'adversaire peut être reconnu. Il peut être surveillé. Parfois même invité à la table. À toi de mesurer ce que tu fais de cette nouvelle main.",
+      compulsif: "Le local sent l'encre fraîche. Sur la porte, pour la première fois, le nom n'a plus besoin de se cacher."
     },
     actors: ['base', 'adversaire', 'etat', 'opinion'],
+    quotes: [
+      {
+        text: "Les syndicats ou associations professionnelles, même de plus de vingt personnes exerçant la même profession, des métiers similaires ou des professions connexes concourant à l'établissement de produits déterminés, pourront se constituer librement sans l'autorisation du Gouvernement.",
+        source: 'Loi du 21 mars 1884, article 2 (Waldeck-Rousseau)'
+      }
+    ],
     choices: [
       {
         id: 'waldeck-syndicat',
         text: 'Créer un syndicat professionnel ouvert.',
-        intent: 'Transformer l’énergie militante en institution.',
-        theoryHint: 'Passage du rapport de force ponctuel au capital institutionnel.',
+        intent: "Transformer l'énergie militante en institution.",
+        theoryHint: "Passage du rapport de force ponctuel au capital institutionnel.",
         effects: { resources: { institution: 12, confiance: 8, legitimite: 7, caisse: -3 }, actors: { base: { trust: 10 }, etat: { trust: 6 }, adversaire: { trust: 2 } } },
-        consequence: { immediate: 'On élit un bureau, on loue une salle, on tient un registre. La lutte cesse d’être seulement un cri : elle devient une adresse.', longterm: 'Les syndicats légaux rendront possibles les conventions collectives.' },
+        consequence: { immediate: "On élit un bureau. On loue une salle. On tient un registre. La lutte cesse d'être seulement un cri : elle devient une adresse.", longterm: "Les syndicats légaux rendront possibles les conventions collectives." },
         traitShift: { batisseur: 3, technocrate: 1 },
         flag: 'cree-syndicat-1884'
       },
@@ -244,10 +256,16 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
     historicalContext:
       'La loi du 25 mars 1919 donne un cadre aux conventions collectives. La négociation peut désormais produire des normes applicables au-delà d’un seul atelier.',
     setup: {
-      reflechi: 'La convention collective transforme une demande locale en règle professionnelle.',
-      compulsif: 'Un texte court. Des mots secs. Et pourtant, dedans, l’idée qu’un salaire peut cesser d’être une solitude.'
+      reflechi: "La convention collective transforme une demande locale en règle professionnelle. Une demande dans un atelier devient une obligation pour toute la branche. À toi de mesurer où tu places le curseur.",
+      compulsif: "Un texte court. Des mots secs. Et pourtant : l'idée qu'un salaire peut cesser d'être une solitude."
     },
     actors: ['base', 'adversaire', 'etat'],
+    quotes: [
+      {
+        text: "Les conditions du travail, ainsi que les salaires, peuvent être réglés par voie de convention collective.",
+        source: 'Loi du 25 mars 1919, article 31a du Livre I du Code du travail'
+      }
+    ],
     choices: [
       {
         id: 'conventions-branche',
@@ -289,12 +307,22 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
     mood: 'euphorique',
     premium: true,
     historicalContext:
-      'Les ordonnances des 4 et 19 octobre 1945 organisent la Sécurité sociale. Pierre Laroque et Alexandre Parodi structurent une ambition de protection généralisée, portée politiquement par Ambroise Croizat.',
+      "Les ordonnances des 4 et 19 octobre 1945 organisent la Sécurité sociale. Pierre Laroque et Alexandre Parodi structurent l'architecture juridique. Ambroise Croizat, ministre du Travail communiste, porte la réforme politiquement. Pour la première fois, un système universel prend en charge maladie, vieillesse, famille, accidents.",
     setup: {
-      reflechi: 'Le conflit social devient administration de droits : maladie, vieillesse, famille, cotisation.',
-      compulsif: 'La guerre vient à peine de finir. Sur les bureaux, les dossiers sentent la poussière et l’aube. On invente une promesse : ne plus tomber seul.'
+      reflechi: "Le conflit social devient administration de droits. Maladie, vieillesse, famille, cotisation. À toi de décider qui gouverne ces caisses : les intéressés eux-mêmes, l'État, ou personne — au profit de salaires immédiats.",
+      compulsif: "La guerre vient à peine de finir. Sur les bureaux, les dossiers sentent la poussière et l'aube. On invente une promesse : ne plus tomber seul."
     },
     actors: ['base', 'etat', 'adversaire', 'opinion'],
+    quotes: [
+      {
+        text: "Il s'agit avant tout de soustraire les travailleurs à l'angoisse du lendemain — angoisse qui crée chez eux un sentiment d'infériorité et qui est la base réelle et profonde de la distinction des classes.",
+        source: "Pierre Laroque, exposé des motifs des ordonnances, octobre 1945"
+      },
+      {
+        text: "Nous voulons que désormais, la maladie, la vieillesse, le chômage cessent d'être un facteur de misère et de déchéance.",
+        source: "Ambroise Croizat, ministre du Travail, discours au Vélodrome d'hiver, 1946"
+      }
+    ],
     choices: [
       {
         id: 'secu-caisses',
@@ -337,12 +365,18 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
     mood: 'calme',
     premium: true,
     historicalContext:
-      'L’Unédic est créée par les partenaires sociaux pour gérer l’assurance chômage. C’est un pilier du paritarisme de gestion, toujours traversé par la tension entre autonomie sociale et cadrage étatique.',
+      "Le 31 décembre 1958, les partenaires sociaux créent l'Unédic. La convention interprofessionnelle signe l'acte de naissance de l'assurance chômage en France. Patronat et syndicats la gèrent ensemble. C'est un pilier du paritarisme de gestion. Il sera traversé pendant 60 ans par la tension entre autonomie sociale et cadrage étatique.",
     setup: {
-      reflechi: 'Le chômage devient un risque social administré par les partenaires sociaux.',
-      compulsif: 'Le mot chômage a encore l’air d’un accident. Tu sais déjà qu’il deviendra un pays entier.'
+      reflechi: "Le chômage devient un risque social administré par les partenaires sociaux. À toi de décider de quelle façon tu signes : régime autonome paritaire, cotisations faibles pro-compétitivité, ou garantie d'État.",
+      compulsif: "Le mot chômage a encore l'air d'un accident. Tu sais déjà qu'il deviendra un pays entier."
     },
     actors: ['base', 'adversaire', 'etat'],
+    quotes: [
+      {
+        text: "Le système d'assurance chômage est fondé sur la solidarité interprofessionnelle. Il est géré paritairement.",
+        source: "Convention nationale interprofessionnelle du 31 décembre 1958, article 2"
+      }
+    ],
     choices: [
       {
         id: 'unedic-paritaire',

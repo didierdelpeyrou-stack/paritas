@@ -630,12 +630,15 @@ class AudioEngine {
     } catch { /* ignore */ }
   }
 
-  /** Mood courant — modulateur global. */
+  /** Mood courant — modulateur global.
+   *  Si on joue un fichier (Pixabay/DP), le mood ne change rien au
+   *  contenu — pas de restart. Sinon (générative), on crossfade
+   *  pour appliquer les nouveaux paramètres tempo/voice. */
   async setMood(mood: AudioMood, opts?: { reducedMotion?: boolean }) {
     if (this.currentMood === mood) return;
     this.currentMood = mood;
     if (!this.isMusicOn) return;
-    // Mood change = re-tempo + re-voice. Crossfade plus court.
+    if (this.filePlayer) return; // file en cours : mood appliqué à la prochaine ère
     await this.crossfadeRestart(opts?.reducedMotion ? 200 : 700);
   }
 

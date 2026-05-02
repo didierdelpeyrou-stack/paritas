@@ -5,7 +5,7 @@
      ============================================================ */
   import { fade } from 'svelte/transition';
   import { game } from '$lib/stores/game.svelte';
-  import { audio } from '$lib/audio/audio';
+  import { sfx } from '../game/audio/sfx';
   import { PROFILS } from '$lib/data/profils';
   import type { SkillKey } from '$lib/types';
   import Gauge from './Gauge.svelte';
@@ -39,12 +39,13 @@
 
   let initial = $derived(game.state.name.trim().charAt(0).toUpperCase() || '?');
   let profil = $derived(game.state.profil ? PROFILS[game.state.profil] : null);
-  let musicOn = $state(false);
+  let musicOn = $state(sfx.isMusicEnabled());
+  /* Reflète l'état réel du moteur (qui peut être changé depuis le
+     bouton ♫ de GameShell aussi). */
+  $effect(() => sfx.onMusicChange((v) => (musicOn = v)));
 
   function toggleMusic() {
-    musicOn = !musicOn;
-    audio.setMusicEnabled(musicOn);
-    if (musicOn) audio.setMusicVolume(0.08);
+    sfx.toggleMusic();
   }
 </script>
 

@@ -113,6 +113,20 @@
   let orgSubTab = $state<OrgSubTab>(loadOrgSubTab());
   let glossaryOpen = $state(false);
   let settingsOpen = $state(false);
+
+  /* Sur desktop, les panneaux d'introspection sont ouverts par
+     défaut (la place est là). Sur mobile, repliés (la sidebar est
+     déjà saturée). */
+  let detailsOpenByDefault = $state<boolean>(detectDesktop());
+
+  function detectDesktop(): boolean {
+    if (typeof window === 'undefined') return true;
+    try {
+      return window.matchMedia('(min-width: 1024px)').matches;
+    } catch {
+      return true;
+    }
+  }
   /* UX-1 : mode lecture-scène. Replie la sidebar pour que la scène
      respire. Auto-activé en phase consequence (DMN priority). */
   let focusMode = $state<boolean>(loadFocusMode());
@@ -257,6 +271,14 @@
     } catch {
       /* ignore */
     }
+    // Scroll-to-top : sur mobile, le user peut être loin dans le panneau
+    // précédent — on ramène en haut du nouveau panneau.
+    queueMicrotask(() => {
+      const el = document.getElementById('tab-content');
+      if (el && typeof el.scrollIntoView === 'function') {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
   }
 
   function setOrgSubTab(t: OrgSubTab) {
@@ -421,8 +443,9 @@
         {/each}
       </div>
 
-      <div class="space-y-3">
+      <div class="space-y-3" id="tab-content">
         {#if activeTab === 'mandat'}
+          <!-- Bloc 1 : essentiel à la décision (toujours déplié) -->
           <ObjectivePanel objectives={s.objectives} progress={s.objectiveProgress} turn={s.turn} />
 
           <section class="bordered-card p-4 space-y-3">
@@ -447,13 +470,28 @@
             {/each}
           </section>
 
-          <PersonalityPanel state={s} />
+          <!-- Bloc 2 : panneaux d'introspection, repliés par défaut sur
+               mobile pour ne pas saturer la sidebar. Open par défaut sur
+               desktop via media query. -->
+          <details class="reflex-fold" open={detailsOpenByDefault}>
+            <summary>Personnalité <em>· {TRAIT_LABELS[s.dominantTrait]}</em></summary>
+            <PersonalityPanel state={s} />
+          </details>
 
-          <MyLegacyPanel memory={s.memory} />
+          <details class="reflex-fold" open={detailsOpenByDefault}>
+            <summary>Mon œuvre <em>· {s.memory.builtInstitutions.length}</em></summary>
+            <MyLegacyPanel memory={s.memory} />
+          </details>
 
-          <StrategicRadar resources={s.resources} />
+          <details class="reflex-fold" open={detailsOpenByDefault}>
+            <summary>Trajectoire stratégique</summary>
+            <StrategicRadar resources={s.resources} />
+          </details>
 
-          <GlossaryRefresher turn={s.turn} />
+          <details class="reflex-fold" open={detailsOpenByDefault}>
+            <summary>Lexique du jour</summary>
+            <GlossaryRefresher turn={s.turn} />
+          </details>
         {:else if activeTab === 'organisation'}
           <!-- Sous-navigation pour les 4 outils d'organisation -->
           <div class="sub-tab-bar" role="tablist" aria-label="Sous-sections de l'organisation">
@@ -513,10 +551,12 @@
       <!-- Mini barre d'outils main : score proéminent (UX-4) + focus (UX-1) -->
       <div class="main-toolbar">
         <div class="score-pill" title="Score provisoire — il évolue à chaque choix.">
+          <span class="score-tag">Score</span>
           <span class="score-num">{liveScore}</span>
           <span class="score-den">/100</span>
         </div>
         <div class="flex-1"></div>
+        <span class="turn-tag" aria-hidden="true">T{s.turn}/100</span>
         <button
           type="button"
           class="focus-btn"
@@ -628,12 +668,19 @@
   .score-pill {
     display: inline-flex;
     align-items: baseline;
-    gap: 0.25rem;
+    gap: 0.32rem;
     border: 1px solid rgba(244, 213, 139, 0.45);
     border-radius: 999px;
     background: rgba(201, 154, 64, 0.1);
     padding: 0.3rem 0.85rem 0.35rem;
     font-family: 'Cinzel', Georgia, serif;
+  }
+
+  .score-tag {
+    color: rgba(237, 228, 201, 0.7);
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
   .score-num {
@@ -648,6 +695,14 @@
     font-size: 0.78rem;
   }
 
+  .turn-tag {
+    color: rgba(237, 228, 201, 0.55);
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    margin-right: 0.3rem;
+  }
+
   .focus-btn {
     border: 1px solid rgba(237, 228, 201, 0.18);
     border-radius: 0.45rem;
@@ -660,6 +715,17 @@
     text-transform: uppercase;
     cursor: pointer;
     transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+    /* Le focus-btn n'a d'effet visuel qu'à partir du breakpoint lg
+       (la sidebar est en-dessous sur mobile, masquer ne sert à rien).
+       Caché sur mobile pour ne pas occuper l'espace du toolbar. */
+    display: none;
+  }
+
+  @media (min-width: 1024px) {
+    .focus-btn {
+      display: inline-flex;
+      align-items: center;
+    }
   }
 
   .focus-btn:hover {
@@ -716,6 +782,67 @@
   .sub-tab-bar button + button {
     border-left: 1px solid rgba(237, 228, 201, 0.05);
   }
+
+  /* === Panneaux d'introspection repliables ===
+     Repliés par défaut sur mobile (sidebar saturée), dépliés sur
+     desktop où la place ne manque pas. */
+  .reflex-fold > summary {
+    list-style: none;
+    cursor: pointer;
+    border: 1px solid rgba(237, 228, 201, 0.14);
+    border-radius: 0.5rem;
+    background: rgba(13, 16, 20, 0.32);
+    padding: 0.6rem 0.7rem;
+    color: rgba(237, 228, 201, 0.85);
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .reflex-fold > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .reflex-fold > summary::before {
+    content: '▸';
+    color: rgba(244, 213, 139, 0.6);
+    font-size: 0.85rem;
+    transition: transform 0.18s ease;
+    display: inline-block;
+  }
+
+  .reflex-fold[open] > summary::before {
+    transform: rotate(90deg);
+  }
+
+  .reflex-fold > summary:hover {
+    border-color: rgba(244, 213, 139, 0.4);
+  }
+
+  .reflex-fold[open] > summary {
+    border-color: rgba(244, 213, 139, 0.55);
+    background: rgba(201, 154, 64, 0.06);
+    color: #f4d58b;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .reflex-fold > summary em {
+    margin-left: auto;
+    color: rgba(244, 213, 139, 0.7);
+    font-style: normal;
+    font-size: 0.72rem;
+    text-transform: none;
+  }
+
+  /* Note : l'ouverture par défaut sur desktop est portée par
+     l'attribut `open={detailsOpenByDefault}` dans le markup, calé
+     sur matchMedia('(min-width: 1024px)') au mount. */
 
   .tab-bar {
     display: flex;

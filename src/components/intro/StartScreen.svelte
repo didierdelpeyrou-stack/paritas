@@ -92,6 +92,11 @@
         bind:value={name}
         oninput={onNameInput}
         placeholder="ex. Marguerite, Léon…"
+        autocapitalize="words"
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+        maxlength="40"
         class="mt-1 w-full px-3 py-2 bg-ink border border-line rounded-md text-parchment focus:border-gold focus:outline-none"
       />
     </label>

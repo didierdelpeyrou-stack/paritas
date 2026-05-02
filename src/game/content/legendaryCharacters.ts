@@ -322,6 +322,48 @@ Il quitte le MEDEF en juillet 2023, juste après le 49.3. Il a passé cinq ans �
     traitBonus: { technocrate: 3, rupture: 2 },
     resourceBonus: { caisse: 8, legitimite: 6 },
     rarity: 'argent'
+  },
+  {
+    id: 'patrick-martin',
+    name: 'Patrick Martin',
+    init: 'PM',
+    years: '2023 – présent',
+    era: 'Macron II / présent',
+    camp: 'patron',
+    blurb:
+      "Président du MEDEF (depuis juillet 2023). Patron d'ETI familiale (Martin Belaysoud Expansion). Doctrine de proximité avec le tissu PME-ETI.",
+    bio:
+      `Né en 1959 à Lyon, fils et petit-fils d'industriels rhônalpins, Patrick Martin dirige depuis 1989 Martin Belaysoud Expansion, distributeur industriel familial passé de 35 à plus de 4 000 salariés sous sa direction. Il représente une figure rare au sommet du MEDEF : un patron d'ETI, ni grand-groupe-CAC40 ni start-uppeur, ancré dans l'industrie de province et les chaînes d'approvisionnement réelles.
+
+Élu président du MEDEF en juillet 2023, juste après le passage en force de la réforme des retraites, il prend ses fonctions dans un climat de dialogue social dégradé. Sa première séquence forte est l'accord ANI sur le partage de la valeur (signé fin 2023 avec CFDT, CFTC, FO, CFE-CGC) — un accord paritaire dans les règles, qui contraste volontairement avec le rouleau-compresseur retraite.
+
+Sa doctrine assumée : « le paritarisme est un actif compétitif français, pas une faiblesse ». Il défend la branche professionnelle comme niveau primordial, contre la dilution dans les ordonnances Macron. Il porte aussi une critique discrète mais réelle de la concentration parisienne du dialogue social — beaucoup de ses interventions publiques se font à Lyon, Lille, Bordeaux.
+
+Au moment où ce jeu est joué, son mandat est en cours. L'historique se jugera sur sa capacité à reconstruire un dialogue social abîmé sans renoncer à la doctrine d'efficacité économique.`,
+    traitBonus: { batisseur: 3, pragmatique: 2 },
+    resourceBonus: { institution: 8, legitimite: 5 },
+    rarity: 'argent'
+  },
+  {
+    id: 'asselin',
+    name: 'François Asselin',
+    init: 'FA',
+    years: '2015 – 2024',
+    era: 'Hollande / Macron I-II',
+    camp: 'patron',
+    blurb:
+      "Président de la CPME (2015-2024). Patron d'entreprise familiale du bâtiment. Voix la plus écoutée du patronat des PME-TPE.",
+    bio:
+      `Né en 1963, formé à HEC, François Asselin reprend l'entreprise familiale Asselin SA — charpentes et restauration de monuments historiques — au début des années 1990. Il y emploie une centaine de compagnons, dont plusieurs Compagnons du Devoir. Cet ancrage dans le bâtiment artisanal façonne sa vision du patronat : ni capitalisme financier, ni grand groupe, mais entrepreneur de proximité confronté aux charges, à l'embauche, aux marges.
+
+Élu président de la CGPME en janvier 2015 (l'organisation devient CPME en 2017), il porte pendant neuf ans la voix d'une organisation représentant 60% des entreprises et la moitié des salariés du privé. Sa critique récurrente : le paritarisme français est conçu pour les grands groupes, l'ANI passe au-dessus de la tête des PME, les conventions de branche sont écrites par les CAC40.
+
+Il pousse pour une meilleure représentation des TPE-PME dans les organes paritaires (Unédic, Agirc-Arrco, OPCO), défend les seuils sociaux contre la fusion CSE de 2017 (la CPME a refusé de signer les ordonnances Macron sur ce point), milite pour la simplification du Code du travail. Sa ligne sur les retraites 2023 a été nuancée : soutien au principe, critique de la méthode.
+
+Il quitte la présidence en avril 2024. Son successeur Amir Reza-Tofighi continue dans la même ligne. Au moment où ce jeu est joué, sa figure incarne ce que le patronat des PME refuse : être absorbé dans un dialogue social pensé pour le CAC40.`,
+    traitBonus: { pragmatique: 3, batisseur: 2 },
+    resourceBonus: { confiance: 7, legitimite: 5 },
+    rarity: 'or'
   }
 ];
 

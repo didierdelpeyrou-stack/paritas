@@ -65,6 +65,12 @@
         spellcheck="false"
       />
 
+      <div class="toolbar">
+        <button type="button" class="tool-btn" onclick={() => window.print()} title="Imprimer le glossaire pour la formation paritaire">
+          Imprimer
+        </button>
+      </div>
+
       <ul class="entry-list">
         {#each filtered as e (e.term)}
           <li>
@@ -75,9 +81,7 @@
               {/if}
               <span class="chev">{openId === e.term ? '−' : '+'}</span>
             </button>
-            {#if openId === e.term}
-              <p class="entry-def" in:fly={{ y: 4, duration: 200 }}>{e.definition}</p>
-            {/if}
+            <p class="entry-def" data-visible={openId === e.term}>{e.definition}</p>
           </li>
         {/each}
         {#if filtered.length === 0}
@@ -239,5 +243,100 @@
     border-left: 2px solid rgba(244, 213, 139, 0.4);
     background: rgba(13, 16, 20, 0.4);
     border-radius: 0 0.4rem 0.4rem 0;
+  }
+
+  .entry-def[data-visible='false'] {
+    display: none;
+  }
+
+  .toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .tool-btn {
+    border: 1px solid rgba(237, 228, 201, 0.18);
+    border-radius: 0.4rem;
+    background: rgba(13, 16, 20, 0.55);
+    color: rgba(237, 228, 201, 0.78);
+    padding: 0.35rem 0.7rem;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .tool-btn:hover {
+    border-color: rgba(244, 213, 139, 0.5);
+    color: #f4d58b;
+  }
+
+  /* Mode impression — rend tout le glossaire lisible sur papier blanc.
+     Utile pour les formations paritaires (IFOCAS, INTEFP) qui veulent
+     un livret distribué aux stagiaires. */
+  @media print {
+    :global(body) {
+      background: white !important;
+      color: black !important;
+    }
+
+    .modal-backdrop {
+      position: static !important;
+      background: white !important;
+      backdrop-filter: none !important;
+      padding: 0 !important;
+    }
+
+    .modal-card {
+      max-width: 100% !important;
+      max-height: none !important;
+      box-shadow: none !important;
+      background: white !important;
+      color: black !important;
+      border: 0 !important;
+      padding: 0 !important;
+    }
+
+    .close-btn,
+    .search,
+    .toolbar {
+      display: none !important;
+    }
+
+    .entry-list {
+      overflow: visible !important;
+      gap: 0.4rem !important;
+    }
+
+    .entry-head {
+      background: white !important;
+      border-color: #ccc !important;
+      page-break-inside: avoid;
+    }
+
+    .entry-term {
+      color: black !important;
+    }
+
+    .entry-marker {
+      color: #555 !important;
+    }
+
+    .chev {
+      display: none !important;
+    }
+
+    .entry-def,
+    .entry-def[data-visible='false'] {
+      display: block !important;
+      background: white !important;
+      color: black !important;
+      border-left-color: #999 !important;
+      page-break-inside: avoid;
+    }
   }
 </style>

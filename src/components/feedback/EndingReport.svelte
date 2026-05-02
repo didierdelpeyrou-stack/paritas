@@ -2,6 +2,7 @@
   import { fade } from 'svelte/transition';
   import type { EndingRender } from '../../game/engine/endingEngine';
   import { TRAIT_LABELS, TRAIT_BLURBS } from '../../game/narrative/personalityEngine';
+  import { rebirth } from '../../game/engine/gameState.svelte';
 
   interface Props {
     ending: EndingRender;
@@ -16,6 +17,67 @@
     if (item?.satisfied) return 'satisfied';
     if (item?.failed) return 'failed';
     return 'pending';
+  }
+
+  /**
+   * Export du journal de partie en Markdown — pensé pour le mode
+   * formation paritaire : le formateur peut récupérer un compte-rendu
+   * propre par stagiaire, l'imprimer ou l'archiver.
+   */
+  function exportJournal() {
+    const s = rebirth.state;
+    if (!s) return;
+    const lines: string[] = [];
+    lines.push(`# Paritas — Journal de partie`);
+    lines.push('');
+    lines.push(`**Joueur** : ${s.name || '—'}`);
+    lines.push(`**Camp** : ${s.camp === 'salarie' ? 'Salarié' : 'Patronat'}`);
+    lines.push(`**Tours joués** : ${ending.stats.turnsPlayed}`);
+    lines.push(`**Score final** : ${ending.score}/100`);
+    lines.push(`**Trait dominant** : ${TRAIT_LABELS[trait]}`);
+    lines.push('');
+    lines.push(`## Épilogue`);
+    lines.push('');
+    lines.push(`### ${ending.title}`);
+    lines.push('');
+    lines.push(ending.text);
+    lines.push('');
+    if (ending.objectives.length > 0) {
+      lines.push(`## Mandat — bilan`);
+      lines.push('');
+      for (const o of ending.objectives) {
+        const status = statusOf(o.id);
+        const mark = status === 'satisfied' ? '✓' : status === 'failed' ? '✗' : '·';
+        lines.push(`- **${mark} ${o.label}** — ${o.description}`);
+      }
+      lines.push('');
+    }
+    lines.push(`## Statistiques`);
+    lines.push('');
+    lines.push(`- Institutions construites : ${ending.stats.institutionsBuilt}`);
+    lines.push(`- Compromis refusés : ${ending.stats.refusedCompromise}`);
+    lines.push(`- Base trahie : ${ending.stats.betrayedBase}`);
+    lines.push(`- Mouvements épuisés : ${ending.stats.exhaustedMovements}`);
+    lines.push('');
+    lines.push(`## Journal complet (${rebirth.log.length} entrées)`);
+    lines.push('');
+    for (const entry of rebirth.log) {
+      lines.push(`- ${entry}`);
+    }
+    lines.push('');
+    lines.push(`---`);
+    lines.push(`*Exporté depuis Paritas le ${new Date().toLocaleDateString('fr-FR')}.*`);
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const safeName = (s.name || 'partie').replace(/[^a-zA-Z0-9-_]/g, '_');
+    a.download = `paritas-${safeName}-T${ending.stats.turnsPlayed}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 </script>
 
@@ -99,9 +161,17 @@
     </div>
   </div>
 
-  <button type="button" class="btn-primary w-full mt-2" onclick={onReplay}>
-    Rejouer
-  </button>
+  <div class="grid grid-cols-2 gap-2 mt-2">
+    <button type="button" class="btn-ghost" onclick={exportJournal}>
+      Exporter le journal
+    </button>
+    <button type="button" class="btn-primary" onclick={onReplay}>
+      Rejouer
+    </button>
+  </div>
+  <p class="text-[0.7rem] italic text-parchment-dim/65 text-center">
+    L'export Markdown contient la partie complète — utile pour le mode formation paritaire.
+  </p>
 </article>
 
 <style>

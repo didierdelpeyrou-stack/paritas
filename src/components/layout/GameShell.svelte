@@ -1,5 +1,12 @@
 <script lang="ts">
   import { rebirth } from '../../game/engine/gameState.svelte';
+  function getActiveSlot(): 1 | 2 | 3 {
+    try {
+      const v = localStorage.getItem('paritas_active_slot');
+      if (v === '1' || v === '2' || v === '3') return parseInt(v, 10) as 1 | 2 | 3;
+    } catch { /* ignore */ }
+    return 1;
+  }
   import type { ActorId, Choice } from '../../game/types';
   import { ALL_RESOURCES } from '../../game/types';
   import SceneCard from '../narrative/SceneCard.svelte';
@@ -23,6 +30,7 @@
   import Interlude from '../narrative/Interlude.svelte';
   import Settings from '../Settings.svelte';
   import GlossaryRefresher from '../GlossaryRefresher.svelte';
+  import SignatureCeremony from '../SignatureCeremony.svelte';
   import { eraForTurn, yearForTurn } from '../../game/content/eras';
   import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
   import { computeFinalScore } from '../../game/simulation/scoring';
@@ -123,6 +131,113 @@
     const s = rebirth.state;
     if (!s) return;
     dismissedInterludes = new Set([...dismissedInterludes, s.turn]);
+  }
+
+  /* === UX-#4 : cérémonie de signature ===
+     On détecte l'apparition d'un nouvel accord signé dans la mémoire
+     (signedMajorAccords ou builtInstitutions) et on déclenche la
+     cérémonie pour les accords majeurs. La signature est stockée
+     dans localStorage paritas_sig_{slot}_{accordId}. */
+  interface CeremonyData {
+    accordId: string;
+    title: string;
+    location: string;
+    date: string;
+    blurb: string;
+  }
+
+  const CEREMONY_REGISTRY: Record<string, Omit<CeremonyData, 'accordId'>> = {
+    'matignon-1936': {
+      title: 'Accords Matignon',
+      location: 'Hôtel Matignon, Paris',
+      date: '7 juin 1936',
+      blurb: "Hausses de salaires, conventions collectives reconnues, congés payés. Le premier grand accord paritaire moderne."
+    },
+    'grenelle-1968': {
+      title: 'Constat de Grenelle',
+      location: 'Ministère du Travail, rue de Grenelle',
+      date: '27 mai 1968',
+      blurb: "SMIG +35%, salaires +10%, droit syndical d'entreprise. Le tournant institutionnel de Mai 68."
+    },
+    'secu-1945': {
+      title: 'Ordonnances de la Sécurité sociale',
+      location: 'Conseil des ministres, Paris',
+      date: '4-19 octobre 1945',
+      blurb: "Maladie, vieillesse, famille. Le pilier paritaire fondé par le programme du CNR « Les Jours heureux »."
+    },
+    'unedic-1958': {
+      title: 'Convention Unédic',
+      location: 'Paris',
+      date: '31 décembre 1958',
+      blurb: "Convention collective interprofessionnelle de l'assurance chômage. Gestion paritaire intégrale."
+    },
+    'conventions-collectives-1919': {
+      title: 'Loi sur les conventions collectives',
+      location: 'Paris',
+      date: '25 mars 1919',
+      blurb: 'Reconnaissance juridique du contrat collectif. Première institutionnalisation du dialogue social français.'
+    },
+    'syndicat-1884': {
+      title: 'Loi Waldeck-Rousseau',
+      location: 'Paris',
+      date: '21 mars 1884',
+      blurb: 'Légalisation des syndicats professionnels. Sortie de la clandestinité, entrée dans la République.'
+    },
+    'caisse-mutuelle-1864': {
+      title: 'Loi Ollivier',
+      location: 'Paris',
+      date: '25 mai 1864',
+      blurb: 'Dépénalisation du droit de coalition. Premier acquis légal du mouvement ouvrier moderne.'
+    }
+  };
+
+  function sigKey(accordId: string): string {
+    return `paritas_sig_slot${getActiveSlot()}_${accordId}`;
+  }
+
+  let ceremony = $state<CeremonyData | null>(null);
+  let knownAccords = new Set<string>();
+
+  $effect(() => {
+    const s = rebirth.state;
+    if (!s) {
+      knownAccords = new Set();
+      return;
+    }
+    const all = new Set([...s.memory.signedMajorAccords, ...s.memory.builtInstitutions]);
+    if (knownAccords.size === 0) {
+      // Première lecture : on init sans déclencher
+      knownAccords = all;
+      return;
+    }
+    for (const accordId of all) {
+      if (knownAccords.has(accordId)) continue;
+      const def = CEREMONY_REGISTRY[accordId];
+      if (def && !ceremony) {
+        // pas encore signé manuscritement ?
+        try {
+          if (localStorage.getItem(sigKey(accordId))) continue;
+        } catch { /* ignore */ }
+        ceremony = { accordId, ...def };
+      }
+    }
+    knownAccords = all;
+  });
+
+  function handleSign(dataUrl: string) {
+    if (!ceremony) return;
+    try {
+      localStorage.setItem(sigKey(ceremony.accordId), dataUrl);
+    } catch { /* ignore */ }
+    ceremony = null;
+  }
+
+  function handleSkipCeremony() {
+    if (!ceremony) return;
+    try {
+      localStorage.setItem(sigKey(ceremony.accordId), 'skipped');
+    } catch { /* ignore */ }
+    ceremony = null;
   }
 
   function setActiveTab(t: Tab) {
@@ -443,6 +558,17 @@
 
 <Glossary open={glossaryOpen} onClose={() => (glossaryOpen = false)} />
 <Settings open={settingsOpen} onClose={() => (settingsOpen = false)} />
+
+{#if ceremony}
+  <SignatureCeremony
+    title={ceremony.title}
+    location={ceremony.location}
+    date={ceremony.date}
+    blurb={ceremony.blurb}
+    onSign={handleSign}
+    onSkip={handleSkipCeremony}
+  />
+{/if}
 
 <style>
   /* === Grille principale (UX-1) ===

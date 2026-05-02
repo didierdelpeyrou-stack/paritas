@@ -393,6 +393,29 @@
     if (scenario?.mood) sfx.setMood(scenario.mood);
   });
 
+  /* Scène politique : ambiance sonore (foule, murmures) selon le contexte
+     du scénario courant. Détecte par mots-clés du titre/sous-titre. */
+  function detectScene(s: { title: string; subtitle?: string } | null | undefined):
+    'manifestation' | 'meeting' | null {
+    if (!s) return null;
+    const hay = `${s.title} ${s.subtitle ?? ''}`.toLowerCase();
+    if (/manif|défilé|defile|grève|greve|cortège|cortege|barricade|piquet|occup/.test(hay)) {
+      return 'manifestation';
+    }
+    if (/congrès|congres|assemblée|assemblee|réunion|reunion|comité|comite|table ronde|conférence|conference|hémicycle|hemicycle|bureau confédéral|bureau confederal/.test(hay)) {
+      return 'meeting';
+    }
+    return null;
+  }
+  let activeScene = $state<'manifestation' | 'meeting' | null>(null);
+  $effect(() => {
+    const next = detectScene(scenario as any);
+    if (next === activeScene) return;
+    if (activeScene) sfx.endScene();
+    if (next) void sfx.beginScene(next);
+    activeScene = next;
+  });
+
   /* Trait dominant : couleur de timbre. */
   $effect(() => {
     if (gameState?.dominantTrait) sfx.setTrait(gameState.dominantTrait);
@@ -727,6 +750,8 @@
     blurb={ceremony.blurb}
     onSign={handleSign}
     onSkip={handleSkipCeremony}
+    camp={gameState?.camp}
+    posture={gameState?.dominantTrait as any}
   />
 {/if}
 

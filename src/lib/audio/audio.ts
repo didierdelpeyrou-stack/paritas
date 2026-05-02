@@ -72,6 +72,46 @@ export type AudioTrait =
 
 export type EndingThemeId = 'mutilation' | 'resistance' | 'refondation' | 'capture' | 'inacheve';
 
+/** Identifiants des SFX fichiers présents dans /public/audio/sfx/.
+ *  Téléchargés via scripts/download-sfx.sh (CC0/PD/CC-BY archive.org+Wikimedia). */
+export type SfxFileId =
+  | 'crowd-cheer'        // foule applaudit + cris (CC0)
+  | 'crowd-protest'      // manifestation, sifflets, gronde (CC BY)
+  | 'crowd-whisper'      // murmures lointains, ambiance lobby (CC0)
+  | 'applause-soft'      // applaudissement isolé (CC0)
+  | 'applause-strong'    // ovation courte (extrait crowd-cheer)
+  | 'shout-victory'      // cri triomphant (mégaphone CC0)
+  | 'shout-anger'        // cri colérique (CC0)
+  | 'whispers-assembly'  // chuchotements de salle (CC0)
+  | 'paper-rustle'       // papier froissé (CC0)
+  | 'pen-sign';          // crayon sur papier (CC0)
+
+/** Scènes politiques avec ambiance sonore associée.
+ *  Déclenchées via audio.beginScene(...) / audio.endScene(). */
+export type SceneAudioId = 'manifestation' | 'meeting' | 'ceremonie' | 'huis_clos';
+
+interface SceneLayer { id: SfxFileId; gain: number; loop?: boolean }
+
+/** Couches sonores par scène. La musique d'ère continue par-dessous. */
+const SCENE_LAYERS: Record<SceneAudioId, SceneLayer[]> = {
+  // Manifestation : foule en colère + sifflets, doit dominer la musique
+  manifestation: [
+    { id: 'crowd-protest', gain: 0.85, loop: true },
+  ],
+  // Meeting / congrès : murmures de salle en attendant le discours
+  meeting: [
+    { id: 'whispers-assembly', gain: 0.5, loop: true },
+  ],
+  // Cérémonie de signature : ambiance feutrée de salle officielle
+  ceremonie: [
+    { id: 'crowd-whisper', gain: 0.35, loop: true },
+  ],
+  // Huis clos / négociation tendue
+  huis_clos: [
+    { id: 'crowd-whisper', gain: 0.25, loop: true },
+  ],
+};
+
 interface EraPalette {
   /** Fréquence de la fondamentale (Hz) */
   root: number;
@@ -678,6 +718,105 @@ class AudioEngine {
         }
       }
     } catch { /* ignore */ }
+  }
+
+  /* ================= SFX fichiers (foule, applaudissements…) ================= */
+
+  /** Cache de Tone.Player par identifiant SFX. Lazy-créé. */
+  private sfxFilePlayers: Partial<Record<SfxFileId, Tone.Player>> = {};
+  /** Cache des disponibilités (HEAD probe). undefined = jamais testé. */
+  private sfxFileAvailability: Partial<Record<SfxFileId, boolean>> = {};
+
+  private async loadSfxFile(id: SfxFileId): Promise<Tone.Player | null> {
+    if (this.sfxFilePlayers[id]) return this.sfxFilePlayers[id]!;
+    if (this.sfxFileAvailability[id] === false) return null;
+    const url = `${import.meta.env.BASE_URL ?? '/'}audio/sfx/${id}.mp3`;
+    try {
+      const head = await fetch(url, { method: 'HEAD' });
+      if (!head.ok) {
+        this.sfxFileAvailability[id] = false;
+        return null;
+      }
+      this.sfxFileAvailability[id] = true;
+      const player = new Tone.Player({ url, fadeIn: 0.05, fadeOut: 0.4 })
+        .connect(this.sfxGain!);
+      await Tone.loaded();
+      this.sfxFilePlayers[id] = player;
+      return player;
+    } catch {
+      this.sfxFileAvailability[id] = false;
+      return null;
+    }
+  }
+
+  /** Joue un SFX fichier en one-shot. Idempotent : un nouveau déclenchement
+   *  pendant que le précédent joue le coupe et le redémarre. */
+  async playSfxFile(id: SfxFileId, opts?: { gain?: number; loop?: boolean }) {
+    if (this.sfxVol <= 0) return;
+    await this.init();
+    const player = await this.loadSfxFile(id);
+    if (!player) return;
+    try {
+      if (player.state === 'started') player.stop();
+      const g = opts?.gain ?? 1;
+      player.volume.value = Tone.gainToDb(g);
+      player.loop = opts?.loop ?? false;
+      player.start();
+    } catch { /* ignore */ }
+  }
+
+  /** Stoppe un SFX en boucle (foule, ambiance). */
+  stopSfxFile(id: SfxFileId, fadeOut = 0.6) {
+    const player = this.sfxFilePlayers[id];
+    if (!player) return;
+    try {
+      player.fadeOut = fadeOut;
+      player.stop();
+    } catch { /* ignore */ }
+  }
+
+  /* ================= scènes audio (manif / meeting / signature) ================= */
+
+  /** Active la couche d'ambiance sonore d'une scène politique.
+   *  Boucle la foule appropriée par-dessus la musique d'ère.
+   *  Appeler `endScene()` pour couper. */
+  async beginScene(scene: SceneAudioId) {
+    if (this.sfxVol <= 0) return;
+    await this.init();
+    // Coupe une scène précédente si présente
+    this.endScene();
+    this.activeScene = scene;
+    const layers = SCENE_LAYERS[scene];
+    for (const layer of layers) {
+      this.playSfxFile(layer.id, { gain: layer.gain, loop: layer.loop ?? true });
+    }
+  }
+
+  endScene() {
+    if (!this.activeScene) return;
+    const layers = SCENE_LAYERS[this.activeScene];
+    for (const layer of layers) {
+      if (layer.loop ?? true) this.stopSfxFile(layer.id);
+    }
+    this.activeScene = undefined;
+  }
+
+  private activeScene?: SceneAudioId;
+
+  /** Petit crescendo d'applaudissements one-shot (validation, ovation). */
+  async ovation(intensity: 'soft' | 'strong' = 'strong') {
+    await this.playSfxFile(intensity === 'strong' ? 'crowd-cheer' : 'applause-soft', {
+      gain: intensity === 'strong' ? 0.9 : 0.7,
+    });
+  }
+
+  /** Bruit de stylo + papier pour souligner un instant de signature. */
+  async sceneSignaturePaper() {
+    await this.init();
+    if (this.sfxVol <= 0) return;
+    // Papier d'abord, plume ensuite (court enchaînement)
+    this.playSfxFile('paper-rustle', { gain: 0.7 });
+    setTimeout(() => this.playSfxFile('pen-sign', { gain: 0.8 }), 700);
   }
 }
 

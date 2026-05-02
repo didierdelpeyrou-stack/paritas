@@ -11,5 +11,5 @@ export default defineConfig({
       $components: fileURLToPath(new URL('./src/components', import.meta.url))
     }
   },
-  server: { port: 5180, host: true, strictPort: false }
+  server: { port: 4321, host: true, strictPort: false }
 });

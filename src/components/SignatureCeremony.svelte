@@ -16,8 +16,10 @@
    * avez signé en 1936 »).
    */
   import { fade, fly } from 'svelte/transition';
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { sfx } from '../game/audio/sfx';
+  import { deliverSpeech, stopSpeech, type SpeechPosture } from '../lib/audio/speech';
+  import type { Camp } from '../lib/types';
 
   interface Props {
     title: string;
@@ -26,8 +28,11 @@
     blurb: string;
     onSign: (dataUrl: string) => void;
     onSkip?: () => void;
+    /** Si fourni, déclenche un discours TTS et ambiance « cérémonie ». */
+    camp?: Camp;
+    posture?: SpeechPosture;
   }
-  let { title, location, date, blurb, onSign, onSkip }: Props = $props();
+  let { title, location, date, blurb, onSign, onSkip, camp, posture }: Props = $props();
 
   let canvas: HTMLCanvasElement | null = $state(null);
   let ctx: CanvasRenderingContext2D | null = null;
@@ -38,6 +43,8 @@
 
   const W = 480;
   const H = 140;
+
+  let speechSubtitle = $state('');
 
   onMount(() => {
     if (!canvas) return;
@@ -51,6 +58,24 @@
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
+
+    // Ambiance : ouvre la scène cérémonie (chuchotements de salle).
+    void sfx.beginScene('ceremonie');
+    // Discours d'ouverture du signataire si camp fourni.
+    if (camp) {
+      const text = deliverSpeech({
+        camp,
+        moment: 'signature',
+        posture: posture ?? 'pragmatique',
+        scenarioTitle: title,
+      });
+      text.then((t) => { speechSubtitle = t; }).catch(() => {});
+    }
+  });
+
+  onDestroy(() => {
+    sfx.endScene();
+    stopSpeech();
   });
 
   function getPos(e: PointerEvent | TouchEvent): { x: number; y: number } | null {
@@ -77,6 +102,8 @@
     drawing = true;
     lastX = p.x;
     lastY = p.y;
+    // Bruit papier+plume une seule fois par cérémonie, au début du tracé.
+    if (!hasInk) void sfx.paperPen();
   }
 
   function moveStroke(e: PointerEvent | TouchEvent) {
@@ -108,6 +135,7 @@
     if (!canvas || !hasInk) return;
     const dataUrl = canvas.toDataURL('image/png');
     void sfx.play('ratify');
+    void sfx.ovation('soft');
     onSign(dataUrl);
   }
 </script>

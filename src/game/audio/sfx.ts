@@ -43,7 +43,8 @@ import type {
   AudioEraId,
   AudioMood,
   AudioTrait,
-  EndingThemeId
+  EndingThemeId,
+  SceneAudioId
 } from '../../lib/audio/audio';
 
 interface AudioModule {
@@ -69,6 +70,10 @@ interface AudioModule {
     setTrait: (trait: AudioTrait) => void;
     fadeMusicTo: (factor: number, ms?: number) => void;
     playEndingTheme: (id: EndingThemeId) => Promise<void>;
+    beginScene: (scene: SceneAudioId) => Promise<void>;
+    endScene: () => void;
+    ovation: (intensity?: 'soft' | 'strong') => Promise<void>;
+    sceneSignaturePaper: () => Promise<void>;
   };
 }
 
@@ -263,6 +268,45 @@ class SfxClient {
     return () => {
       this.musicListeners = this.musicListeners.filter(l => l !== listener);
     };
+  }
+
+  /* === Scènes politiques (foules, ambiances) === */
+
+  /** Démarre l'ambiance d'une scène politique : foule, murmures, etc.
+   *  Boucle par-dessus la musique d'ère. À couper avec endScene(). */
+  async beginScene(scene: SceneAudioId): Promise<void> {
+    if (!this.enabled) return;
+    try {
+      const mod = await this.load();
+      await mod.audio.beginScene(scene);
+    } catch { /* ignore */ }
+  }
+
+  endScene(): void {
+    void (async () => {
+      try {
+        const mod = await this.load();
+        mod.audio.endScene();
+      } catch { /* ignore */ }
+    })();
+  }
+
+  /** Ovation one-shot (validation de signature, accord ratifié). */
+  async ovation(intensity: 'soft' | 'strong' = 'strong'): Promise<void> {
+    if (!this.enabled) return;
+    try {
+      const mod = await this.load();
+      await mod.audio.ovation(intensity);
+    } catch { /* ignore */ }
+  }
+
+  /** Bruit papier + crayon pour souligner un instant de signature. */
+  async paperPen(): Promise<void> {
+    if (!this.enabled) return;
+    try {
+      const mod = await this.load();
+      await mod.audio.sceneSignaturePaper();
+    } catch { /* ignore */ }
   }
 
   /* === Loader === */

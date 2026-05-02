@@ -403,6 +403,35 @@
     import('../../lib/audio/speech').then((m) => m.stopSpeech()).catch(() => {});
   });
 
+  /* Triggers SFX par mots-clés du texte du scénario : pad atmosphérique
+     (oiseaux/pluie/vent/feu/foule lointaine) + one-shots (cloche,
+     applaudissements, cris) selon ce qui apparaît dans le titre,
+     sous-titre, contexte historique et setup. */
+  let lastTextSig = '';
+  $effect(() => {
+    if (!scenario) return;
+    const text = [
+      scenario.title,
+      scenario.subtitle ?? '',
+      scenario.historicalContext ?? '',
+      scenario.setup?.reflechi ?? '',
+    ].join(' ');
+    if (text === lastTextSig) return;
+    lastTextSig = text;
+    void (async () => {
+      try {
+        const mod = await import('../../lib/audio/textTriggers');
+        const result = mod.analyzeText(text);
+        // Pad : continu sous la musique
+        await sfx.setPad(result.pad?.id ?? null, result.pad?.gain ?? 0.35);
+        // One-shots : joués avec leur délai propre
+        for (const oneshot of result.oneshots) {
+          setTimeout(() => sfx.playOneShot(oneshot.id, oneshot.gain), oneshot.delay);
+        }
+      } catch { /* ignore */ }
+    })();
+  });
+
   /* Scène politique : ambiance sonore (foule, murmures) selon le contexte
      du scénario courant. Détecte par mots-clés du titre/sous-titre. */
   function detectScene(s: { title: string; subtitle?: string } | null | undefined):

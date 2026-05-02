@@ -77,6 +77,9 @@ interface AudioModule {
     duckMusic: (factor: number, ms?: number) => void;
     duckSfx: (factor: number, ms?: number) => void;
     playInternationaleEasterEgg: () => Promise<void>;
+    setPad: (id: string | null, gain?: number) => Promise<void>;
+    stopPad: () => void;
+    playSfxFile: (id: string, opts?: { gain?: number; loop?: boolean; vary?: boolean }) => Promise<void>;
   };
 }
 
@@ -314,6 +317,25 @@ class SfxClient {
     try {
       const mod = await this.load();
       await mod.audio.sceneSignaturePaper();
+    } catch { /* ignore */ }
+  }
+
+  /** Active un pad atmosphérique (pluie, oiseaux, feu, foule lointaine).
+   *  Joue en boucle sous la musique. id=null pour couper. */
+  async setPad(id: string | null, gain = 0.35): Promise<void> {
+    if (!this.enabled && id !== null) return;
+    try {
+      const mod = await this.load();
+      await mod.audio.setPad(id, gain);
+    } catch { /* ignore */ }
+  }
+
+  /** Joue un SFX one-shot (utilisé par les triggers texte). */
+  async playOneShot(id: string, gain = 0.6): Promise<void> {
+    if (!this.enabled) return;
+    try {
+      const mod = await this.load();
+      await mod.audio.playSfxFile(id, { gain, loop: false });
     } catch { /* ignore */ }
   }
 

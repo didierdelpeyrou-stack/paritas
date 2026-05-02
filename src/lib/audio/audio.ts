@@ -73,8 +73,10 @@ export type AudioTrait =
 export type EndingThemeId = 'mutilation' | 'resistance' | 'refondation' | 'capture' | 'inacheve';
 
 /** Identifiants des SFX fichiers présents dans /public/audio/sfx/.
- *  Téléchargés via scripts/download-sfx.sh (CC0/PD/CC-BY archive.org+Wikimedia). */
+ *  Téléchargés via scripts/download-sfx.sh + download-nature-sfx.sh
+ *  (CC0/PD/CC-BY archive.org + Wikimedia). */
 export type SfxFileId =
+  // Foules + voix
   | 'crowd-cheer'        // foule applaudit + cris (CC0)
   | 'crowd-protest'      // manifestation, sifflets, gronde (CC BY)
   | 'crowd-whisper'      // murmures lointains, ambiance lobby (CC0)
@@ -84,7 +86,16 @@ export type SfxFileId =
   | 'shout-anger'        // cri colérique (CC0)
   | 'whispers-assembly'  // chuchotements de salle (CC0)
   | 'paper-rustle'       // papier froissé (CC0)
-  | 'pen-sign';          // crayon sur papier (CC0)
+  | 'pen-sign'           // crayon sur papier (CC0)
+  // Nature / ambient pad
+  | 'birds-morning'      // oiseaux matin (CC0)
+  | 'rain-soft'          // pluie douce (CC0)
+  | 'rain-storm'         // pluie + tonnerre (CC0)
+  | 'wind-leaves'        // vent dans les feuilles (CC0)
+  | 'fire-crackle'       // feu de cheminée (CC0)
+  | 'river-stream'       // ruisseau (CC0)
+  | 'distant-crowd'      // foule lointaine (PD)
+  | 'church-bell';       // cloche d'église (CC BY-SA)
 
 /** Scènes politiques avec ambiance sonore associée.
  *  Déclenchées via audio.beginScene(...) / audio.endScene(). */
@@ -398,7 +409,11 @@ class AudioEngine {
     if (this.currentFileUrl === url && this.filePlayer) return true;
     /* Charge le buffer via le callback onload du player plutôt que
      * Tone.loaded() (qui résout parfois trop tôt entre deux loads
-     * consécutifs et fait que .start() joue avec un buffer vide). */
+     * consécutifs et fait que .start() joue avec un buffer vide).
+     *
+     * fadeIn/fadeOut à 4 s pour un crossfade vraiment continu —
+     * l'ancienne et la nouvelle musique se chevauchent 4 secondes,
+     * fini l'effet de coupure entre ères. */
     let next: Tone.Player;
     try {
       next = await new Promise<Tone.Player>((resolve, reject) => {
@@ -406,8 +421,8 @@ class AudioEngine {
         const p: Tone.Player = new Tone.Player({
           url,
           loop: true,
-          fadeIn: 1.4,
-          fadeOut: 1.0,
+          fadeIn: 4,
+          fadeOut: 4,
           onload: () => { clearTimeout(timer); resolve(p); },
           onerror: () => { clearTimeout(timer); reject(new Error('decode')); },
         });
@@ -421,9 +436,9 @@ class AudioEngine {
       next.start();
       if (this.filePlayer) {
         const old = this.filePlayer;
-        old.fadeOut = 1.4;
-        old.stop('+1.4');
-        setTimeout(() => { try { old.dispose(); } catch { /* ignore */ } }, 1800);
+        old.fadeOut = 4;
+        old.stop('+4');
+        setTimeout(() => { try { old.dispose(); } catch { /* ignore */ } }, 4500);
       }
       this.filePlayer = next;
       this.currentFileUrl = url;
@@ -657,11 +672,16 @@ class AudioEngine {
     if (this.currentEra === eraId) return;
     this.currentEra = eraId;
     if (!this.isMusicOn) return;
-    // Stinger court (~700 ms) qui annonce le passage d'époque.
-    // Sans ça, les testeurs (Astrid) ne sentaient pas la transition
-    // — la musique changeait sans signal narratif.
+    // Stinger court qui annonce le passage d'époque.
     void this.eraTransitionStinger();
-    // 2000 ms (au lieu de 1200) : transition plus organique.
+    // Si on joue un fichier, tryLoadEraFile gère son propre crossfade
+    // 4 s (fadeIn nouveau + fadeOut ancien). Pas besoin de
+    // crossfadeRestart qui ferait baisser le gain global.
+    if (this.filePlayer) {
+      await this.tryLoadEraFile(this.currentEra);
+      return;
+    }
+    // Générative : crossfadeRestart classique pour rebuild la boucle
     await this.crossfadeRestart(opts?.reducedMotion ? 320 : 2000);
   }
 
@@ -1068,6 +1088,43 @@ class AudioEngine {
   }
 
   private activeScene?: SceneAudioId;
+
+  /* ================= Pad ambient (couche atmosphère) =================
+     Loop continu (oiseaux / pluie / feu / foule lointaine) sous la
+     musique d'ère, à très faible volume. Crossfade entre pads quand
+     le contexte change. Indépendant des scènes (manifestation,
+     meeting) qui couvrent un autre besoin (foule active). */
+
+  private currentPadId?: SfxFileId;
+
+  /** Active un pad ambient. Si un autre pad joue, crossfade.
+   *  Si le même pad joue déjà avec un gain différent, ajuste le gain. */
+  async setPad(id: SfxFileId | null, gain = 0.35) {
+    if (id === null) { this.stopPad(); return; }
+    if (this.sfxVol <= 0) return;
+    await this.init();
+    if (this.currentPadId === id) {
+      // Même pad : juste ajuster le volume
+      const player = this.sfxFilePlayers[id];
+      if (player) player.volume.value = Tone.gainToDb(gain);
+      return;
+    }
+    // Pad différent : démarre nouveau, l'ancien sera arrêté
+    const oldId = this.currentPadId;
+    this.currentPadId = id;
+    await this.playSfxFile(id, { gain, loop: true, vary: false });
+    if (oldId) {
+      // Petit délai pour qu'il y ait un overlap audible (crossfade naturel)
+      setTimeout(() => this.stopSfxFile(oldId, 1.2), 400);
+    }
+  }
+
+  stopPad() {
+    if (this.currentPadId) {
+      this.stopSfxFile(this.currentPadId, 1.0);
+      this.currentPadId = undefined;
+    }
+  }
 
   /** Petit crescendo d'applaudissements one-shot (validation, ovation). */
   async ovation(intensity: 'soft' | 'strong' = 'strong') {

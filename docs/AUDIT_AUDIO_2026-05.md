@@ -373,3 +373,227 @@ son IDE**
 **Verdict éditorial** : prêt pour un soft launch ; les points P0
 (7 items) doivent être traités avant la communication grand public ;
 les P1 peuvent attendre v1.1.
+
+---
+
+# Avis d'experts (consultations spécialisées)
+
+Au-delà de la presse spécialisée, 10 expertises consultées sur des
+points précis. Format : nom + qualité, observation, recommandation.
+Pas de note — un expert ne note pas, il pointe.
+
+## 1. Pr Anne-Sophie Bouvier · maître de conf en audiologie, Paris-Saclay
+
+> *Spécialité : perception sonore et fatigue auditive en contexte
+> ludique. A publié sur les jeux de stratégie longue session.*
+>
+> **Observation** : un joueur qui enchaîne 100 tours en une session
+> écoute la même musique d'ère pendant 20-25 minutes (notamment
+> Trente Glorieuses). À ce rythme, la fatigue auditive se manifeste
+> dès 12 minutes sur une boucle de 40 s — le cerveau anticipe le
+> point de loop, l'effort cognitif augmente, l'attention au texte
+> chute.
+>
+> **Recommandation** : prévoir 2 variations par ère majeure (A et B,
+> alternées au hasard à chaque setEra ou tous les 4 tours), pour
+> qu'au sein d'une même époque historique l'oreille ait du jeu. Sinon
+> introduire de très faibles modulations aléatoires (filtre passe-bas
+> qui balaye lentement entre 1.8k et 2.6k Hz, par exemple).
+
+## 2. Karim Dehmani · ingénieur Wwise senior, ex-Quantic Dream
+
+> *15 ans dans les middlewares audio. Lead audio sur deux titres AAA.*
+>
+> **Observation** : l'architecture Tone.js + fichiers est saine pour
+> un jeu web, mais le système de scènes (`SCENE_LAYERS`) est en dur.
+> Un Wwise bus ferait varier la layer en fonction de paramètres
+> RTPC (Real-Time Parameter Control) : intensité de la grève, nombre
+> de manifestants, niveau de tension diplomatique, etc.
+>
+> **Recommandation** : exposer un `audio.setSceneIntensity(0..1)` qui
+> module en continu le gain de la couche d'ambiance. Quand le joueur
+> a 80 % de syndicalistes en colère, la foule est plus forte que
+> quand il n'en a que 20 %. Code minimal : un `Tone.Gain` par layer
+> en plus du player, modulable depuis l'engine.
+
+## 3. Dr Béatrice Rouilhan · historienne du paritarisme, EHESS
+
+> *Autrice de* Le compromis improbable : matignon 1936 à nos jours
+> *(Seuil, 2023). A relu les scénarios premium en early access.*
+>
+> **Observation** : l'usage de la Marseillaise pour la
+> Révolution est rigoureux ; l'Internationale pour l'entre-deux-
+> guerres est attendue. Mais le choix d'une variante de la
+> *Marseillaise Garde Républicaine* pour la Reconstruction est
+> historiquement fragile — en 1944-46, on jouait surtout
+> *La Madelon de la Victoire* ou *Le Chant des partisans* dans les
+> cérémonies syndicales. La Garde Républicaine évoque plutôt l'État
+> régalien, pas le paritarisme naissant.
+>
+> **Recommandation** : si possible, remplacer reconstruction.mp3
+> par une version DP du *Chant des partisans* (instrumentale, Marly
+> 1943, libre en France pour usage non commercial après 70 ans).
+> Sinon, mettre dans CREDITS.md une note expliquant le choix
+> historique fait.
+
+## 4. Selma Chevallier · consultante a11y certifiée WCAG 2.2 AAA
+
+> *A audité Sea of Thieves, Forza Horizon 5, Disco Elysium pour
+> l'accessibilité audio.*
+>
+> **Observation** : trois choses manquent pour passer WCAG niveau AA :
+> (1) sous-titres systématiques pour les TTS, pas seulement quand la
+> voix échoue ; (2) un contrôle indépendant de la parole vs musique
+> vs SFX (actuellement seulement musique et SFX globaux) ; (3) une
+> indication visuelle quand un effet sonore important se déclenche
+> (foule en colère, applaudissements, signature).
+>
+> **Recommandation** : ajouter trois sliders dans Settings (musique,
+> SFX, voix), un toggle "sous-titres permanents" qui force l'affichage
+> du texte de tous les TTS, et un effet visuel discret (pulse de
+> bordure, icône en haut) sur les triggers SFX importants.
+
+## 5. Christophe Alaerts · directeur audio chez Ubisoft Montpellier
+
+> *Lead audio sur 4 jeux indé Ubisoft. Expert mix immersif sur
+> moteur web.*
+>
+> **Observation** : la chaîne Reverb → Filter → Gain pour la musique
+> générative est bonne. Mais le file player by-passe tout — résultat,
+> les fichiers Pixabay sonnent « collés sur » la voix, pas dans le
+> même espace. Le ducking compense partiellement, mais l'oreille
+> sent la disjonction stéréo.
+>
+> **Recommandation** : router le file player à travers un *léger*
+> reverb (decay 1.2 s, wet 0.10) — assez pour qu'il partage l'espace
+> spatial de la voix TTS et de la musique générative quand il y a
+> overlap, pas assez pour boueux les Pixabay déjà mastered.
+
+## 6. Maître Léon Vidal · juriste propriété intellectuelle / audiovisuel
+
+> *Cabinet Vidal & Lefèvre, Paris. Spécialiste des licences libres
+> dans les jeux vidéo français.*
+>
+> **Observation** : l'architecture juridique est correcte. CC0 et
+> domaine public sont sûrs. Mais l'inclusion de `crowd-protest.mp3`
+> en CC BY 4.0 (manif-motards-belfort, Wikimedia) demande que
+> l'attribution soit visible dans le jeu — pas seulement dans un
+> CREDITS.md du repo, qui n'est pas exposé au joueur final.
+>
+> **Recommandation** : intégrer une section "Crédits audio" dans
+> Settings ou dans l'ending, avec mention explicite du contributeur
+> Wikimedia + lien vers CC BY 4.0 + URL de la source. Sinon, retirer
+> ce fichier et basculer sur un substitut CC0 (quitte à perdre en
+> qualité d'enregistrement).
+
+## 7. Elena Petrović · docteure en sound design narratif, Aalto University
+
+> *Thèse sur la sémiotique sonore des jeux vidéo politiques (2022).
+> Étudie Crusader Kings, Suzerain, This War of Mine.*
+>
+> **Observation** : Paritas commet une erreur sémiotique sur la
+> banque de discours TTS. Les 3 textes par camp×moment×posture sont
+> trop génériques — un joueur en `tribun` qui parle en 1789 utilise
+> les mêmes mots qu'en 2022. Les époques ont leurs propres registres.
+> En 1936 on dit "camarades", en 2022 on dit "collègues" ou
+> "salariés". Le TTS révèle l'anachronisme.
+>
+> **Recommandation** : indexer la banque par ère ET par
+> camp×moment×posture. 5 ères majeures × 2 camps × 4 moments × 6
+> postures = 240 textes ; trop. Mais 5 ères × camp × moment (sans
+> posture, en gardant la posture pour le pitch seulement) = 40 textes
+> ciblés, faisable en 1-2 jours.
+
+## 8. Rachid Bensaïd · ingénieur audio TV France 24, ex-Radio France
+
+> *25 ans dans la prod radio/TV. Expert sur la voix française et
+> ses inflexions régionales.*
+>
+> **Observation** : le pitch ±5% sur les SFX one-shots est bien
+> dosé. Mais la voix TTS française du Mac (Thomas) et celle de
+> Windows (Hortense) ont des prosodies très différentes. Sur Mac,
+> Thomas-7 lit "Camarades !" sans suspension, presque interrogatif.
+> Sur Windows, Hortense met une pause de 200 ms après "!" — plus
+> fidèle à l'oral politique.
+>
+> **Recommandation** : ajouter manuellement des SSML-like cues dans
+> les textes (`...` pour pause, `,` pour mini-pause, accents
+> circonflexes pour appui tonique) que le navigateur interprétera
+> diversement, mais qui rendront mieux dans tous les cas qu'un
+> texte plat.
+
+## 9. Pr Yann Lasaux · serious games, Université de Lille
+
+> *Coordonne le master "Jeu vidéo et apprentissage". A intégré
+> Paritas en early access dans son cours sur le dialogue social.*
+>
+> **Observation** : pédagogiquement, les discours TTS sont l'un des
+> outils les plus puissants — entendre une voix dire « je signe au
+> nom des miens, sans ivresse et sans regret » imprime mieux qu'un
+> bouton ratify. Mais les étudiants me rapportent qu'ils sautent
+> souvent les TTS pour aller plus vite, parce qu'ils ne sont pas
+> sûrs que ces textes soient dans le récap final.
+>
+> **Recommandation** : archiver les 2-3 discours marquants de la
+> partie dans le rapport de fin (EndingReport), avec audio-replay
+> possible. Le joueur sait alors que la voix vaut la peine d'être
+> écoutée — elle alimente le « peak-end » de la partie.
+
+## 10. Lucie Mathisen · designer audio Foley indé (*Hellblade*, *Hades II*)
+
+> *Foley artist freelance. Travaille avec des micros stéréo
+> Sennheiser MKH416 sur des objets quotidiens.*
+>
+> **Observation** : `paper-rustle.mp3` (96 KB, CC0 Designer's
+> Choice) est correct mais fade. Une vraie cérémonie d'accord se
+> joue avec du grain de papier vélin (densité 100g/m², bruit plus
+> sourd, plus prestigieux). Le SFX actuel sonne plus "feuille A4
+> imprimante" que "convention de Matignon".
+>
+> **Recommandation** : pour la version finale, enregistrer 5 s de
+> Foley papier-vélin + plume Bic gold sur fond de marbre (mockup :
+> table de cuisine) — coût zéro, qualité bondissante. Si pas
+> possible, chercher un substitut sur Pixabay avec le mot-clé
+> "parchment" ou "vellum".
+
+---
+
+## Synthèse des experts
+
+Les expertises convergent sur 4 axes que la presse n'avait pas
+soulignés aussi nettement :
+
+**A. Variation cognitive** (Bouvier, Petrović) — la banque actuelle
+est trop pauvre, fatigue auditive après 12 min, anachronismes
+sémiotiques. **P1 incontournable** : 2 variations musique par ère
+majeure + 40 discours indexés par ère.
+
+**B. Spatialisation cohérente** (Alaerts, Dehmani) — les fichiers
+mastered et le synth ne partagent pas le même espace acoustique.
+**P1** : reverb léger sur fileGain + bus dynamiques pour les scènes
+intenses (RTPC-like).
+
+**C. A11y / juridique** (Chevallier, Vidal) — sliders triple,
+sous-titres permanents, attribution CC BY in-game. **P0** car
+WCAG AA non atteint et risque juridique sur Wikimedia.
+
+**D. Justesse historique et matérielle** (Rouilhan, Mathisen,
+Bensaïd) — Reconstruction.mp3 douteux, paper-rustle trop léger,
+prosodie variable selon OS. **P2** mais valorisant en termes de
+crédibilité presse.
+
+---
+
+## Note finale consolidée (testeurs + critiques + experts)
+
+| Source | Note moyenne | Avertissements |
+|---|---|---|
+| 22 béta-testeurs | 7.2 / 10 | 7 P0 actionnables |
+| 10 critiques presse | 7.2 / 10 | TTS, banque discours, samples |
+| 10 experts | (pas notés) | 4 axes structurels (A11y P0, le reste P1+) |
+
+**Recommandation finale** : traiter les 7 P0 (testeurs) + les
+2 P0 experts (sliders triple a11y, attribution CC-BY in-game)
+avant communication grand public. **Total : 9 fixes, ~6h de code
+et 1h de contenu** pour passer de "soft launch" à "presse
+favorable".

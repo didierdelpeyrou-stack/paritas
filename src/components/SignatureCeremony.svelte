@@ -134,8 +134,11 @@
   function ratify() {
     if (!canvas || !hasInk) return;
     const dataUrl = canvas.toDataURL('image/png');
+    /* Chime de validation d'abord (synth, ~600 ms), puis ovation
+     * réelle 700 ms après. Sans ce délai, les testeurs entendaient
+     * un « double applause » confus. */
     void sfx.play('ratify');
-    void sfx.ovation('soft');
+    setTimeout(() => { void sfx.ovation('soft'); }, 700);
     onSign(dataUrl);
   }
 </script>
@@ -159,6 +162,12 @@
     </header>
 
     <p class="blurb">{blurb}</p>
+
+    {#if speechSubtitle}
+      <blockquote class="speech-subtitle" aria-live="polite">
+        « {speechSubtitle} »
+      </blockquote>
+    {/if}
 
     <div class="signature-zone">
       <div class="signature-label">— pour ratifier l'accord, signe ici —</div>
@@ -193,6 +202,20 @@
 </div>
 
 <style>
+  /* Sous-titre TTS — affiché en permanence (a11y :
+     un sourd doit lire ce que la voix dit). aria-live polite. */
+  .speech-subtitle {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border-left: 2px solid rgba(244, 213, 139, 0.55);
+    background: rgba(244, 213, 139, 0.05);
+    color: rgba(245, 230, 197, 0.92);
+    font-style: italic;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    border-radius: 0 0.4rem 0.4rem 0;
+  }
+
   .ceremony-backdrop {
     position: fixed;
     inset: 0;

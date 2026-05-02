@@ -200,40 +200,69 @@ export function stopSpeech() {
   }).catch(() => { /* ignore */ });
 }
 
-/** Pioche un texte + le lit. Renvoie le texte pour affichage en
- *  sous-titré (peak-end : si la voix est coupée, le texte reste).
+/** Lit la pref granularity TTS (Settings) : 'always', 'ceremonies', 'never'. */
+function readSpeechGranularity(): 'always' | 'ceremonies' | 'never' {
+  try {
+    const v = localStorage.getItem('paritas_speech_granularity');
+    if (v === 'always' || v === 'never') return v;
+  } catch { /* ignore */ }
+  return 'ceremonies';
+}
+
+/** Lit le volume voix (0-100) depuis Settings, défaut 85. */
+function readVoiceVolume(): number {
+  try {
+    const v = localStorage.getItem('paritas_voice_volume');
+    const n = v === null ? 85 : Number(v);
+    return Number.isFinite(n) ? Math.max(0, Math.min(100, n)) / 100 : 0.85;
+  } catch { return 0.85; }
+}
+
+/** Pioche un texte + le lit. Renvoie le texte (toujours) pour affichage
+ *  en sous-titre — qu'il soit lu ou non.
+ *
+ *  Respecte la granularité TTS de Settings (always/ceremonies/never).
  *
  *  Side-chain ducking : pendant la lecture, la musique baisse à 25 %
  *  (-12 dB env) et les SFX à 35 %. Au end de l'utterance, on rétablit. */
 export async function deliverSpeech(req: SpeechRequest, opts: SpeakOptions = {}): Promise<string> {
   const text = pickSpeechText(req);
-  if (text) {
-    const pitchByPosture: Record<SpeechPosture, number> = {
-      rupture: 1.05,
-      tribun: 1.10,
-      pragmatique: 0.95,
-      technocrate: 0.92,
-      paternaliste: 0.98,
-      batisseur: 1.0,
-    };
-    /* Duck dynamique. Lazy-loadé pour ne pas créer une dép circulaire
-     * speech.ts → sfx.ts → audio.ts → speech.ts. */
-    let unduck: (() => void) | null = null;
-    try {
-      const sfxMod = await import('../../game/audio/sfx');
-      sfxMod.sfx.duckMusic(0.25, 250);
-      sfxMod.sfx.duckSfx(0.35, 250);
-      unduck = () => {
-        sfxMod.sfx.duckMusic(1, 600);
-        sfxMod.sfx.duckSfx(1, 400);
-      };
-    } catch { /* ignore */ }
+  if (!text) return text;
 
-    speakText(text, {
-      ...opts,
-      pitch: opts.pitch ?? pitchByPosture[req.posture],
-      onEnd: unduck ?? undefined,
-    }).catch(() => { unduck?.(); });
-  }
+  // Granularité utilisateur : si 'never', on retourne le texte mais
+  // on ne lit pas. Si 'ceremonies', seuls signature et huis_clos sont lus.
+  const gran = readSpeechGranularity();
+  const allowedMoments: SpeechMoment[] =
+    gran === 'never' ? [] :
+    gran === 'ceremonies' ? ['signature', 'huis_clos'] :
+    ['manifestation', 'meeting', 'signature', 'huis_clos'];
+  if (!allowedMoments.includes(req.moment)) return text;
+
+  const pitchByPosture: Record<SpeechPosture, number> = {
+    rupture: 1.05,
+    tribun: 1.10,
+    pragmatique: 0.95,
+    technocrate: 0.92,
+    paternaliste: 0.98,
+    batisseur: 1.0,
+  };
+  let unduck: (() => void) | null = null;
+  try {
+    const sfxMod = await import('../../game/audio/sfx');
+    sfxMod.sfx.duckMusic(0.25, 250);
+    sfxMod.sfx.duckSfx(0.35, 250);
+    unduck = () => {
+      sfxMod.sfx.duckMusic(1, 600);
+      sfxMod.sfx.duckSfx(1, 400);
+    };
+  } catch { /* ignore */ }
+
+  speakText(text, {
+    ...opts,
+    pitch: opts.pitch ?? pitchByPosture[req.posture],
+    volume: opts.volume ?? readVoiceVolume(),
+    onEnd: unduck ?? undefined,
+  }).catch(() => { unduck?.(); });
+
   return text;
 }

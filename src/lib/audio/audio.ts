@@ -236,6 +236,7 @@ class AudioEngine {
   private sfxVol = 0.42;
   private musicReverb?: Tone.Reverb;
   private musicFilter?: Tone.Filter;
+  private sfxComp?: Tone.Compressor;
   /** Multiplicateurs de duck (1 = pas de duck, 0.4 = -8dB env). */
   private musicDuckFactor = 1;
   private sfxDuckFactor = 1;
@@ -246,7 +247,18 @@ class AudioEngine {
      enveloppes plus douces. Volume baissé à 0.045 (vraiment fond). */
 
   async init() {
-    if (this.started) return;
+    if (this.started) {
+      // Si le contexte audio a été suspendu (sessions longues, onglet
+      // en arrière-plan), on tente de le réveiller. Sans ça, après
+      // plusieurs parties d'affilée le son devient silencieux
+      // (testeur Kevin).
+      try {
+        if (Tone.getContext().state === 'suspended') {
+          await Tone.start();
+        }
+      } catch { /* ignore */ }
+      return;
+    }
     await Tone.start();
 
     /* Chaîne d'effets musique : Synth → Filter (passe-bas) →
@@ -259,7 +271,20 @@ class AudioEngine {
        -14 LUFS, elle ne doit PAS passer par reverb+filter (ça la
        noie) ni par le gain ultra-bas du synth ambient. */
     this.fileGain = new Tone.Gain(this.fileVol).toDestination();
-    this.sfxGain = new Tone.Gain(this.sfxVol).toDestination();
+
+    /* SFX → Compresseur léger → Destination. Plage dynamique des SFX
+       trop large dans les transports en commun (testeur Ahmed) : les
+       chuchotements deviennent inaudibles, les applaudissements
+       trop forts. Compresseur 3:1 à -18 dB tasse les pics sans
+       masquer les bas niveaux. */
+    this.sfxComp = new Tone.Compressor({
+      threshold: -18,
+      ratio: 3,
+      attack: 0.005,
+      release: 0.12,
+      knee: 6,
+    }).toDestination();
+    this.sfxGain = new Tone.Gain(this.sfxVol).connect(this.sfxComp);
 
     /* Bass : triangle doux, attaque allongée, release long. */
     this.bassSynth = new Tone.Synth({
@@ -471,10 +496,24 @@ class AudioEngine {
   }
 
   setMusicEnabled(on: boolean) {
+    const wasOn = this.isMusicOn;
     this.isMusicOn = on;
-    this.applyMusicGain();
     if (!on) {
+      this.applyMusicGain();
       this.stopMusic();
+      return;
+    }
+    /* Fade-in en douceur lors de la PREMIÈRE activation : on part
+     * de 0 et on monte sur 1.5 s. Évite l'attaque brutale dont
+     * plusieurs testeurs ont fait remonter (« la musique démarre
+     * trop fort dès le 1er clic »). Les activations suivantes
+     * réutilisent la transition naturelle. */
+    if (!wasOn) {
+      if (this.musicGain) this.musicGain.gain.value = 0;
+      if (this.fileGain) this.fileGain.gain.value = 0;
+      this.applyAllGains(1500);
+    } else {
+      this.applyMusicGain();
     }
   }
 
@@ -559,7 +598,10 @@ class AudioEngine {
     if (this.currentEra === eraId) return;
     this.currentEra = eraId;
     if (!this.isMusicOn) return;
-    await this.crossfadeRestart(opts?.reducedMotion ? 280 : 1200);
+    // 2000 ms (au lieu de 1200) : les testeurs percevaient la coupure
+    // de Marseillaise comme « brutale ». 2 s laisse à l'oreille le
+    // temps d'accepter la fin de l'ancienne ère avant la nouvelle.
+    await this.crossfadeRestart(opts?.reducedMotion ? 320 : 2000);
   }
 
   /** Mood courant — modulateur global. */

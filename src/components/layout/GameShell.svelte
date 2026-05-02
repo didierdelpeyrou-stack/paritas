@@ -393,6 +393,16 @@
     if (scenario?.mood) sfx.setMood(scenario.mood);
   });
 
+  /* Cleanup TTS sur changement de phase de scénario : un discours
+     démarré en phase 'scene' ne doit pas continuer à parler par-dessus
+     la conséquence (testeur Pierre-Yves). Importé dynamiquement pour
+     ne pas charger speech.ts si le joueur n'utilise jamais le TTS. */
+  $effect(() => {
+    const _phase = rebirth.state?.phase;
+    void _phase;
+    import('../../lib/audio/speech').then((m) => m.stopSpeech()).catch(() => {});
+  });
+
   /* Scène politique : ambiance sonore (foule, murmures) selon le contexte
      du scénario courant. Détecte par mots-clés du titre/sous-titre. */
   function detectScene(s: { title: string; subtitle?: string } | null | undefined):

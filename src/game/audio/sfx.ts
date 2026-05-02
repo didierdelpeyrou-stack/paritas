@@ -327,6 +327,31 @@ class SfxClient {
     } catch { /* ignore */ }
   }
 
+  /* === Volumes === */
+
+  async setMusicVolume(v: number): Promise<void> {
+    try {
+      const mod = await this.load();
+      // mod.audio expose maintenant fileGain via une seule entrée.
+      // L'engine applique aux 2 (synth + fichier) en interne via
+      // setMusicVolume. Le fichier est plus fort à ratio fixe 12:1.
+      const audioEngine = mod.audio as unknown as {
+        setMusicVolume: (v: number) => void;
+        setFileVolume?: (v: number) => void;
+      };
+      audioEngine.setMusicVolume(v * 0.075); // synth fond, ratio bas
+      audioEngine.setFileVolume?.(v * 0.92); // file mastered, ratio haut
+    } catch { /* ignore */ }
+  }
+
+  async setSfxVolume(v: number): Promise<void> {
+    try {
+      const mod = await this.load();
+      const audioEngine = mod.audio as unknown as { setSfxVolume: (v: number) => void };
+      audioEngine.setSfxVolume(v * 0.7);
+    } catch { /* ignore */ }
+  }
+
   /* === Loader === */
 
   private async load(): Promise<AudioModule> {

@@ -15,11 +15,45 @@ Loader hybride en place : si un fichier existe dans
 
 ---
 
+## ⚡ Chemin le plus rapide (vérifié le 2 mai 2026)
+
+**Action minimale** : exécute le script de téléchargement automatique.
+
+```bash
+bash scripts/download-music.sh
+```
+
+Il pose **3 fichiers DP authentiques** (Marseillaise, Internationale,
+Marseillaise Garde Républicaine) dans `public/audio/eras/`. Pour les
+12 ères restantes, recherche manuelle Pixabay (liens pré-remplis
+ci-dessous, ~1 h pour tout faire).
+
+**URLs vérifiées au 2026-05-02** (HTTP 200, format direct) :
+
+| Fichier cible | Source vérifiée | Licence |
+|---|---|---|
+| `revolution.mp3` | [Wikimedia La Marseillaise.ogg](https://upload.wikimedia.org/wikipedia/commons/3/30/La_Marseillaise.ogg) | DP |
+| `entre_deux_guerres.mp3` | [Wikimedia L'Internationale](https://upload.wikimedia.org/wikipedia/commons/6/6e/L%27internationale.ogg) | CC0 / DP |
+| `reconstruction.mp3` | [Wikimedia Marseillaise Garde Républicaine](https://upload.wikimedia.org/wikipedia/commons/f/f0/La_Marseillaise_Rouget_de_Lisle_Musique_de_la_Garde_R%C3%A9publicaine.ogg) | DP |
+
+**⚠️ Pièges détectés à la vérification** :
+- **MusOpen bloque les bots** (HTTP 403). Téléchargements obligatoirement
+  manuels via navigateur sur Gymnopédie, Pavane, Boléro, Préludes, etc.
+- **archive.org Marching Band** est en **CC BY-NC-SA**, donc **non
+  utilisable** dans Paritas (jeu déployé publiquement, NC = pas
+  d'usage commercial même indirect). À ne pas inclure.
+- **Incompetech / Scott Buckley** : pas de listing programmatique,
+  télécharger manuellement depuis la page de chaque morceau.
+
+---
+
 ## Vérification systématique avant de poser un fichier
 
 1. La licence couvre-t-elle un usage en jeu vidéo gratuit en ligne ?
 2. Si CC-BY : tu dois afficher l'attribution dans Settings → Crédits.
-3. Convertir au besoin via [`ffmpeg`](https://ffmpeg.org) :
+3. Si CC-BY-NC ou CC-BY-NC-SA : **refuser** (Paritas est public, donc
+   à risque commercial même sans monétisation).
+4. Convertir au besoin via [`ffmpeg`](https://ffmpeg.org) :
    ```
    ffmpeg -i source.flac -ar 44100 -ac 2 -b:a 96k -af "loudnorm=I=-14" out.mp3
    ```
@@ -30,12 +64,12 @@ Loader hybride en place : si un fichier existe dans
 
 ### 1. `revolution.mp3` — Révolution (1789-1799)
 
-| Œuvre | Compositeur | Licence | Lien |
-|---|---|---|---|
-| **La Marseillaise** (instrumental) | Rouget de Lisle, 1792 | DP | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:La_Marseillaise.ogg) |
-| **Ah ! Ça ira** | Anonyme, 1790 | DP | [Wikimedia](https://commons.wikimedia.org/wiki/Category:Ça_ira) (chercher fichier audio) |
-| **La Carmagnole** | Anonyme, 1792 | DP | [Wikimedia](https://commons.wikimedia.org/wiki/File:La_Carmagnole.ogg) |
-| Backup ambient | Pixabay « revolution period » | Pixabay (libre) | [search](https://pixabay.com/music/search/revolution%20period/) |
+| Œuvre | Compositeur | Licence | Lien | Statut |
+|---|---|---|---|---|
+| **La Marseillaise** (instrumental) | Rouget de Lisle, 1792 | DP | [`upload.wikimedia.org`](https://upload.wikimedia.org/wikipedia/commons/3/30/La_Marseillaise.ogg) | ✅ vérifié 2026-05-02 |
+| **Ah ! Ça ira** | Anonyme, 1790 | DP | [Wikimedia](https://commons.wikimedia.org/wiki/Category:Ça_ira) (chercher fichier audio) | manuel |
+| **La Carmagnole** | Anonyme, 1792 | DP | [Wikimedia](https://commons.wikimedia.org/wiki/File:La_Carmagnole.ogg) | manuel |
+| Backup ambient | Pixabay « revolution period » | Pixabay (libre) | [search](https://pixabay.com/music/search/revolution%20period/) | manuel |
 
 ### 2. `xixe.mp3` — XIXe industriel (1800-1900)
 
@@ -57,20 +91,21 @@ Loader hybride en place : si un fichier existe dans
 
 ### 4. `entre_deux_guerres.mp3` — Entre-deux-guerres (1919-1939)
 
-| Œuvre | Compositeur | Licence | Lien |
-|---|---|---|---|
-| **Boléro** (extrait court) | Ravel, 1928 | DP en France 2018+ | [MusOpen](https://musopen.org/music/2547-bolero-orchestral/) |
-| **L'Internationale** (orchestrale) | Pottier/Degeyter, 1888 | DP en France 2003+ | [Wikimedia](https://commons.wikimedia.org/wiki/File:Internationale-fr.ogg) |
-| Jazz années 1920 (instrumental) | Various | DP US (1928 et avant) | [archive.org 78rpm](https://archive.org/details/78rpm) — filtrer par décennie |
-| Backup ambient | Pixabay « 1930s ambient » | Pixabay | [search](https://pixabay.com/music/search/1930s/) |
+| Œuvre | Compositeur | Licence | Lien | Statut |
+|---|---|---|---|---|
+| **L'Internationale** (orchestrale) | Pottier/Degeyter, 1888 | CC0 / DP | [`upload.wikimedia.org`](https://upload.wikimedia.org/wikipedia/commons/6/6e/L%27internationale.ogg) | ✅ vérifié 2026-05-02 |
+| **Boléro** (extrait court) | Ravel, 1928 | DP en France 2018+ | [MusOpen](https://musopen.org/music/2547-bolero-orchestral/) (⚠️ bot 403) | manuel navigateur |
+| Jazz années 1920 (instrumental) | Various | DP US (1928 et avant) | [archive.org 78rpm](https://archive.org/details/78rpm) — filtrer par décennie | manuel |
+| Backup ambient | Pixabay « 1930s ambient » | Pixabay | [search](https://pixabay.com/music/search/1930s/) | manuel |
 
 ### 5. `reconstruction.mp3` — Reconstruction (1944-1947)
 
-| Œuvre | Compositeur | Licence | Lien |
-|---|---|---|---|
-| **Le Chant des partisans** (instrumental) | Marly, 1943 | DP en France | [Wikimedia search](https://commons.wikimedia.org/w/index.php?search=chant+des+partisans) |
-| Marches de la Libération (DP) | Various 1944-45 | DP | [Gallica BNF](https://gallica.bnf.fr/services/engine/search/sru?operation=searchRetrieve&query=%28dc.subject%20all%20%22Libération%20de%20la%20France%22%29%20and%20dc.type%20all%20%22sonore%22) |
-| Backup orchestral années 40 | Pixabay « 1940s orchestral » | Pixabay | [search](https://pixabay.com/music/search/1940s/) |
+| Œuvre | Compositeur | Licence | Lien | Statut |
+|---|---|---|---|---|
+| **Marseillaise Garde Républicaine** (instrumental) | Rouget de Lisle, 1792 (perf. récente) | DP | [`upload.wikimedia.org`](https://upload.wikimedia.org/wikipedia/commons/f/f0/La_Marseillaise_Rouget_de_Lisle_Musique_de_la_Garde_R%C3%A9publicaine.ogg) | ✅ vérifié 2026-05-02 |
+| **Le Chant des partisans** (instrumental) | Marly, 1943 | DP en France | [Wikimedia search](https://commons.wikimedia.org/w/index.php?search=chant+des+partisans) | manuel |
+| Marches de la Libération (DP) | Various 1944-45 | DP | [Gallica BNF](https://gallica.bnf.fr/services/engine/search/sru?operation=searchRetrieve&query=%28dc.subject%20all%20%22Libération%20de%20la%20France%22%29%20and%20dc.type%20all%20%22sonore%22) | manuel |
+| Backup orchestral années 40 | Pixabay « 1940s orchestral » | Pixabay | [search](https://pixabay.com/music/search/1940s/) | manuel |
 
 ### 6. `guerre_froide.mp3` — Guerre froide (1947-1958)
 
@@ -225,17 +260,38 @@ l'URL `https://didierdelpeyrou-stack.github.io/paritas/audio/eras/{era}.mp3`.
 
 ---
 
-## Recommandation perso (si je devais choisir)
+## Recommandation finale (chemin le plus simple)
 
-Pour démarrer **vite et bien**, sans m'embêter avec ffmpeg :
+Vérification du 2 mai 2026 : sur les 25 sources de la liste demandée,
+**3 URLs de fichiers directs** sont accessibles sans navigateur ; les
+autres exigent soit un téléchargement manuel (cookies, anti-bot, page
+HTML), soit ont une licence incompatible (CC BY-NC-SA d'archive.org).
 
-1. **Pixabay** pour les 15 ères, recherche par mood + durée.
-2. 30-60 s par piste, total ~5 MB pour les 15.
-3. Tag mental :
-   - 1-5 : « orchestral / classical »
-   - 6-10 : « ambient / film score »
-   - 11-15 : « modern minimal / electronic »
-4. Pose, teste, ajuste 2-3 fichiers qui ne plaisent pas.
+**Recette en 3 étapes** :
 
-Délai estimé : **1 h 30** pour tout faire, écouter, télécharger,
-renommer, déployer.
+1. **Auto** (3 fichiers DP, 30 s) : `bash scripts/download-music.sh`
+   pose `revolution.ogg`, `entre_deux_guerres.ogg`,
+   `reconstruction.ogg` dans `public/audio/eras/`. Le loader hybride
+   `tryLoadEraFile()` essaie `.mp3` puis `.ogg`, donc les deux
+   formats fonctionnent.
+
+2. **Pixabay manuel** (12 fichiers, ~1 h) : pour les 12 autres ères,
+   suis les liens « search » du tableau, télécharge un morceau de
+   30-60 s qui te plaît, renomme `{eraId}.mp3`, dépose dans
+   `public/audio/eras/`. Pas d'attribution requise.
+
+3. **Catalog CSV** : remplis `public/audio/eras/CATALOG.csv` au fur et
+   à mesure (modèle déjà pré-rempli avec les 3 fichiers DP).
+
+Délai total : **1 h** pour les 15 ères (3 auto + 12 Pixabay).
+
+### Pourquoi pas tout en DP « authentique » ?
+
+Parce que :
+- MusOpen et l'IMSLP exigent navigateur (cookies anti-bot).
+- Les 78-tours d'archive.org sont rarement loop-friendly et exigent
+  ffmpeg + édition manuelle.
+- Pixabay donne du contenu adapté en 5 clics, sans attribution.
+
+Le mix « 3 DP authentiques pour les ères iconiques + 12 Pixabay pour
+le reste » donne le meilleur ratio crédibilité/effort.

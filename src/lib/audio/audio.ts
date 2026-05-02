@@ -266,26 +266,31 @@ class AudioEngine {
   /**
    * Tente de charger un fichier audio d'ère. Renvoie true si trouvé
    * et joué en boucle (avec crossfade si un player précédent existe).
-   * Format attendu : /audio/eras/{eraId}.mp3
+   * Formats testés : .mp3 puis .ogg dans /audio/eras/{eraId}.{ext}.
    */
   private async tryLoadEraFile(eraId: AudioEraId): Promise<boolean> {
     if (this.fileAvailability[eraId] === false) return false;
-    const url = `${import.meta.env.BASE_URL ?? '/'}audio/eras/${eraId}.mp3`;
+    const base = `${import.meta.env.BASE_URL ?? '/'}audio/eras/${eraId}`;
+    let url: string | null = null;
+    for (const ext of ['mp3', 'ogg'] as const) {
+      try {
+        const candidate = `${base}.${ext}`;
+        const head = await fetch(candidate, { method: 'HEAD' });
+        if (head.ok) { url = candidate; break; }
+      } catch { /* try next */ }
+    }
+    if (!url) {
+      this.fileAvailability[eraId] = false;
+      return false;
+    }
+    this.fileAvailability[eraId] = true;
     try {
-      const head = await fetch(url, { method: 'HEAD' });
-      if (!head.ok) {
-        this.fileAvailability[eraId] = false;
-        return false;
-      }
-      this.fileAvailability[eraId] = true;
-      // Crée un nouveau player et fade-in
       const next = new Tone.Player(url).connect(this.musicGain!);
       next.loop = true;
       await Tone.loaded();
       next.fadeIn = 1.4;
       next.fadeOut = 1.0;
       next.start();
-      // Fade out l'ancien si présent
       if (this.filePlayer) {
         const old = this.filePlayer;
         old.fadeOut = 1.4;

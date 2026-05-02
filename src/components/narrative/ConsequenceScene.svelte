@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
+  import { fade, fly } from 'svelte/transition';
+  import { onDestroy, onMount } from 'svelte';
   import type { ConsequenceRender } from '../../game/engine/consequenceEngine';
   import type { TensionAlert } from '../../game/simulation/tensions';
   import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
@@ -16,6 +17,33 @@
     warning: 'border-gold/40 bg-gold/5 text-amber-200',
     critical: 'border-rose-500/40 bg-rose-500/5 text-rose-200'
   };
+
+  /* === Révélation étagée ===
+     Le texte arrive en premier, puis chaque bloc s'ajoute toutes ~360 ms.
+     Cliquer n'importe où dans la carte saute la séquence et révèle tout
+     d'un coup. Le bouton Continuer reste désactivé jusqu'à la dernière
+     étape — c'est ce qui donne au joueur le temps de lire. */
+  const STEP_MS = 360;
+  const STEPS = 7; // mesures, headline, voix, mémoire, trait, chiffres, alertes
+  let stage = $state(0);
+  const timeouts: number[] = [];
+
+  onMount(() => {
+    for (let i = 1; i <= STEPS; i++) {
+      timeouts.push(window.setTimeout(() => { stage = i; }, i * STEP_MS));
+    }
+  });
+
+  onDestroy(() => {
+    for (const t of timeouts) window.clearTimeout(t);
+  });
+
+  function revealAll() {
+    for (const t of timeouts) window.clearTimeout(t);
+    stage = STEPS;
+  }
+
+  const fullyRevealed = $derived(stage >= STEPS);
 </script>
 
 <article
@@ -25,25 +53,33 @@
   aria-label="Conséquence de ton choix"
   aria-live="polite"
 >
-  <header>
+  <header class="flex items-baseline justify-between gap-2">
     <div class="text-xs uppercase tracking-wider text-parchment-dim/85">Conséquence</div>
+    {#if !fullyRevealed}
+      <button
+        type="button"
+        class="reveal-skip"
+        onclick={revealAll}
+        aria-label="Tout révéler immédiatement"
+      >tout révéler</button>
+    {/if}
   </header>
 
   <div class="text-parchment leading-relaxed whitespace-pre-line">
     {consequence.text}
   </div>
 
-  {#if consequence.concreteMeasures.length > 0}
-    <ul class="concrete-list">
+  {#if stage >= 1 && consequence.concreteMeasures.length > 0}
+    <ul class="concrete-list" in:fly={{ y: 6, duration: 320 }}>
       {#each consequence.concreteMeasures as m}
         <li>· {m}</li>
       {/each}
     </ul>
   {/if}
 
-  {#if consequence.newspaperHeadline}
+  {#if stage >= 2 && consequence.newspaperHeadline}
     <div
-      in:fade={{ duration: 380 }}
+      in:fly={{ y: 6, duration: 380 }}
       class="border border-line/60 bg-ink/40 rounded-md px-3 py-2 text-xs"
     >
       <div class="uppercase tracking-wider text-parchment-dim/80">À la une</div>
@@ -51,50 +87,60 @@
     </div>
   {/if}
 
-  {#if consequence.innerVoice}
-    <div
-      in:fade={{ duration: 380 }}
-      class="border-l-2 border-violet-500/50 pl-3 italic text-sm text-violet-200/90"
-    >
-      {consequence.innerVoice}
-    </div>
-  {:else if consequence.voice}
-    <div class="border-l-2 border-violet-500/50 pl-3 italic text-sm text-violet-200/90">
-      {consequence.voice}
-    </div>
+  {#if stage >= 3}
+    {#if consequence.innerVoice}
+      <div
+        in:fly={{ y: 6, duration: 380 }}
+        class="border-l-2 border-violet-500/50 pl-3 italic text-sm text-violet-200/90"
+      >
+        {consequence.innerVoice}
+      </div>
+    {:else if consequence.voice}
+      <div
+        in:fly={{ y: 6, duration: 380 }}
+        class="border-l-2 border-violet-500/50 pl-3 italic text-sm text-violet-200/90"
+      >
+        {consequence.voice}
+      </div>
+    {/if}
   {/if}
 
-  {#if consequence.memoryLine}
+  {#if stage >= 4 && consequence.memoryLine}
     <div
-      in:fade={{ duration: 380 }}
+      in:fly={{ y: 6, duration: 380 }}
       class="text-xs italic text-parchment-dim/85 border-t border-line/40 pt-2"
     >
       {consequence.memoryLine}
     </div>
   {/if}
 
-  {#if consequence.traitChange}
-    <div class="trait-change">
-      <span class="from">{TRAIT_LABELS[consequence.traitChange.from]}</span>
-      <span class="arrow">→</span>
-      <span class="to">{TRAIT_LABELS[consequence.traitChange.to]}</span>
-      <span class="hint">Tu deviens autre chose.</span>
-    </div>
-  {:else if consequence.traitShift}
-    <div class="trait-shift">
-      Trait : <b>{TRAIT_LABELS[consequence.traitShift.trait]}</b>
-      <em>+{consequence.traitShift.delta}</em>
-    </div>
+  {#if stage >= 5}
+    {#if consequence.traitChange}
+      <div class="trait-change" in:fly={{ y: 6, duration: 380 }}>
+        <span class="from">{TRAIT_LABELS[consequence.traitChange.from]}</span>
+        <span class="arrow">→</span>
+        <span class="to">{TRAIT_LABELS[consequence.traitChange.to]}</span>
+        <span class="hint">Tu deviens autre chose.</span>
+      </div>
+    {:else if consequence.traitShift}
+      <div class="trait-shift" in:fly={{ y: 6, duration: 380 }}>
+        Trait : <b>{TRAIT_LABELS[consequence.traitShift.trait]}</b>
+        <em>+{consequence.traitShift.delta}</em>
+      </div>
+    {/if}
   {/if}
 
-  {#if consequence.numericSummary}
-    <div class="text-xs uppercase tracking-wider text-parchment-dim/85 border-t border-line/60 pt-3">
+  {#if stage >= 6 && consequence.numericSummary}
+    <div
+      in:fade={{ duration: 360 }}
+      class="text-xs uppercase tracking-wider text-parchment-dim/85 border-t border-line/60 pt-3"
+    >
       {consequence.numericSummary}
     </div>
   {/if}
 
-  {#if alerts.length > 0}
-    <div class="space-y-1.5">
+  {#if stage >= 7 && alerts.length > 0}
+    <div class="space-y-1.5" in:fade={{ duration: 320 }}>
       {#each alerts as a}
         <div class="text-xs rounded-md border px-3 py-2 {alertHue[a.level]}">
           <span class="uppercase tracking-wider mr-1">⚠</span>
@@ -105,8 +151,14 @@
   {/if}
 
   <div class="pt-2">
-    <button type="button" class="btn-primary w-full" onclick={onContinue}>
-      Continuer
+    <button
+      type="button"
+      class="btn-primary w-full"
+      class:btn-dim={!fullyRevealed}
+      onclick={() => { if (!fullyRevealed) { revealAll(); return; } onContinue(); }}
+      aria-label={fullyRevealed ? 'Continuer' : 'Révéler la suite, puis continuer'}
+    >
+      {fullyRevealed ? 'Continuer' : 'Révéler…'}
     </button>
   </div>
 </article>
@@ -190,5 +242,33 @@
     font-family: 'Source Serif 4', Georgia, serif;
     font-size: 0.86rem;
     line-height: 1.4;
+  }
+
+  .btn-dim {
+    opacity: 0.55;
+    filter: saturate(0.7);
+  }
+
+  .btn-dim:hover {
+    opacity: 0.85;
+  }
+
+  .reveal-skip {
+    color: rgba(244, 213, 139, 0.65);
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    background: transparent;
+    border: 0;
+    padding: 0.15rem 0.25rem;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+
+  .reveal-skip:hover {
+    color: #f4d58b;
   }
 </style>

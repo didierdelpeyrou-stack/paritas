@@ -31,6 +31,7 @@
   import Settings from '../Settings.svelte';
   import GlossaryRefresher from '../GlossaryRefresher.svelte';
   import SignatureCeremony from '../SignatureCeremony.svelte';
+  import StrategicRadar from '../StrategicRadar.svelte';
   import { eraForTurn, yearForTurn } from '../../game/content/eras';
   import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
   import { computeFinalScore } from '../../game/simulation/scoring';
@@ -438,6 +439,8 @@
           </section>
 
           <MyLegacyPanel memory={s.memory} />
+
+          <StrategicRadar resources={s.resources} />
 
           <GlossaryRefresher turn={s.turn} />
         {:else if activeTab === 'organisation'}

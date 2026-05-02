@@ -18,6 +18,7 @@
   import EndingReport from '../feedback/EndingReport.svelte';
   import ToastStack from '../feedback/ToastStack.svelte';
   import EraTimeline from './EraTimeline.svelte';
+  import Glossary from '../Glossary.svelte';
   import { eraForTurn, yearForTurn } from '../../game/content/eras';
   import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
   import { computeFinalScore } from '../../game/simulation/scoring';
@@ -52,6 +53,7 @@
   }
 
   let activeTab = $state<Tab>(loadActiveTab());
+  let glossaryOpen = $state(false);
 
   function setActiveTab(t: Tab) {
     activeTab = t;
@@ -172,6 +174,13 @@
               aria-label={musicOn ? 'Couper la musique' : 'Activer la musique'}
               title={musicOn ? 'Musique active' : 'Musique coupée'}
             >{musicOn ? '♫' : '·'}</button>
+            <button
+              type="button"
+              class="sfx-toggle"
+              onclick={() => (glossaryOpen = true)}
+              aria-label="Ouvrir le glossaire"
+              title="Glossaire — termes syndicaux et paritaires"
+            >?</button>
             <div class="text-right ml-1" title="Score provisoire — il bouge à chaque choix.">
               <div class="font-display text-gold-soft text-base leading-none">{liveScore}<span class="text-[0.78rem] text-parchment-dim/60">/100</span></div>
               <div class="text-[0.72rem] uppercase tracking-wider text-parchment-dim/65">score</div>
@@ -298,6 +307,8 @@
     (État du jeu non initialisé.)
   </div>
 {/if}
+
+<Glossary open={glossaryOpen} onClose={() => (glossaryOpen = false)} />
 
 <style>
   .tab-bar {

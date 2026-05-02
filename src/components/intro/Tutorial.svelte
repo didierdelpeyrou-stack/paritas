@@ -8,7 +8,7 @@
   let { onDone }: Props = $props();
 
   let step = $state(0);
-  const TOTAL = 3;
+  const TOTAL = 4;
 
   function next() {
     if (step >= TOTAL - 1) {
@@ -65,7 +65,7 @@
         À côté, ton <b class="text-gold-soft">mandat</b> liste 2 à 3 objectifs nommés assignés à ton rôle. C'est ce qui mesure une partie réussie.
       </p>
     </div>
-  {:else}
+  {:else if step === 2}
     <div in:fly={{ y: 8, duration: 240 }}>
       <h2 class="font-display text-2xl text-gold mb-3">Six postures, un trait dominant</h2>
       <p class="text-parchment-dim leading-relaxed text-sm mb-3">
@@ -82,6 +82,38 @@
       </ul>
       <p class="mt-3 text-parchment-dim leading-relaxed text-sm">
         Tes choix successifs sculptent un <b class="text-gold-soft">trait dominant</b>. Certaines options sont réservées à ce trait — un syndicaliste pragmatique ne dispose pas des mêmes leviers qu'un syndicaliste de rupture.
+      </p>
+    </div>
+  {:else}
+    <div in:fly={{ y: 8, duration: 240 }}>
+      <h2 class="font-display text-2xl text-gold mb-3">Lire un scénario</h2>
+      <p class="text-parchment-dim leading-relaxed text-sm mb-3">
+        Chaque tour t'expose une situation historique réelle. Voici les couches d'information à repérer :
+      </p>
+      <ol class="scenario-anatomy">
+        <li>
+          <b>Bandeau temporel</b>
+          <span>Date, ère, climat. Sert à comprendre les contraintes de l'époque (ex. coalitions interdites avant 1864).</span>
+        </li>
+        <li>
+          <b>Contexte historique</b>
+          <span>2-4 phrases qui posent les faits. Tout est sourcé, rien d'inventé.</span>
+        </li>
+        <li>
+          <b>Mise en situation</b>
+          <span>L'angle « où tu te trouves ». Mode <em>Réfléchi</em> = explicatif ; mode <em>Compulsif</em> = sensoriel.</span>
+        </li>
+        <li>
+          <b>Choix (2 à 4)</b>
+          <span>Chaque option indique sa posture (glyphe), une intention courte, parfois un indice théorique. Survole pour voir l'effet attendu sur les ressources.</span>
+        </li>
+        <li>
+          <b>Conséquence</b>
+          <span>Apparaît en cascade : texte, mesures concrètes, presse, voix intérieure, ligne mémoire, glissement de trait, chiffres.</span>
+        </li>
+      </ol>
+      <p class="mt-3 text-parchment-dim leading-relaxed text-sm">
+        Astuce : un terme syndical en <span class="gloss-demo">pointillés</span> ouvre une définition au survol. Pas besoin de tout connaître pour jouer.
       </p>
     </div>
   {/if}
@@ -184,5 +216,61 @@
     border-color: rgba(244, 213, 139, 0.5);
     color: #f4d58b;
     background: rgba(201, 154, 64, 0.05);
+  }
+
+  .scenario-anatomy {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: anatomy;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .scenario-anatomy li {
+    counter-increment: anatomy;
+    display: grid;
+    grid-template-columns: 1.5rem 1fr;
+    gap: 0.55rem;
+    padding: 0.4rem 0.55rem;
+    border-left: 2px solid rgba(244, 213, 139, 0.45);
+    background: rgba(13, 16, 20, 0.32);
+    border-radius: 0 0.45rem 0.45rem 0;
+  }
+
+  .scenario-anatomy li::before {
+    content: counter(anatomy);
+    grid-column: 1;
+    color: #f4d58b;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.86rem;
+    line-height: 1.2;
+  }
+
+  .scenario-anatomy li b {
+    color: #ede4c9;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    display: block;
+  }
+
+  .scenario-anatomy li span {
+    color: rgba(237, 228, 201, 0.7);
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+
+  .scenario-anatomy li em {
+    font-style: italic;
+    color: #f4d58b;
+  }
+
+  .gloss-demo {
+    border-bottom: 1px dashed rgba(244, 213, 139, 0.6);
+    color: #f4d58b;
+    cursor: help;
   }
 </style>

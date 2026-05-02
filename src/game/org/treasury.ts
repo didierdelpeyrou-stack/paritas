@@ -81,7 +81,10 @@ function computeRecettes(org: PlayerOrganization, turn: number): BudgetLine[] {
   const out: BudgetLine[] = [];
 
   // 1. Cotisations des adhérents
-  const cotisationRate = org.camp === 'salarie' ? 0.04 : 0.32;
+  // Ratio salarié/patron ≈ 1:3 (et non 1:8 comme avant : un syndicat
+  // patronal a moins d'adhérents mais des cotisations plus lourdes,
+  // l'écart par tête est sensible mais pas écrasant).
+  const cotisationRate = org.camp === 'salarie' ? 0.05 : 0.16;
   const cotisations = Math.round(org.membership * cotisationRate);
   if (cotisations > 0) {
     out.push({
@@ -89,6 +92,19 @@ function computeRecettes(org: PlayerOrganization, turn: number): BudgetLine[] {
       label: 'Cotisations adhérents',
       amount: cotisations,
       detail: `${org.membership} ${org.camp === 'salarie' ? 'adhérents' : 'membres'} × ${cotisationRate.toFixed(2).replace('.', ',')}`
+    });
+  }
+
+  // 1b. Dons et legs ponctuels — variable, déterministe sur le tour.
+  // Hash du tour pour pseudo-aléatoire stable (même tour = même don).
+  const donFactor = ((turn * 2654435761) >>> 0) % 100;
+  if (donFactor < 22 && org.reputation >= 35) {
+    const dons = Math.max(2, Math.round(org.reputation / 12));
+    out.push({
+      id: 'dons-legs',
+      label: 'Dons & legs',
+      amount: dons,
+      detail: `Don ponctuel d'un sympathisant (réputation ${org.reputation})`
     });
   }
 
@@ -231,8 +247,24 @@ function computeDepenses(org: PlayerOrganization): BudgetLine[] {
     detail: 'Téléphone, déplacements, papier'
   });
 
+  // 9. Transferts UD/UL — la confédération reverse aux unions
+  // départementales et locales. ~25% des cotisations remontent,
+  // proportionnel au nombre de sections (relai administratif).
+  if (org.localSections >= 2) {
+    const ud = -Math.max(1, Math.round(org.localSections * 0.7));
+    out.push({
+      id: 'transferts-ud',
+      label: 'Transferts UD/UL',
+      amount: ud,
+      detail: `${org.localSections} sections × 0,7 (cotisations remontées)`
+    });
+  }
+
   return out;
 }
+
+/** Coût exceptionnel d'un congrès — appliqué tous les `CONGRES_INTERVAL` tours. */
+const CONGRES_INTERVAL = 8;
 
 /* ========================================================================
    Snapshot final avec multiplicateur de stratégie
@@ -243,6 +275,19 @@ export function computeBudget(org: PlayerOrganization, turn: number): BudgetSnap
 
   const recettesRaw = computeRecettes(org, turn);
   const depensesRaw = computeDepenses(org);
+
+  // Congrès : tous les CONGRES_INTERVAL tours (à partir de T15), gros poste
+  // ponctuel proportionnel à la taille de l'organisation. Donne du rythme
+  // budgétaire et oblige le joueur à anticiper.
+  if (turn >= 15 && turn % CONGRES_INTERVAL === 0) {
+    const cong = -Math.max(4, Math.round(org.membership / 30 + org.localSections * 0.4));
+    depensesRaw.push({
+      id: 'congres',
+      label: 'Congrès confédéral',
+      amount: cong,
+      detail: 'Salle, hébergement délégués, motions imprimées (tous les 8 tours)'
+    });
+  }
 
   const recettes = recettesRaw.map(l => ({ ...l, amount: strategyRound(l.amount, mult.revenu) }));
   const depenses = depensesRaw.map(l => ({ ...l, amount: strategyRound(l.amount, mult.depense) }));

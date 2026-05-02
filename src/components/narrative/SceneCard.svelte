@@ -28,43 +28,67 @@
   }
 
   /* === UX-#3 : swipe-to-decide sur mobile ===
-     Gestes tactiles sur la liste des choix :
-       swipe gauche  → choix 0 (premier)
-       swipe haut    → choix 1 (deuxième)
-       swipe droite  → choix 2 (troisième)
-     Au-delà de 3 choix, le swipe est désactivé (impossible à mapper
-     proprement). Un overlay visuel indique le choix ciblé en temps
-     réel ; le tap normal continue de fonctionner pour ne pas casser
-     le clavier ni le clic souris. */
-  const SWIPE_THRESHOLD = 80; // px nécessaires pour confirmer
+     DÉSACTIVÉ PAR DÉFAUT — un scroll vertical était mal interprété
+     comme un choix. Activable via Settings > « Swipe pour choisir ».
+     Quand activé, recognition stricte :
+       - Dead zone 25 px avant toute détection
+       - Lock direction au premier dépassement (vertical / horizontal)
+       - Si direction = vertical descendant : abandon (= scroll normal)
+       - Threshold de commit : 160 px (vs 80 avant)
+       - Cooldown 600 ms après commit pour éviter les double-fires
+       - preventDefault uniquement quand le geste est verrouillé en
+         "swipe choice", pas pendant un simple scroll */
+  const SWIPE_DEAD_ZONE = 25;
+  const SWIPE_COMMIT = 160;
+  const SWIPE_VERTICAL_COMMIT = 180; // un peu plus haut pour swipe up
+  const COOLDOWN_MS = 600;
+
+  let swipeEnabled = $state<boolean>(loadSwipePref());
+  let lastFireAt = 0;
+
   let swipeStartX = 0;
   let swipeStartY = 0;
   let swipeDX = $state(0);
   let swipeDY = $state(0);
   let swiping = $state(false);
+  /* 'pending' = on attend le premier mouvement notable
+     'choice' = verrouillé en mode swipe-to-choose
+     'scroll' = verrouillé en mode scroll vertical, on ne fait rien */
+  let swipeMode = $state<'pending' | 'choice' | 'scroll' | null>(null);
 
-  const swipeable = $derived(scenario.choices.length === 3 || scenario.choices.length === 2);
+  function loadSwipePref(): boolean {
+    try {
+      return localStorage.getItem('paritas_swipe_enabled') === 'true';
+    } catch {
+      return false;
+    }
+  }
+
+  const swipeable = $derived(
+    swipeEnabled && (scenario.choices.length === 3 || scenario.choices.length === 2)
+  );
 
   const swipeTarget = $derived.by<number | null>(() => {
-    if (!swiping) return null;
+    if (swipeMode !== 'choice') return null;
     const ax = Math.abs(swipeDX);
     const ay = Math.abs(swipeDY);
-    if (ax < 30 && ay < 30) return null;
     if (scenario.choices.length === 3) {
-      // gauche → 0, haut → 1, droite → 2
-      if (ay > ax && swipeDY < 0) return 1;
-      if (swipeDX < 0) return 0;
-      return 2;
+      // Strict : haut requiert dy clairement négatif et |dx| limité
+      if (swipeDY < 0 && ay > ax * 1.4) return 1;
+      // Horizontal : |dx| > 1.5 × |dy|
+      if (ax > ay * 1.5) return swipeDX < 0 ? 0 : 2;
+      return null;
     }
     if (scenario.choices.length === 2) {
-      if (swipeDX < 0) return 0;
-      return 1;
+      if (ax > ay * 1.5) return swipeDX < 0 ? 0 : 1;
+      return null;
     }
     return null;
   });
 
   function onTouchStart(e: TouchEvent) {
     if (!swipeable) return;
+    if (Date.now() - lastFireAt < COOLDOWN_MS) return;
     const t = e.touches[0];
     if (!t) return;
     swipeStartX = t.clientX;
@@ -72,26 +96,68 @@
     swipeDX = 0;
     swipeDY = 0;
     swiping = true;
+    swipeMode = 'pending';
   }
 
   function onTouchMove(e: TouchEvent) {
     if (!swiping) return;
     const t = e.touches[0];
     if (!t) return;
-    swipeDX = t.clientX - swipeStartX;
-    swipeDY = t.clientY - swipeStartY;
+    const dx = t.clientX - swipeStartX;
+    const dy = t.clientY - swipeStartY;
+    swipeDX = dx;
+    swipeDY = dy;
+
+    if (swipeMode === 'pending') {
+      const ax = Math.abs(dx);
+      const ay = Math.abs(dy);
+      // Reste en pending tant qu'on n'a pas dépassé la dead zone
+      if (ax < SWIPE_DEAD_ZONE && ay < SWIPE_DEAD_ZONE) return;
+      // Direction descendante = scroll normal, on libère
+      if (dy > 0 && ay > ax) {
+        swipeMode = 'scroll';
+        return;
+      }
+      // Direction horizontale claire : choice mode
+      if (ax > ay * 1.4) {
+        swipeMode = 'choice';
+        e.preventDefault();
+        return;
+      }
+      // Direction ascendante claire : choice mode (uniquement si 3 choix)
+      if (dy < 0 && ay > ax * 1.4 && scenario.choices.length === 3) {
+        swipeMode = 'choice';
+        e.preventDefault();
+        return;
+      }
+      // Sinon : indéterminé, on attend encore
+      return;
+    }
+    if (swipeMode === 'choice') {
+      e.preventDefault();
+    }
+    // scroll : on ne fait rien, le navigateur scrolle normalement
   }
 
   function onTouchEnd() {
     if (!swiping) return;
+    swiping = false;
+    if (swipeMode !== 'choice') {
+      swipeMode = null;
+      return;
+    }
     const ax = Math.abs(swipeDX);
     const ay = Math.abs(swipeDY);
     const target = swipeTarget;
-    swiping = false;
+    swipeMode = null;
     if (target === null) return;
-    if (ax < SWIPE_THRESHOLD && ay < SWIPE_THRESHOLD) return;
+    // Threshold de commit
+    const horizontal = ax > ay;
+    const reached = horizontal ? ax >= SWIPE_COMMIT : ay >= SWIPE_VERTICAL_COMMIT;
+    if (!reached) return;
     const choice = scenario.choices[target];
     if (!choice || isLocked(choice)) return;
+    lastFireAt = Date.now();
     onChoose(choice);
   }
 
@@ -156,11 +222,12 @@
 
   <ul
     class="space-y-2.5 mt-3 choices-list"
+    data-swipe-on={swipeable}
     aria-label="Choix disponibles"
-    ontouchstart={onTouchStart}
-    ontouchmove={onTouchMove}
-    ontouchend={onTouchEnd}
-    ontouchcancel={onTouchEnd}
+    ontouchstart={swipeable ? onTouchStart : null}
+    ontouchmove={swipeable ? onTouchMove : null}
+    ontouchend={swipeable ? onTouchEnd : null}
+    ontouchcancel={swipeable ? onTouchEnd : null}
   >
     {#if swipeable}
       <div class="swipe-hint" aria-hidden="true">
@@ -265,9 +332,13 @@
 
   .choices-list {
     position: relative;
+    /* user-select uniquement quand swipe est actif, sinon le scroll
+       du texte reste utilisable normalement. */
+  }
+
+  .choices-list[data-swipe-on='true'] {
     user-select: none;
     -webkit-user-select: none;
-    touch-action: pan-y; /* permet swipe vertical mais nous capturons quand même */
   }
 
   .swipe-hint {

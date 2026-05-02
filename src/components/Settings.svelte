@@ -25,11 +25,13 @@
   let highContrast = $state<boolean>(loadHighContrast());
   let colorBlindFriendly = $state<boolean>(loadColorBlind());
   let reducedMotion = $state<boolean>(loadReducedMotion());
+  let swipeEnabled = $state<boolean>(loadSwipeEnabled());
 
   const TS_KEY = 'paritas_text_size';
   const HC_KEY = 'paritas_high_contrast';
   const CB_KEY = 'paritas_color_blind';
   const RM_KEY = 'paritas_reduced_motion';
+  const SW_KEY = 'paritas_swipe_enabled';
 
   function loadTextSize(): TextSize {
     try {
@@ -53,6 +55,10 @@
     try { return localStorage.getItem(RM_KEY) === 'true'; } catch { return false; }
   }
 
+  function loadSwipeEnabled(): boolean {
+    try { return localStorage.getItem(SW_KEY) === 'true'; } catch { return false; }
+  }
+
   function apply() {
     const root = document.documentElement;
     root.classList.toggle('a11y-text-sm', textSize === 'sm');
@@ -66,6 +72,7 @@
       localStorage.setItem(HC_KEY, highContrast ? 'true' : 'false');
       localStorage.setItem(CB_KEY, colorBlindFriendly ? 'true' : 'false');
       localStorage.setItem(RM_KEY, reducedMotion ? 'true' : 'false');
+      localStorage.setItem(SW_KEY, swipeEnabled ? 'true' : 'false');
     } catch {
       /* ignore */
     }
@@ -73,7 +80,7 @@
 
   /* Réapplique à chaque changement (hooks Svelte 5). */
   $effect(() => {
-    void textSize; void highContrast; void colorBlindFriendly; void reducedMotion;
+    void textSize; void highContrast; void colorBlindFriendly; void reducedMotion; void swipeEnabled;
     apply();
   });
 
@@ -153,6 +160,16 @@
           <span class="lbl">
             <b>Animations réduites</b>
             <small>Désactive pulses, shakes et compteurs animés pour les sensibilités vestibulaires.</small>
+          </span>
+        </label>
+      </section>
+
+      <section class="opt-toggle">
+        <label>
+          <input type="checkbox" bind:checked={swipeEnabled} />
+          <span class="lbl">
+            <b>Choix par glissement (mobile)</b>
+            <small>Active le swipe pour choisir : gauche / haut / droite. <b>Désactivé par défaut</b> — gardé pour les joueurs habitués au geste tactile. Sinon, taper le bouton fonctionne toujours.</small>
           </span>
         </label>
       </section>

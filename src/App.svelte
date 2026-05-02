@@ -81,7 +81,7 @@
 </script>
 
 <svelte:head>
-  <title>Paritas — 1789-2026, deux siècles de paritarisme</title>
+  <title>Paritas : la table des Ateliers</title>
 </svelte:head>
 
 <ToastStack />

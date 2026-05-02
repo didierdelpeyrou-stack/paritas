@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Paritas — 25 siècles de paritarisme. Serious game tour-par-tour, hybride Reigns/Suzerain.",
+  "description": "Paritas : la table des Ateliers. Simulation politique narrative sur le paritarisme français, de 1789 à 2026.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

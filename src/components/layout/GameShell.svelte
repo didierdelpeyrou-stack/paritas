@@ -519,8 +519,8 @@
               <svg
                 class="gear-icon"
                 viewBox="0 0 24 24"
-                width="14"
-                height="14"
+                width="16"
+                height="16"
                 aria-hidden="true"
                 fill="currentColor"
               >
@@ -1005,19 +1005,21 @@
   }
 
   .sfx-toggle {
-    width: 1.8rem;
-    height: 1.8rem;
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(237, 228, 201, 0.18);
+    border: 1px solid rgba(237, 228, 201, 0.22);
     border-radius: 999px;
     background: rgba(13, 16, 20, 0.5);
-    color: rgba(237, 228, 201, 0.5);
+    color: rgba(237, 228, 201, 0.78);
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     line-height: 1;
     cursor: pointer;
+    padding: 0;
     transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
   }
 

@@ -135,11 +135,13 @@ interface MoodLayer {
 }
 
 const MOOD_LAYERS: Record<AudioMood, MoodLayer> = {
-  calme:        { gainMul: 1.0,  tempoMul: 1.0,   voiceProb: 1.0, kickMul: 1.0,  detuneCents: 0 },
-  tendu:        { gainMul: 1.05, tempoMul: 0.95,  voiceProb: 0.7, kickMul: 1.15, detuneCents: 18 },
-  grave:        { gainMul: 0.85, tempoMul: 1.18,  voiceProb: 0.0, kickMul: 0.85, detuneCents: 0 },
-  euphorique:   { gainMul: 1.1,  tempoMul: 0.92,  voiceProb: 1.0, kickMul: 1.2,  detuneCents: 0 },
-  melancolique: { gainMul: 0.9,  tempoMul: 1.10,  voiceProb: 1.0, kickMul: 0.7,  detuneCents: -8 }
+  /* Détune réduit (était jusqu'à 18 cents → 6 max), volumes
+     atténués, tempos plus lents pour laisser respirer la reverb. */
+  calme:        { gainMul: 1.0,  tempoMul: 1.4,   voiceProb: 0.6, kickMul: 0.8,  detuneCents: 0 },
+  tendu:        { gainMul: 1.05, tempoMul: 1.25,  voiceProb: 0.5, kickMul: 1.0,  detuneCents: 6 },
+  grave:        { gainMul: 0.7,  tempoMul: 1.6,   voiceProb: 0.2, kickMul: 0.6,  detuneCents: 0 },
+  euphorique:   { gainMul: 1.05, tempoMul: 1.2,   voiceProb: 0.8, kickMul: 0.9,  detuneCents: 0 },
+  melancolique: { gainMul: 0.8,  tempoMul: 1.5,   voiceProb: 0.7, kickMul: 0.5,  detuneCents: -4 }
 };
 
 interface TraitTimbre {
@@ -188,35 +190,61 @@ class AudioEngine {
   // Gains
   private musicGain?: Tone.Gain;
   private sfxGain?: Tone.Gain;
-  private musicVol = 0.08;
+  private musicVol = 0.045; // baissé : c'est de l'ambient, pas du premier plan
   private sfxVol = 0.42;
+  private musicReverb?: Tone.Reverb;
+  private musicFilter?: Tone.Filter;
 
-  /* ================= init ================= */
+  /* ================= init =================
+     Refonte mai 2026 : la musique générative paraissait sèche et
+     dissonante. On rajoute reverb + filtre passe-bas + chorus +
+     enveloppes plus douces. Volume baissé à 0.045 (vraiment fond). */
 
   async init() {
     if (this.started) return;
     await Tone.start();
+
+    /* Chaîne d'effets musique : Synth → Filter (passe-bas) →
+       Reverb (large) → Gain → Destination. Sépare la voix
+       artisanale du reverb pour ne pas la noyer. */
     this.musicGain = new Tone.Gain(this.musicVol).toDestination();
+    this.musicReverb = new Tone.Reverb({ decay: 4, wet: 0.45 }).connect(this.musicGain);
+    this.musicFilter = new Tone.Filter({ frequency: 2400, type: 'lowpass', rolloff: -12 }).connect(this.musicReverb);
     this.sfxGain = new Tone.Gain(this.sfxVol).toDestination();
 
+    /* Bass : triangle doux, attaque allongée, release long. */
     this.bassSynth = new Tone.Synth({
       oscillator: { type: 'triangle' },
-      envelope: { attack: 0.05, decay: 0.4, sustain: 0.3, release: 0.5 }
-    }).connect(this.musicGain);
+      envelope: { attack: 0.18, decay: 0.6, sustain: 0.25, release: 1.2 },
+      volume: -10
+    }).connect(this.musicFilter);
 
+    /* Voix : sine pur, attaque douce, release moelleux. */
     this.voiceSynth = new Tone.Synth({
       oscillator: { type: 'sine' },
-      envelope: { attack: 0.08, decay: 0.2, sustain: 0.3, release: 0.4 }
-    }).connect(this.musicGain);
+      envelope: { attack: 0.22, decay: 0.4, sustain: 0.3, release: 1.5 },
+      volume: -14
+    }).connect(this.musicFilter);
 
+    /* Brass : était sawtooth (criard) → maintenant fmsine, plus chaud,
+       plus rare, mixé bas. Détune léger pour épaissir. */
     this.brassSynth = new Tone.PolySynth(Tone.Synth, {
-      oscillator: { type: 'sawtooth' },
-      envelope: { attack: 0.1, decay: 0.2, sustain: 0.4, release: 0.3 }
+      oscillator: { type: 'fmsine', modulationIndex: 1.2 } as any,
+      envelope: { attack: 0.4, decay: 0.5, sustain: 0.35, release: 1.5 },
+      volume: -16
+    }).connect(this.musicFilter);
+
+    /* Kick : très léger, doux, juste un battement de cœur. */
+    this.kickSynth = new Tone.MembraneSynth({
+      pitchDecay: 0.08,
+      octaves: 4,
+      envelope: { attack: 0.001, decay: 0.5, sustain: 0, release: 1.0 },
+      volume: -18
     }).connect(this.musicGain);
 
-    this.kickSynth = new Tone.MembraneSynth().connect(this.musicGain);
     this.noiseSynth = new Tone.NoiseSynth({
-      envelope: { attack: 0.005, decay: 0.1, sustain: 0 }
+      envelope: { attack: 0.005, decay: 0.1, sustain: 0 },
+      volume: -24
     }).connect(this.musicGain);
 
     this.sfxSynth = new Tone.PolySynth(Tone.Synth).connect(this.sfxGain);
@@ -230,12 +258,60 @@ class AudioEngine {
 
   /* ================= musique adaptative ================= */
 
+  /** Player de fichier audio si un MP3 d'ère est trouvé. Lazy-créé. */
+  private filePlayer?: Tone.Player;
+  /** Cache des disponibilités de fichiers d'ère testées. */
+  private fileAvailability: Partial<Record<AudioEraId, boolean>> = {};
+
+  /**
+   * Tente de charger un fichier audio d'ère. Renvoie true si trouvé
+   * et joué en boucle (avec crossfade si un player précédent existe).
+   * Format attendu : /audio/eras/{eraId}.mp3
+   */
+  private async tryLoadEraFile(eraId: AudioEraId): Promise<boolean> {
+    if (this.fileAvailability[eraId] === false) return false;
+    const url = `${import.meta.env.BASE_URL ?? '/'}audio/eras/${eraId}.mp3`;
+    try {
+      const head = await fetch(url, { method: 'HEAD' });
+      if (!head.ok) {
+        this.fileAvailability[eraId] = false;
+        return false;
+      }
+      this.fileAvailability[eraId] = true;
+      // Crée un nouveau player et fade-in
+      const next = new Tone.Player(url).connect(this.musicGain!);
+      next.loop = true;
+      await Tone.loaded();
+      next.fadeIn = 1.4;
+      next.fadeOut = 1.0;
+      next.start();
+      // Fade out l'ancien si présent
+      if (this.filePlayer) {
+        const old = this.filePlayer;
+        old.fadeOut = 1.4;
+        old.stop('+1.4');
+        setTimeout(() => { try { old.dispose(); } catch { /* ignore */ } }, 1800);
+      }
+      this.filePlayer = next;
+      return true;
+    } catch {
+      this.fileAvailability[eraId] = false;
+      return false;
+    }
+  }
+
   /** Démarre la boucle ambient sur la palette courante. */
   async startMusic(eraId?: AudioEraId) {
     await this.init();
     if (eraId) this.currentEra = eraId;
     this.stopMusic();
     if (!this.isMusicOn) return;
+
+    // Tentative fichier d'abord — si un MP3 d'ère existe, on l'utilise
+    // au lieu de la générative. Permet d'ajouter de la musique réelle
+    // simplement en posant des fichiers dans public/audio/eras/.
+    const fileOk = await this.tryLoadEraFile(this.currentEra);
+    if (fileOk) return;
 
     const playStep = () => {
       const palette = ERA_PALETTES[this.currentEra];
@@ -311,6 +387,15 @@ class AudioEngine {
     if (this.loopId !== undefined) {
       clearInterval(this.loopId);
       this.loopId = undefined;
+    }
+    if (this.filePlayer) {
+      try {
+        this.filePlayer.fadeOut = 0.6;
+        this.filePlayer.stop('+0.6');
+        const p = this.filePlayer;
+        setTimeout(() => { try { p.dispose(); } catch { /* ignore */ } }, 800);
+      } catch { /* ignore */ }
+      this.filePlayer = undefined;
     }
   }
 

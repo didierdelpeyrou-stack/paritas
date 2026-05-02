@@ -90,7 +90,7 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
     mood: 'tendu',
     premium: true,
     historicalContext:
-      "Convoqués par Louis XVI pour rédiger les cahiers de doléances avant les États généraux, les artisans et compagnons de Paris obtiennent, par négociation âpre, le droit de figurer parmi les rédacteurs du Tiers-état. Leurs revendications : tarifs garantis, abolition des maîtrises héréditaires, création de bourses du travail.",
+      "Convoqués par Louis XVI pour rédiger les cahiers de doléances avant les États généraux, les artisans et compagnons de Paris obtiennent, par négociation âpre, le droit de figurer parmi les rédacteurs du Tiers-état. Leurs revendications : tarifs garantis, abolition des maîtrises héréditaires, caisses de secours autonomes pour les compagnons.",
     setup: {
       reflechi:
         "Pour la première fois, les ouvriers ont une chance d'inscrire dans un texte officiel ce qu'ils veulent voir changé. L'enjeu est moins la rédaction que la façon dont les patriciens du Tiers-état arbitreront entre les exigences ouvrières et celles des bourgeois marchands.",
@@ -163,7 +163,7 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
     date: '12 avril 1803',
     era: 'xixe',
     title: 'Le livret ouvrier',
-    subtitle: 'Bonaparte rend le pas',
+    subtitle: 'Bonaparte serre l’étau',
     mood: 'grave',
     premium: true,
     campFilter: 'salarie',
@@ -240,7 +240,7 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
     premium: true,
     campFilter: 'salarie',
     historicalContext:
-      "Sous la Restauration et la Monarchie de Juillet, les sociétés de secours mutuel se multiplient malgré la loi Le Chapelier. Officiellement caisses de bienfaisance, elles servent aussi de relais clandestins pour la coordination ouvrière. La police les tolère tant qu'elles ne dépassent pas vingt membres.",
+      "Sous la Restauration et la Monarchie de Juillet, les sociétés de secours mutuel se multiplient malgré la loi Le Chapelier (1791) renforcée par les articles 414-416 du Code pénal de 1810 qui sanctionnent toute coalition. Officiellement caisses de bienfaisance, elles servent aussi de relais clandestins pour la coordination ouvrière. La police les tolère tant qu'elles ne dépassent pas vingt membres.",
     setup: {
       reflechi:
         "La société de secours est un cheval de Troie : elle a la bénédiction de l'évêque et des autorités, mais ses statuts cachent des formes d'organisation que la loi prohibe ailleurs. La question est de savoir jusqu'où pousser la fonction syndicale sans déclencher la dissolution.",
@@ -272,7 +272,7 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
       {
         id: 'mutuelle-coordination',
         text: 'Utiliser la mutuelle pour organiser des arrêts coordonnés.',
-        intent: 'Detournement clandestin.',
+        intent: 'Détournement clandestin.',
         theoryHint: "Stratégie hybride : l'institution officielle comme façade d'une activité interdite.",
         effects: {
           resources: { rapportDeForce: 6, confiance: 5, legitimite: -3 },

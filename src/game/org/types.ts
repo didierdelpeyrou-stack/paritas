@@ -58,6 +58,13 @@ export interface PlayerOrganization {
   /** Stratégie budgétaire active. */
   budgetStrategy: BudgetStrategy;
   actionHistory: string[];
+  /**
+   * Tour auquel chaque action ponctuelle de gestion (souscription, hausse de
+   * cotisations, aide aux grévistes…) a été utilisée pour la dernière fois.
+   * Sert au gating des cooldowns. Optionnel : les vieilles sauvegardes ne
+   * possèdent pas le champ.
+   */
+  treasuryActionTurns?: Record<string, number>;
 }
 
 export type FactionId = 'reformistes' | 'radicaux' | 'institutionnels' | 'territoriaux';

@@ -22,24 +22,39 @@
     label: string;
     blurb: string;
     cost: number;
+    /** Nombre de tours avant nouvelle exécution possible. */
+    cooldownTurns: number;
     effect: () => void;
-    /** Disponible si... */
-    enabled: () => boolean;
+    /** Disponibilité indépendante du cooldown (ressources, prérequis). */
+    available: () => boolean;
+  }
+
+  /** Tours restants avant que l'action `id` redevienne jouable (0 = prête). */
+  function remainingCooldown(id: string, cooldown: number): number {
+    const last = gs.organization.treasuryActionTurns?.[id];
+    if (last === undefined) return 0;
+    const elapsed = gs.turn - last;
+    return Math.max(0, cooldown - elapsed);
+  }
+
+  function runAction(a: Action) {
+    a.effect();
+    rebirth.recordTreasuryAction(a.id);
   }
 
   const ACTIONS: Action[] = $derived([
     {
       id: 'campagne-souscription',
       label: 'Lancer une campagne de souscription',
-      blurb: `« Donnez vingt ${currency} pour la grève. » Lettres aux fédérations, presse interne. Un coup d’avance.`,
+      blurb: `« Donnez vingt ${currency} pour la grève. » Lettres aux fédérations, presse interne. Net +10 sur la caisse.`,
       cost: 4,
-      enabled: () => gs.organization.treasury >= 4 && gs.organization.mediaRelay >= 1,
+      cooldownTurns: 5,
+      available: () => gs.organization.treasury >= 4 && gs.organization.mediaRelay >= 1,
       effect: () => {
         rebirth.applyOperation({
           label: 'Campagne de souscription : appel au don.',
-          resourceDelta: { caisse: -4 },
           organizationDelta: {
-            treasury: 14,
+            treasury: 10,
             reputation: 1
           }
         });
@@ -48,16 +63,17 @@
     {
       id: 'augmenter-cotisations',
       label: 'Voter une hausse des cotisations',
-      blurb: 'La trésorerie respire un peu mieux ; quelques adhérents claquent la porte.',
+      blurb: 'La trésorerie respire un peu mieux ; quelques adhérents claquent la porte, la cohésion en souffre.',
       cost: 0,
-      enabled: () => gs.organization.membership >= 50,
+      cooldownTurns: 4,
+      available: () => gs.organization.membership >= 50,
       effect: () => {
         rebirth.applyOperation({
           label: 'Hausse votée des cotisations.',
           organizationDelta: {
-            treasury: 8,
-            membership: -Math.max(2, Math.round(gs.organization.membership * 0.04)),
-            cohesion: -2
+            treasury: 6,
+            membership: -Math.max(3, Math.round(gs.organization.membership * 0.05)),
+            cohesion: -3
           }
         });
       }
@@ -67,7 +83,8 @@
       label: 'Verser une aide exceptionnelle aux grévistes',
       blurb: 'Bourses militantes, paniers solidaires. La caisse fond mais la base se sent tenue.',
       cost: 12,
-      enabled: () => gs.organization.treasury >= 12 && gs.organization.militants >= 5,
+      cooldownTurns: 3,
+      available: () => gs.organization.treasury >= 12 && gs.organization.militants >= 5,
       effect: () => {
         rebirth.applyOperation({
           label: 'Aide exceptionnelle versée aux grévistes.',
@@ -85,7 +102,8 @@
       label: 'Publier un audit des comptes',
       blurb: 'Cabinet externe, transparence intégrale. La presse note, l’adversaire patientera.',
       cost: 6,
-      enabled: () => gs.organization.treasury >= 6 && gs.turn >= 22,
+      cooldownTurns: 6,
+      available: () => gs.organization.treasury >= 6 && gs.turn >= 22,
       effect: () => {
         rebirth.applyOperation({
           label: 'Audit comptable publié — transparence intégrale.',
@@ -182,16 +200,25 @@
   <div class="space-y-1.5">
     <div class="text-xs uppercase tracking-wider text-parchment-dim/85">Actions de gestion</div>
     {#each ACTIONS as a}
-      {@const ok = a.enabled()}
+      {@const cd = remainingCooldown(a.id, a.cooldownTurns)}
+      {@const ok = cd === 0 && a.available()}
       <button
         type="button"
         class="action-btn"
         disabled={!ok}
-        onclick={() => a.effect()}
+        onclick={() => runAction(a)}
         in:fade={{ duration: 180 }}
       >
         <span class="lbl">{a.label}</span>
-        <em>{a.cost > 0 ? `${a.cost} ${currency}` : 'gratuit'}</em>
+        <em>
+          {#if cd > 0}
+            relance dans {cd} tour{cd > 1 ? 's' : ''}
+          {:else if a.cost > 0}
+            {a.cost} {currency}
+          {:else}
+            gratuit
+          {/if}
+        </em>
         <small>{a.blurb}</small>
       </button>
     {/each}

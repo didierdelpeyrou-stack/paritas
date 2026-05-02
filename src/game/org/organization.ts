@@ -23,7 +23,8 @@ export function freshOrganization(camp: Camp, playerName: string): PlayerOrganiz
     assets: [],
     engagedTalents: [],
     budgetStrategy: 'equilibre',
-    actionHistory: []
+    actionHistory: [],
+    treasuryActionTurns: {}
   };
 }
 

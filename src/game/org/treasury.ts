@@ -33,10 +33,23 @@ export interface BudgetSnapshot {
 }
 
 const STRATEGY_MULT: Record<BudgetStrategy, { revenu: number; depense: number }> = {
-  epargne: { revenu: 1.0, depense: 0.78 },     // -22% de dépenses (gels, économies)
+  epargne: { revenu: 1.0, depense: 0.65 },     // -35% de dépenses (gels, économies)
   equilibre: { revenu: 1.0, depense: 1.0 },
-  distribution: { revenu: 1.0, depense: 1.18 } // +18% de dépenses (aides, formations)
+  distribution: { revenu: 1.0, depense: 1.35 } // +35% de dépenses (aides, formations)
 };
+
+/**
+ * Arrondi conscient de la stratégie : sur les petites dépenses, un mult
+ * 1.18 perd au passage à `Math.round` (-1 × 1.18 = -1.18 → -1) — la
+ * stratégie n'a aucun effet visible. On amplifie loin de zéro quand
+ * mult > 1, on rapproche de zéro quand mult < 1.
+ */
+function strategyRound(rawAmount: number, mult: number): number {
+  const scaled = rawAmount * mult;
+  if (mult > 1) return scaled >= 0 ? Math.ceil(scaled) : Math.floor(scaled);
+  if (mult < 1) return scaled >= 0 ? Math.floor(scaled) : Math.ceil(scaled);
+  return Math.round(scaled);
+}
 
 const STRATEGY_LABELS: Record<BudgetStrategy, string> = {
   epargne: 'Épargne',
@@ -46,10 +59,10 @@ const STRATEGY_LABELS: Record<BudgetStrategy, string> = {
 
 const STRATEGY_DESCRIPTIONS: Record<BudgetStrategy, string> = {
   epargne:
-    'Gels d’embauche, communication contenue, formations reportées. La caisse gonfle, la base grogne.',
+    'Gels d’embauche, communication contenue, formations reportées. Dépenses −35 % : la caisse gonfle, la cohésion s’érode (−1/tour).',
   equilibre: 'Régime normal : on dépense ce qui rentre, on ne touche pas aux réserves.',
   distribution:
-    'Aide aux grévistes, formations massives, presse à plein. La caisse fond mais la cohésion s’affermit.'
+    'Aide aux grévistes, formations massives, presse à plein. Dépenses +35 % : la caisse fond, la cohésion s’affermit (+1/tour).'
 };
 
 export function strategyLabel(s: BudgetStrategy): string {
@@ -231,8 +244,8 @@ export function computeBudget(org: PlayerOrganization, turn: number): BudgetSnap
   const recettesRaw = computeRecettes(org, turn);
   const depensesRaw = computeDepenses(org);
 
-  const recettes = recettesRaw.map(l => ({ ...l, amount: Math.round(l.amount * mult.revenu) }));
-  const depenses = depensesRaw.map(l => ({ ...l, amount: Math.round(l.amount * mult.depense) }));
+  const recettes = recettesRaw.map(l => ({ ...l, amount: strategyRound(l.amount, mult.revenu) }));
+  const depenses = depensesRaw.map(l => ({ ...l, amount: strategyRound(l.amount, mult.depense) }));
 
   const totalRecettes = recettes.reduce((s, l) => s + l.amount, 0);
   const totalDepenses = depenses.reduce((s, l) => s + l.amount, 0); // négatif

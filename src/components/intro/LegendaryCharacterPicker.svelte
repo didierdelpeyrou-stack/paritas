@@ -120,53 +120,56 @@
 
   <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[44vh] overflow-y-auto pr-1">
     {#each visible as c, i (c.id)}
-      <button
-        type="button"
-        onclick={() => pick(c)}
+      <div
+        class="card-wrap relative"
         in:fly={{ y: 6, duration: 220, delay: i * 18 }}
-        class="text-left rounded-lg p-2.5 border-2 transition-all relative
-               {selected?.id === c.id
-          ? 'border-amber-400 bg-gold/10 shadow-[0_0_0_1px_rgba(251,191,36,0.4)]'
-          : rarityClass[c.rarity] + ' hover:border-gold/50 hover:bg-gold/5'}"
       >
-        <div class="flex items-start gap-2">
-          <div class="shrink-0 w-9 h-9 rounded-full bg-ink/60 border border-line/60 flex items-center justify-center font-display text-gold text-sm">
-            {c.init}
-          </div>
-          <div class="min-w-0 flex-1">
-            <div class="font-display text-sm text-parchment leading-tight truncate">
-              {c.name}
+        <button
+          type="button"
+          onclick={() => pick(c)}
+          aria-label={`Incarner ${c.name}`}
+          class="card-main text-left rounded-lg p-2.5 pb-7 border-2 transition-all w-full
+                 {selected?.id === c.id
+            ? 'border-amber-400 bg-gold/10 shadow-[0_0_0_1px_rgba(251,191,36,0.4)]'
+            : rarityClass[c.rarity] + ' hover:border-gold/50 hover:bg-gold/5'}"
+        >
+          <div class="flex items-start gap-2">
+            <div class="shrink-0 w-9 h-9 rounded-full bg-ink/60 border border-line/60 flex items-center justify-center font-display text-gold text-sm">
+              {c.init}
             </div>
-            <div class="text-[10px] uppercase tracking-wider {campAccent[c.camp]} truncate">
-              {c.camp === 'patron' ? 'Patronal' : 'Salarié'} · {c.years}
+            <div class="min-w-0 flex-1">
+              <div class="font-display text-sm text-parchment leading-tight truncate">
+                {c.name}
+              </div>
+              <div class="text-[10px] uppercase tracking-wider {campAccent[c.camp]} truncate">
+                {c.camp === 'patron' ? 'Patronal' : 'Salarié'} · {c.years}
+              </div>
             </div>
           </div>
-        </div>
-        <p class="text-[11px] text-parchment-dim/80 leading-snug mt-1.5 line-clamp-3">
-          {c.blurb}
-        </p>
-        <div class="flex flex-wrap gap-1 mt-1.5">
-          {#each topTraits(c) as t}
-            <span class="text-[10px] uppercase tracking-wider rounded px-1.5 py-0.5 border border-line/60 text-parchment-dim/80">
-              {TRAIT_LABELS[t.trait]} +{t.value}
-            </span>
-          {/each}
-        </div>
-        {#if c.signature}
-          <p class="text-[10px] italic text-gold-soft/70 mt-1.5 line-clamp-2">
-            « {c.signature} »
+          <p class="text-[11px] text-parchment-dim/80 leading-snug mt-1.5 line-clamp-3">
+            {c.blurb}
           </p>
-        {/if}
-        <span
-          role="button"
-          tabindex="0"
+          <div class="flex flex-wrap gap-1 mt-1.5">
+            {#each topTraits(c) as t}
+              <span class="text-[10px] uppercase tracking-wider rounded px-1.5 py-0.5 border border-line/60 text-parchment-dim/80">
+                {TRAIT_LABELS[t.trait]} +{t.value}
+              </span>
+            {/each}
+          </div>
+          {#if c.signature}
+            <p class="text-[10px] italic text-gold-soft/70 mt-1.5 line-clamp-2">
+              « {c.signature} »
+            </p>
+          {/if}
+        </button>
+        <button
+          type="button"
           class="bio-btn"
           onclick={(e) => openDetail(c, e)}
-          onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); openDetail(c); } }}
           aria-label={`Lire la biographie de ${c.name}`}
           title="Lire la biographie complète"
-        >Bio</span>
-      </button>
+        >Bio</button>
+      </div>
     {/each}
   </div>
 

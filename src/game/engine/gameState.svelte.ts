@@ -659,6 +659,14 @@ class RebirthGameStore {
     const cohesionHit = broke ? -3 : 0;
     const membershipHit = broke ? -Math.min(15, Math.ceil(-cashAfter / 4)) : 0;
 
+    /* La stratégie budgétaire affecte la cohésion : la distribution
+       (aides, formations massives) fidélise la base ; l'épargne (gels,
+       reports) la frustre. Effet réel, faible mais visible sur la durée. */
+    const strategyCohesion =
+      org.budgetStrategy === 'distribution' ? 1
+      : org.budgetStrategy === 'epargne' ? -1
+      : 0;
+
     /* Mobilisation recovers slowly each turn (-3) ; if fatigue stays high
        (≥70), militants drift away — the social cost of overexertion. */
     const fatigueRecovery = -3;
@@ -667,7 +675,7 @@ class RebirthGameStore {
 
     const organization = applyOrganizationDelta(org, {
       treasury: budget.net,
-      cohesion: cohesionHit,
+      cohesion: cohesionHit + strategyCohesion,
       membership: membershipHit + burnoutMembership,
       militants: burnoutMilitants,
       mobilisationFatigue: fatigueRecovery
@@ -690,6 +698,21 @@ class RebirthGameStore {
       organization: { ...s.organization, budgetStrategy: strategy }
     };
     this.log = [...this.log, `T${s.turn} — Stratégie budgétaire : ${strategy}.`].slice(-50);
+    this.persist();
+  }
+
+  /**
+   * Inscrit le tour auquel une action ponctuelle de la trésorerie a été
+   * jouée — sert au gating des cooldowns côté UI (TreasuryPanel).
+   */
+  recordTreasuryAction(actionId: string) {
+    const s = this.state;
+    if (!s) return;
+    const turns = { ...(s.organization.treasuryActionTurns ?? {}), [actionId]: s.turn };
+    this.state = {
+      ...s,
+      organization: { ...s.organization, treasuryActionTurns: turns }
+    };
     this.persist();
   }
 }

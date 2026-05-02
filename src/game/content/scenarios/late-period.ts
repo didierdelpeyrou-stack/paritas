@@ -39,6 +39,10 @@ export const LATE_PERIOD_SCENARIOS: Scenario[] = [
       {
         text: 'Le mouvement social a gagné, mais ce qu\'il a gagné, c\'est de freiner. Pas d\'inverser.',
         source: 'Marc Blondel, FO, décembre 1995'
+      },
+      {
+        text: "Je sais bien que c'est un projet difficile, qu'il y a des oppositions. Mais je ne céderai pas sur l'essentiel.",
+        source: "Alain Juppé, Premier ministre, allocution télévisée, 12 décembre 1995"
       }
     ],
     choices: [
@@ -122,6 +126,10 @@ export const LATE_PERIOD_SCENARIOS: Scenario[] = [
       {
         text: "Avec cette loi, la République recule de l'entreprise vers le marché.",
         source: "Philippe Martinez, secrétaire général CGT, mars 2016"
+      },
+      {
+        text: "Le contrat de travail est devenu trop rigide. Cette loi rend la France compétitive et donne plus de pouvoir aux salariés sur leur quotidien.",
+        source: "Myriam El Khomri, ministre du Travail, présentation du projet de loi, février 2016"
       }
     ],
     choices: [

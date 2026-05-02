@@ -418,12 +418,22 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
     mood: 'tendu',
     premium: true,
     historicalContext:
-      'Mai 68 produit une grève massive. Les accords de Grenelle proposent hausses salariales, relèvement du SMIG et reconnaissance accrue de la section syndicale d’entreprise.',
+      "Mai 68. Plus de 9 millions de grévistes — la plus grande grève de l'histoire de France. Le pays s'arrête. Le 25 mai, le gouvernement Pompidou convoque les partenaires sociaux rue de Grenelle. Le 27 au matin, un protocole d'accord est signé : hausse du SMIG de 35%, salaires +10%, droit syndical d'entreprise reconnu, 4e semaine de congés. Mais la base ouvrière, à Billancourt, refuse de reprendre le travail.",
     setup: {
-      reflechi: 'Le pays est bloqué. La négociation doit transformer une crise sociale et politique en compromis acceptable.',
-      compulsif: 'Les radios crachent des chiffres. Des millions de corps ont quitté le travail. Au ministère, la table paraît trop petite pour le pays.'
+      reflechi: "Le pays est bloqué. Tu dois transformer une crise sociale et politique en compromis acceptable. Mais pour qui ? Le rationnel négociateur signe. Le tribun rejette. Le bâtisseur cherche du durable.",
+      compulsif: "Les radios crachent des chiffres. Des millions de corps ont quitté le travail. Au ministère, la table paraît trop petite pour le pays."
     },
     actors: ['base', 'adversaire', 'etat', 'opinion'],
+    quotes: [
+      {
+        text: "Les ouvriers de Renault-Billancourt ont rejeté le constat de Grenelle.",
+        source: "Annonce de Georges Séguy, secrétaire général CGT, 27 mai 1968"
+      },
+      {
+        text: "Sur les bases du protocole, la grève peut prendre fin progressivement, l'ordre social peut être rétabli.",
+        source: "Communiqué officiel du gouvernement Pompidou, 27 mai 1968"
+      }
+    ],
     choices: [
       {
         id: 'grenelle-signer',
@@ -466,12 +476,22 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
     mood: 'calme',
     premium: true,
     historicalContext:
-      'Les lois Auroux renforcent les droits des salariés dans l’entreprise : expression directe, négociation annuelle obligatoire, CHSCT et droits syndicaux consolidés.',
+      "Quatre lois sociales sont votées en 1982 sous Mitterrand. Le ministre du Travail Jean Auroux les porte. Elles renforcent les droits des salariés dans l'entreprise : expression directe en assemblée, négociation annuelle obligatoire sur les salaires, comité d'hygiène et de sécurité (CHSCT), élargissement du droit syndical. C'est la plus grande réforme du droit du travail français depuis 1936.",
     setup: {
-      reflechi: 'Le pouvoir politique veut démocratiser l’entreprise. Reste à savoir si les acteurs s’en emparent.',
-      compulsif: 'On promet la parole. Tu sais que la parole donnée peut devenir puissance, rituel ou décor.'
+      reflechi: "Le pouvoir politique veut démocratiser l'entreprise. Reste à savoir si les acteurs s'en emparent. Trois usages possibles de la parole nouvelle : rituel exigeant, sujet santé/corps, ou simple communication descendante.",
+      compulsif: "On promet la parole. Tu sais que la parole donnée peut devenir puissance, rituel, ou décor."
     },
     actors: ['base', 'adversaire', 'etat'],
+    quotes: [
+      {
+        text: "Les travailleurs doivent être citoyens à part entière dans leur entreprise.",
+        source: "Jean Auroux, Rapport sur les droits nouveaux des travailleurs, septembre 1981"
+      },
+      {
+        text: "Le silence dans l'entreprise n'est plus tenable. La démocratie politique appelle la démocratie sociale.",
+        source: "François Mitterrand, allocution sur les lois Auroux, juillet 1982"
+      }
+    ],
     choices: [
       {
         id: 'auroux-nao',
@@ -513,12 +533,22 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
     mood: 'melancolique',
     premium: true,
     historicalContext:
-      'Les ordonnances du 22 septembre 2017 créent le Comité social et économique, fusionnant délégués du personnel, comité d’entreprise et CHSCT.',
+      "Le 22 septembre 2017, Édouard Philippe signe cinq ordonnances. La plus structurante crée le Comité social et économique (CSE). Il fusionne les délégués du personnel, le comité d'entreprise et le CHSCT. La concertation a duré six semaines. Pour la première fois depuis 1982, le code du travail se réécrit en grande partie sans accord majoritaire des syndicats.",
     setup: {
-      reflechi: 'Simplifier peut rendre lisible. Simplifier peut aussi concentrer la charge et perdre des spécialités.',
-      compulsif: 'Trois portes deviennent une seule. On appelle cela simplifier. Personne ne sait encore ce qui restera derrière.'
+      reflechi: "Simplifier peut rendre lisible. Simplifier peut aussi concentrer la charge et perdre des spécialités. Trois usages : négocier des moyens renforcés, dénoncer la perte du CHSCT, ou vendre la fusion comme outil de performance.",
+      compulsif: "Trois portes deviennent une seule. On appelle cela simplifier. Personne ne sait encore ce qui restera derrière."
     },
     actors: ['base', 'adversaire', 'etat', 'opinion'],
+    quotes: [
+      {
+        text: "La concertation a duré le temps qu'elle a duré.",
+        source: "Édouard Philippe, Premier ministre, septembre 2017"
+      },
+      {
+        text: "La fusion des instances est une régression de quarante ans pour la santé au travail.",
+        source: "Communiqué CGT-FO-Solidaires, 22 septembre 2017"
+      }
+    ],
     choices: [
       {
         id: 'cse-negocier-moyens',
@@ -559,12 +589,22 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
     mood: 'grave',
     premium: true,
     historicalContext:
-      'La réforme des retraites de 2023 reporte progressivement l’âge légal à 64 ans. Le conflit produit une intersyndicale durable et un débat sur la place du dialogue social face à la décision étatique.',
+      "La réforme des retraites de 2023 repousse l'âge légal de départ de 62 à 64 ans. Elle est portée par Élisabeth Borne. L'intersyndicale unitaire (CGT, CFDT, FO, FSU, Solidaires, UNSA, CFE-CGC, CFTC) tient pendant 14 journées de mobilisation. Le 14 avril 2023, le Conseil constitutionnel valide le texte. Le 49.3 a été utilisé. La réforme passe sans accord syndical — situation inédite depuis 1958.",
     setup: {
-      reflechi: 'Le conflit oppose légalité institutionnelle, légitimité sociale et soutenabilité financière.',
-      compulsif: 'Les cortèges reviennent comme une marée exacte. Le pouvoir compte les articles. La rue compte les corps.'
+      reflechi: "Le conflit oppose la légalité institutionnelle, la légitimité sociale et la soutenabilité financière. Trois options : tenir l'intersyndicale jusqu'au bout, durcir avec des blocages reconductibles, ou préparer une sortie par branches et pénibilité.",
+      compulsif: "Les cortèges reviennent comme une marée exacte. Le pouvoir compte les articles. La rue compte les corps."
     },
     actors: ['base', 'etat', 'opinion', 'adversaire'],
+    quotes: [
+      {
+        text: "Cette réforme est nécessaire. Elle est juste. Elle préserve notre système par répartition.",
+        source: "Élisabeth Borne, Première ministre, 6 avril 2023"
+      },
+      {
+        text: "Pour la première fois depuis longtemps, l'ensemble des organisations syndicales représentatives parlent d'une seule voix : retrait de la réforme.",
+        source: "Communiqué intersyndical, 19 janvier 2023"
+      }
+    ],
     choices: [
       {
         id: 'retraites-intersyndicale',

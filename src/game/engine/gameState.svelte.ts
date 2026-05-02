@@ -66,7 +66,81 @@ import { advancePipelineAfterScenario, syncPipelines } from '../narrative/pipeli
 import { objectivesForRole } from '../objectives/catalog';
 import { evaluateObjectives } from '../objectives/evaluator';
 
-const SAVE_KEY = 'paritas_rebirth_save_v1';
+/* Slot actif (UX-#9). Trois sauvegardes possibles : 1, 2, 3.
+   Le slot par défaut est 1. La clé legacy `paritas_rebirth_save_v1`
+   reste lue pour migration transparente vers le slot 1. */
+const SLOT_KEY = 'paritas_active_slot';
+const LEGACY_SAVE_KEY = 'paritas_rebirth_save_v1';
+
+function getActiveSlot(): 1 | 2 | 3 {
+  try {
+    const v = localStorage.getItem(SLOT_KEY);
+    if (v === '1' || v === '2' || v === '3') return parseInt(v, 10) as 1 | 2 | 3;
+  } catch {
+    /* ignore */
+  }
+  return 1;
+}
+
+function saveKeyFor(slot: 1 | 2 | 3): string {
+  return `paritas_rebirth_save_slot_${slot}`;
+}
+
+function activeSaveKey(): string {
+  return saveKeyFor(getActiveSlot());
+}
+
+export function setActiveSlot(slot: 1 | 2 | 3) {
+  try {
+    localStorage.setItem(SLOT_KEY, String(slot));
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Métadonnées d'un slot pour l'écran de sélection. */
+export interface SlotMeta {
+  slot: 1 | 2 | 3;
+  empty: boolean;
+  name?: string;
+  camp?: 'salarie' | 'patron';
+  turn?: number;
+  score?: number;
+  dominantTrait?: string;
+  institutions?: number;
+}
+
+export function readSlotMeta(slot: 1 | 2 | 3): SlotMeta {
+  try {
+    const raw = localStorage.getItem(saveKeyFor(slot))
+      ?? (slot === 1 ? localStorage.getItem(LEGACY_SAVE_KEY) : null);
+    if (!raw) return { slot, empty: true };
+    const data = JSON.parse(raw) as { state?: RebirthGameState };
+    const s = data.state;
+    if (!s) return { slot, empty: true };
+    return {
+      slot,
+      empty: false,
+      name: s.name,
+      camp: s.camp,
+      turn: s.turn,
+      score: 0, // calculé à la volée si besoin par le caller
+      dominantTrait: s.dominantTrait,
+      institutions: s.memory?.builtInstitutions?.length ?? 0
+    };
+  } catch {
+    return { slot, empty: true };
+  }
+}
+
+export function deleteSlot(slot: 1 | 2 | 3) {
+  try {
+    localStorage.removeItem(saveKeyFor(slot));
+    if (slot === 1) localStorage.removeItem(LEGACY_SAVE_KEY);
+  } catch {
+    /* ignore */
+  }
+}
 
 function freshRebirthState(
   camp: Camp,
@@ -516,7 +590,8 @@ class RebirthGameStore {
     this.alerts = [];
     this.log = [];
     try {
-      localStorage.removeItem(SAVE_KEY);
+      localStorage.removeItem(activeSaveKey());
+      localStorage.removeItem(LEGACY_SAVE_KEY); // best effort
     } catch {
       /* ignore */
     }
@@ -529,7 +604,7 @@ class RebirthGameStore {
         log: this.log,
         consequence: this.consequence
       };
-      localStorage.setItem(SAVE_KEY, JSON.stringify(payload));
+      localStorage.setItem(activeSaveKey(), JSON.stringify(payload));
     } catch {
       /* ignore */
     }
@@ -537,7 +612,16 @@ class RebirthGameStore {
 
   load(): boolean {
     try {
-      const raw = localStorage.getItem(SAVE_KEY);
+      const key = activeSaveKey();
+      let raw = localStorage.getItem(key);
+      // Migration : si le slot actif est 1 et qu'aucune sauvegarde n'existe,
+      // tenter la clé legacy (paritas_rebirth_save_v1).
+      if (!raw && getActiveSlot() === 1) {
+        raw = localStorage.getItem(LEGACY_SAVE_KEY);
+        if (raw) {
+          try { localStorage.setItem(key, raw); localStorage.removeItem(LEGACY_SAVE_KEY); } catch {}
+        }
+      }
       if (!raw) return false;
       const data = JSON.parse(raw) as {
         state?: RebirthGameState;

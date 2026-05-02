@@ -6,9 +6,10 @@
   import { fade } from 'svelte/transition';
   import type { Camp } from '$lib/types';
   import type { RenderMode } from './game/types';
-  import { rebirth } from './game/engine/gameState.svelte';
+  import { rebirth, setActiveSlot } from './game/engine/gameState.svelte';
   import StartScreen from './components/intro/StartScreen.svelte';
   import Tutorial from './components/intro/Tutorial.svelte';
+  import SlotPicker from './components/intro/SlotPicker.svelte';
   import GameShell from './components/layout/GameShell.svelte';
   import ToastStack from './components/feedback/ToastStack.svelte';
   import { loadAllScenarios } from './game/content/scenarios';
@@ -22,7 +23,7 @@
      arrivés. */
   const contentReady = Promise.all([loadAllScenarios(), loadPipelineContent()]);
 
-  type Phase = 'intro' | 'start' | 'game';
+  type Phase = 'intro' | 'slot' | 'start' | 'game';
 
   function tutorialAlreadySeen(): boolean {
     try {
@@ -44,11 +45,22 @@
      paritarisme et les postures AVANT de demander de choisir un camp
      ou un personnage. Ceux qui sont déjà passés vont droit à
      StartScreen. */
-  let phase = $state<Phase>(tutorialAlreadySeen() ? 'start' : 'intro');
+  let phase = $state<Phase>(tutorialAlreadySeen() ? 'slot' : 'intro');
 
   function handleIntroDone() {
     markTutorialSeen();
-    phase = 'start';
+    phase = 'slot';
+  }
+
+  async function handleSlotPick(action: 'continue' | 'new', slot: 1 | 2 | 3) {
+    setActiveSlot(slot);
+    if (action === 'continue') {
+      await contentReady;
+      const ok = rebirth.load();
+      phase = ok ? 'game' : 'start';
+    } else {
+      phase = 'start';
+    }
   }
 
   async function handleStart(opts: {
@@ -64,12 +76,12 @@
 
   function handleReplay() {
     rebirth.reset();
-    phase = 'start';
+    phase = 'slot';
   }
 </script>
 
 <svelte:head>
-  <title>Paritas — 25 siècles de paritarisme</title>
+  <title>Paritas — 1789-2026, deux siècles de paritarisme</title>
 </svelte:head>
 
 <ToastStack />
@@ -78,6 +90,10 @@
   {#if phase === 'intro'}
     <div in:fade={{ duration: 300 }}>
       <Tutorial onDone={handleIntroDone} />
+    </div>
+  {:else if phase === 'slot'}
+    <div in:fade={{ duration: 300 }} class="max-w-3xl mx-auto bordered-card p-6 sm:p-8">
+      <SlotPicker onPick={handleSlotPick} />
     </div>
   {:else if phase === 'start'}
     <div in:fade={{ duration: 300 }}>

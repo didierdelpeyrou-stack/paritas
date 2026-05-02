@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Actor, ActorId } from '../../game/types';
   import { ACTOR_LABELS, ACTOR_TOOLTIPS, stanceLabel } from '../../game/simulation/actors';
+  import ActorPortrait from '../ActorPortrait.svelte';
 
   interface Props {
     actorId: ActorId;
@@ -9,13 +10,6 @@
     subtitle?: string;
   }
   let { actorId, actor, subtitle }: Props = $props();
-
-  const ICONS: Record<ActorId, string> = {
-    base: '★',
-    adversaire: '✕',
-    etat: '⚖',
-    opinion: '☵'
-  };
 
   /* Mood : 0 = hostile, 1 = méfiant, 2 = attentif, 3 = favorable.
      Combine trust et stance pour une lecture instantanée. */
@@ -42,6 +36,18 @@
 
   const mood = $derived(moodScore());
   const risk = $derived(riskLabel());
+
+  /* UX-#5 : tonalité du portrait dérivée de mood + risk + stance.
+     Le visage stylisé porte l'humeur, plus efficace qu'un libellé. */
+  const portraitTone = $derived<'neutral' | 'angry' | 'supportive' | 'worried'>(
+    mood === 0 || actor.stance === 'dur'
+      ? 'angry'
+      : mood === 3
+        ? 'supportive'
+        : risk
+          ? 'worried'
+          : 'neutral'
+  );
 </script>
 
 <article
@@ -51,7 +57,7 @@
   title={ACTOR_TOOLTIPS[actorId]}
 >
   <div class="actor-head">
-    <span class="actor-icon" aria-hidden="true">{ICONS[actorId]}</span>
+    <ActorPortrait actor={actorId} tone={portraitTone} size={36} />
     <div class="actor-id">
       <span class="actor-name">{ACTOR_LABELS[actorId]}</span>
       {#if subtitle}
@@ -112,22 +118,6 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-  }
-
-  .actor-icon {
-    width: 1.5rem;
-    height: 1.5rem;
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(237, 228, 201, 0.2);
-    border-radius: 999px;
-    background: rgba(13, 16, 20, 0.45);
-    color: #f4d58b;
-    font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.78rem;
-    line-height: 1;
   }
 
   .actor-id {

@@ -685,6 +685,18 @@ class RebirthGameStore {
       ? applyResourceDelta(state.resources, { caisse: -2, confiance: -1 })
       : state.resources;
 
+    /* Si la trésorerie a reçu un don/legs ce tour, le journaliser
+       avec un nom inventé : ça donne au joueur le sens de l'événement
+       au lieu d'une ligne anonyme dans le tableau. */
+    const donLine = budget.recettes.find(l => l.id === 'dons-legs');
+    if (donLine) {
+      const benefactor = pickBenefactor(state.turn);
+      this.log = [
+        ...this.log,
+        `T${state.turn} — ${benefactor} verse ${donLine.amount} à la caisse (don / legs).`
+      ].slice(-50);
+    }
+
     return { ...state, organization, resources };
   }
 
@@ -715,6 +727,23 @@ class RebirthGameStore {
     };
     this.persist();
   }
+}
+
+/** Un nom de bienfaiteur déterministe pour la ligne de journal des dons. */
+function pickBenefactor(turn: number): string {
+  const NAMES = [
+    'Marie-Anne Béluse',
+    'Le Cercle des amis du Devoir',
+    'Une veuve anonyme de Lyon',
+    'L\'imprimerie Champollion',
+    'Henri Forestier',
+    'La Société de Saint-Vincent',
+    'Émilienne Roux',
+    'Le syndicat frère de Roubaix',
+    'Un legs testamentaire',
+    'Le café des Halles'
+  ];
+  return NAMES[turn % NAMES.length]!;
 }
 
 function campaignLabel(move: ElectionCampaignMove): string {

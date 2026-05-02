@@ -11,6 +11,7 @@
   import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
   import VoicePanel from './VoicePanel.svelte';
   import HistoricalImage from '../HistoricalImage.svelte';
+  import GlossaryText from '../GlossaryText.svelte';
   import { imageFor } from '../../game/content/historicalImages';
 
   interface Props {
@@ -57,7 +58,7 @@
   {/if}
 
   <div class="text-parchment leading-relaxed whitespace-pre-line text-sm sm:text-base">
-    {setupText}
+    <GlossaryText text={setupText} />
   </div>
 
   {#if mode === 'reflechi'}
@@ -65,7 +66,7 @@
       <span class="not-italic uppercase tracking-wider text-parchment-dim/80 mr-1">
         Contexte —
       </span>
-      {scenario.historicalContext}
+      <GlossaryText text={scenario.historicalContext} />
     </div>
   {/if}
 

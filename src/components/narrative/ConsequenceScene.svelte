@@ -245,12 +245,23 @@
   }
 
   .btn-dim {
-    opacity: 0.55;
+    opacity: 0.65;
     filter: saturate(0.7);
+    animation: pulse-cta 1.6s ease-in-out infinite;
   }
 
   .btn-dim:hover {
-    opacity: 0.85;
+    opacity: 0.95;
+    animation: none;
+  }
+
+  @keyframes pulse-cta {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(244, 213, 139, 0);
+    }
+    50% {
+      box-shadow: 0 0 0 4px rgba(244, 213, 139, 0.2);
+    }
   }
 
   .reveal-skip {

@@ -351,12 +351,7 @@ class AudioEngine {
    * Formats testés : .mp3 puis .ogg dans /audio/eras/{eraId}.{ext}.
    */
   private async tryLoadEraFile(eraId: AudioEraId): Promise<boolean> {
-    const log = (m: string) => { try { (window as any).__paritasAudioLog?.(`[${eraId}] ${m}`); console.log(`[paritas-audio][${eraId}] ${m}`); } catch { /* ignore */ } };
-    log('tryLoadEraFile start');
-    if (this.fileAvailability[eraId] === false) {
-      log('skip: cached as unavailable');
-      return false;
-    }
+    if (this.fileAvailability[eraId] === false) return false;
     const base = `${import.meta.env.BASE_URL ?? '/'}audio/eras/${eraId}`;
     let url: string | null = null;
     for (const ext of ['mp3', 'ogg'] as const) {
@@ -367,11 +362,9 @@ class AudioEngine {
       } catch { /* try next */ }
     }
     if (!url) {
-      log('HEAD failed for both .mp3 and .ogg');
       this.fileAvailability[eraId] = false;
       return false;
     }
-    log(`HEAD ok: ${url}`);
     this.fileAvailability[eraId] = true;
     /* Charge le buffer via le callback onload du player plutôt que
      * Tone.loaded() (qui résout parfois trop tôt entre deux loads
@@ -379,14 +372,14 @@ class AudioEngine {
     let next: Tone.Player;
     try {
       next = await new Promise<Tone.Player>((resolve, reject) => {
-        const timer = setTimeout(() => { log('LOAD timeout 8s'); reject(new Error('timeout')); }, 8000);
+        const timer = setTimeout(() => reject(new Error('timeout')), 8000);
         const p: Tone.Player = new Tone.Player({
           url,
           loop: true,
           fadeIn: 1.4,
           fadeOut: 1.0,
-          onload: () => { clearTimeout(timer); log('player loaded'); resolve(p); },
-          onerror: (e) => { clearTimeout(timer); log(`player error: ${String(e)}`); reject(new Error('decode')); },
+          onload: () => { clearTimeout(timer); resolve(p); },
+          onerror: () => { clearTimeout(timer); reject(new Error('decode')); },
         });
       });
     } catch {
@@ -394,10 +387,8 @@ class AudioEngine {
       return false;
     }
     try {
-      // Routé via fileReverb (decay 1.2 s, wet 0.10) → fileGain.
       next.connect(this.fileReverb ?? this.fileGain!);
       next.start();
-      log(`started. fileGain=${this.fileGain?.gain.value.toFixed(3)} ctxState=${Tone.getContext().state}`);
       if (this.filePlayer) {
         const old = this.filePlayer;
         old.fadeOut = 1.4;
@@ -406,8 +397,7 @@ class AudioEngine {
       }
       this.filePlayer = next;
       return true;
-    } catch (e) {
-      log(`start failed: ${String(e)}`);
+    } catch {
       try { next.dispose(); } catch { /* ignore */ }
       this.fileAvailability[eraId] = false;
       return false;

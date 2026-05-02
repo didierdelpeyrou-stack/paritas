@@ -53,7 +53,7 @@
               </span>
             </span>
           </div>
-          <div class="track">
+          <div class="track" data-near-goal={s === 'pending' && pct >= 75}>
             <i style="width: {Math.max(2, Math.min(100, pct))}%"></i>
           </div>
           {#if hint && s === 'pending'}
@@ -136,6 +136,30 @@
     border-radius: inherit;
     background: linear-gradient(90deg, #c89b3c, #f4d58b);
     transition: width 0.3s ease;
+  }
+
+  /* === UX-N3 — goal-gradient (Hull, Kivetz) ===
+     À ≥75% de progression sur un objectif pending, la barre pulse
+     subtilement. Le noyau accumbens s'active à l'approche du but —
+     la pulsation amplifie ce signal d'anticipation. */
+  .track[data-near-goal='true'] {
+    box-shadow: 0 0 0 1px rgba(244, 213, 139, 0.35);
+    animation: goal-pulse 1.8s ease-in-out infinite;
+  }
+
+  .track[data-near-goal='true'] i {
+    background: linear-gradient(90deg, #c89b3c, #fde68a);
+  }
+
+  @keyframes goal-pulse {
+    0%, 100% {
+      box-shadow: 0 0 0 1px rgba(244, 213, 139, 0.3),
+                  0 0 0 0 rgba(244, 213, 139, 0);
+    }
+    50% {
+      box-shadow: 0 0 0 1px rgba(244, 213, 139, 0.6),
+                  0 0 4px 2px rgba(244, 213, 139, 0.25);
+    }
   }
 
   .objective-row[data-status='satisfied'] .track i {

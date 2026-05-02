@@ -19,6 +19,8 @@
   import ToastStack from '../feedback/ToastStack.svelte';
   import EraTimeline from './EraTimeline.svelte';
   import Glossary from '../Glossary.svelte';
+  import MyLegacyPanel from '../MyLegacyPanel.svelte';
+  import Interlude from '../narrative/Interlude.svelte';
   import { eraForTurn, yearForTurn } from '../../game/content/eras';
   import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
   import { computeFinalScore } from '../../game/simulation/scoring';
@@ -97,6 +99,28 @@
   /* UX-1 : mode lecture-scène. Replie la sidebar pour que la scène
      respire. Auto-activé en phase consequence (DMN priority). */
   let focusMode = $state<boolean>(loadFocusMode());
+
+  /* === UX-N4 : interludes de restauration ===
+     Tous les 6 tours, on intercepte la phase scène et on insère un
+     interlude (image + citation, pause forcée 6s). Une fois consommé,
+     on note dans dismissedInterludes pour ne pas le rejouer. */
+  const INTERLUDE_INTERVAL = 6;
+  let dismissedInterludes = $state<Set<number>>(new Set());
+
+  const shouldShowInterlude = $derived.by(() => {
+    const s = rebirth.state;
+    if (!s) return false;
+    if (s.phase !== 'scene') return false;
+    if (s.turn < INTERLUDE_INTERVAL) return false;
+    if (s.turn % INTERLUDE_INTERVAL !== 0) return false;
+    return !dismissedInterludes.has(s.turn);
+  });
+
+  function dismissInterlude() {
+    const s = rebirth.state;
+    if (!s) return;
+    dismissedInterludes = new Set([...dismissedInterludes, s.turn]);
+  }
 
   function setActiveTab(t: Tab) {
     activeTab = t;
@@ -289,6 +313,8 @@
               />
             {/each}
           </section>
+
+          <MyLegacyPanel memory={s.memory} />
         {:else if activeTab === 'organisation'}
           <!-- Sous-navigation pour les 4 outils d'organisation -->
           <div class="sub-tab-bar" role="tablist" aria-label="Sous-sections de l'organisation">
@@ -364,7 +390,9 @@
         </button>
       </div>
 
-      {#if s.phase === 'scene' && scenario}
+      {#if s.phase === 'scene' && shouldShowInterlude}
+        <Interlude era={e.id} turn={s.turn} onContinue={dismissInterlude} />
+      {:else if s.phase === 'scene' && scenario}
         <SceneCard
           {scenario}
           mode={s.mode}

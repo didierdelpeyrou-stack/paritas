@@ -38,6 +38,7 @@
   const SV_KEY = 'paritas_sfx_volume';
   const VV_KEY = 'paritas_voice_volume';
   const SG_KEY = 'paritas_speech_granularity';
+  const VB_KEY = 'paritas_voices_boost';
 
   /* Volumes (0-100). Persistés. Appliqués via la façade sfx. */
   let musicVolume = $state<number>(loadVolume(MV_KEY, 60));
@@ -47,6 +48,13 @@
   type SpeechGranularity = 'always' | 'ceremonies' | 'never';
   let speechGranularity = $state<SpeechGranularity>(loadSpeechGranularity());
   let creditsOpen = $state(false);
+  /* Voix renforcées (a11y malentendant·es : Yasmine).
+     Force music ducking permanent à 50 % + boost SFX×1.4. */
+  let voicesBoost = $state<boolean>(loadVoicesBoost());
+
+  function loadVoicesBoost(): boolean {
+    try { return localStorage.getItem(VB_KEY) === 'true'; } catch { return false; }
+  }
 
   function loadVolume(key: string, def: number): number {
     try {
@@ -117,22 +125,24 @@
       localStorage.setItem(SV_KEY, String(sfxVolume));
       localStorage.setItem(VV_KEY, String(voiceVolume));
       localStorage.setItem(SG_KEY, speechGranularity);
+      localStorage.setItem(VB_KEY, voicesBoost ? 'true' : 'false');
     } catch {
       /* ignore */
     }
-    /* Volumes appliqués via la façade. Music = synth + file (gérés
-     * en interne au moteur), SFX = ambiances + applaudissements,
-     * Voice = utterance.volume du SpeechSynthesis. */
+    /* Voix renforcées : le ratio musique×0.5 et SFX×1.4 est
+       persistant tant que le toggle est on. */
+    const boostMusic = voicesBoost ? 0.5 : 1;
+    const boostSfx = voicesBoost ? 1.4 : 1;
     try {
-      sfx.setMusicVolume(musicVolume / 100);
-      sfx.setSfxVolume(sfxVolume / 100);
+      sfx.setMusicVolume(Math.min(1, (musicVolume / 100) * boostMusic));
+      sfx.setSfxVolume(Math.min(1, (sfxVolume / 100) * boostSfx));
     } catch { /* ignore : sfx pas encore loadé */ }
   }
 
   /* Réapplique à chaque changement (hooks Svelte 5). */
   $effect(() => {
     void textSize; void highContrast; void colorBlindFriendly; void reducedMotion; void swipeEnabled; void textMode;
-    void musicVolume; void sfxVolume; void voiceVolume; void speechGranularity;
+    void musicVolume; void sfxVolume; void voiceVolume; void speechGranularity; void voicesBoost;
     apply();
   });
 
@@ -244,6 +254,15 @@
           Trois leviers indépendants — utile si la voix de synthèse de votre
           navigateur est plus forte ou plus faible que la musique.
         </p>
+        <label class="boost-toggle">
+          <input type="checkbox" bind:checked={voicesBoost} />
+          <span class="lbl">
+            <b>Voix renforcées</b>
+            <small>Baisse la musique de moitié et booste les bruitages
+              (foules, applaudissements) de 40 %. Recommandé pour les
+              joueurs malentendant·es ou avec aides auditives.</small>
+          </span>
+        </label>
       </section>
 
       <section class="opt-group">
@@ -494,6 +513,29 @@
   .credits-content a {
     color: #f4d58b;
     text-decoration: underline;
+  }
+
+  .boost-toggle {
+    display: grid;
+    grid-template-columns: 1.5rem 1fr;
+    gap: 0.7rem;
+    align-items: start;
+    cursor: pointer;
+    margin-top: 0.6rem;
+    padding: 0.5rem 0.2rem;
+    border-radius: 0.4rem;
+    transition: background 0.15s ease;
+  }
+
+  .boost-toggle:hover {
+    background: rgba(201, 154, 64, 0.04);
+  }
+
+  .boost-toggle input[type='checkbox'] {
+    margin-top: 0.18rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: #c89b3c;
   }
 
   .credits-content code {

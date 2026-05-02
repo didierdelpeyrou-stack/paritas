@@ -762,6 +762,7 @@
     onSkip={handleSkipCeremony}
     camp={gameState?.camp}
     posture={gameState?.dominantTrait as any}
+    eraId={era?.id}
   />
 {/if}
 

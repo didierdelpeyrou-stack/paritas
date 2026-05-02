@@ -94,9 +94,11 @@ interface SceneLayer { id: SfxFileId; gain: number; loop?: boolean }
 
 /** Couches sonores par scène. La musique d'ère continue par-dessous. */
 const SCENE_LAYERS: Record<SceneAudioId, SceneLayer[]> = {
-  // Manifestation : foule en colère + sifflets, doit dominer la musique
+  // Manifestation : foule en colère + sifflets, dominante mais pas
+  // écrasante (testeur Dorian hyperacousie). 0.65 + duck musique
+  // suffit pour la sensation d'immersion.
   manifestation: [
-    { id: 'crowd-protest', gain: 0.85, loop: true },
+    { id: 'crowd-protest', gain: 0.65, loop: true },
   ],
   // Meeting / congrès : murmures de salle en attendant le discours
   meeting: [
@@ -237,6 +239,7 @@ class AudioEngine {
   private musicReverb?: Tone.Reverb;
   private musicFilter?: Tone.Filter;
   private sfxComp?: Tone.Compressor;
+  private fileReverb?: Tone.Reverb;
   /** Multiplicateurs de duck (1 = pas de duck, 0.4 = -8dB env). */
   private musicDuckFactor = 1;
   private sfxDuckFactor = 1;
@@ -268,9 +271,14 @@ class AudioEngine {
     this.musicReverb = new Tone.Reverb({ decay: 4, wet: 0.45 }).connect(this.musicGain);
     this.musicFilter = new Tone.Filter({ frequency: 2400, type: 'lowpass', rolloff: -12 }).connect(this.musicReverb);
     /* fileGain est séparé : la musique fichier est déjà mastered à
-       -14 LUFS, elle ne doit PAS passer par reverb+filter (ça la
-       noie) ni par le gain ultra-bas du synth ambient. */
+       -14 LUFS. On ne la passe PAS par le filter+reverb fort du synth
+       (ça la noie). Mais l'expert Alaerts d'Ubisoft a raison : sans
+       AUCUN reverb, les fichiers sonnent « collés sur » la voix TTS,
+       l'oreille perçoit la disjonction stéréo. Solution : reverb
+       très léger (decay 1.2 s, wet 0.10) avant le gain — assez pour
+       partager l'espace spatial, pas assez pour boueux les Pixabay. */
     this.fileGain = new Tone.Gain(this.fileVol).toDestination();
+    this.fileReverb = new Tone.Reverb({ decay: 1.2, wet: 0.10 }).connect(this.fileGain);
 
     /* SFX → Compresseur léger → Destination. Plage dynamique des SFX
        trop large dans les transports en commun (testeur Ahmed) : les
@@ -379,7 +387,8 @@ class AudioEngine {
       return false;
     }
     try {
-      next.connect(this.fileGain!);
+      // Routé via fileReverb (decay 1.2 s, wet 0.10) → fileGain.
+      next.connect(this.fileReverb ?? this.fileGain!);
       next.start();
       if (this.filePlayer) {
         const old = this.filePlayer;
@@ -598,10 +607,28 @@ class AudioEngine {
     if (this.currentEra === eraId) return;
     this.currentEra = eraId;
     if (!this.isMusicOn) return;
-    // 2000 ms (au lieu de 1200) : les testeurs percevaient la coupure
-    // de Marseillaise comme « brutale ». 2 s laisse à l'oreille le
-    // temps d'accepter la fin de l'ancienne ère avant la nouvelle.
+    // Stinger court (~700 ms) qui annonce le passage d'époque.
+    // Sans ça, les testeurs (Astrid) ne sentaient pas la transition
+    // — la musique changeait sans signal narratif.
+    void this.eraTransitionStinger();
+    // 2000 ms (au lieu de 1200) : transition plus organique.
     await this.crossfadeRestart(opts?.reducedMotion ? 320 : 2000);
+  }
+
+  /** Stinger de transition d'ère — gong-cloche court 5e + octave +
+   *  tierce, joué via themeSynth (routé via sfxGain donc audible
+   *  même quand la musique est ducké pendant le crossfade). */
+  private async eraTransitionStinger() {
+    await this.init();
+    if (this.sfxVol <= 0) return;
+    const now = Tone.now();
+    try {
+      // Cloche fondamentale (sous-marine), puis 5e qui s'épanouit
+      this.themeSynth?.triggerAttackRelease(['C3'], '2n', now, 0.55);
+      this.themeSynth?.triggerAttackRelease(['G3', 'C4'], '2n', now + 0.18, 0.4);
+      // Étincelle aiguë qui marque le changement
+      this.sfxSynth?.triggerAttackRelease('E5', '8n', now + 0.45, 0.35);
+    } catch { /* ignore */ }
   }
 
   /** Mood courant — modulateur global. */
@@ -932,8 +959,9 @@ class AudioEngine {
     for (const layer of layers) {
       this.playSfxFile(layer.id, { gain: layer.gain, loop: layer.loop ?? true });
     }
-    // Duck la musique pour faire respirer la scène
-    this.duckMusic(0.5, 600);
+    // Duck la musique : attaque rapide (120 ms) pour qu'on sente le
+    // déclenchement de la scène ; release plus lent ailleurs.
+    this.duckMusic(0.5, 120);
   }
 
   endScene() {

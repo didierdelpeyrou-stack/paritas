@@ -31,8 +31,10 @@
     /** Si fourni, déclenche un discours TTS et ambiance « cérémonie ». */
     camp?: Camp;
     posture?: SpeechPosture;
+    /** Pour indexer la banque de discours par registre d'époque. */
+    eraId?: string;
   }
-  let { title, location, date, blurb, onSign, onSkip, camp, posture }: Props = $props();
+  let { title, location, date, blurb, onSign, onSkip, camp, posture, eraId }: Props = $props();
 
   let canvas: HTMLCanvasElement | null = $state(null);
   let ctx: CanvasRenderingContext2D | null = null;
@@ -68,6 +70,7 @@
         moment: 'signature',
         posture: posture ?? 'pragmatique',
         scenarioTitle: title,
+        eraId,
       });
       text.then((t) => { speechSubtitle = t; }).catch(() => {});
     }

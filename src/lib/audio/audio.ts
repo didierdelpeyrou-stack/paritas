@@ -324,12 +324,28 @@ class AudioEngine {
       return false;
     }
     this.fileAvailability[eraId] = true;
+    /* Charge le buffer via le callback onload du player plutôt que
+     * Tone.loaded() (qui résout parfois trop tôt entre deux loads
+     * consécutifs et fait que .start() joue avec un buffer vide). */
+    let next: Tone.Player;
     try {
-      const next = new Tone.Player(url).connect(this.musicGain!);
-      next.loop = true;
-      await Tone.loaded();
-      next.fadeIn = 1.4;
-      next.fadeOut = 1.0;
+      next = await new Promise<Tone.Player>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('timeout')), 8000);
+        const p: Tone.Player = new Tone.Player({
+          url,
+          loop: true,
+          fadeIn: 1.4,
+          fadeOut: 1.0,
+          onload: () => { clearTimeout(timer); resolve(p); },
+          onerror: () => { clearTimeout(timer); reject(new Error('decode')); },
+        });
+      });
+    } catch {
+      this.fileAvailability[eraId] = false;
+      return false;
+    }
+    try {
+      next.connect(this.musicGain!);
       next.start();
       if (this.filePlayer) {
         const old = this.filePlayer;
@@ -340,6 +356,7 @@ class AudioEngine {
       this.filePlayer = next;
       return true;
     } catch {
+      try { next.dispose(); } catch { /* ignore */ }
       this.fileAvailability[eraId] = false;
       return false;
     }
@@ -738,9 +755,24 @@ class AudioEngine {
         return null;
       }
       this.sfxFileAvailability[id] = true;
-      const player = new Tone.Player({ url, fadeIn: 0.05, fadeOut: 0.4 })
-        .connect(this.sfxGain!);
-      await Tone.loaded();
+    } catch {
+      this.sfxFileAvailability[id] = false;
+      return null;
+    }
+    try {
+      /* Idem hybrid loader d'ère : on attend onload pour éviter la
+       * race condition de Tone.loaded() entre plusieurs SFX files. */
+      const player = await new Promise<Tone.Player>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('timeout')), 8000);
+        const p: Tone.Player = new Tone.Player({
+          url,
+          fadeIn: 0.05,
+          fadeOut: 0.4,
+          onload: () => { clearTimeout(timer); resolve(p); },
+          onerror: () => { clearTimeout(timer); reject(new Error('decode')); },
+        });
+      });
+      player.connect(this.sfxGain!);
       this.sfxFilePlayers[id] = player;
       return player;
     } catch {

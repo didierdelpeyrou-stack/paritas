@@ -511,11 +511,22 @@
             >?</button>
             <button
               type="button"
-              class="sfx-toggle"
+              class="sfx-toggle gear-btn"
               onclick={() => (settingsOpen = true)}
-              aria-label="Options d'accessibilité"
-              title="Accessibilité (taille texte, contraste, daltonien)"
-            >⚙</button>
+              aria-label="Réglages"
+              title="Réglages (taille texte, contraste, daltonien, audio, style d'écriture)"
+            >
+              <svg
+                class="gear-icon"
+                viewBox="0 0 24 24"
+                width="14"
+                height="14"
+                aria-hidden="true"
+                fill="currentColor"
+              >
+                <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+              </svg>
+            </button>
           </div>
         </div>
         <EraTimeline currentTurn={s.turn} />
@@ -1019,5 +1030,38 @@
   .sfx-toggle:hover {
     border-color: rgba(244, 213, 139, 0.45);
     color: #f4d58b;
+  }
+
+  /* === Roue crantée des réglages === */
+  .gear-btn {
+    /* Le bouton garde la même taille mais doit centrer le SVG. */
+    padding: 0;
+  }
+
+  .gear-icon {
+    display: block;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: 50% 50%;
+  }
+
+  /* Au survol : rotation lente de 90°, comme iOS Réglages. */
+  .gear-btn:hover .gear-icon,
+  .gear-btn:focus-visible .gear-icon {
+    transform: rotate(90deg);
+  }
+
+  /* Au clic : tour complet rapide pour signaler l'action. */
+  .gear-btn:active .gear-icon {
+    transform: rotate(180deg);
+    transition-duration: 0.2s;
+  }
+
+  /* Respecte le toggle « animations réduites » de Settings. */
+  :global(html.a11y-reduced-motion) .gear-icon {
+    transition: none;
+  }
+  :global(html.a11y-reduced-motion) .gear-btn:hover .gear-icon,
+  :global(html.a11y-reduced-motion) .gear-btn:active .gear-icon {
+    transform: none;
   }
 </style>

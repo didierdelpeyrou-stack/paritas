@@ -50,27 +50,39 @@
     return 'rgba(237, 228, 201, 0.7)';
   }
 
-  /* Cohérence doctrinale avec le légendaire choisi : pour chaque trait
-     bonus du légendaire, on vérifie si le joueur a poussé ce trait. */
+  /* Cohérence doctrinale avec le légendaire choisi.
+     Référence : au démarrage, le joueur a appliqué les traitBonus
+     du légendaire (donc traits[trait] = bonus). La cohérence = 50%
+     « tu commences comme lui ». Elle monte si le joueur pousse les
+     traits signature, descend s'il pousse leurs antagonistes ou
+     dégrade les traits signature. */
   const legendary = $derived(gs.legendaryId ? legendaryById(gs.legendaryId) : undefined);
 
   const coherence = $derived.by<number | null>(() => {
     if (!legendary) return null;
     const bonusEntries = Object.entries(legendary.traitBonus) as Array<[PlayerTrait, number]>;
     if (bonusEntries.length === 0) return null;
-    let sum = 0;
-    let weightSum = 0;
+    let aligned = 0;
+    let opposed = 0;
     for (const [trait, weight] of bonusEntries) {
       const w = Math.max(1, weight);
-      const playerScore = traits[trait];
-      // 1 point joueur par point de bonus du légendaire = 100%
-      // Sigmoid-like cap pour ne pas dépasser
-      const ratio = Math.max(0, Math.min(1, playerScore / (w * 4)));
-      sum += ratio * w;
-      weightSum += w;
+      const initial = weight;
+      const current = traits[trait];
+      // Évolution depuis le départ
+      if (current > initial) aligned += (current - initial) * w;
+      if (current < initial) opposed += (initial - current) * w;
+      // Pousser l'antagoniste du trait signature pénalise aussi
+      const ant = (Object.entries(traits) as Array<[PlayerTrait, number]>)
+        .find(([k]) => k === antagonistOf(trait));
+      if (ant && ant[1] > 0) opposed += ant[1] * w * 0.6;
     }
-    return Math.round((sum / weightSum) * 100);
+    const score = 50 + aligned - opposed * 1.4;
+    return Math.max(0, Math.min(100, Math.round(score)));
   });
+
+  function antagonistOf(t: PlayerTrait): PlayerTrait {
+    return TRAIT_ANTAGONISTS[t];
+  }
 
   const dominantLabel = $derived(TRAIT_LABELS[dominant]);
   const dominantBlurb = $derived(TRAIT_BLURBS[dominant]);

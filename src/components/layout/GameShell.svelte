@@ -1,5 +1,9 @@
 <script lang="ts">
   import { rebirth } from '../../game/engine/gameState.svelte';
+  /* Lecture directe du slot actif depuis localStorage — la fonction
+     exportée par gameState n'est pas réactive donc on la recopie
+     localement. Le slot ne change que via SlotPicker, qui passe par
+     rebirth.reset() et un re-mount, donc cette lecture suffit. */
   function getActiveSlot(): 1 | 2 | 3 {
     try {
       const v = localStorage.getItem('paritas_active_slot');
@@ -199,17 +203,21 @@
 
   let ceremony = $state<CeremonyData | null>(null);
   let knownAccords = new Set<string>();
+  let ceremonyInit = false;
 
   $effect(() => {
     const s = rebirth.state;
     if (!s) {
       knownAccords = new Set();
+      ceremonyInit = false;
       return;
     }
     const all = new Set([...s.memory.signedMajorAccords, ...s.memory.builtInstitutions]);
-    if (knownAccords.size === 0) {
-      // Première lecture : on init sans déclencher
+    if (!ceremonyInit) {
+      // Première lecture : init sans déclencher (saves chargés ne
+      // doivent pas re-déclencher les cérémonies déjà passées).
       knownAccords = all;
+      ceremonyInit = true;
       return;
     }
     for (const accordId of all) {

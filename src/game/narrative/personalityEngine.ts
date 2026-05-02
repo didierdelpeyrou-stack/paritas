@@ -65,16 +65,22 @@ export const TRAIT_BLURBS: Record<PlayerTrait, string> = {
 };
 
 /* === Antagonismes de traits (style CK3) ===
- * Chaque trait a un antagoniste fort. Agir contre son trait dominant
- * (ou pousser son antagoniste) génère du stress de personnalité.
- * Aligné = renforce le trait dominant → soulage. */
+ * Chaque trait a un antagoniste fort, sur les 3 grandes oppositions
+ * politiques du paritarisme :
+ *   - rupture vs batisseur : rejet vs construction d'institutions
+ *   - tribun vs technocrate : parole publique vs maîtrise du dossier
+ *   - pragmatique vs paternaliste : négocier d'égal à égal vs imposer
+ *     d'en haut
+ *
+ * Agir contre son trait dominant (ou pousser son antagoniste) génère
+ * du stress de personnalité. Aligné = renforce le trait dominant. */
 export const TRAIT_ANTAGONISTS: Record<PlayerTrait, PlayerTrait> = {
-  rupture: 'pragmatique',     // tu ne peux pas être à la fois insurgé et négociateur
-  pragmatique: 'rupture',
-  tribun: 'technocrate',      // la rue contre le dossier
+  rupture: 'batisseur',
+  batisseur: 'rupture',
+  tribun: 'technocrate',
   technocrate: 'tribun',
-  batisseur: 'paternaliste',  // institutions partagées vs autorité descendante
-  paternaliste: 'batisseur'
+  pragmatique: 'paternaliste',
+  paternaliste: 'pragmatique'
 };
 
 /**

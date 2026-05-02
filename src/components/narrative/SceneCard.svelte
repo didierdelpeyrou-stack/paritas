@@ -13,6 +13,7 @@
   import HistoricalImage from '../HistoricalImage.svelte';
   import GlossaryText from '../GlossaryText.svelte';
   import { imageFor } from '../../game/content/historicalImages';
+  import { sfx } from '../../game/audio/sfx';
 
   interface Props {
     scenario: Scenario;
@@ -274,6 +275,7 @@
           disabled={locked}
           style="--accent: {style.accent}; --accent-soft: {style.accentSoft}; --accent-muted: {style.accentMuted};"
           onclick={() => onChoose(ch)}
+          onpointerdown={locked ? () => void sfx.play('lock') : undefined}
           in:fly={{ y: 8, duration: 240, delay: 60 + i * 40 }}
         >
           {#if coh === 'opposed' && !locked}

@@ -1,10 +1,21 @@
 /**
- * Façade SFX. Tone.js (≈ 50 KB gzip) est chargé paresseusement à la
+ * Façade SFX. Tone.js (≈ 240 KB / 62 KB gzip) est chargé paresseusement à la
  * première activation : tant que le joueur n'a pas activé le son,
- * aucun coût bundle. La préférence est persistée dans localStorage.
+ * aucun coût bundle. Les préférences sont persistées dans localStorage.
  *
- * Usage côté UI : sfx.play('click'), sfx.play('manifLaunch'), etc.
+ * Trois axes réactifs branchés sur la simulation :
+ *   - setEra(EraId) : change la palette historique (15 palettes)
+ *   - setMood(SceneMood) : module l'intensité (calme..tendu..grave...)
+ *   - setTrait(PlayerTrait) : colore le timbre (bois, brass, voix)
+ *
  * Tous les sons sont synthétisés (pas de fichier audio à embarquer).
+ *
+ * Usage côté UI :
+ *   sfx.play('click')                  — clic UI
+ *   sfx.play('signature')              — apparition cérémonie
+ *   sfx.play('ratify')                 — accord ratifié
+ *   sfx.playEndingTheme('refondation') — thème de fin
+ *   sfx.muteForCeremony()/unmute()     — silencieux pendant un pivot
  */
 
 const SFX_KEY = 'paritas_sfx_v1';
@@ -18,7 +29,22 @@ export type SfxName =
   | 'fanfare'
   | 'impact'
   | 'criticalAlert'
-  | 'pageTurn';
+  | 'pageTurn'
+  | 'signature'
+  | 'ratify'
+  | 'pipelineLaunch'
+  | 'electionWin'
+  | 'electionLose'
+  | 'interludeIn'
+  | 'lock';
+
+import type { EraId, SceneMood, PlayerTrait, EndingId } from '../types';
+import type {
+  AudioEraId,
+  AudioMood,
+  AudioTrait,
+  EndingThemeId
+} from '../../lib/audio/audio';
 
 interface AudioModule {
   audio: {
@@ -28,40 +54,35 @@ interface AudioModule {
     fanfare: () => Promise<void>;
     impact: () => Promise<void>;
     dice: () => Promise<void>;
+    signature: () => Promise<void>;
+    ratify: () => Promise<void>;
+    pipelineLaunch: () => Promise<void>;
+    electionWin: () => Promise<void>;
+    electionLose: () => Promise<void>;
+    interludeIn: () => Promise<void>;
+    lock: () => Promise<void>;
     setMusicEnabled: (on: boolean) => void;
-    startMusic: (eraId: number) => Promise<void>;
+    startMusic: (eraId?: AudioEraId) => Promise<void>;
     stopMusic: () => void;
+    setEra: (eraId: AudioEraId, opts?: { reducedMotion?: boolean }) => Promise<void>;
+    setMood: (mood: AudioMood, opts?: { reducedMotion?: boolean }) => Promise<void>;
+    setTrait: (trait: AudioTrait) => void;
+    fadeMusicTo: (factor: number, ms?: number) => void;
+    playEndingTheme: (id: EndingThemeId) => Promise<void>;
   };
 }
 
-import type { EraId } from '../types';
-
-/**
- * Mapping EraId → index dans ERA_SCALES de audio.ts (4 scales actuelles).
- * On reste large : on regroupe les époques par grande période.
- */
-const ERA_TO_AUDIO: Record<EraId, number> = {
-  revolution: 0,
-  xixe: 1,
-  belle_epoque: 2,
-  entre_deux_guerres: 2,
-  reconstruction: 3,
-  guerre_froide: 3,
-  trente_glorieuses: 3,
-  crise: 3,
-  mitterrand: 3,
-  cohabitations: 3,
-  sarkozy: 3,
-  hollande: 3,
-  macron_i: 3,
-  macron_ii: 3,
-  present: 3
-};
+/* EraId du jeu et AudioEraId du moteur partagent les 15 mêmes valeurs.
+ * On garde un identity pass plutôt qu'un mapping pour ne pas perdre
+ * d'info — chaque ère a sa palette dédiée. */
+const eraPass = (e: EraId): AudioEraId => e as AudioEraId;
 
 class SfxClient {
   private enabled = false;
   private musicEnabled = false;
   private currentEraId: EraId | null = null;
+  private currentMood: SceneMood | null = null;
+  private currentTrait: PlayerTrait | null = null;
   private modulePromise: Promise<AudioModule> | null = null;
   private listeners: Array<(enabled: boolean) => void> = [];
   private musicListeners: Array<(enabled: boolean) => void> = [];
@@ -132,7 +153,10 @@ class SfxClient {
     try {
       const mod = await this.load();
       mod.audio.setMusicEnabled(true);
-      const audioEra = this.currentEraId ? ERA_TO_AUDIO[this.currentEraId] : 0;
+      const audioEra = this.currentEraId ? eraPass(this.currentEraId) : 'revolution';
+      // Pousse mood & trait courants si déjà connus
+      if (this.currentMood) await mod.audio.setMood(this.currentMood as AudioMood);
+      if (this.currentTrait) mod.audio.setTrait(this.currentTrait as AudioTrait);
       await mod.audio.startMusic(audioEra);
     } catch {
       /* ignore */
@@ -144,7 +168,7 @@ class SfxClient {
   }
 
   /** À appeler quand l'ère in-game change. Si la musique est active, le
-   *  moteur switche vers la scale correspondante. */
+   *  moteur effectue un crossfade vers la nouvelle palette. */
   setEra(eraId: EraId): void {
     if (this.currentEraId === eraId) return;
     this.currentEraId = eraId;
@@ -152,11 +176,86 @@ class SfxClient {
     void (async () => {
       try {
         const mod = await this.load();
-        await mod.audio.startMusic(ERA_TO_AUDIO[eraId]);
+        await mod.audio.setEra(eraPass(eraId), { reducedMotion: this.reducedMotion() });
       } catch {
         /* ignore */
       }
     })();
+  }
+
+  /** Mood courant (calme/tendu/grave/euphorique/melancolique).
+   *  Branché à chaque scène — module l'ambiance sans changer la palette. */
+  setMood(mood: SceneMood): void {
+    if (this.currentMood === mood) return;
+    this.currentMood = mood;
+    if (!this.musicEnabled) return;
+    void (async () => {
+      try {
+        const mod = await this.load();
+        await mod.audio.setMood(mood as AudioMood, { reducedMotion: this.reducedMotion() });
+      } catch {
+        /* ignore */
+      }
+    })();
+  }
+
+  /** Trait dominant courant. Couleur de timbre subtile.
+   *  Pas de crossfade — appliqué au prochain step musical. */
+  setTrait(trait: PlayerTrait): void {
+    if (this.currentTrait === trait) return;
+    this.currentTrait = trait;
+    if (!this.musicEnabled) return;
+    void (async () => {
+      try {
+        const mod = await this.load();
+        mod.audio.setTrait(trait as AudioTrait);
+      } catch {
+        /* ignore */
+      }
+    })();
+  }
+
+  /** Coupe progressivement la musique pour un pivot solennel
+   *  (cérémonie de signature, ending). Le silence est aussi un outil. */
+  muteForPivot(): void {
+    if (!this.musicEnabled) return;
+    void (async () => {
+      try {
+        const mod = await this.load();
+        mod.audio.fadeMusicTo(0, 600);
+      } catch {
+        /* ignore */
+      }
+    })();
+  }
+
+  /** Reprise de la musique après un pivot. */
+  unmute(): void {
+    if (!this.musicEnabled) return;
+    void (async () => {
+      try {
+        const mod = await this.load();
+        mod.audio.fadeMusicTo(1, 800);
+      } catch {
+        /* ignore */
+      }
+    })();
+  }
+
+  /** Joue un thème d'ending (5 thèmes distincts ~6-8s). On coupe
+   *  d'abord la boucle ambient — le thème porte la fin tout seul. */
+  async playEndingTheme(id: EndingId): Promise<void> {
+    // Le thème respecte le toggle SFX. La musique d'ambient est coupée
+    // pour ne pas masquer le thème, indépendamment du toggle musique.
+    if (!this.enabled) return;
+    try {
+      const mod = await this.load();
+      try { mod.audio.stopMusic(); } catch { /* ignore */ }
+      try { mod.audio.fadeMusicTo(0, 200); } catch { /* ignore */ }
+      await mod.audio.playEndingTheme(id as EndingThemeId);
+    } catch {
+      /* ignore */
+    }
   }
 
   onMusicChange(listener: (enabled: boolean) => void): () => void {
@@ -173,6 +272,21 @@ class SfxClient {
       this.modulePromise = import('../../lib/audio/audio') as Promise<AudioModule>;
     }
     return this.modulePromise;
+  }
+
+  /** Lit la préférence a11y « animations réduites » pour raccourcir les
+   *  crossfades. Lecture best-effort, en cas d'absence on rend false. */
+  private reducedMotion(): boolean {
+    if (typeof document === 'undefined') return false;
+    try {
+      if (document.documentElement.classList.contains('a11y-reduced-motion')) return true;
+      if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+        return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      }
+    } catch {
+      /* ignore */
+    }
+    return false;
   }
 
   async play(name: SfxName): Promise<void> {
@@ -199,6 +313,27 @@ class SfxClient {
         case 'impact':
         case 'criticalAlert':
           await mod.audio.impact();
+          break;
+        case 'signature':
+          await mod.audio.signature();
+          break;
+        case 'ratify':
+          await mod.audio.ratify();
+          break;
+        case 'pipelineLaunch':
+          await mod.audio.pipelineLaunch();
+          break;
+        case 'electionWin':
+          await mod.audio.electionWin();
+          break;
+        case 'electionLose':
+          await mod.audio.electionLose();
+          break;
+        case 'interludeIn':
+          await mod.audio.interludeIn();
+          break;
+        case 'lock':
+          await mod.audio.lock();
           break;
       }
     } catch {

@@ -383,9 +383,85 @@
   }
 
   /* Quand l'ère du jeu change, informe le moteur audio pour que la
-     boucle ambient switche de scale. */
+     boucle ambient switche de palette via crossfade. */
   $effect(() => {
     if (era?.id) sfx.setEra(era.id);
+  });
+
+  /* Mood de la scène courante : module l'intensité musicale. */
+  $effect(() => {
+    if (scenario?.mood) sfx.setMood(scenario.mood);
+  });
+
+  /* Trait dominant : couleur de timbre. */
+  $effect(() => {
+    if (gameState?.dominantTrait) sfx.setTrait(gameState.dominantTrait);
+  });
+
+  /* Cérémonie de signature : on coupe l'ambient pendant le rituel,
+     on le reprend une fois la cérémonie close. Le silence porte le
+     poids dramatique (cf. SignatureCeremony Cialdini/engagement). */
+  let ceremonyMutedFlag = false;
+  $effect(() => {
+    if (ceremony && !ceremonyMutedFlag) {
+      sfx.muteForPivot();
+      void sfx.play('signature');
+      ceremonyMutedFlag = true;
+    } else if (!ceremony && ceremonyMutedFlag) {
+      sfx.unmute();
+      ceremonyMutedFlag = false;
+    }
+  });
+
+  /* Thème d'ending : déclenché une fois quand l'écran de fin apparaît. */
+  let endingThemePlayed = false;
+  $effect(() => {
+    if (ending && !endingThemePlayed) {
+      void sfx.playEndingTheme(ending.id);
+      endingThemePlayed = true;
+    }
+    if (!ending) endingThemePlayed = false;
+  });
+
+  /* Pipeline narratif : on joue un cue à l'apparition d'un nouveau
+     pipeline. On compare aux ids connus pour ne pas re-déclencher
+     sur load de save. */
+  let knownPipelineIds = new Set<string>();
+  let pipelineWatcherInit = false;
+  $effect(() => {
+    const pipelines = gameState?.activePipelines ?? [];
+    const currentIds = new Set(pipelines.map(p => p.id));
+    if (!pipelineWatcherInit) {
+      knownPipelineIds = currentIds;
+      pipelineWatcherInit = true;
+      return;
+    }
+    for (const id of currentIds) {
+      if (!knownPipelineIds.has(id)) {
+        void sfx.play('pipelineLaunch');
+        break; // un seul cue par tick suffit
+      }
+    }
+    knownPipelineIds = currentIds;
+  });
+
+  /* Élection interne : le résultat apparaît dans actionHistory[0]
+     ("Élection gagnée…" / "Élection perdue…"). On se déclenche une
+     fois sur le passage du marqueur. */
+  let lastElectionMarker = '';
+  let electionWatcherInit = false;
+  $effect(() => {
+    const head = gameState?.organization.actionHistory[0] ?? '';
+    if (!electionWatcherInit) {
+      lastElectionMarker = head;
+      electionWatcherInit = true;
+      return;
+    }
+    if (head !== lastElectionMarker && head.includes('Élection')) {
+      if (head.includes('gagnée')) void sfx.play('electionWin');
+      else if (head.includes('perdue')) void sfx.play('electionLose');
+    }
+    lastElectionMarker = head;
   });
 </script>
 

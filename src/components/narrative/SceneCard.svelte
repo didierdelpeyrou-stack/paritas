@@ -27,6 +27,74 @@
     return !!choice.requiresTrait && choice.requiresTrait !== dominantTrait;
   }
 
+  /* === UX-#3 : swipe-to-decide sur mobile ===
+     Gestes tactiles sur la liste des choix :
+       swipe gauche  → choix 0 (premier)
+       swipe haut    → choix 1 (deuxième)
+       swipe droite  → choix 2 (troisième)
+     Au-delà de 3 choix, le swipe est désactivé (impossible à mapper
+     proprement). Un overlay visuel indique le choix ciblé en temps
+     réel ; le tap normal continue de fonctionner pour ne pas casser
+     le clavier ni le clic souris. */
+  const SWIPE_THRESHOLD = 80; // px nécessaires pour confirmer
+  let swipeStartX = 0;
+  let swipeStartY = 0;
+  let swipeDX = $state(0);
+  let swipeDY = $state(0);
+  let swiping = $state(false);
+
+  const swipeable = $derived(scenario.choices.length === 3 || scenario.choices.length === 2);
+
+  const swipeTarget = $derived.by<number | null>(() => {
+    if (!swiping) return null;
+    const ax = Math.abs(swipeDX);
+    const ay = Math.abs(swipeDY);
+    if (ax < 30 && ay < 30) return null;
+    if (scenario.choices.length === 3) {
+      // gauche → 0, haut → 1, droite → 2
+      if (ay > ax && swipeDY < 0) return 1;
+      if (swipeDX < 0) return 0;
+      return 2;
+    }
+    if (scenario.choices.length === 2) {
+      if (swipeDX < 0) return 0;
+      return 1;
+    }
+    return null;
+  });
+
+  function onTouchStart(e: TouchEvent) {
+    if (!swipeable) return;
+    const t = e.touches[0];
+    if (!t) return;
+    swipeStartX = t.clientX;
+    swipeStartY = t.clientY;
+    swipeDX = 0;
+    swipeDY = 0;
+    swiping = true;
+  }
+
+  function onTouchMove(e: TouchEvent) {
+    if (!swiping) return;
+    const t = e.touches[0];
+    if (!t) return;
+    swipeDX = t.clientX - swipeStartX;
+    swipeDY = t.clientY - swipeStartY;
+  }
+
+  function onTouchEnd() {
+    if (!swiping) return;
+    const ax = Math.abs(swipeDX);
+    const ay = Math.abs(swipeDY);
+    const target = swipeTarget;
+    swiping = false;
+    if (target === null) return;
+    if (ax < SWIPE_THRESHOLD && ay < SWIPE_THRESHOLD) return;
+    const choice = scenario.choices[target];
+    if (!choice || isLocked(choice)) return;
+    onChoose(choice);
+  }
+
   const setupText = $derived(
     mode === 'reflechi' ? scenario.setup.reflechi : scenario.setup.compulsif
   );
@@ -86,7 +154,25 @@
     </div>
   {/if}
 
-  <ul class="space-y-2.5 mt-3" aria-label="Choix disponibles">
+  <ul
+    class="space-y-2.5 mt-3 choices-list"
+    aria-label="Choix disponibles"
+    ontouchstart={onTouchStart}
+    ontouchmove={onTouchMove}
+    ontouchend={onTouchEnd}
+    ontouchcancel={onTouchEnd}
+  >
+    {#if swipeable}
+      <div class="swipe-hint" aria-hidden="true">
+        <span class="hint-text">
+          {#if scenario.choices.length === 3}
+            ← • ↑ • → · glisse pour choisir
+          {:else}
+            ← • → · glisse pour choisir
+          {/if}
+        </span>
+      </div>
+    {/if}
     {#each scenario.choices as ch, i}
       {@const posture = derivePosture(ch)}
       {@const style = POSTURE_STYLES[posture]}
@@ -98,6 +184,7 @@
           class="choice-btn"
           data-posture={posture}
           data-locked={locked}
+          data-swipe-target={swipeTarget === i}
           disabled={locked}
           style="--accent: {style.accent}; --accent-soft: {style.accentSoft}; --accent-muted: {style.accentMuted};"
           onclick={() => onChoose(ch)}
@@ -164,6 +251,40 @@
     transform: translateX(2px);
     box-shadow: -2px 0 0 0 var(--accent);
     outline: none;
+  }
+
+  /* === UX-#3 — visual feedback du swipe ===
+     Pendant le glissement, la carte ciblée prend la couleur d'accent
+     pleine et un halo plus ample. Animation lissée. */
+  .choice-btn[data-swipe-target='true'] {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    transform: scale(1.02);
+    box-shadow: 0 0 0 2px var(--accent), 0 0 18px 4px color-mix(in srgb, var(--accent) 35%, transparent);
+  }
+
+  .choices-list {
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: pan-y; /* permet swipe vertical mais nous capturons quand même */
+  }
+
+  .swipe-hint {
+    display: none;
+    text-align: center;
+    color: rgba(244, 213, 139, 0.45);
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.4rem;
+  }
+
+  /* On affiche l'indication seulement sur écrans tactiles. */
+  @media (hover: none) and (pointer: coarse) {
+    .swipe-hint {
+      display: block;
+    }
   }
 
   .choice-btn[data-posture='rupture']:hover {

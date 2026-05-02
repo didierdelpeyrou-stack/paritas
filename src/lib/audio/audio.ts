@@ -228,12 +228,17 @@ class AudioEngine {
   private step = 0;
 
   // Gains
-  private musicGain?: Tone.Gain;
+  private musicGain?: Tone.Gain;          // synth générative (post-reverb)
+  private fileGain?: Tone.Gain;           // musique fichier (Pixabay/DP, déjà mastered)
   private sfxGain?: Tone.Gain;
-  private musicVol = 0.045; // baissé : c'est de l'ambient, pas du premier plan
+  private musicVol = 0.045;               // synth ambient, fond
+  private fileVol = 0.55;                 // fichier mastered -14 LUFS, doit ressortir
   private sfxVol = 0.42;
   private musicReverb?: Tone.Reverb;
   private musicFilter?: Tone.Filter;
+  /** Multiplicateurs de duck (1 = pas de duck, 0.4 = -8dB env). */
+  private musicDuckFactor = 1;
+  private sfxDuckFactor = 1;
 
   /* ================= init =================
      Refonte mai 2026 : la musique générative paraissait sèche et
@@ -250,6 +255,10 @@ class AudioEngine {
     this.musicGain = new Tone.Gain(this.musicVol).toDestination();
     this.musicReverb = new Tone.Reverb({ decay: 4, wet: 0.45 }).connect(this.musicGain);
     this.musicFilter = new Tone.Filter({ frequency: 2400, type: 'lowpass', rolloff: -12 }).connect(this.musicReverb);
+    /* fileGain est séparé : la musique fichier est déjà mastered à
+       -14 LUFS, elle ne doit PAS passer par reverb+filter (ça la
+       noie) ni par le gain ultra-bas du synth ambient. */
+    this.fileGain = new Tone.Gain(this.fileVol).toDestination();
     this.sfxGain = new Tone.Gain(this.sfxVol).toDestination();
 
     /* Bass : triangle doux, attaque allongée, release long. */
@@ -345,7 +354,7 @@ class AudioEngine {
       return false;
     }
     try {
-      next.connect(this.musicGain!);
+      next.connect(this.fileGain!);
       next.start();
       if (this.filePlayer) {
         const old = this.filePlayer;
@@ -476,27 +485,69 @@ class AudioEngine {
 
   setSfxVolume(v: number) {
     this.sfxVol = v;
-    if (this.sfxGain) this.sfxGain.gain.value = v;
+    this.applyAllGains(0);
+  }
+
+  setFileVolume(v: number) {
+    this.fileVol = v;
+    this.applyAllGains(0);
   }
 
   /** Coupure progressive (cérémonies, interlude solennel).
    *  factor = 0 → coupé. factor = 1 → plein volume. */
   fadeMusicTo(factor: number, ms = 600) {
     this.muteFactor = factor;
-    if (!this.musicGain) return;
-    try {
-      this.musicGain.gain.rampTo(this.targetMusicGain(), ms / 1000);
-    } catch {
-      this.musicGain.gain.value = this.targetMusicGain();
-    }
+    this.applyAllGains(ms);
   }
 
   private targetMusicGain(): number {
-    return this.isMusicOn ? this.musicVol * this.muteFactor : 0;
+    return this.isMusicOn ? this.musicVol * this.muteFactor * this.musicDuckFactor : 0;
+  }
+
+  private targetFileGain(): number {
+    return this.isMusicOn ? this.fileVol * this.muteFactor * this.musicDuckFactor : 0;
+  }
+
+  private targetSfxGain(): number {
+    return this.sfxVol * this.sfxDuckFactor;
   }
 
   private applyMusicGain() {
-    if (this.musicGain) this.musicGain.gain.value = this.targetMusicGain();
+    this.applyAllGains(0);
+  }
+
+  /** Applique les 3 gains avec ramp uniforme.
+   *  ms = 0 → application instantanée (init/setVolume). */
+  private applyAllGains(ms: number) {
+    const tg = (g: Tone.Gain | undefined, target: number) => {
+      if (!g) return;
+      if (ms <= 0) { g.gain.value = target; return; }
+      try { g.gain.rampTo(target, ms / 1000); }
+      catch { g.gain.value = target; }
+    };
+    tg(this.musicGain, this.targetMusicGain());
+    tg(this.fileGain, this.targetFileGain());
+    tg(this.sfxGain, this.targetSfxGain());
+  }
+
+  /* ================= Ducking (side-chain pro) =================
+     Quand une scène SFX joue (foule, manif, meeting), la musique
+     doit baisser de 6 dB (~0.5x) pour laisser la couche d'ambiance
+     respirer. Quand le TTS parle par-dessus, on duck encore plus
+     (-12 dB ~0.25x), puis on rétablit en fin de discours. */
+
+  /** Duck la musique à `factor` (0 < factor ≤ 1) avec un fade de `ms`.
+   *  factor=0.5 ≈ -6 dB. factor=0.25 ≈ -12 dB. factor=1 = restore. */
+  duckMusic(factor: number, ms = 350) {
+    this.musicDuckFactor = Math.max(0, Math.min(1, factor));
+    this.applyAllGains(ms);
+  }
+
+  /** Duck les SFX (utile quand le TTS parle pour que les chuchotements
+   *  ne masquent pas le discours). */
+  duckSfx(factor: number, ms = 250) {
+    this.sfxDuckFactor = Math.max(0, Math.min(1, factor));
+    this.applyAllGains(ms);
   }
 
   /* ================= changements réactifs ================= */
@@ -526,7 +577,9 @@ class AudioEngine {
     this.currentTrait = trait;
   }
 
-  /** Helper interne : ramp down → restart → ramp up. */
+  /** Helper interne : ramp down → restart → ramp up.
+   *  Synchrone sur musicGain ET fileGain (sinon le file player garde
+   *  son volume pendant la transition d'ère). */
   private async crossfadeRestart(ms: number) {
     if (!this.musicGain) {
       await this.startMusic();
@@ -535,13 +588,16 @@ class AudioEngine {
     const half = ms / 2 / 1000;
     try {
       this.musicGain.gain.rampTo(0, half);
+      this.fileGain?.gain.rampTo(0, half);
     } catch { /* ignore */ }
     await new Promise(res => setTimeout(res, ms / 2));
     await this.startMusic();
     try {
       this.musicGain.gain.rampTo(this.targetMusicGain(), half);
+      this.fileGain?.gain.rampTo(this.targetFileGain(), half);
     } catch {
       this.musicGain.gain.value = this.targetMusicGain();
+      if (this.fileGain) this.fileGain.gain.value = this.targetFileGain();
     }
   }
 
@@ -782,17 +838,26 @@ class AudioEngine {
   }
 
   /** Joue un SFX fichier en one-shot. Idempotent : un nouveau déclenchement
-   *  pendant que le précédent joue le coupe et le redémarre. */
-  async playSfxFile(id: SfxFileId, opts?: { gain?: number; loop?: boolean }) {
+   *  pendant que le précédent joue le coupe et le redémarre.
+   *
+   *  Sur les one-shots (pas en loop), on applique une micro-variation :
+   *  pitch ±5 % (~80 cents) + gain ±2 dB. Évite l'effet « robot » des
+   *  applaudissements qui sonnent à l'identique 10 fois d'affilée. */
+  async playSfxFile(id: SfxFileId, opts?: { gain?: number; loop?: boolean; vary?: boolean }) {
     if (this.sfxVol <= 0) return;
     await this.init();
     const player = await this.loadSfxFile(id);
     if (!player) return;
+    const isLoop = opts?.loop ?? false;
+    const vary = opts?.vary ?? !isLoop; // par défaut on varie les one-shots
     try {
       if (player.state === 'started') player.stop();
-      const g = opts?.gain ?? 1;
-      player.volume.value = Tone.gainToDb(g);
-      player.loop = opts?.loop ?? false;
+      const baseGain = opts?.gain ?? 1;
+      const gainVar = vary ? (1 + (Math.random() - 0.5) * 0.45) : 1;
+      const pitchVar = vary ? (1 + (Math.random() - 0.5) * 0.10) : 1;
+      player.volume.value = Tone.gainToDb(baseGain * gainVar);
+      player.playbackRate = pitchVar;
+      player.loop = isLoop;
       player.start();
     } catch { /* ignore */ }
   }
@@ -811,17 +876,22 @@ class AudioEngine {
 
   /** Active la couche d'ambiance sonore d'une scène politique.
    *  Boucle la foule appropriée par-dessus la musique d'ère.
-   *  Appeler `endScene()` pour couper. */
+   *  Appeler `endScene()` pour couper.
+   *
+   *  Side-chain ducking : la musique baisse de ~6 dB pour laisser
+   *  la couche d'ambiance respirer (technique standard du sound
+   *  design de jeu — diff entre amateur et pro). */
   async beginScene(scene: SceneAudioId) {
     if (this.sfxVol <= 0) return;
     await this.init();
-    // Coupe une scène précédente si présente
     this.endScene();
     this.activeScene = scene;
     const layers = SCENE_LAYERS[scene];
     for (const layer of layers) {
       this.playSfxFile(layer.id, { gain: layer.gain, loop: layer.loop ?? true });
     }
+    // Duck la musique pour faire respirer la scène
+    this.duckMusic(0.5, 600);
   }
 
   endScene() {
@@ -831,6 +901,8 @@ class AudioEngine {
       if (layer.loop ?? true) this.stopSfxFile(layer.id);
     }
     this.activeScene = undefined;
+    // Restitue la musique
+    this.duckMusic(1, 800);
   }
 
   private activeScene?: SceneAudioId;

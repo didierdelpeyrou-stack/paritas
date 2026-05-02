@@ -74,6 +74,8 @@ interface AudioModule {
     endScene: () => void;
     ovation: (intensity?: 'soft' | 'strong') => Promise<void>;
     sceneSignaturePaper: () => Promise<void>;
+    duckMusic: (factor: number, ms?: number) => void;
+    duckSfx: (factor: number, ms?: number) => void;
   };
 }
 
@@ -306,6 +308,22 @@ class SfxClient {
     try {
       const mod = await this.load();
       await mod.audio.sceneSignaturePaper();
+    } catch { /* ignore */ }
+  }
+
+  /** Side-chain duck — utilisé par les composants qui parlent
+   *  (TTS) ou affichent une scène intense. factor 1=plein, 0.5≈-6dB. */
+  async duckMusic(factor: number, ms = 350): Promise<void> {
+    try {
+      const mod = await this.load();
+      mod.audio.duckMusic(factor, ms);
+    } catch { /* ignore */ }
+  }
+
+  async duckSfx(factor: number, ms = 250): Promise<void> {
+    try {
+      const mod = await this.load();
+      mod.audio.duckSfx(factor, ms);
     } catch { /* ignore */ }
   }
 

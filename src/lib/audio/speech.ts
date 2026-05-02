@@ -145,20 +145,22 @@ export interface SpeakOptions {
   volume?: number;
   /** Si true, attend que le discours soit fini avant de résoudre. */
   await?: boolean;
+  /** Callback exécuté à la fin (succès ou erreur), pour unduck etc. */
+  onEnd?: () => void;
 }
 
 /** Lit le texte avec la voix française disponible. Retourne false si
  *  aucune voix dispo (l'appelant peut alors afficher en sous-titré). */
 export async function speakText(text: string, opts: SpeakOptions = {}): Promise<boolean> {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return false;
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+    opts.onEnd?.();
+    return false;
+  }
   const voice = pickFrenchVoice();
   if (!voice) {
-    // Réessaye après le prochain frame, parfois la liste arrive juste
-    // après l'ouverture de la fenêtre.
     await new Promise((r) => setTimeout(r, 200));
-    if (!pickFrenchVoice()) return false;
+    if (!pickFrenchVoice()) { opts.onEnd?.(); return false; }
   }
-  // Coupe un éventuel discours précédent
   try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
 
   const utt = new SpeechSynthesisUtterance(text);
@@ -168,30 +170,44 @@ export async function speakText(text: string, opts: SpeakOptions = {}): Promise<
   utt.pitch = opts.pitch ?? 1.0;
   utt.volume = opts.volume ?? 0.85;
 
+  let onEndFired = false;
+  const fireEnd = () => { if (!onEndFired) { onEndFired = true; opts.onEnd?.(); } };
+
   if (opts.await) {
     return new Promise<boolean>((resolve) => {
-      utt.onend = () => resolve(true);
-      utt.onerror = () => resolve(false);
+      utt.onend = () => { fireEnd(); resolve(true); };
+      utt.onerror = () => { fireEnd(); resolve(false); };
       try { window.speechSynthesis.speak(utt); }
-      catch { resolve(false); }
+      catch { fireEnd(); resolve(false); }
     });
   }
-  try { window.speechSynthesis.speak(utt); } catch { return false; }
+  utt.onend = fireEnd;
+  utt.onerror = fireEnd;
+  try { window.speechSynthesis.speak(utt); }
+  catch { fireEnd(); return false; }
   return true;
 }
 
-/** Coupe immédiatement tout discours en cours. */
+/** Coupe immédiatement tout discours en cours et restaure les volumes. */
 export function stopSpeech() {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
   try { window.speechSynthesis.cancel(); } catch { /* ignore */ }
+  // Sécurité : restaure la musique au cas où l'unduck onEnd ne tirerait
+  // pas (Safari avale parfois l'event onend après cancel()).
+  import('../../game/audio/sfx').then((m) => {
+    m.sfx.duckMusic(1, 400);
+    m.sfx.duckSfx(1, 300);
+  }).catch(() => { /* ignore */ });
 }
 
 /** Pioche un texte + le lit. Renvoie le texte pour affichage en
- *  sous-titré (peak-end : si la voix est coupée, le texte reste). */
+ *  sous-titré (peak-end : si la voix est coupée, le texte reste).
+ *
+ *  Side-chain ducking : pendant la lecture, la musique baisse à 25 %
+ *  (-12 dB env) et les SFX à 35 %. Au end de l'utterance, on rétablit. */
 export async function deliverSpeech(req: SpeechRequest, opts: SpeakOptions = {}): Promise<string> {
   const text = pickSpeechText(req);
   if (text) {
-    // Pitch léger selon posture
     const pitchByPosture: Record<SpeechPosture, number> = {
       rupture: 1.05,
       tribun: 1.10,
@@ -200,7 +216,24 @@ export async function deliverSpeech(req: SpeechRequest, opts: SpeakOptions = {})
       paternaliste: 0.98,
       batisseur: 1.0,
     };
-    speakText(text, { ...opts, pitch: opts.pitch ?? pitchByPosture[req.posture] }).catch(() => {});
+    /* Duck dynamique. Lazy-loadé pour ne pas créer une dép circulaire
+     * speech.ts → sfx.ts → audio.ts → speech.ts. */
+    let unduck: (() => void) | null = null;
+    try {
+      const sfxMod = await import('../../game/audio/sfx');
+      sfxMod.sfx.duckMusic(0.25, 250);
+      sfxMod.sfx.duckSfx(0.35, 250);
+      unduck = () => {
+        sfxMod.sfx.duckMusic(1, 600);
+        sfxMod.sfx.duckSfx(1, 400);
+      };
+    } catch { /* ignore */ }
+
+    speakText(text, {
+      ...opts,
+      pitch: opts.pitch ?? pitchByPosture[req.posture],
+      onEnd: unduck ?? undefined,
+    }).catch(() => { unduck?.(); });
   }
   return text;
 }

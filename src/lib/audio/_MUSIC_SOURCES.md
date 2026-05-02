@@ -1,140 +1,241 @@
-# Musique de Paritas — sources libres de droit
+# Musique de Paritas — liste complète avec liens de téléchargement
 
 État au 2 mai 2026 : la musique est **entièrement générative** (Tone.js).
 Adoucie en mai 2026 (reverb, filtre, brass FM, voix sans dissonance).
-Si tu veux remplacer par de la musique réelle, voici les sources et
-la méthode.
+Loader hybride en place : si un fichier existe dans
+`public/audio/eras/{eraId}.mp3`, il prend le relais automatiquement.
 
-## Plateformes recommandées (pour Paritas)
+**Contrat technique** :
+- Format : MP3 ou OGG, mono ou stéréo
+- Durée : **30-60 s loop-friendly** (s'enchaîne sans coupure visible)
+- Poids cible : **≤ 300 KB** par fichier (96 kbps suffit pour de l'ambient)
+- Nommage : `revolution.mp3`, `xixe.mp3`, etc. — voir tableau ci-dessous
+- Volume : ne pas normaliser à -1 dB (la chaîne audio applique sa
+  propre courbe). -14 LUFS est idéal.
 
-| Source | Licence | Fort | Faible |
+---
+
+## Vérification systématique avant de poser un fichier
+
+1. La licence couvre-t-elle un usage en jeu vidéo gratuit en ligne ?
+2. Si CC-BY : tu dois afficher l'attribution dans Settings → Crédits.
+3. Convertir au besoin via [`ffmpeg`](https://ffmpeg.org) :
+   ```
+   ffmpeg -i source.flac -ar 44100 -ac 2 -b:a 96k -af "loudnorm=I=-14" out.mp3
+   ```
+
+---
+
+## Tableau complet des 15 ères
+
+### 1. `revolution.mp3` — Révolution (1789-1799)
+
+| Œuvre | Compositeur | Licence | Lien |
 |---|---|---|---|
-| **Free Music Archive** (freemusicarchive.org) | CC variées | Très large catalogue, classique/folk | Filtrer par licence (CC0 / CC-BY) |
-| **Pixabay Music** (pixabay.com/music) | Pixabay (gratuit, sans attribution) | Recherche par mood, no-stress | Catalogue moins historique |
-| **Incompetech** (incompetech.com) | CC-BY 4.0 (Kevin MacLeod) | Excellents motifs ambient, classique | Attribution obligatoire |
-| **MusOpen** (musopen.org) | Domaine public | Enregistrements classiques d'œuvres tombées dans le DP | Format flac/mp3 lourd |
-| **Bibliothèque nationale de France — Gallica** | DP | Enregistrements anciens (1900-1955) | Qualité variable |
-| **archive.org/details/audio** | DP / CC | Discours historiques, chansons d'époque | Tri à faire |
+| **La Marseillaise** (instrumental) | Rouget de Lisle, 1792 | DP | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:La_Marseillaise.ogg) |
+| **Ah ! Ça ira** | Anonyme, 1790 | DP | [Wikimedia](https://commons.wikimedia.org/wiki/Category:Ça_ira) (chercher fichier audio) |
+| **La Carmagnole** | Anonyme, 1792 | DP | [Wikimedia](https://commons.wikimedia.org/wiki/File:La_Carmagnole.ogg) |
+| Backup ambient | Pixabay « revolution period » | Pixabay (libre) | [search](https://pixabay.com/music/search/revolution%20period/) |
 
-## Suggestions par ère
+### 2. `xixe.mp3` — XIXe industriel (1800-1900)
 
-### Révolution (1789-1799)
+| Œuvre | Compositeur | Licence | Lien |
+|---|---|---|---|
+| **Le Chant des canuts** | Bruant, 1894 | DP | [Wikimedia search](https://commons.wikimedia.org/w/index.php?search=chant+des+canuts) |
+| **Symphonie fantastique** (mvt I, extrait) | Berlioz, 1830 | DP | [MusOpen](https://musopen.org/music/4023-symphonie-fantastique-op-14/) |
+| **Préludes op. 28** (n°4) | Chopin, 1839 | DP | [MusOpen](https://musopen.org/music/103-24-preludes-op-28/) |
+| Backup industriel | Pixabay « steam factory » | Pixabay | [search](https://pixabay.com/music/search/steam%20factory/) |
 
-- **Ah ! Ça ira** (1790) — chant révolutionnaire, domaine public.
-  Trouvable sur Gallica BNF.
-- **La Marseillaise** (1792, Rouget de Lisle) — DP. Version
-  instrumentale courte.
-- **Carmagnole** (1792) — chant DP.
+### 3. `belle_epoque.mp3` — Belle Époque (1900-1914)
 
-### XIXe industriel (1800-1900)
+| Œuvre | Compositeur | Licence | Lien |
+|---|---|---|---|
+| **Gymnopédie n°1** | Satie, 1888 | DP | [MusOpen](https://musopen.org/music/3856-3-gymnopedies/) |
+| **Pavane pour une infante défunte** | Ravel, 1899 | DP | [MusOpen](https://musopen.org/music/3019-pavane-pour-une-infante-defunte/) |
+| **Préludes Livre I** (extraits) | Debussy, 1909-1910 | DP | [MusOpen](https://musopen.org/music/2155-preludes-livre-i/) |
+| **Le Temps des cerises** | Renard/Clément, 1866 | DP | [Wikimedia search](https://commons.wikimedia.org/w/index.php?search=temps+des+cerises) |
 
-- **Le Chant des canuts** (1894, Aristide Bruant) — DP.
-- **L'Internationale** (1888, Pottier/Degeyter) — DP en France
-  depuis 2017 (Degeyter mort 1932 + 70 ans).
-- Berlioz, Symphonie fantastique (1830) — DP.
-- Chopin, Préludes (1839) — DP.
+### 4. `entre_deux_guerres.mp3` — Entre-deux-guerres (1919-1939)
 
-### Belle Époque (1900-1914)
+| Œuvre | Compositeur | Licence | Lien |
+|---|---|---|---|
+| **Boléro** (extrait court) | Ravel, 1928 | DP en France 2018+ | [MusOpen](https://musopen.org/music/2547-bolero-orchestral/) |
+| **L'Internationale** (orchestrale) | Pottier/Degeyter, 1888 | DP en France 2003+ | [Wikimedia](https://commons.wikimedia.org/wiki/File:Internationale-fr.ogg) |
+| Jazz années 1920 (instrumental) | Various | DP US (1928 et avant) | [archive.org 78rpm](https://archive.org/details/78rpm) — filtrer par décennie |
+| Backup ambient | Pixabay « 1930s ambient » | Pixabay | [search](https://pixabay.com/music/search/1930s/) |
 
-- **Le Temps des cerises** (1866 mais popularisé 1900) — DP.
-- Debussy, Préludes (1909-1913) — DP.
-- Ravel, Pavane pour une infante défunte (1899) — DP.
-- Satie, Gymnopédies (1888) — DP.
+### 5. `reconstruction.mp3` — Reconstruction (1944-1947)
 
-### Entre-deux-guerres (1919-1939)
+| Œuvre | Compositeur | Licence | Lien |
+|---|---|---|---|
+| **Le Chant des partisans** (instrumental) | Marly, 1943 | DP en France | [Wikimedia search](https://commons.wikimedia.org/w/index.php?search=chant+des+partisans) |
+| Marches de la Libération (DP) | Various 1944-45 | DP | [Gallica BNF](https://gallica.bnf.fr/services/engine/search/sru?operation=searchRetrieve&query=%28dc.subject%20all%20%22Libération%20de%20la%20France%22%29%20and%20dc.type%20all%20%22sonore%22) |
+| Backup orchestral années 40 | Pixabay « 1940s orchestral » | Pixabay | [search](https://pixabay.com/music/search/1940s/) |
 
-- **L'Internationale** version Front Populaire (1936) — Gallica.
-- Jazz début XXe — Free Music Archive section « 1920s ».
-- Maurice Chevalier (refrains 1930) — vérifier DP (mort 1972 + 70 ans).
+### 6. `guerre_froide.mp3` — Guerre froide (1947-1958)
 
-### Reconstruction (1944-1947)
+| Œuvre | Compositeur | Licence | Lien |
+|---|---|---|---|
+| Crooner instrumental années 50 | Various DP US | DP | [archive.org 78rpm 1950s](https://archive.org/search?query=date%3A%5B1948-01-01+TO+1958-12-31%5D+collection%3A78rpm) |
+| Variété française d'après-guerre | Domaine public à vérifier | DP/CC | [Gallica](https://gallica.bnf.fr/) (recherche audio 1947-1958) |
+| Backup tension froide | Pixabay « tense cold war » | Pixabay | [search](https://pixabay.com/music/search/cold%20war/) |
 
-- **Le Chant des partisans** (1943, Anna Marly) — DP en France.
-- Charles Trenet (popularité d'époque, mais ND récente).
+### 7. `trente_glorieuses.mp3` — Trente Glorieuses (1958-1973)
 
-### Trente Glorieuses (1958-1973)
+| Œuvre | Source | Licence | Lien |
+|---|---|---|---|
+| Backup yéyé instrumental | Pixabay « 60s pop » | Pixabay | [search](https://pixabay.com/music/search/60s/) |
+| Backup happy retro | Pixabay « happy retro » | Pixabay | [search](https://pixabay.com/music/search/happy%20retro/) |
+| Free Music Archive « Sixties » | FMA divers | CC | [browse](https://freemusicarchive.org/genre/Surf/) |
 
-- Music Of France public domain : difficile, beaucoup d'œuvres sous
-  copyright actif. Privilégier de l'instrumental Pixabay style yéyé.
+*La plupart de la variété française des Trente Glorieuses est encore
+sous copyright. Privilégier de l'instrumental Pixabay/FMA en style
+yéyé/twist/folk.*
 
-### Crise et au-delà (1973+)
+### 8. `crise.mp3` — Crise pétrolière (1973-1981)
 
-- Pixabay « 80s synth », « ambient industrial », « lo-fi ».
-- Incompetech catégorie « Modern ».
+| Œuvre | Source | Licence | Lien |
+|---|---|---|---|
+| Backup synthwave sombre | Pixabay « dark synthwave » | Pixabay | [search](https://pixabay.com/music/search/dark%20synth/) |
+| Ambient industriel années 70 | Pixabay « industrial 70s » | Pixabay | [search](https://pixabay.com/music/search/industrial%2070s/) |
+| Incompetech « Industrial » | Kevin MacLeod | CC-BY | [browse](https://incompetech.com/music/royalty-free/index.html?keywords=industrial) |
 
-## Comment intégrer les fichiers audio
+### 9. `mitterrand.mp3` — Mitterrand (1981-1995)
 
-Si tu décides de remplacer la musique générative par de vrais
-fichiers, voici l'architecture proposée (non encore implémentée) :
+| Œuvre | Source | Licence | Lien |
+|---|---|---|---|
+| Backup new wave instrumental | Pixabay « new wave » | Pixabay | [search](https://pixabay.com/music/search/new%20wave/) |
+| Backup synthpop années 80 | Pixabay « 80s synthpop » | Pixabay | [search](https://pixabay.com/music/search/80s%20synthpop/) |
+| Incompetech « 80s » | Kevin MacLeod | CC-BY | [browse](https://incompetech.com/music/royalty-free/index.html?keywords=80s) |
 
-### 1. Stockage
+### 10. `cohabitations.mp3` — Cohabitations (1995-2007)
 
-Place les fichiers dans `public/audio/eras/` :
+| Œuvre | Source | Licence | Lien |
+|---|---|---|---|
+| Backup downtempo / trip-hop | Pixabay « downtempo » | Pixabay | [search](https://pixabay.com/music/search/downtempo/) |
+| Backup ambient 90s | Pixabay « 90s ambient » | Pixabay | [search](https://pixabay.com/music/search/90s%20ambient/) |
+| FMA Electronic | Various | CC | [browse](https://freemusicarchive.org/genre/Electronic/) |
+
+### 11. `sarkozy.mp3` — Sarkozy (2007-2012)
+
+| Œuvre | Source | Licence | Lien |
+|---|---|---|---|
+| Backup indie pop instrumental | Pixabay « indie pop » | Pixabay | [search](https://pixabay.com/music/search/indie%20pop/) |
+| Backup électro tendue | Pixabay « tense electronic » | Pixabay | [search](https://pixabay.com/music/search/tense%20electronic/) |
+
+### 12. `hollande.mp3` — Hollande (2012-2017)
+
+| Œuvre | Source | Licence | Lien |
+|---|---|---|---|
+| Backup ambient contemporain | Pixabay « ambient contemporary » | Pixabay | [search](https://pixabay.com/music/search/ambient%20contemporary/) |
+| Backup hip-hop instrumental | Pixabay « hip hop instrumental » | Pixabay | [search](https://pixabay.com/music/search/hip%20hop%20instrumental/) |
+
+### 13. `macron_i.mp3` — Macron I (2017-2022)
+
+| Œuvre | Source | Licence | Lien |
+|---|---|---|---|
+| Backup électro minimaliste | Pixabay « minimal electronic » | Pixabay | [search](https://pixabay.com/music/search/minimal%20electronic/) |
+| Backup tension moderne | Pixabay « modern tension » | Pixabay | [search](https://pixabay.com/music/search/modern%20tension/) |
+
+### 14. `macron_ii.mp3` — Macron II (2022-2026)
+
+| Œuvre | Source | Licence | Lien |
+|---|---|---|---|
+| Backup sombre minimal | Pixabay « dark minimal » | Pixabay | [search](https://pixabay.com/music/search/dark%20minimal/) |
+| Backup tension politique | Pixabay « political » | Pixabay | [search](https://pixabay.com/music/search/political/) |
+
+### 15. `present.mp3` — Présent (2026 →)
+
+| Œuvre | Source | Licence | Lien |
+|---|---|---|---|
+| Backup futuriste sobre | Pixabay « futuristic ambient » | Pixabay | [search](https://pixabay.com/music/search/futuristic/) |
+| Backup IA cinematic | Pixabay « ai cinematic » | Pixabay | [search](https://pixabay.com/music/search/ai%20cinematic/) |
+
+---
+
+## Procédure de pose
+
+### Option A — Pixabay (le plus rapide, 1 h pour tout)
+
+1. Va sur [Pixabay Music](https://pixabay.com/music/).
+2. Pour chaque ère, suis le lien de recherche ci-dessus.
+3. Filtre **Durée : 30 s à 1 min** (sidebar gauche).
+4. Écoute, choisis 1 piste qui te plaît.
+5. Bouton « Télécharger » (gratuit, pas de compte).
+6. Renomme en `{eraId}.mp3` selon le tableau.
+7. Place dans `public/audio/eras/`.
+
+**Pas d'attribution requise** sur Pixabay (depuis 2019). Mais
+recommandé si tu veux soutenir l'artiste.
+
+### Option B — Wikimedia Commons + IMSLP (DP authentique)
+
+Pour les ères 1-5 (1789-1947), privilégie le domaine public :
+
+1. Va sur le lien Wikimedia/MusOpen indiqué.
+2. Télécharge le fichier (souvent .ogg ou .flac).
+3. Convertis en MP3 court loop-friendly :
+   ```bash
+   # extrait 40 s en boucle propre
+   ffmpeg -i source.ogg -ss 0:30 -t 40 -ar 44100 -b:a 96k \
+     -af "loudnorm=I=-14:LRA=7,afade=t=in:st=0:d=2,afade=t=out:st=38:d=2" \
+     revolution.mp3
+   ```
+4. Place dans `public/audio/eras/`.
+
+### Option C — Mix DP + Pixabay
+
+Le plus crédible historiquement :
+
+- Ères 1-5 (1789-1947) : **DP authentique** (Wikimedia, MusOpen, Gallica)
+- Ères 6-10 (1947-2007) : **Pixabay** style approprié
+- Ères 11-15 (2007+) : **Pixabay** moderne
+
+---
+
+## Crédits à afficher (si CC-BY)
+
+Si tu utilises Incompetech ou des pistes CC-BY de FMA, ajoute dans
+Settings → nouvelle section « Crédits » :
 
 ```
-public/audio/eras/
-  revolution.mp3        ← ~30 s, loop-friendly, ~200 KB en 96 kbps
-  xixe.mp3
-  belle_epoque.mp3
-  ...
-  present.mp3
+Musique :
+- « Titre de la piste » par Kevin MacLeod (incompetech.com)
+  Licence : Creative Commons Attribution 4.0
+  https://creativecommons.org/licenses/by/4.0/
 ```
 
-Convention : MP3 ou OGG, mono ou stéréo, **30-60 s loop-friendly**,
-≤300 KB par fichier. Le poids total visé : ~5 MB pour 15 ères.
+Pixabay et Wikimedia Commons en domaine public n'exigent pas
+d'attribution.
 
-### 2. Loader
+---
 
-Modifie `audio.ts` pour ajouter un mode hybride :
+## Test après pose
 
-```ts
-async startMusic(eraId?: AudioEraId) {
-  const fileUrl = `/audio/eras/${eraId}.mp3`;
-  try {
-    const res = await fetch(fileUrl, { method: 'HEAD' });
-    if (res.ok) {
-      // Fichier présent → utiliser Tone.Player en boucle
-      const player = new Tone.Player(fileUrl).toDestination();
-      player.loop = true;
-      await Tone.loaded();
-      player.start();
-      return;
-    }
-  } catch { /* tomber sur générative */ }
+1. `npm run dev` (ou recharge la prod déployée).
+2. Démarre une partie.
+3. Active **♫** dans la sidebar.
+4. Écoute. Tu dois entendre ton fichier MP3 au lieu de la générative.
+5. Avance jusqu'au tour 4 (passage `revolution` → `xixe`) — crossfade
+   1.4 s entre les deux fichiers attendu.
 
-  // Pas de fichier → générative actuelle
-  return this.startGenerative(eraId);
-}
-```
+Si tu n'entends pas le fichier mais la générative continue : vérifie
+que le fichier est bien dans `public/audio/eras/`, accessible via
+l'URL `https://didierdelpeyrou-stack.github.io/paritas/audio/eras/{era}.mp3`.
 
-### 3. Crossfade entre fichiers
+---
 
-Quand l'ère change, charger le nouveau Player puis fade in/out
-sur 1.4 s avec deux Tone.Gain en parallèle.
+## Recommandation perso (si je devais choisir)
 
-### 4. Précautions
+Pour démarrer **vite et bien**, sans m'embêter avec ffmpeg :
 
-- **Bundle initial** : les MP3 sont en `public/`, pas bundlés. Le
-  bundle reste léger. Le téléchargement est lazy (au démarrage de
-  la musique).
-- **Hors-ligne** : sans connexion, la musique générative reste le
-  fallback. Si on veut hors-ligne avec musique réelle, ajouter
-  les MP3 à un service worker pour cache.
-- **Attribution CC-BY** : si tu utilises Incompetech ou autre CC-BY,
-  il faut afficher quelque part le crédit. Proposition : modale
-  Settings « Crédits musicaux » qui liste les pistes utilisées.
+1. **Pixabay** pour les 15 ères, recherche par mood + durée.
+2. 30-60 s par piste, total ~5 MB pour les 15.
+3. Tag mental :
+   - 1-5 : « orchestral / classical »
+   - 6-10 : « ambient / film score »
+   - 11-15 : « modern minimal / electronic »
+4. Pose, teste, ajuste 2-3 fichiers qui ne plaisent pas.
 
-## Recommandation d'aujourd'hui
-
-Tant que tu n'as pas le temps de chercher / nettoyer / convertir
-des fichiers réels, **garde la générative améliorée** (mai 2026).
-Le ressenti devrait passer de « horrible » à « ambient discret ».
-
-Si vraiment tu veux du concret pour demain, le **plus rapide** :
-
-1. Pixabay → tag « ambient orchestral » → 5 pistes ~30 s.
-2. Les nommer `revolution.mp3`, `belle_epoque.mp3`, etc.
-3. Les coller dans `public/audio/eras/`.
-4. Activer le loader hybride (~30 lignes à ajouter dans audio.ts).
-
-Délai estimé : 1-2 h de recherche + 30 min de code.
+Délai estimé : **1 h 30** pour tout faire, écouter, télécharger,
+renommer, déployer.

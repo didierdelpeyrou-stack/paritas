@@ -526,7 +526,19 @@
               onclick={toggleSfx}
               aria-label={sfxOn ? 'Couper les effets sonores' : 'Activer les effets sonores'}
               title={sfxOn ? 'Effets sonores actifs' : 'Effets sonores coupés'}
-            >{sfxOn ? '♪' : '·'}</button>
+            >
+              <!-- Haut-parleur SVG. Toujours visible. Barré si OFF. -->
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3z"/>
+                {#if sfxOn}
+                  <path fill="none" stroke="currentColor" stroke-width="1.6"
+                    stroke-linecap="round" d="M16 8.5c1.3 1 1.3 6 0 7M19 6c2.5 1.7 2.5 10.3 0 12"/>
+                {:else}
+                  <line x1="3" y1="3" x2="21" y2="21"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                {/if}
+              </svg>
+            </button>
             <button
               type="button"
               class="sfx-toggle"
@@ -534,7 +546,16 @@
               onclick={toggleMusic}
               aria-label={musicOn ? 'Couper la musique' : 'Activer la musique'}
               title={musicOn ? 'Musique active' : 'Musique coupée'}
-            >{musicOn ? '♫' : '·'}</button>
+            >
+              <!-- Note de musique SVG. Toujours visible. Barrée si OFF. -->
+              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor" d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                {#if !musicOn}
+                  <line x1="3" y1="3" x2="21" y2="21"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                {/if}
+              </svg>
+            </button>
             <button
               type="button"
               class="sfx-toggle"
@@ -1068,6 +1089,14 @@
   .sfx-toggle:hover {
     border-color: rgba(244, 213, 139, 0.45);
     color: #f4d58b;
+  }
+
+  /* Icônes audio toujours visibles, qu'elles soient actives ou non.
+     Le slash diagonal indique l'état coupé sans masquer l'icône. */
+  .sfx-toggle .ico {
+    width: 1.05rem;
+    height: 1.05rem;
+    pointer-events: none;
   }
 
   /* === Roue crantée des réglages === */

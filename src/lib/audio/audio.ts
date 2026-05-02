@@ -342,30 +342,60 @@ class AudioEngine {
 
   /** Player de fichier audio si un MP3 d'ère est trouvé. Lazy-créé. */
   private filePlayer?: Tone.Player;
-  /** Cache des disponibilités de fichiers d'ère testées. */
-  private fileAvailability: Partial<Record<AudioEraId, boolean>> = {};
+  /** URL de la track actuellement jouée (variante incluse). */
+  private currentFileUrl?: string;
+  /** Timestamp du dernier swap de track, pour debouncer les
+   *  changements rapides de mood. */
+  private lastTrackSwapTs = 0;
+  /** Cache HEAD : url → ok/ko, partagé entre default et alt. */
+  private fileAvailability: Record<string, boolean> = {};
 
   /**
    * Tente de charger un fichier audio d'ère. Renvoie true si trouvé
    * et joué en boucle (avec crossfade si un player précédent existe).
    * Formats testés : .mp3 puis .ogg dans /audio/eras/{eraId}.{ext}.
    */
-  private async tryLoadEraFile(eraId: AudioEraId): Promise<boolean> {
-    if (this.fileAvailability[eraId] === false) return false;
-    const base = `${import.meta.env.BASE_URL ?? '/'}audio/eras/${eraId}`;
-    let url: string | null = null;
+  /** Compose le slug de track désiré pour (era, mood).
+   *  - mood ∈ {tendu, grave, euphorique} → slug `{era}-alt`
+   *  - mood ∈ {calme, melancolique} → slug `{era}`
+   *  Si l'alt n'existe pas, fallback sur le default. */
+  private pickTrackSlug(eraId: AudioEraId, mood: AudioMood): string {
+    const wantsAlt = mood === 'tendu' || mood === 'grave' || mood === 'euphorique';
+    return wantsAlt ? `${eraId}-alt` : eraId;
+  }
+
+  /** Probe HEAD un slug.{ext}. Renvoie l'URL ou null. */
+  private async resolveTrackUrl(slug: string): Promise<string | null> {
+    const base = `${import.meta.env.BASE_URL ?? '/'}audio/eras/${slug}`;
     for (const ext of ['mp3', 'ogg'] as const) {
+      const candidate = `${base}.${ext}`;
+      if (this.fileAvailability[candidate] === false) continue;
+      if (this.fileAvailability[candidate] === true) return candidate;
       try {
-        const candidate = `${base}.${ext}`;
         const head = await fetch(candidate, { method: 'HEAD' });
-        if (head.ok) { url = candidate; break; }
-      } catch { /* try next */ }
+        if (head.ok) {
+          this.fileAvailability[candidate] = true;
+          return candidate;
+        }
+        this.fileAvailability[candidate] = false;
+      } catch {
+        this.fileAvailability[candidate] = false;
+      }
     }
-    if (!url) {
-      this.fileAvailability[eraId] = false;
-      return false;
+    return null;
+  }
+
+  private async tryLoadEraFile(eraId: AudioEraId): Promise<boolean> {
+    // Variante choisie selon le mood courant. Si l'alt n'existe pas
+    // sur le serveur (404), on retombe sur le default.
+    const desiredSlug = this.pickTrackSlug(eraId, this.currentMood);
+    let url = await this.resolveTrackUrl(desiredSlug);
+    if (!url && desiredSlug !== eraId) {
+      url = await this.resolveTrackUrl(eraId);
     }
-    this.fileAvailability[eraId] = true;
+    if (!url) return false;
+    // Si on joue déjà cette même URL, ne pas restart
+    if (this.currentFileUrl === url && this.filePlayer) return true;
     /* Charge le buffer via le callback onload du player plutôt que
      * Tone.loaded() (qui résout parfois trop tôt entre deux loads
      * consécutifs et fait que .start() joue avec un buffer vide). */
@@ -383,7 +413,7 @@ class AudioEngine {
         });
       });
     } catch {
-      this.fileAvailability[eraId] = false;
+      this.fileAvailability[url] = false;
       return false;
     }
     try {
@@ -396,12 +426,32 @@ class AudioEngine {
         setTimeout(() => { try { old.dispose(); } catch { /* ignore */ } }, 1800);
       }
       this.filePlayer = next;
+      this.currentFileUrl = url;
+      this.lastTrackSwapTs = Date.now();
       return true;
     } catch {
       try { next.dispose(); } catch { /* ignore */ }
-      this.fileAvailability[eraId] = false;
+      this.fileAvailability[url] = false;
       return false;
     }
+  }
+
+  /** Swap doux entre default et alt sur changement de mood, sans
+   *  passer par crossfadeRestart (qui serait brutal). Crossfade
+   *  géré par le fadeIn 1.4s du nouveau player et le fadeOut du
+   *  précédent dans tryLoadEraFile.
+   *
+   *  Debouncé : pas de swap si on vient d'en faire un il y a < 4 s.
+   *  Évite que des moods qui flottent (calme→tendu→calme en 2 s)
+   *  fassent thrash le système. */
+  private async maybeSwapMoodVariant() {
+    if (!this.isMusicOn || !this.filePlayer) return;
+    if (Date.now() - this.lastTrackSwapTs < 4000) return;
+    const desiredSlug = this.pickTrackSlug(this.currentEra, this.currentMood);
+    const desiredUrl = await this.resolveTrackUrl(desiredSlug);
+    if (!desiredUrl || desiredUrl === this.currentFileUrl) return;
+    // tryLoadEraFile gère le crossfade (fadeOut ancien + fadeIn nouveau)
+    await this.tryLoadEraFile(this.currentEra);
   }
 
   /** Démarre la boucle ambient sur la palette courante. */
@@ -500,6 +550,7 @@ class AudioEngine {
         setTimeout(() => { try { p.dispose(); } catch { /* ignore */ } }, 800);
       } catch { /* ignore */ }
       this.filePlayer = undefined;
+      this.currentFileUrl = undefined;
     }
   }
 
@@ -631,14 +682,22 @@ class AudioEngine {
   }
 
   /** Mood courant — modulateur global.
-   *  Si on joue un fichier (Pixabay/DP), le mood ne change rien au
-   *  contenu — pas de restart. Sinon (générative), on crossfade
-   *  pour appliquer les nouveaux paramètres tempo/voice. */
+   *
+   *  Si on joue un fichier : tente de swap entre default et alt selon
+   *  le nouveau mood. Le swap est debouncé 4 s pour éviter le thrash
+   *  sur des moods qui oscillent. Crossfade fluide géré par fadeIn
+   *  du nouveau player.
+   *
+   *  Si on joue de la générative : crossfade restart pour appliquer
+   *  les nouveaux paramètres tempo/voice. */
   async setMood(mood: AudioMood, opts?: { reducedMotion?: boolean }) {
     if (this.currentMood === mood) return;
     this.currentMood = mood;
     if (!this.isMusicOn) return;
-    if (this.filePlayer) return; // file en cours : mood appliqué à la prochaine ère
+    if (this.filePlayer) {
+      void this.maybeSwapMoodVariant();
+      return;
+    }
     await this.crossfadeRestart(opts?.reducedMotion ? 200 : 700);
   }
 

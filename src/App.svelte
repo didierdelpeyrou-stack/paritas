@@ -54,8 +54,18 @@
 
   let phase = $state<Phase>(initialPhase());
 
-  function handleLandingDone() {
+  async function handleLandingDone() {
     setFlag(LANDING_KEY);
+    /* Le clic CTA fournit le user-gesture nécessaire pour démarrer
+     * l'AudioContext. On lance la musique d'accueil (revolution.mp3
+     * = Marseillaise) qui plante l'ambiance dès le tutoriel pour les
+     * nouveaux, ou direct slot pour les anciens. */
+    try {
+      const mod = await import('./game/audio/sfx');
+      if (!mod.sfx.isMusicEnabled()) {
+        await mod.sfx.setMusicEnabled(true);
+      }
+    } catch { /* ignore — pas critique */ }
     phase = flag(TUTORIAL_KEY) ? 'slot' : 'intro';
   }
 

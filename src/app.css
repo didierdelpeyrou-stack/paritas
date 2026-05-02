@@ -6,6 +6,23 @@
    Paritas — base + composants thématiques
    ============================================================ */
 
+/* Palette sémantique runtime (UX-2). Variables CSS pour pouvoir
+   être consommées partout sans dépendre de Tailwind à la compil. */
+:root {
+  --sem-danger: #dc2626;
+  --sem-danger-soft: rgba(220, 38, 38, 0.12);
+  --sem-warning: #f59e0b;
+  --sem-warning-soft: rgba(245, 158, 11, 0.12);
+  --sem-positive: #10b981;
+  --sem-positive-soft: rgba(16, 185, 129, 0.12);
+  --sem-info: #3b82f6;
+  --sem-info-soft: rgba(59, 130, 246, 0.12);
+  --sem-action: #c89b3c;
+  --sem-select: #8b5cf6;
+  --sem-loss-bg: rgba(127, 29, 29, 0.85);
+  --sem-gain-bg: rgba(6, 78, 59, 0.65);
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body {

@@ -27,12 +27,22 @@
   let toasts = $state<Toast[]>([]);
   let nextId = 0;
 
+  /* UX-N1 : aversion à la perte (Kahneman-Tversky). Les pertes
+     restent ~50% plus longtemps que les gains, en accord avec le
+     coefficient ψ ≈ 2 du modèle prospect theory. Visuellement :
+     toast plus large, fond rouge brûlé, micro-shake horizontal. */
+  function durationFor(tone: Toast['tone']): number {
+    if (tone === 'negative') return 5000;   // pertes : poids ressenti plus long
+    if (tone === 'warning') return 4500;
+    return 3200;                            // gains : poids plus court
+  }
+
   function push(text: string, tone: Toast['tone']) {
     const t: Toast = { id: nextId++, text, tone };
     toasts = [...toasts, t];
     setTimeout(() => {
       toasts = toasts.filter(x => x.id !== t.id);
-    }, 3500);
+    }, durationFor(tone));
   }
 
   $effect(() => {
@@ -107,19 +117,38 @@
     pointer-events: auto;
   }
 
+  /* === UX-N1 — asymétrie pertes/gains ===
+     Les pertes sont ~1.5x plus saillantes : taille, fond, shake.
+     Cohérent avec coefficient d'aversion à la perte (Tversky). */
   .toast[data-tone='positive'] {
-    border-color: rgba(95, 181, 107, 0.55);
-    color: #aedab5;
+    border-color: var(--sem-positive);
+    background: var(--sem-gain-bg);
+    color: #d1fae5;
   }
 
   .toast[data-tone='negative'] {
-    border-color: rgba(224, 122, 110, 0.55);
-    color: #e8a09b;
+    border-color: var(--sem-danger);
+    background: var(--sem-loss-bg);
+    color: #fecaca;
+    /* Plus grand : padding et font weight bumped */
+    padding: 0.6rem 0.95rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    /* Shake initial très subtil pour attirer le coin de l'œil */
+    animation: loss-shake 0.42s ease-out;
   }
 
   .toast[data-tone='warning'] {
-    border-color: rgba(244, 213, 139, 0.7);
-    background: rgba(201, 154, 64, 0.18);
-    color: #f4d58b;
+    border-color: var(--sem-warning);
+    background: var(--sem-warning-soft);
+    color: #fef3c7;
+  }
+
+  @keyframes loss-shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-3px); }
+    40% { transform: translateX(3px); }
+    60% { transform: translateX(-2px); }
+    80% { transform: translateX(2px); }
   }
 </style>

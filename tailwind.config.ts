@@ -5,6 +5,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        // === Palette structurelle ===
         ink: '#0d1014',
         surface: '#1a1f26',
         'surface-2': '#232a33',
@@ -17,7 +18,8 @@ export default {
           DEFAULT: '#c89b3c',
           soft: '#e0b35a'
         },
-        burnt: '#e07a3a',
+
+        // === Identités de camp ===
         syndical: {
           DEFAULT: '#c0392b',
           deep: '#7a1d18'
@@ -26,11 +28,26 @@ export default {
           DEFAULT: '#2e5e8a',
           deep: '#1a3a5e'
         },
-        legit: '#5fb56b',
-        purple: {
-          DEFAULT: '#d18ab0'
+
+        // === Palette sémantique stricte (UX-2) ===
+        // Une seule couleur par usage. Plus de gold qui veut dire 4 choses.
+        // Voir CSS variables --sem-* dans app.css pour usage runtime.
+        sem: {
+          danger: '#dc2626',          // critique, ressource <20, fin tragique
+          warning: '#f59e0b',         // tension warning, choix risqué
+          positive: '#10b981',        // delta positif, objectif atteint
+          info: '#3b82f6',            // tooltips, glossaire, didactique
+          action: '#c89b3c',          // CTA primaire (= gold)
+          select: '#8b5cf6',          // sélection, voix intérieure
+          'loss-bg': '#7f1d1d',       // fond toast pertes (UX-N1, weighted)
+          'gain-bg': '#064e3b'        // fond toast gains (moins saillant)
         },
-        alert: '#e07a6e'
+
+        // Anciennes clés conservées pour compatibilité descendante
+        burnt: '#e07a3a',
+        legit: '#10b981',
+        purple: { DEFAULT: '#8b5cf6' },
+        alert: '#dc2626'
       },
       fontFamily: {
         display: ['Cinzel', 'Georgia', 'serif'],

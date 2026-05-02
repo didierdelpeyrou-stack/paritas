@@ -17,6 +17,7 @@
    */
   import { fade, fly } from 'svelte/transition';
   import { onMount } from 'svelte';
+  import { sfx } from '../game/audio/sfx';
 
   interface Props {
     title: string;
@@ -106,6 +107,7 @@
   function ratify() {
     if (!canvas || !hasInk) return;
     const dataUrl = canvas.toDataURL('image/png');
+    void sfx.play('ratify');
     onSign(dataUrl);
   }
 </script>

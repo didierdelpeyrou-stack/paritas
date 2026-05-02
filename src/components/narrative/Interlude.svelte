@@ -15,6 +15,7 @@
   import { fade } from 'svelte/transition';
   import { onMount, onDestroy } from 'svelte';
   import type { EraId } from '../../game/types';
+  import { sfx } from '../../game/audio/sfx';
 
   interface InterludeContent {
     image: string; // emoji ou caractère, sera SVG plus tard
@@ -152,6 +153,7 @@
   let timer: number | undefined;
 
   onMount(() => {
+    void sfx.play('interludeIn');
     timer = window.setTimeout(() => {
       canContinue = true;
     }, 6000);

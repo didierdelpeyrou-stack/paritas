@@ -1,12 +1,14 @@
 <script lang="ts">
   import { fade, fly } from 'svelte/transition';
-  import { GLOSSARY } from '../game/content/glossary';
+  import { GLOSSARY, glossaryLookup } from '../game/content/glossary';
 
   interface Props {
     open: boolean;
     onClose: () => void;
+    /** Terme à mettre en focus à l'ouverture (depuis un clic GlossaryText). */
+    focusTerm?: string | null;
   }
-  let { open, onClose }: Props = $props();
+  let { open, onClose, focusTerm = null }: Props = $props();
 
   let query = $state('');
   let openId = $state<string | null>(null);
@@ -28,6 +30,27 @@
 
   function toggle(term: string) {
     openId = openId === term ? null : term;
+  }
+
+  /* Quand la modale s'ouvre AVEC un terme focus, on : reset le filtre,
+     déplie l'entrée demandée, et défile vers elle. */
+  $effect(() => {
+    if (!open || !focusTerm) return;
+    const entry = glossaryLookup(focusTerm);
+    if (!entry) return;
+    query = '';
+    openId = entry.term;
+    // Délai pour laisser la modale apparaître avant de scroller
+    queueMicrotask(() => {
+      setTimeout(() => {
+        const el = document.getElementById(`gloss-entry-${slugify(entry.term)}`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 60);
+    });
+  });
+
+  function slugify(s: string): string {
+    return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   }
 </script>
 
@@ -73,7 +96,7 @@
 
       <ul class="entry-list">
         {#each filtered as e (e.term)}
-          <li>
+          <li id={`gloss-entry-${slugify(e.term)}`}>
             <button type="button" class="entry-head" onclick={() => toggle(e.term)} data-open={openId === e.term}>
               <span class="entry-term">{e.term}</span>
               {#if e.marker}

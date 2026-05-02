@@ -112,7 +112,22 @@
   let activeTab = $state<Tab>(loadActiveTab());
   let orgSubTab = $state<OrgSubTab>(loadOrgSubTab());
   let glossaryOpen = $state(false);
+  let glossaryFocusTerm = $state<string | null>(null);
   let settingsOpen = $state(false);
+
+  /* Écoute l'événement émis par GlossaryText quand un terme est
+     cliqué — ouvre la modale et la positionne sur ce terme. */
+  $effect(() => {
+    if (typeof window === 'undefined') return;
+    function onOpen(e: Event) {
+      const detail = (e as CustomEvent<{ term: string }>).detail;
+      if (!detail?.term) return;
+      glossaryFocusTerm = detail.term;
+      glossaryOpen = true;
+    }
+    window.addEventListener('paritas-open-glossary', onOpen);
+    return () => window.removeEventListener('paritas-open-glossary', onOpen);
+  });
 
   /* Sur desktop, les panneaux d'introspection sont ouverts par
      défaut (la place est là). Sur mobile, repliés (la sidebar est
@@ -610,7 +625,11 @@
   </div>
 {/if}
 
-<Glossary open={glossaryOpen} onClose={() => (glossaryOpen = false)} />
+<Glossary
+  open={glossaryOpen}
+  focusTerm={glossaryFocusTerm}
+  onClose={() => { glossaryOpen = false; glossaryFocusTerm = null; }}
+/>
 <Settings open={settingsOpen} onClose={() => (settingsOpen = false)} />
 
 {#if ceremony}

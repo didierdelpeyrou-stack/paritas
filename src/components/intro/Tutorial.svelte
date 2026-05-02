@@ -1,6 +1,7 @@
 <script lang="ts">
   import { fade, fly } from 'svelte/transition';
   import { POSTURE_STYLES } from '../../game/narrative/choicePosture';
+  import GlossaryText from '../GlossaryText.svelte';
 
   interface Props {
     onDone: () => void;
@@ -81,60 +82,71 @@
       <h2 class="font-display text-2xl text-gold mb-3">Rappel — tu as déjà joué</h2>
       <ul class="express-list">
         <li>
-          <b>6 ressources</b> — Confiance, Caisse, Santé sociale, Légitimité, Rapport de force, Institution. Aucun choix ne les bouge toutes.
+          <b>6 ressources</b> — Confiance, Caisse, Santé sociale, Légitimité, Rapport de force, Institution. Aucune décision ne change tout.
         </li>
         <li>
-          <b>6 postures</b> — chaque choix porte une posture politique (rupture, institution, compromis, expertise, opinion, paternaliste). Tes choix sculptent un trait dominant.
+          <b>6 postures</b> — chaque décision a une posture politique. Tes décisions forment un trait dominant.
         </li>
         <li>
-          <b>Mandat</b> — 2 à 3 objectifs nommés (court ou long). Suivis dans la sidebar.
+          <b>Mandat</b> — 2 ou 3 objectifs à atteindre. Ils sont dans la sidebar.
         </li>
         <li>
-          <b>Conséquences en cascade</b> — texte, mesures concrètes, presse, voix intérieure, mémoire, chiffres. Clic pour tout révéler.
+          <b>Conséquences en cascade</b> — texte, mesures, presse, voix, mémoire, chiffres. Clique pour tout voir d'un coup.
         </li>
         <li>
-          <b>Mode lecture</b> — bouton « Lecture » en haut de la colonne principale pour replier la sidebar et lire en plein écran.
+          <b>Mode lecture</b> — clique sur Lecture pour cacher la sidebar et lire en grand.
         </li>
       </ul>
       <p class="mt-3 text-parchment-dim/65 text-xs italic">
-        Tu as joué {playedCount} partie{playedCount > 1 ? 's' : ''}. Tu peux toujours revoir le tutoriel complet via le bouton ci-dessus.
+        Tu as joué {playedCount} partie{playedCount > 1 ? 's' : ''}. Tu peux revoir le tutoriel complet avec le bouton plus haut.
       </p>
     </div>
   {:else if step === 0}
     <div in:fly={{ y: 8, duration: 240 }}>
-      <h2 class="font-display text-2xl text-gold mb-3">Le paritarisme, en deux phrases</h2>
+      <h2 class="font-display text-2xl text-gold mb-3">Qu'est-ce que le paritarisme ?</h2>
       <p class="text-parchment leading-relaxed text-sm sm:text-base">
-        Patron et salarié sont en désaccord, presque toujours.
-        Quand ils acceptent malgré tout de s'asseoir à la même table et d'écrire des règles communes — sur les salaires, le chômage, la santé, la retraite — ils font du paritarisme.
+        Le patron et le salarié ne sont presque jamais d'accord.
+      </p>
+      <p class="text-parchment leading-relaxed text-sm sm:text-base mt-2">
+        Parfois, ils acceptent de s'asseoir à la même table.
+        Ils écrivent ensemble des règles.
+        Ces règles parlent des salaires, du chômage, de la santé, de la retraite.
+      </p>
+      <p class="text-parchment leading-relaxed text-sm sm:text-base mt-2">
+        C'est ce qu'on appelle le <GlossaryText text="paritarisme" />.
       </p>
       <p class="mt-3 text-parchment-dim leading-relaxed text-sm">
-        Tu vas incarner un de ces deux camps, sur un siècle ou plus. Cent décisions, cent tours.
-        Chaque choix laisse une trace : dans les ressources de ton organisation, dans la mémoire des accords signés, dans le caractère même que tu te forges.
+        Dans ce jeu, tu joues un de ces deux camps.
+        Tu joues 100 tours.
+        À chaque tour, tu prends une décision.
+        Chaque décision laisse une trace : dans tes ressources, dans tes accords, dans ton caractère.
       </p>
     </div>
   {:else if step === 1}
     <div in:fly={{ y: 8, duration: 240 }}>
       <h2 class="font-display text-2xl text-gold mb-3">Six ressources, un mandat</h2>
       <p class="text-parchment-dim leading-relaxed text-sm mb-3">
-        Six jauges (0–100) suivent ton organisation. Aucun choix ne les bouge toutes : il faut arbitrer.
+        Tu as 6 jauges. Elles vont de 0 à 100. Elles montrent l'état de ton organisation. Aucune décision ne change toutes les jauges. Tu dois choisir.
       </p>
       <ul class="grid grid-cols-2 gap-2 text-xs">
-        <li class="res-line"><b>Confiance</b><span>de la base envers toi</span></li>
-        <li class="res-line"><b>Caisse</b><span>réserves financières</span></li>
-        <li class="res-line"><b>Santé sociale</b><span>tissu militant et moral</span></li>
-        <li class="res-line"><b>Légitimité</b><span>ce que l'opinion publique te concède</span></li>
-        <li class="res-line"><b>Rapport de force</b><span>capacité à imposer dans la rue</span></li>
-        <li class="res-line"><b>Institution</b><span>solidité de ce qui est construit pour durer</span></li>
+        <li class="res-line"><b>Confiance</b><span>la base te suit ou non</span></li>
+        <li class="res-line"><b>Caisse</b><span>l'argent dont tu disposes</span></li>
+        <li class="res-line"><b>Santé sociale</b><span>solidité du collectif</span></li>
+        <li class="res-line"><b>Légitimité</b><span>ce que l'opinion pense de toi</span></li>
+        <li class="res-line"><b>Rapport de force</b><span>capacité à mobiliser</span></li>
+        <li class="res-line"><b>Institution</b><span>ce que tu construis pour durer</span></li>
       </ul>
       <p class="mt-3 text-parchment-dim leading-relaxed text-sm">
-        À côté, ton <b class="text-gold-soft">mandat</b> liste 2 à 3 objectifs nommés assignés à ton rôle. C'est ce qui mesure une partie réussie.
+        Ton <b class="text-gold-soft">mandat</b> liste 2 ou 3 objectifs.
+        Ce sont les buts à atteindre. Ils mesurent ta réussite.
       </p>
     </div>
   {:else if step === 2}
     <div in:fly={{ y: 8, duration: 240 }}>
       <h2 class="font-display text-2xl text-gold mb-3">Six postures, un trait dominant</h2>
       <p class="text-parchment-dim leading-relaxed text-sm mb-3">
-        Chaque choix relève d'une <b>posture</b> politique. Le glyphe à gauche du bouton t'indique laquelle.
+        Chaque décision a une <b>posture</b> politique.
+        Le symbole à gauche du bouton te montre laquelle.
       </p>
       <ul class="grid grid-cols-2 gap-2">
         {#each POSTURE_ORDER as p}
@@ -146,39 +158,42 @@
         {/each}
       </ul>
       <p class="mt-3 text-parchment-dim leading-relaxed text-sm">
-        Tes choix successifs sculptent un <b class="text-gold-soft">trait dominant</b>. Certaines options sont réservées à ce trait — un syndicaliste pragmatique ne dispose pas des mêmes leviers qu'un syndicaliste de rupture.
+        Tes décisions forment un <b class="text-gold-soft">trait dominant</b>.
+        Tu deviens pragmatique, ou tribun, ou autre.
+        Certaines options sont réservées à ton trait.
       </p>
     </div>
   {:else}
     <div in:fly={{ y: 8, duration: 240 }}>
       <h2 class="font-display text-2xl text-gold mb-3">Lire un scénario</h2>
       <p class="text-parchment-dim leading-relaxed text-sm mb-3">
-        Chaque tour t'expose une situation historique réelle. Voici les couches d'information à repérer :
+        À chaque tour, tu lis une situation historique réelle.
+        Voici les 5 parties à repérer :
       </p>
       <ol class="scenario-anatomy">
         <li>
           <b>Bandeau temporel</b>
-          <span>Date, ère, climat. Sert à comprendre les contraintes de l'époque (ex. coalitions interdites avant 1864).</span>
+          <span>Date, ère, climat. Pour comprendre les règles de l'époque. Exemple : les coalitions sont interdites avant <GlossaryText text="Ollivier" />.</span>
         </li>
         <li>
           <b>Contexte historique</b>
-          <span>2-4 phrases qui posent les faits. Tout est sourcé, rien d'inventé.</span>
+          <span>Quelques phrases qui décrivent les faits. Tout est vrai. Rien n'est inventé.</span>
         </li>
         <li>
           <b>Mise en situation</b>
-          <span>L'angle « où tu te trouves ». Mode <em>Réfléchi</em> = explicatif ; mode <em>Compulsif</em> = sensoriel.</span>
+          <span>L'angle de la scène. Le mode <em>Réfléchi</em> explique. Le mode <em>Compulsif</em> fait sentir.</span>
         </li>
         <li>
-          <b>Choix (2 à 4)</b>
-          <span>Chaque option indique sa posture (glyphe), une intention courte, parfois un indice théorique. Survole pour voir l'effet attendu sur les ressources.</span>
+          <b>Choix</b>
+          <span>2 à 4 options. Chaque option a un symbole, une intention courte, parfois un indice. Survole le bouton pour voir l'effet sur les ressources.</span>
         </li>
         <li>
           <b>Conséquence</b>
-          <span>Apparaît en cascade : texte, mesures concrètes, presse, voix intérieure, ligne mémoire, glissement de trait, chiffres.</span>
+          <span>Elle apparaît en plusieurs étapes : texte, mesures, presse, voix intérieure, mémoire, trait, chiffres.</span>
         </li>
       </ol>
       <p class="mt-3 text-parchment-dim leading-relaxed text-sm">
-        Astuce : un terme syndical en <span class="gloss-demo">pointillés</span> ouvre une définition au survol. Pas besoin de tout connaître pour jouer.
+        Astuce : un mot en <span class="gloss-demo">pointillés italiques</span> est défini dans le glossaire. Survole pour lire la définition. Tu n'as pas besoin de tout connaître pour jouer.
       </p>
     </div>
   {/if}

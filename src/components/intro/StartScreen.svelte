@@ -3,6 +3,7 @@
   import type { Camp } from '$lib/types';
   import type { RenderMode } from '../../game/types';
   import LegendaryCharacterPicker from './LegendaryCharacterPicker.svelte';
+  import GlossaryText from '../GlossaryText.svelte';
   import type { LegendaryCharacter } from '../../game/content/legendaryCharacters';
 
   interface Props {
@@ -64,9 +65,10 @@
   </header>
 
   <div class="bg-ink/40 border-l-2 border-gold px-4 py-3 text-parchment-dim leading-relaxed text-sm">
-    Cent décisions, deux camps, de 1789 à 2026. Cahiers de doléances, Le Chapelier, Canuts, Waldeck-Rousseau, Charte d'Amiens, Matignon, Sécurité sociale, Mai 68, Auroux, Plan Juppé, Retraites 2023.
-    À chaque tour, tu prends parti. Aucun choix n'est neutre.
-    <span class="block mt-2 italic text-parchment-dim/80">Ce n'est pas un divertissement, c'est une simulation historique narrative.</span>
+    <p>100 décisions. Deux camps. De 1789 à 2026.</p>
+    <p class="mt-2">Tu rejoues les grands moments du syndicalisme français : <GlossaryText text="cahiers de doléances, Le Chapelier, Waldeck-Rousseau, charte d'Amiens, Matignon, Sécurité sociale, Mai 68, Auroux, Plan Juppé, ordonnances Macron" />, retraites 2023.</p>
+    <p class="mt-2">À chaque tour, tu prends parti. Aucune décision n'est neutre.</p>
+    <p class="mt-2 italic text-parchment-dim/80">Ce n'est pas un divertissement. C'est une simulation historique.</p>
   </div>
 
   <!-- UX-7 : voie principale recommandée — incarner une figure légendaire -->

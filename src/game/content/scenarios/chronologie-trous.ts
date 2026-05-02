@@ -29,22 +29,26 @@ export const FILLER_SCENARIOS: Scenario[] = [
     mood: 'tendu',
     premium: true,
     historicalContext:
-      "Sous le Directoire, Gracchus Babeuf et un groupe de républicains radicaux préparent une insurrection au nom de l'« égalité réelle » — abolition de la propriété privée, communauté des biens, droit au travail garanti. Trahis par un infiltré, ils sont arrêtés le 10 mai 1796. Babeuf est guillotiné en 1797. Le babouvisme inspirera les premiers socialismes ouvriers du XIXe.",
+      "Sous le Directoire, Gracchus Babeuf prépare une insurrection. Il s'entoure de républicains radicaux. Leur projet est l'« égalité réelle » : abolition de la propriété privée, communauté des biens, droit au travail garanti. Un infiltré les trahit. Ils sont arrêtés le 10 mai 1796. Babeuf est guillotiné en 1797. Le babouvisme inspirera les premiers socialismes ouvriers du XIXe siècle.",
     setup: {
       reflechi:
-        "Tu es membre du Directoire secret des Égaux. Le moment de l'insurrection approche. Les ouvriers parisiens sont avec toi mais l'armée tient la ville. La question stratégique : insurrection immédiate, repli organisationnel pour préparer la suite, ou négociation discrète avec les modérés du Directoire ?",
+        "Tu es membre du Directoire secret des Égaux. L'insurrection approche. Les ouvriers parisiens sont avec toi. Mais l'armée tient la ville. Trois options s'offrent à toi : insurrection immédiate, repli organisationnel pour la suite, ou négociation avec les modérés du Directoire.",
       compulsif:
-        "Cave d'imprimerie rue de la Grande-Truanderie. Babeuf relit l'affiche : « Tribun du peuple ». Sur la table, dix-huit signatures, deux pistolets, un manuscrit du Manifeste des Égaux. À la porte, un guetteur attendu. Il n'arrive pas."
+        "Cave d'imprimerie, rue de la Grande-Truanderie. Babeuf relit l'affiche : « Tribun du peuple ». Sur la table, dix-huit signatures, deux pistolets, un manuscrit du Manifeste des Égaux. À la porte, un guetteur. Il n'arrive pas."
     },
     actors: ['base', 'etat', 'opinion'],
     voices: [
-      { trait: 'rupture', text: 'L\'égalité de droit ne suffit pas. Il faut l\'égalité de fait — sinon ce ne sont que des mots.' },
+      { trait: 'rupture', text: "L'égalité de droit ne suffit pas. Il faut l'égalité de fait." },
       { trait: 'pragmatique', text: 'Mourir trahi pour une idée juste, c\'est gagner cent ans plus tard. Ou perdre.' }
     ],
     quotes: [
       {
-        text: 'Que la Révolution ne soit pas pour quelques-uns, qu\'elle ne profite qu\'à eux : c\'est pour cela que nous voulons qu\'elle continue.',
+        text: "Que la Révolution ne soit pas pour quelques-uns, qu'elle ne profite qu'à eux : c'est pour cela que nous voulons qu'elle continue.",
         source: 'Babeuf, Manifeste des Égaux, 1796'
+      },
+      {
+        text: "La société est dans une horrible convulsion : c'est la lutte de la plèbe contre les patriciens, des pauvres contre les riches.",
+        source: 'Sylvain Maréchal, Manifeste des Égaux, 1796'
       }
     ],
     choices: [

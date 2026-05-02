@@ -10,3 +10,4 @@ dist/
 vite
 paritas@*
 vite.config.ts.timestamp-*.mjs
+.claude/

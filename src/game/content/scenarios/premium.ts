@@ -11,17 +11,17 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
     mood: 'grave',
     premium: true,
     historicalContext:
-      'La loi Le Chapelier interdit les corporations et toute coalition professionnelle. Pendant des décennies, l’action collective ouvrière sera repoussée vers la clandestinité, les secours mutuels et les sociétés discrètes.',
+      "Le 14 juin 1791, l'Assemblée nationale vote la loi Le Chapelier. Elle interdit les corporations. Elle interdit aussi toute coalition de travailleurs. Pour les décennies à venir, l'action collective ouvrière sera repoussée vers la clandestinité — les secours mutuels, les sociétés discrètes.",
     setup: {
       reflechi:
-        'L’Assemblée affirme la liberté individuelle contre les anciens corps. Mais en supprimant aussi les coalitions de travailleurs, elle rend presque impossible une parole collective sur le salaire, le temps et la dignité.',
+        "L'Assemblée affirme la liberté individuelle contre les anciens corps. Belle idée, en apparence. Mais elle supprime aussi les coalitions de travailleurs. Le résultat : une parole collective sur le salaire, le temps, la dignité devient presque impossible.",
       compulsif:
-        'La salle applaudit la liberté. Dans les ateliers, le mot sonne creux. Chacun est libre, oui. Libre seul face au maître, au prix, à la faim.'
+        "La salle applaudit la liberté. Dans les ateliers, le mot sonne creux. Chacun est libre. Libre seul face au maître. Face au prix. Face à la faim."
     },
     actors: ['base', 'etat', 'opinion'],
     voices: [
-      { trait: 'rupture', text: 'S’ils interdisent la voix collective, il faudra apprendre à parler bas.' },
-      { trait: 'batisseur', text: 'La solidarité survivra peut-être sous un autre nom.' }
+      { trait: 'rupture', text: 'S\'ils interdisent la voix collective, il faudra apprendre à parler bas.' },
+      { trait: 'batisseur', text: 'La solidarité survivra. Sous un autre nom, peut-être.' }
     ],
     quotes: [
       {
@@ -34,28 +34,35 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         id: 'chapelier-clandestin',
         text: 'Maintenir une société de secours discrète.',
         intent: 'Sauver le collectif sans provoquer la répression.',
-        theoryHint: 'Quand l’association est interdite, la ressource clé devient la confiance interne.',
+        theoryHint: "Quand l'association est interdite, la confiance interne devient la ressource clé.",
         effects: { resources: { confiance: 8, rapportDeForce: 4, legitimite: -3, caisse: -2 }, actors: { base: { trust: 8 }, etat: { trust: -8, stance: 'dur' } } },
-        consequence: { immediate: 'Les réunions changent de lieu, de nom, parfois de langage. On parle de maladie, de veuvage, de caisse ; chacun comprend qu’il s’agit aussi de salaire et de dignité.', longterm: 'Cette mémoire clandestine nourrira les chambres syndicales du XIXe siècle.' },
+        consequence: {
+          immediate: "Les réunions changent de lieu. De nom. Parfois de langage. On parle de maladie. De veuvage. De caisse. Chacun comprend qu'il s'agit aussi de salaire et de dignité.",
+          longterm: "Cette mémoire clandestine nourrira les chambres syndicales du XIXe siècle."
+        },
         traitShift: { batisseur: 2, rupture: 1 }
       },
       {
         id: 'chapelier-respect-loi',
         text: 'Dissoudre les liens collectifs pour éviter les poursuites.',
-        intent: 'Préserver les personnes au prix de l’organisation.',
-        theoryHint: 'C’est une stratégie de moindre perte : tu protèges le court terme et affaiblis le long terme.',
+        intent: 'Sauver les personnes au prix de l\'organisation.',
+        theoryHint: "Stratégie de moindre perte : tu protèges le court terme. Tu affaiblis le long terme.",
         effects: { resources: { confiance: -10, institution: -5, santeSociale: -4, legitimite: 4 }, actors: { etat: { trust: 6 }, base: { trust: -12 } } },
-        consequence: { immediate: 'La police ne vient pas. C’est presque pire : l’atelier devient silencieux. Les anciens compagnons évitent de se regarder quand le tarif baisse.' },
+        consequence: {
+          immediate: "La police ne vient pas. C'est presque pire. L'atelier devient silencieux. Les anciens compagnons évitent de se regarder quand le tarif baisse."
+        },
         traitShift: { pragmatique: 2, batisseur: -1 },
         flag: 'trahit-base'
       },
       {
         id: 'chapelier-pamphlet',
         text: 'Publier un texte sur la liberté sans fraternité.',
-        intent: 'Déplacer la bataille vers l’opinion.',
-        theoryHint: 'Cadrage : tu changes la manière dont le public nomme le problème.',
+        intent: 'Déplacer la bataille vers l\'opinion.',
+        theoryHint: "Cadrage : tu changes la manière dont le public nomme le problème.",
         effects: { resources: { legitimite: 7, rapportDeForce: 2, caisse: -3 }, actors: { opinion: { trust: 9 }, etat: { pressure: 6 } } },
-        consequence: { immediate: 'Le texte circule, recopié à la main. Il ne change pas la loi, mais il donne aux humiliations quotidiennes une phrase qu’on peut retenir.' },
+        consequence: {
+          immediate: "Le texte circule. Il est recopié à la main. Il ne change pas la loi. Mais il donne aux humiliations quotidiennes une phrase qu'on peut retenir."
+        },
         traitShift: { tribun: 2 },
         requiresTrait: 'tribun'
       }
@@ -71,17 +78,27 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
     mood: 'grave',
     premium: true,
     historicalContext:
-      'À Lyon, les chefs d’atelier de la soie demandent un tarif minimum. Le refus des négociants déclenche une insurrection ouvrière majeure, souvent lue comme l’un des premiers grands soulèvements sociaux de l’Europe industrielle.',
+      "À Lyon, les chefs d'atelier de la soie demandent un tarif minimum. Les négociants refusent. Le refus déclenche une insurrection ouvrière majeure. Beaucoup la lisent comme l'un des premiers grands soulèvements sociaux de l'Europe industrielle.",
     setup: {
       reflechi:
-        'Le tarif minimum devait stabiliser le prix du travail. Son rejet transforme une négociation économique en crise politique.',
+        "Le tarif minimum devait stabiliser le prix du travail. Le rejet des négociants change tout. La négociation économique devient une crise politique. À toi de décider de quel côté tu pousses.",
       compulsif:
-        'La Croix-Rousse respire comme une forge. Dans la montée, on ne dit plus seulement “tarif”. On dit : vivre.'
+        'La Croix-Rousse respire comme une forge. Dans la montée, on ne dit plus seulement « tarif ». On dit : vivre.'
     },
     actors: ['base', 'adversaire', 'etat', 'opinion'],
     voices: [
-      { trait: 'rupture', text: 'Le tarif n’existe que si quelqu’un accepte de le défendre.' },
+      { trait: 'rupture', text: 'Le tarif n\'existe que si quelqu\'un accepte de le défendre.' },
       { trait: 'pragmatique', text: 'Un symbole peut mourir de faim avant de devenir une victoire.' }
+    ],
+    quotes: [
+      {
+        text: 'Vivre en travaillant ou mourir en combattant.',
+        source: 'Mot d\'ordre des canuts de Lyon, 21 novembre 1831'
+      },
+      {
+        text: "Le mouvement de Lyon est un fait grave, parce qu'il est sans précédent dans nos annales et parce qu'il révèle qu'au sein de notre population s'est développée une plaie hideuse.",
+        source: 'Saint-Marc Girardin, Journal des Débats, 8 décembre 1831'
+      }
     ],
     choices: [
       {
@@ -90,26 +107,33 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         intent: 'Transformer la négociation en rapport de force.',
         theoryHint: 'Jeu de la poule mouillée : si personne ne cède, le choc devient probable.',
         effects: { resources: { confiance: 12, rapportDeForce: 12, santeSociale: -14, legitimite: -3, caisse: -5 }, actors: { base: { trust: 15, pressure: 10 }, etat: { trust: -16, stance: 'dur' }, adversaire: { patience: -18 } } },
-        consequence: { immediate: 'Les métiers s’arrêtent. Le drapeau noir apparaît. Pendant quelques heures, la ville comprend que le prix du travail n’est pas une abstraction.', longterm: 'Même réprimée, la révolte des canuts entre dans la mémoire ouvrière.' },
+        consequence: {
+          immediate: "Les métiers s'arrêtent. Le drapeau noir apparaît. Pendant quelques heures, la ville comprend que le prix du travail n'est pas une abstraction.",
+          longterm: "Même réprimée, la révolte des canuts entre dans la mémoire ouvrière. Pour cent ans."
+        },
         traitShift: { rupture: 3, tribun: 1 },
         flag: 'epuise-mouvement'
       },
       {
         id: 'canuts-prefet',
-        text: 'Chercher l’appui du préfet pour sanctuariser le tarif.',
-        intent: 'Faire de l’État un garant provisoire.',
-        theoryHint: 'Stratégie institutionnelle : tu cherches un tiers capable de rendre l’accord crédible.',
+        text: "Chercher l'appui du préfet pour sanctuariser le tarif.",
+        intent: 'Faire de l\'État un garant provisoire.',
+        theoryHint: "Tu cherches un tiers capable de rendre l'accord crédible.",
         effects: { resources: { institution: 8, legitimite: 5, rapportDeForce: -2 }, actors: { etat: { trust: 10 }, adversaire: { trust: -6 }, base: { patience: 6 } } },
-        consequence: { immediate: 'Le préfet écoute. Il sait que la paix sociale vaut parfois un tarif. Mais Paris n’aime pas qu’une ville industrielle invente sa propre loi.' },
+        consequence: {
+          immediate: "Le préfet écoute. Il sait que la paix sociale vaut parfois un tarif. Mais Paris n'aime pas qu'une ville industrielle invente sa propre loi."
+        },
         traitShift: { batisseur: 2, technocrate: 1 }
       },
       {
         id: 'canuts-repli-mutuel',
         text: 'Replier le mouvement vers une caisse de solidarité.',
         intent: 'Préparer la prochaine bataille.',
-        theoryHint: 'La ressource collective devient une assurance contre l’épuisement.',
+        theoryHint: "La ressource collective devient une assurance contre l'épuisement.",
         effects: { resources: { caisse: 8, confiance: 5, rapportDeForce: -4, institution: 4 }, actors: { base: { patience: 8 }, opinion: { trust: -2 } } },
-        consequence: { immediate: 'Certains crient à la retraite. D’autres comprennent le calcul : une grève sans caisse est une flamme sans bois.' },
+        consequence: {
+          immediate: "Certains crient à la retraite. D'autres comprennent le calcul : une grève sans caisse est une flamme sans bois."
+        },
         traitShift: { pragmatique: 2, batisseur: 2 }
       }
     ]

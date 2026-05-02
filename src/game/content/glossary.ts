@@ -178,6 +178,192 @@ export const GLOSSARY: GlossaryEntry[] = [
     definition:
       "Loi du 21 mars 1884 qui légalise les syndicats professionnels. Pierre fondatrice du syndicalisme français moderne.",
     marker: '1884'
+  },
+  {
+    term: 'plan juppé',
+    definition:
+      'Réforme de la Sécurité sociale et des régimes spéciaux annoncée par Alain Juppé le 15 novembre 1995. Trois semaines de grève générale firent reculer le volet retraites.',
+    marker: 'novembre-décembre 1995'
+  },
+  {
+    term: 'loi el khomri',
+    definition:
+      "Loi Travail du 8 août 2016 portée par Myriam El Khomri. Première inversion de la hiérarchie des normes : l'accord d'entreprise peut déroger à la convention collective de branche.",
+    marker: '2016'
+  },
+  {
+    term: 'loi travail',
+    definition:
+      "Voir Loi El Khomri (2016). Première inversion légale de la hiérarchie des normes en droit du travail français.",
+    marker: '2016'
+  },
+  {
+    term: 'ordonnances macron',
+    definition:
+      "Cinq ordonnances signées le 22 septembre 2017 : fusion CE/DP/CHSCT en un Comité social et économique unique (CSE), barème prud'homal, primauté de l'accord d'entreprise.",
+    marker: '2017'
+  },
+  {
+    term: 'réforme fillon',
+    definition:
+      "Réforme des retraites de 2003 portée par François Fillon. Aligne 40 ans de cotisation pour le secteur public sur le privé. Première grande défaite syndicale post-1995.",
+    marker: '2003'
+  },
+  {
+    term: 'réforme woerth',
+    definition:
+      "Réforme des retraites de 2010 portée par Éric Woerth. Repousse l'âge légal de 60 à 62 ans malgré 7 journées de mobilisation interprofessionnelle.",
+    marker: '2010'
+  },
+  {
+    term: 'bercy',
+    definition:
+      "Métonymie pour le ministère de l'Économie et des Finances, situé à Bercy à Paris. Souvent associé aux logiques d'austérité budgétaire.",
+    marker: 'Paris'
+  },
+  {
+    term: 'élysée',
+    definition:
+      "Palais de la République française, résidence et bureau du président. Lieu d'arbitrage final pour les grandes réformes sociales.",
+    marker: 'Paris'
+  },
+  {
+    term: 'préfet',
+    definition:
+      "Représentant de l'État dans un département. Sous le XIXe siècle, principal interlocuteur (et parfois adversaire) des grèves locales.",
+    marker: 'depuis 1800'
+  },
+  {
+    term: 'conseil d\'état',
+    definition:
+      "Plus haute juridiction administrative française. Statue sur les recours contre les décisions de l'État, y compris les décrets sociaux.",
+    marker: '1799'
+  },
+  {
+    term: 'conseil constitutionnel',
+    definition:
+      "Veille à la conformité des lois à la Constitution. Sanctionne ou valide les réformes contestées par 60 députés ou sénateurs.",
+    marker: '1958'
+  },
+  {
+    term: 'chsct',
+    definition:
+      "Comité d'hygiène, de sécurité et des conditions de travail. Créé par les lois Auroux de 1982, fusionné dans le CSE en 2017.",
+    marker: '1982-2017'
+  },
+  {
+    term: 'branche',
+    definition:
+      "Secteur professionnel régi par sa propre convention collective. La négociation de branche structure historiquement le paritarisme français.",
+    marker: 'depuis 1919'
+  },
+  {
+    term: 'pénibilité',
+    definition:
+      "Reconnaissance officielle des conditions de travail dégradantes (charges lourdes, gestes répétitifs, nuit, etc.). Donne droit à un compte personnel de prévention.",
+    marker: '2010+'
+  },
+  {
+    term: 'prud\'hommes',
+    definition:
+      "Conseil de prud'hommes : juridiction paritaire (employeurs/salariés élus à parité) qui tranche les litiges individuels du travail.",
+    marker: '1806 / refonte 1979'
+  },
+  {
+    term: 'opco',
+    definition:
+      "Opérateur de compétences. Organisme paritaire qui finance la formation professionnelle dans une branche depuis la loi « Avenir professionnel » de 2018.",
+    marker: '2018'
+  },
+  {
+    term: 'gpec',
+    definition:
+      "Gestion prévisionnelle des emplois et des compétences. Outil paritaire de planification des évolutions de métiers, des reconversions, de la formation.",
+    marker: '2005+'
+  },
+  {
+    term: 'cnpf',
+    definition:
+      "Conseil national du patronat français. Organisation patronale fondée par Georges Villiers en juin 1946, refondée en MEDEF en 1998.",
+    marker: '1946-1998'
+  },
+  {
+    term: 'cpme',
+    definition:
+      'Confédération des petites et moyennes entreprises (avant 2017 : CGPME). Représente le patronat des PME-TPE, voix souvent distincte du MEDEF.',
+    marker: '2017 (depuis 1944 sous CGPME)'
+  },
+  {
+    term: 'u2p',
+    definition:
+      "Union des entreprises de proximité. Représente les artisans, commerçants et professions libérales. Voix patronale spécifique aux TPE.",
+    marker: '2016'
+  },
+  {
+    term: 'fsu',
+    definition:
+      "Fédération syndicale unitaire. Principale organisation syndicale de l'éducation nationale et de la fonction publique d'État, créée en 1993.",
+    marker: '1993'
+  },
+  {
+    term: 'solidaires',
+    definition:
+      "Union syndicale Solidaires (anciennement Sud-Solidaires). Confédération issue de la scission CFDT télécoms en 1989, ligne d'autonomie radicale.",
+    marker: '1989'
+  },
+  {
+    term: 'unsa',
+    definition:
+      "Union nationale des syndicats autonomes. Confédération créée en 1993 sur une ligne réformiste indépendante des grandes confédérations historiques.",
+    marker: '1993'
+  },
+  {
+    term: 'ai act',
+    definition:
+      "Règlement européen sur l'intelligence artificielle (avril 2024). Classe les usages d'IA en risques (interdits, élevés, limités) et encadre l'IA dans la gestion RH.",
+    marker: 'avril 2024'
+  },
+  {
+    term: 'directive',
+    definition:
+      "Acte juridique de l'Union européenne fixant des objectifs aux États membres, qui doivent transposer en droit national dans un délai donné.",
+    marker: 'instrument UE'
+  },
+  {
+    term: 'cgpf',
+    definition:
+      "Confédération générale du patronat français. Organisation patronale majeure entre 1936 et 1946. Ancêtre direct du CNPF puis du MEDEF.",
+    marker: '1936-1946'
+  },
+  {
+    term: 'cgtu',
+    definition:
+      "CGT-Unitaire. Confédération issue de la scission de la CGT au congrès de Lille en 1921. Affiliée à l'Internationale syndicale rouge (Moscou). Refusionne en 1936 pour le Front populaire.",
+    marker: '1921-1936'
+  },
+  {
+    term: 'collegia',
+    definition:
+      'Associations professionnelles romaines (artisans, marchands, dockers). Reconnues et encadrées par le Sénat. Ancêtre lointain des corporations médiévales.',
+    marker: 'IIIe s. av. - IVe s.'
+  },
+  {
+    term: 'allarde',
+    definition:
+      "Décret des 2 et 17 mars 1791. Abolit les corporations et instaure la liberté du commerce et de l'industrie. Précède la loi Le Chapelier de trois mois.",
+    marker: 'mars 1791'
+  },
+  {
+    term: 'tour de france',
+    definition:
+      "Voyage initiatique des compagnons (Compagnonnage du Devoir). De ville en ville, ils approfondissent leur métier auprès de différents maîtres.",
+    marker: 'depuis le XIIe siècle'
+  },
+  {
+    term: 'mineur',
+    definition:
+      "Ouvrier travaillant dans les mines (charbon, fer, sel). Métier longtemps emblématique du syndicalisme industriel français — Décazeville 1886, fédération nationale 1893.",
+    marker: 'XIXe-XXe s.'
   }
 ];
 

@@ -8,6 +8,15 @@
   }
   let { text, minTermLength = 4 }: Props = $props();
 
+  /* Le clic émet un événement global capté par GameShell, qui ouvre
+     la modale Glossary et défile sur le terme demandé. */
+  function openGlossaryAt(term: string) {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(
+      new CustomEvent('paritas-open-glossary', { detail: { term } })
+    );
+  }
+
   /* Pré-trie par longueur décroissante : « charte d'amiens » avant
      « charte », pour que la regex matche d'abord les expressions
      longues. Échappe les caractères spéciaux. */
@@ -64,23 +73,48 @@
 
 {#each segments as s, i (i)}
   {#if s.kind === 'term'}
-    <span
+    <button
+      type="button"
       class="gloss"
       title={s.marker ? `${s.def} (${s.marker})` : s.def}
-    >{s.value}</span>
+      onclick={(e) => { e.stopPropagation(); openGlossaryAt(s.value); }}
+    >{s.value}</button>
   {:else}
     {s.value}
   {/if}
 {/each}
 
 <style>
+  /* Vocabulaire technique du paritarisme, syndicalisme, lois et État
+     français : italique systématique + pointillé doré qui ouvre la
+     définition glossaire au clic.
+
+     Convention typographique : l'italique signale le vocabulaire
+     spécialisé (savant français). Le clic ouvre la modale glossaire
+     positionnée sur le bon terme. */
   .gloss {
+    font-style: italic;
+    border: 0;
     border-bottom: 1px dashed rgba(244, 213, 139, 0.55);
-    cursor: help;
+    background: transparent;
+    color: #f4d58b;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    /* Permet au bouton inline de s'intégrer dans le flux du texte
+       sans bloc rectangulaire visible. */
+    display: inline;
   }
 
-  .gloss:hover {
+  .gloss:hover,
+  .gloss:focus-visible {
     border-bottom-color: #f4d58b;
-    color: #f4d58b;
+    color: #fde68a;
+    background: rgba(201, 154, 64, 0.08);
+    border-radius: 0.15rem;
+    outline: none;
   }
 </style>

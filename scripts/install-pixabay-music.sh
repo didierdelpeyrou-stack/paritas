@@ -18,7 +18,7 @@ mkdir -p "$DEST"
 # Mapping ère → fichier source (sans extension, le script ajoute .mp3)
 declare -a MAPPING=(
   "xixe::jean-paul-v-naissance-dx27une-industrie-307237"
-  "belle_epoque::sonican-happy-string-quartet-loop-optimistic-classical-music-513274"
+  "belle_epoque::lemonmusicstudio-leva-eternity-149473"
   "guerre_froide::szegvaria-old-nuclear-factory-atmo-drone-thriller-9358"
   "trente_glorieuses::comastudio-inspiring-epic_comfort-106802"
   "crise::drmseq-dark-factory-sequence-514677"
@@ -26,7 +26,7 @@ declare -a MAPPING=(
   "cohabitations::paulyudin-soft-518715"
   "sarkozy::leberch-suspense-516354"
   "hollande::music_for_video-please-calm-my-mind-125566"
-  "macron_i::leberch-piano-516448"
+  "macron_i::solarflex-suspense-tension-515504"
   "macron_ii::solarflex-epic-cinematic-515509"
   "present::aicanvas-ride-through-time-caboose-mix-421631"
 )

@@ -201,20 +201,21 @@ son IDE**
 - [ ] AudioContext recovery au play (tester #15)
 
 ### À faire avant launch (P1)
-- [ ] Réglage « Voix renforcées » a11y (tester #10)
-- [ ] Granularité TTS dans Settings (tester #21)
-- [ ] Stinger transition d'ère (tester #20)
-- [ ] Duck attack 250 → 120 ms (tester #16)
-- [ ] applause-strong → soft pour signatures (tester #18)
-- [ ] Remplacer belle_epoque.mp3 (tester #5)
-- [ ] Remplacer macron_i.mp3 (tester #13)
-- [ ] Étendre banque discours à 6-8 templates (tester #19)
-- [ ] crowd-protest gain 0.85 → 0.65 (tester #11)
+- [x] Réglage « Voix renforcées » a11y (tester #10) — commit 2637c3f
+- [x] Granularité TTS dans Settings (tester #21) — commit cbc6649
+- [x] Stinger transition d'ère (tester #20) — commit 2637c3f
+- [x] Duck attack 250 → 120 ms (tester #16) — commit 2637c3f
+- [x] applause-strong → soft pour signatures (tester #18) — commit cbc6649
+- [x] Remplacer belle_epoque.mp3 (tester #5) → leva-eternity (impressionniste)
+- [x] Remplacer macron_i.mp3 (tester #13) → solarflex-suspense-tension
+- [x] Étendre banque discours à 6-8 templates (tester #19) → 144 textes indexés par registre
+- [x] crowd-protest gain 0.85 → 0.65 (tester #11) — commit 2637c3f
 
 ### Roadmap v1.1 / v2 (P2)
-- Easter egg Internationale ending résistance (tester #14)
-- ElevenLabs / voix off enregistrées (tester #17)
-- Spatialisation / couches dynamiques (tester #22)
+- [x] Easter egg Internationale ending résistance/refondation (tester #14)
+  → audio.playInternationaleEasterEgg() activé sur les 2 endings
+- [ ] ElevenLabs / voix off enregistrées (tester #17) — coût et complexité
+- [ ] Spatialisation / couches dynamiques RTPC-like (tester #22 + Dehmani)
 
 ---
 
@@ -597,3 +598,18 @@ crédibilité presse.
 avant communication grand public. **Total : 9 fixes, ~6h de code
 et 1h de contenu** pour passer de "soft launch" à "presse
 favorable".
+
+---
+
+## État au 2 mai 2026 — fin de cycle
+
+| Bloc | Items | Traités |
+|---|---|---|
+| P0 testeurs + experts | 9 | **9/9** ✅ (commits cbc6649) |
+| P1 testeurs + experts | 9 | **9/9** ✅ (commits 2637c3f + ce commit) |
+| P2 / v1.1+ | 3 | **1/3** (easter egg Internationale ✅) |
+
+**Ne reste à v1.1+** : ElevenLabs (coût hors scope) et
+spatialisation RTPC-like (refacto plus large).
+
+Le jeu est en état presse favorable.

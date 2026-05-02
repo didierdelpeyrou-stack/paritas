@@ -862,6 +862,37 @@ class AudioEngine {
     } catch { /* ignore */ }
   }
 
+  /** Easter egg « Internationale » — joué à la place du thème
+   *  générique sur les endings refondation et resistance. Demande
+   *  formulée par la testeuse Hélène (déléguée CGT). On charge le
+   *  fichier entre_deux_guerres.mp3 (déjà déployé en DP) et on le
+   *  joue 30 s en boucle douce, puis fadeOut. */
+  async playInternationaleEasterEgg() {
+    await this.init();
+    if (this.sfxVol <= 0 && this.musicVol <= 0) return;
+    const url = `${import.meta.env.BASE_URL ?? '/'}audio/eras/entre_deux_guerres.mp3`;
+    try {
+      const player = await new Promise<Tone.Player>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('timeout')), 8000);
+        const p: Tone.Player = new Tone.Player({
+          url,
+          loop: false,
+          fadeIn: 1.6,
+          fadeOut: 2.5,
+          onload: () => { clearTimeout(timer); resolve(p); },
+          onerror: () => { clearTimeout(timer); reject(new Error('decode')); },
+        });
+      });
+      // Routé via sfxGain comme les thèmes d'ending (audible sans
+      // dépendre de la musique d'ambient qui est coupée à l'ending).
+      player.connect(this.sfxGain!);
+      player.start();
+      // Stop programmé après ~25 s avec fadeOut 2.5 s
+      setTimeout(() => { try { player.stop(); } catch { /* ignore */ } }, 25000);
+      setTimeout(() => { try { player.dispose(); } catch { /* ignore */ } }, 30000);
+    } catch { /* fallback : on laisse l'ending generic */ }
+  }
+
   /* ================= SFX fichiers (foule, applaudissements…) ================= */
 
   /** Cache de Tone.Player par identifiant SFX. Lazy-créé. */

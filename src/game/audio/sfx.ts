@@ -76,6 +76,7 @@ interface AudioModule {
     sceneSignaturePaper: () => Promise<void>;
     duckMusic: (factor: number, ms?: number) => void;
     duckSfx: (factor: number, ms?: number) => void;
+    playInternationaleEasterEgg: () => Promise<void>;
   };
 }
 
@@ -250,16 +251,21 @@ class SfxClient {
   }
 
   /** Joue un thème d'ending (5 thèmes distincts ~6-8s). On coupe
-   *  d'abord la boucle ambient — le thème porte la fin tout seul. */
+   *  d'abord la boucle ambient — le thème porte la fin tout seul.
+   *
+   *  Easter egg (Hélène CGT, P2 P1) : sur 'refondation' et
+   *  'resistance', l'Internationale prend la place du thème synth. */
   async playEndingTheme(id: EndingId): Promise<void> {
-    // Le thème respecte le toggle SFX. La musique d'ambient est coupée
-    // pour ne pas masquer le thème, indépendamment du toggle musique.
     if (!this.enabled) return;
     try {
       const mod = await this.load();
       try { mod.audio.stopMusic(); } catch { /* ignore */ }
       try { mod.audio.fadeMusicTo(0, 200); } catch { /* ignore */ }
-      await mod.audio.playEndingTheme(id as EndingThemeId);
+      if (id === 'refondation' || id === 'resistance') {
+        await mod.audio.playInternationaleEasterEgg();
+      } else {
+        await mod.audio.playEndingTheme(id as EndingThemeId);
+      }
     } catch {
       /* ignore */
     }

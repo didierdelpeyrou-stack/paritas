@@ -3,7 +3,7 @@ import type { Scenario } from '../../types';
 export const PERSONA_SCENARIOS: Scenario[] = [
   {
     id: 'jouhaux-nobel-1951',
-    turn: 25,
+    turn: 26,
     date: '10 décembre 1951',
     era: 'guerre_froide',
     title: 'Le Prix Nobel',
@@ -89,7 +89,7 @@ export const PERSONA_SCENARIOS: Scenario[] = [
   },
   {
     id: 'seilliere-rupture-unedic-2001',
-    turn: 37,
+    turn: 50,
     date: '6 juin 2001',
     era: 'cohabitations',
     title: 'Claquer la porte de l’Unédic',

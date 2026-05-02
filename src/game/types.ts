@@ -44,8 +44,6 @@ export type RenderMode = 'reflechi' | 'compulsif';
    ============================================================ */
 
 export type EraId =
-  | 'antiquite'
-  | 'medieval'
   | 'revolution'
   | 'xixe'
   | 'belle_epoque'

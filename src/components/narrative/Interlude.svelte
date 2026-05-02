@@ -32,13 +32,6 @@
   /* Pool d'interludes par ère. Chacun pioche une image symbolique
      et une citation historique du registre culturel adéquat. */
   const POOL: Record<string, InterludeContent[]> = {
-    medieval: [
-      {
-        image: '⚒',
-        quote: "Tour de France, mère des compagnons, table partagée — c'est par le pain qu'on apprend à se compter.",
-        source: 'Tradition compagnonnique'
-      }
-    ],
     revolution: [
       {
         image: '⚖',
@@ -142,13 +135,6 @@
         image: '✺',
         quote: "Le paritarisme n'a pas dit son dernier mot. Il dépend de qui le porte.",
         source: 'Constat ouvert, 2026'
-      }
-    ],
-    antiquite: [
-      {
-        image: '◊',
-        quote: "Collegium fabrorum — d'Ostie à Lugdunum, le métier se reconnaît au sceau et à la table.",
-        source: "Inscriptions épigraphiques, IIe siècle"
       }
     ]
   };

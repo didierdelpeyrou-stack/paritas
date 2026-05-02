@@ -19,7 +19,7 @@ import type { Scenario } from '../../types';
 export const FUTUR_SCENARIOS: Scenario[] = [
   {
     id: 'algorithmisation-2026',
-    turn: 76,
+    turn: 93,
     date: '2026',
     era: 'present',
     title: "L'algorithme qui licencie",
@@ -104,7 +104,7 @@ export const FUTUR_SCENARIOS: Scenario[] = [
   },
   {
     id: 'plateformes-directive-2026',
-    turn: 82,
+    turn: 94,
     date: 'mars 2026',
     era: 'present',
     title: 'Travailleurs des plateformes',
@@ -187,7 +187,7 @@ export const FUTUR_SCENARIOS: Scenario[] = [
   },
   {
     id: 'gpec-verte-2027',
-    turn: 88,
+    turn: 96,
     date: '2027',
     era: 'present',
     title: 'Reconversions industrielles',

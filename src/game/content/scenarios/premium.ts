@@ -3,7 +3,7 @@ import type { Scenario } from '../../types';
 export const PREMIUM_SCENARIOS: Scenario[] = [
   {
     id: 'le-chapelier-1791',
-    turn: 7,
+    turn: 2,
     date: '14 juin 1791',
     era: 'revolution',
     title: 'La coalition interdite',
@@ -63,7 +63,7 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
   },
   {
     id: 'canuts-1831',
-    turn: 10,
+    turn: 6,
     date: '21 novembre 1831',
     era: 'xixe',
     title: 'Vivre en travaillant',
@@ -116,7 +116,7 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
   },
   {
     id: 'ollivier-1864',
-    turn: 12,
+    turn: 8,
     date: '25 mai 1864',
     era: 'xixe',
     title: 'Le délit qui tombe',
@@ -163,7 +163,7 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
   },
   {
     id: 'waldeck-1884',
-    turn: 14,
+    turn: 10,
     date: '21 mars 1884',
     era: 'xixe',
     title: 'Sortir de la clandestinité',
@@ -209,55 +209,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
     ]
   },
   {
-    id: 'amiens-1906',
-    turn: 16,
-    date: '13 octobre 1906',
-    era: 'belle_epoque',
-    title: 'La Charte d’Amiens',
-    subtitle: 'Indépendance syndicale',
-    mood: 'tendu',
-    premium: true,
-    historicalContext:
-      'Au congrès de la CGT, la Charte d’Amiens affirme l’indépendance du syndicalisme vis-à-vis des partis politiques et donne une place centrale à la grève générale.',
-    setup: {
-      reflechi: 'Le syndicat doit-il être un outil politique, un contre-pouvoir autonome, ou une institution de négociation ?',
-      compulsif: 'Dans la salle, chaque mot arrache un avenir. Parti, syndicat, révolution, salaire : personne ne range les couteaux.'
-    },
-    actors: ['base', 'opinion', 'etat'],
-    choices: [
-      {
-        id: 'amiens-independance',
-        text: 'Voter l’indépendance syndicale stricte.',
-        intent: 'Protéger le mandat de la base.',
-        theoryHint: 'Théorie de l’agence : éviter que le représentant syndical ne devienne l’agent d’un parti.',
-        effects: { resources: { confiance: 10, legitimite: 5, institution: 5 }, actors: { base: { trust: 12 }, etat: { trust: -3 } } },
-        consequence: { immediate: 'La motion passe. Le syndicat parlera en son nom. Cela ne résout pas les conflits, mais cela clarifie la source du mandat.' },
-        traitShift: { batisseur: 2, rupture: 1 }
-      },
-      {
-        id: 'amiens-greve-generale',
-        text: 'Faire de la grève générale la boussole absolue.',
-        intent: 'Radicaliser la doctrine.',
-        theoryHint: 'Engagement crédible : annoncer que tu peux aller au bout rend parfois la négociation plus sérieuse.',
-        effects: { resources: { rapportDeForce: 12, confiance: 8, institution: -5, legitimite: -4 }, actors: { etat: { stance: 'dur', pressure: 10 }, opinion: { trust: -3 } } },
-        consequence: { immediate: 'La salle se lève. La doctrine donne une ivresse. Elle donne aussi une pente : chaque compromis devra désormais se justifier devant l’absolu.' },
-        traitShift: { rupture: 3, tribun: 2 }
-      },
-      {
-        id: 'amiens-ouvrir-negociation',
-        text: 'Ajouter une doctrine de négociation de branche.',
-        intent: 'Préserver la rupture sans refuser l’accord.',
-        theoryHint: 'Harvard : distinguer position affichée et intérêts durables.',
-        effects: { resources: { institution: 8, legitimite: 6, rapportDeForce: 2 }, actors: { base: { trust: -2, patience: 5 }, adversaire: { trust: 5 } } },
-        consequence: { immediate: 'La formulation passe difficilement. Les puristes grincent. Mais tu laisses une porte : la grève comme horizon, la convention comme outil.' },
-        traitShift: { pragmatique: 2, technocrate: 1 },
-        requiresTrait: 'pragmatique'
-      }
-    ]
-  },
-  {
     id: 'conventions-1919',
-    turn: 18,
+    turn: 17,
     date: '25 mars 1919',
     era: 'entre_deux_guerres',
     title: 'Signer pour toute une branche',
@@ -304,7 +257,7 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
   },
   {
     id: 'securite-sociale-1945',
-    turn: 22,
+    turn: 23,
     date: '4 et 19 octobre 1945',
     era: 'reconstruction',
     title: 'Les caisses de la dignité',
@@ -352,7 +305,7 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
   },
   {
     id: 'unedic-1958',
-    turn: 26,
+    turn: 29,
     date: '31 décembre 1958',
     era: 'trente_glorieuses',
     title: 'Assurer le chômage',
@@ -399,7 +352,7 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
   },
   {
     id: 'grenelle-1968',
-    turn: 28,
+    turn: 31,
     date: '27 mai 1968',
     era: 'trente_glorieuses',
     title: 'La table sous les pavés',
@@ -447,7 +400,7 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
   },
   {
     id: 'auroux-1982',
-    turn: 31,
+    turn: 37,
     date: '1982',
     era: 'mitterrand',
     title: 'Faire entrer la parole',
@@ -494,7 +447,7 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
   },
   {
     id: 'cse-2017',
-    turn: 40,
+    turn: 69,
     date: '22 septembre 2017',
     era: 'macron_i',
     title: 'Fusionner les instances',
@@ -540,7 +493,7 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
   },
   {
     id: 'retraites-2023',
-    turn: 44,
+    turn: 79,
     date: '2023',
     era: 'macron_ii',
     title: 'La réforme et la rue',

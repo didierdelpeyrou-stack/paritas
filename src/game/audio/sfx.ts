@@ -41,8 +41,6 @@ import type { EraId } from '../types';
  * On reste large : on regroupe les époques par grande période.
  */
 const ERA_TO_AUDIO: Record<EraId, number> = {
-  antiquite: 0,
-  medieval: 0,
   revolution: 0,
   xixe: 1,
   belle_epoque: 2,

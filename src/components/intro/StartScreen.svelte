@@ -64,7 +64,7 @@
   </header>
 
   <div class="bg-ink/40 border-l-2 border-gold px-4 py-3 text-parchment-dim leading-relaxed text-sm">
-    Cent décisions, deux camps, deux siècles. Lois Le Chapelier, accords Matignon, Sécurité sociale, Mai 68, Auroux, Refondation sociale, Retraites 2023.
+    Cent décisions, deux camps, de 1789 à 2026. Cahiers de doléances, Le Chapelier, Canuts, Waldeck-Rousseau, Charte d'Amiens, Matignon, Sécurité sociale, Mai 68, Auroux, Plan Juppé, Retraites 2023.
     À chaque tour, tu prends parti. Aucun choix n'est neutre.
     <span class="block mt-2 italic text-parchment-dim/80">Ce n'est pas un divertissement, c'est une simulation historique narrative.</span>
   </div>

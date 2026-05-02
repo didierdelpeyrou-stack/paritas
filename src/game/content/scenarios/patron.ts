@@ -3,7 +3,7 @@ import type { Scenario } from '../../types';
 export const PATRON_SCENARIOS: Scenario[] = [
   {
     id: 'comite-forges-1864',
-    turn: 13,
+    turn: 9,
     date: '1864',
     era: 'xixe',
     title: 'Le Comité des Forges',
@@ -171,7 +171,7 @@ export const PATRON_SCENARIOS: Scenario[] = [
   },
   {
     id: 'cnpf-1946',
-    turn: 23,
+    turn: 24,
     date: '12 juin 1946',
     era: 'reconstruction',
     title: 'CNPF, Villiers, refondation',
@@ -249,7 +249,7 @@ export const PATRON_SCENARIOS: Scenario[] = [
   },
   {
     id: 'medef-1998',
-    turn: 36,
+    turn: 48,
     date: '27 octobre 1998',
     era: 'cohabitations',
     title: 'Refondation sociale',
@@ -334,7 +334,7 @@ export const PATRON_SCENARIOS: Scenario[] = [
   },
   {
     id: 'grenelle-patron-1968',
-    turn: 29,
+    turn: 32,
     date: '27 mai 1968',
     era: 'trente_glorieuses',
     title: 'Grenelle, côté patronal',
@@ -419,7 +419,7 @@ export const PATRON_SCENARIOS: Scenario[] = [
   },
   {
     id: 'auroux-patron-1982',
-    turn: 32,
+    turn: 38,
     date: '4 août 1982',
     era: 'mitterrand',
     title: 'Auroux : encadrer ou subir',
@@ -499,7 +499,7 @@ export const PATRON_SCENARIOS: Scenario[] = [
   },
   {
     id: 'loi-travail-patron-2016',
-    turn: 39,
+    turn: 68,
     date: '8 août 2016',
     era: 'hollande',
     title: 'Inversion des normes',
@@ -578,7 +578,7 @@ export const PATRON_SCENARIOS: Scenario[] = [
   },
   {
     id: 'retraites-patron-2023',
-    turn: 45,
+    turn: 80,
     date: '14 avril 2023',
     era: 'macron_ii',
     title: 'Retraites 2023, la position patronale',

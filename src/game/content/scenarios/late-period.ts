@@ -14,7 +14,7 @@ import type { Scenario } from '../../types';
 export const LATE_PERIOD_SCENARIOS: Scenario[] = [
   {
     id: 'plan-juppe-1995',
-    turn: 48,
+    turn: 45,
     date: '15 novembre — 15 décembre 1995',
     era: 'cohabitations',
     title: 'Plan Juppé',
@@ -98,7 +98,7 @@ export const LATE_PERIOD_SCENARIOS: Scenario[] = [
   },
   {
     id: 'el-khomri-2016',
-    turn: 68,
+    turn: 67,
     date: '8 août 2016',
     era: 'hollande',
     title: 'Loi El Khomri',
@@ -182,7 +182,7 @@ export const LATE_PERIOD_SCENARIOS: Scenario[] = [
   },
   {
     id: 'ordonnances-macron-2017',
-    turn: 72,
+    turn: 70,
     date: '22 septembre 2017',
     era: 'macron_i',
     title: 'Ordonnances Macron',

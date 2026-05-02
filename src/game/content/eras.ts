@@ -20,29 +20,17 @@ export interface EraDef {
   hue: 'amber' | 'rose' | 'emerald' | 'violet' | 'cyan' | 'slate';
 }
 
-/** Liste des ères dans l'ordre chronologique. */
+/** Liste des ères dans l'ordre chronologique.
+ *  Le jeu démarre directement à la Révolution (T1 = 1789). Les ères
+ *  pré-révolutionnaires (Antiquité, Moyen Âge) ont été retirées :
+ *  elles ne portaient qu'un scénario chacune et sortaient du périmètre
+ *  syndical/paritaire moderne. */
 export const ERAS: EraDef[] = [
-  {
-    id: 'antiquite',
-    name: 'Antiquité',
-    period: 'IIIe s. av. — IIIe s. ap. J.-C.',
-    fromTurn: 1,
-    blurb: 'Collegia romains. L\'État autorise les associations professionnelles, mais en garde le contrôle.',
-    hue: 'amber'
-  },
-  {
-    id: 'medieval',
-    name: 'Moyen Âge',
-    period: 'XIIe — XVe s.',
-    fromTurn: 4,
-    blurb: 'Corporations, jurandes, compagnonnages. Le métier se hiérarchise en maître / compagnon / apprenti.',
-    hue: 'amber'
-  },
   {
     id: 'revolution',
     name: 'Révolution',
     period: '1789 — 1799',
-    fromTurn: 7,
+    fromTurn: 1,
     firstYear: 1789,
     blurb: 'Le décret d\'Allarde abolit les corporations ; la loi Le Chapelier interdit toute coalition.',
     hue: 'rose'
@@ -51,7 +39,7 @@ export const ERAS: EraDef[] = [
     id: 'xixe',
     name: 'XIXe industriel',
     period: '1800 — 1900',
-    fromTurn: 9,
+    fromTurn: 4,
     firstYear: 1800,
     blurb: 'Ligues clandestines, prud\'hommes, Canuts, Ollivier, Waldeck-Rousseau. Le syndicalisme remonte.',
     hue: 'rose'
@@ -60,7 +48,7 @@ export const ERAS: EraDef[] = [
     id: 'belle_epoque',
     name: 'Belle Époque',
     period: '1900 — 1914',
-    fromTurn: 15,
+    fromTurn: 14,
     firstYear: 1900,
     blurb: 'CGT, Charte d\'Amiens. Le syndicalisme révolutionnaire pose son indépendance vis-à-vis des partis.',
     hue: 'emerald'
@@ -69,7 +57,7 @@ export const ERAS: EraDef[] = [
     id: 'entre_deux_guerres',
     name: 'Entre-deux-guerres',
     period: '1919 — 1939',
-    fromTurn: 18,
+    fromTurn: 17,
     firstYear: 1919,
     blurb: 'Conventions collectives 1919. Front populaire 1936. Premier paritarisme ascendant.',
     hue: 'emerald'
@@ -78,7 +66,7 @@ export const ERAS: EraDef[] = [
     id: 'reconstruction',
     name: 'Reconstruction',
     period: '1944 — 1947',
-    fromTurn: 22,
+    fromTurn: 23,
     firstYear: 1944,
     blurb: 'Programme du CNR "Les Jours heureux". Ordonnances Sécurité sociale du 4 octobre 1945.',
     hue: 'violet'
@@ -87,7 +75,7 @@ export const ERAS: EraDef[] = [
     id: 'guerre_froide',
     name: 'Guerre froide',
     period: '1947 — 1958',
-    fromTurn: 24,
+    fromTurn: 25,
     firstYear: 1947,
     blurb: 'Scission CGT / FO. Constitution de FO. Deux confédérations rivales.',
     hue: 'violet'
@@ -96,7 +84,7 @@ export const ERAS: EraDef[] = [
     id: 'trente_glorieuses',
     name: 'Trente Glorieuses',
     period: '1958 — 1973',
-    fromTurn: 26,
+    fromTurn: 29,
     firstYear: 1958,
     blurb: 'Unédic 1958, Jeanneney 1967, Grenelle 1968. Apogée du paritarisme.',
     hue: 'cyan'
@@ -105,7 +93,7 @@ export const ERAS: EraDef[] = [
     id: 'crise',
     name: 'Crise pétrolière',
     period: '1973 — 1981',
-    fromTurn: 30,
+    fromTurn: 35,
     firstYear: 1973,
     blurb: 'Chômage de masse. Patronat cherche à réduire les coûts.',
     hue: 'slate'
@@ -114,7 +102,7 @@ export const ERAS: EraDef[] = [
     id: 'mitterrand',
     name: 'Mitterrand',
     period: '1981 — 1995',
-    fromTurn: 31,
+    fromTurn: 37,
     firstYear: 1981,
     blurb: 'Lois Auroux 1982. Abstention massive 1983. Cohabitations.',
     hue: 'rose'
@@ -122,8 +110,8 @@ export const ERAS: EraDef[] = [
   {
     id: 'cohabitations',
     name: 'Cohabitations',
-    period: '1986 — 2002',
-    fromTurn: 34,
+    period: '1995 — 2007',
+    fromTurn: 45,
     firstYear: 1995,
     blurb: 'Plan Juppé, 35h Aubry, MEDEF Seillière. Refondation sociale.',
     hue: 'slate'
@@ -132,7 +120,7 @@ export const ERAS: EraDef[] = [
     id: 'sarkozy',
     name: 'Sarkozy',
     period: '2007 — 2012',
-    fromTurn: 37,
+    fromTurn: 57,
     firstYear: 2007,
     blurb: 'Loi Larcher. Reprise étatique de la formation professionnelle.',
     hue: 'slate'
@@ -141,7 +129,7 @@ export const ERAS: EraDef[] = [
     id: 'hollande',
     name: 'Hollande',
     period: '2012 — 2017',
-    fromTurn: 39,
+    fromTurn: 63,
     firstYear: 2012,
     blurb: 'Loi El Khomri 2016. Premières inversions de la hiérarchie des normes.',
     hue: 'slate'
@@ -150,7 +138,7 @@ export const ERAS: EraDef[] = [
     id: 'macron_i',
     name: 'Macron I',
     period: '2017 — 2022',
-    fromTurn: 40,
+    fromTurn: 69,
     firstYear: 2017,
     blurb: 'Ordonnances Macron, CSE, "lettre de cadrage" Unédic.',
     hue: 'slate'
@@ -159,7 +147,7 @@ export const ERAS: EraDef[] = [
     id: 'macron_ii',
     name: 'Macron II',
     period: '2022 — 2026',
-    fromTurn: 44,
+    fromTurn: 79,
     firstYear: 2022,
     blurb: 'Réforme retraites 2023. Triple ponction Agirc-Arrco / Action Logement / Unédic.',
     hue: 'slate'
@@ -168,7 +156,7 @@ export const ERAS: EraDef[] = [
     id: 'present',
     name: 'Présent',
     period: '2026 →',
-    fromTurn: 48,
+    fromTurn: 91,
     firstYear: 2026,
     blurb: 'Bras de fer en cours. Le paritarisme à la croisée des chemins.',
     hue: 'amber'
@@ -194,10 +182,9 @@ export function eraById(id: EraId): EraDef {
  * Nom de la monnaie en circulation pour une ère donnée. Sert à libeller
  * les coûts de la caisse dans l'UI selon la période historique.
  *
- * - Antiquité  : sesterces (Rome impériale)
- * - Médiéval & Révolution : livres tournois (la livre tournois reste la
- *   monnaie de compte courante jusqu'à l'introduction du franc germinal en
- *   l'an III ; pour la lisibilité du joueur, on la garde sur tout 1789-1799)
+ * - Révolution : livres tournois (la livre tournois reste la monnaie de
+ *   compte courante jusqu'à l'introduction du franc germinal en l'an III ;
+ *   pour la lisibilité du joueur, on la garde sur tout 1789-1799)
  * - 1800 → ~2000 : francs (germinal puis francs anciens, nouveaux francs
  *   à partir de 1960 — on garde "francs" pour ne pas surcharger)
  * - Sarkozy → présent : euros (l'euro fiduciaire entre en circulation
@@ -205,9 +192,6 @@ export function eraById(id: EraId): EraDef {
  */
 export function currencyForEra(eraId: EraId): string {
   switch (eraId) {
-    case 'antiquite':
-      return 'sesterces';
-    case 'medieval':
     case 'revolution':
       return 'livres';
     case 'sarkozy':

@@ -14,7 +14,7 @@ import type { Scenario } from '../../types';
 export const BELLE_EPOQUE_SCENARIOS: Scenario[] = [
   {
     id: 'charte-amiens-1906',
-    turn: 15,
+    turn: 14,
     date: '13 octobre 1906',
     era: 'belle_epoque',
     title: "Charte d'Amiens",
@@ -100,7 +100,7 @@ export const BELLE_EPOQUE_SCENARIOS: Scenario[] = [
   },
   {
     id: 'cheminots-1910',
-    turn: 16,
+    turn: 15,
     date: '10 octobre 1910',
     era: 'belle_epoque',
     title: 'Grève des cheminots',
@@ -184,7 +184,7 @@ export const BELLE_EPOQUE_SCENARIOS: Scenario[] = [
   },
   {
     id: 'scission-fo-1947',
-    turn: 24,
+    turn: 25,
     date: '19 décembre 1947',
     era: 'guerre_froide',
     title: 'Scission Force Ouvrière',

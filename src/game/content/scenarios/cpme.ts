@@ -10,7 +10,7 @@ import type { Scenario } from '../../types';
 export const CPME_SCENARIOS: Scenario[] = [
   {
     id: 'cpme-ordonnances-cse-2017',
-    turn: 73,
+    turn: 71,
     date: '22 septembre 2017',
     era: 'macron_i',
     title: 'CPME face aux ordonnances',
@@ -95,7 +95,7 @@ export const CPME_SCENARIOS: Scenario[] = [
   },
   {
     id: 'u2p-artisanat-2024',
-    turn: 80,
+    turn: 82,
     date: '2024',
     era: 'macron_ii',
     title: 'L\'artisanat face à la formation pro',

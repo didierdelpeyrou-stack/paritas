@@ -1,88 +1,17 @@
 import type { Scenario } from '../../types';
 
 /**
- * Période pré-1864 — 5 scénarios qui rythment les premiers tours du
- * jeu : compagnonnages médiévaux, cahiers de doléances, livret ouvrier,
- * sociétés de secours mutuel, procès des coalitions. Pose
- * progressivement les enjeux du syndicalisme avant son existence
- * légale.
+ * Période 1789-1850 — 4 scénarios fondateurs qui rythment les
+ * premiers tours du jeu : cahiers de doléances, livret ouvrier
+ * impérial, sociétés de secours mutuel post-Le Chapelier, procès
+ * des coalitions. Pose progressivement les enjeux du syndicalisme
+ * avant son existence légale.
  */
 
 export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
   {
-    id: 'compagnonnage-1700',
-    turn: 2,
-    date: 'XVIIIe siècle',
-    era: 'medieval',
-    title: 'Le Tour de France',
-    subtitle: 'Compagnonnage du Devoir',
-    mood: 'calme',
-    premium: true,
-    historicalContext:
-      "Avant la Révolution, les compagnons du Devoir circulent de ville en ville pour parfaire leur métier. Ils logent dans des « mères », s'organisent en sociétés serrées, défendent les tarifs face aux maîtres, et perpétuent des rites secrets que les corporations urbaines tolèrent à demi-mot.",
-    setup: {
-      reflechi:
-        "Le compagnonnage tient un équilibre fragile : assez visible pour défendre les ouvriers itinérants, assez discret pour ne pas attirer la maréchaussée. La question est moins doctrinale que pratique : comment financer la mère, comment honorer les compagnons morts, comment refuser un maître qui paie mal.",
-      compulsif:
-        "À l'auberge de la Reine, on partage le pain et la chanson de métier. Le maître charpentier de Lyon refuse un tarif plus bas que celui de la Trinité. La table approuve d'un grognement collectif."
-    },
-    actors: ['base', 'adversaire', 'opinion'],
-    voices: [
-      { trait: 'batisseur', text: 'On bâtit en silence ce que le siècle suivant nommera syndicat.' },
-      { trait: 'rupture', text: 'Une auberge n\'est pas une assemblée. Mais c\'est déjà beaucoup.' }
-    ],
-    choices: [
-      {
-        id: 'compagnonnage-rite',
-        text: 'Renforcer les rites internes du compagnonnage.',
-        intent: 'Cohésion par la tradition.',
-        theoryHint: "Cohésion symbolique : un rite partagé crée une dette d'appartenance plus forte qu'un règlement.",
-        effects: {
-          resources: { confiance: 6, institution: 3, legitimite: -1 },
-          actors: { base: { trust: 7 } }
-        },
-        consequence: {
-          immediate:
-            "Trois nouveaux compagnons sont reçus à la mère de Tours. Le rituel se prolonge tard ; on parle peu de salaires, beaucoup d'honneur."
-        },
-        traitShift: { batisseur: 2, paternaliste: 1 }
-      },
-      {
-        id: 'compagnonnage-greve',
-        text: 'Refuser collectivement les chantiers sous-payés.',
-        intent: 'Coalition discrète des compagnons.',
-        theoryHint: "Première forme de grève — sans le mot, sans la reconnaissance, mais avec la pratique.",
-        effects: {
-          resources: { rapportDeForce: 5, confiance: 4, caisse: -3 },
-          actors: { adversaire: { trust: -4, patience: -3 }, base: { trust: 5 } }
-        },
-        consequence: {
-          immediate:
-            "Quatre maîtres charpentiers se retrouvent sans bras pendant trois semaines. L'un cède, les autres font venir des hommes de Picardie."
-        },
-        traitShift: { rupture: 2 },
-        flag: 'epuise-mouvement'
-      },
-      {
-        id: 'compagnonnage-corporation',
-        text: 'Composer avec les jurandes municipales.',
-        intent: 'S\'intégrer aux institutions corporatives.',
-        theoryHint: "Cooptation : les jurandes peuvent être un canal de revendication si on accepte leurs règles.",
-        effects: {
-          resources: { institution: 4, legitimite: 3, rapportDeForce: -2 },
-          actors: { etat: { trust: 3 } }
-        },
-        consequence: {
-          immediate:
-            "Le doyen des charpentiers signe un protocole avec la jurande de Lyon : tarifs respectés en échange d'un calme garanti pour deux ans."
-        },
-        traitShift: { pragmatique: 2, batisseur: 1 }
-      }
-    ]
-  },
-  {
     id: 'cahiers-doleances-1789',
-    turn: 5,
+    turn: 1,
     date: 'mars 1789',
     era: 'revolution',
     title: 'Cahiers de doléances',
@@ -159,7 +88,7 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
   },
   {
     id: 'livret-ouvrier-1803',
-    turn: 8,
+    turn: 4,
     date: '12 avril 1803',
     era: 'xixe',
     title: 'Le livret ouvrier',
@@ -231,7 +160,7 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
   },
   {
     id: 'mutuelle-1820',
-    turn: 9,
+    turn: 5,
     date: '1820-1830',
     era: 'xixe',
     title: 'Sociétés de secours mutuel',
@@ -303,7 +232,7 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
   },
   {
     id: 'proces-coalitions-1845',
-    turn: 11,
+    turn: 7,
     date: '1845-1850',
     era: 'xixe',
     title: 'Le procès des coalitions',

@@ -164,8 +164,6 @@
   const reversedLog = $derived(rebirth.log.slice(-15).slice().reverse());
 
   const hueByEra: Record<string, 'amber' | 'rose' | 'emerald' | 'violet' | 'cyan' | 'slate'> = {
-    antiquite: 'amber',
-    medieval: 'amber',
     revolution: 'rose',
     xixe: 'rose',
     belle_epoque: 'emerald',

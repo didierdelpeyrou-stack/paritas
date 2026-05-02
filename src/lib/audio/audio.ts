@@ -251,6 +251,9 @@ class AudioEngine {
   private musicFilter?: Tone.Filter;
   private sfxComp?: Tone.Compressor;
   private fileReverb?: Tone.Reverb;
+  private fileShelf?: Tone.Filter;
+  private distanceFilter?: Tone.Filter;
+  private distanceReverb?: Tone.Reverb;
   /** Multiplicateurs de duck (1 = pas de duck, 0.4 = -8dB env). */
   private musicDuckFactor = 1;
   private sfxDuckFactor = 1;
@@ -281,15 +284,18 @@ class AudioEngine {
     this.musicGain = new Tone.Gain(this.musicVol).toDestination();
     this.musicReverb = new Tone.Reverb({ decay: 4, wet: 0.45 }).connect(this.musicGain);
     this.musicFilter = new Tone.Filter({ frequency: 2400, type: 'lowpass', rolloff: -12 }).connect(this.musicReverb);
-    /* fileGain est séparé : la musique fichier est déjà mastered à
-       -14 LUFS. On ne la passe PAS par le filter+reverb fort du synth
-       (ça la noie). Mais l'expert Alaerts d'Ubisoft a raison : sans
-       AUCUN reverb, les fichiers sonnent « collés sur » la voix TTS,
-       l'oreille perçoit la disjonction stéréo. Solution : reverb
-       très léger (decay 1.2 s, wet 0.10) avant le gain — assez pour
-       partager l'espace spatial, pas assez pour boueux les Pixabay. */
+    /* Routing musique fichier — chaîne pro :
+       Player → gate (per-player) → fileReverb (decay 1.2 s, wet 0.10)
+       → fileShelf (highshelf -2.5 dB > 4 kHz) → fileGain → destination
+       Le high-shelf laisse de la place perceptuelle aux voix TTS
+       (1-3 kHz) et aux SFX one-shots (1-5 kHz). */
     this.fileGain = new Tone.Gain(this.fileVol).toDestination();
-    this.fileReverb = new Tone.Reverb({ decay: 1.2, wet: 0.10 }).connect(this.fileGain);
+    this.fileShelf = new Tone.Filter({
+      type: 'highshelf',
+      frequency: 4000,
+      gain: -2.5,
+    }).connect(this.fileGain);
+    this.fileReverb = new Tone.Reverb({ decay: 1.2, wet: 0.10 }).connect(this.fileShelf);
 
     /* SFX → Compresseur léger → Destination. Plage dynamique des SFX
        trop large dans les transports en commun (testeur Ahmed) : les
@@ -304,6 +310,18 @@ class AudioEngine {
       knee: 6,
     }).toDestination();
     this.sfxGain = new Tone.Gain(this.sfxVol).connect(this.sfxComp);
+
+    /* Bus "distance" pour les sons qu'on veut éloignés (foule
+       lointaine, cloche dans la brume) : lowpass 2.4 kHz +
+       reverb plus longue (decay 3.5 s, wet 0.4). Routé après
+       compression pour que les pics de la foule n'écrasent pas
+       le mix. */
+    this.distanceReverb = new Tone.Reverb({ decay: 3.5, wet: 0.4 }).connect(this.sfxGain);
+    this.distanceFilter = new Tone.Filter({
+      type: 'lowpass',
+      frequency: 2400,
+      rolloff: -12,
+    }).connect(this.distanceReverb);
 
     /* Bass : triangle doux, attaque allongée, release long. */
     this.bassSynth = new Tone.Synth({
@@ -353,6 +371,10 @@ class AudioEngine {
 
   /** Player de fichier audio si un MP3 d'ère est trouvé. Lazy-créé. */
   private filePlayer?: Tone.Player;
+  /** Gain dédié au filePlayer courant — permet un crossfade
+   *  exponentiel (equal-power approx) au lieu du fade linéaire de
+   *  Tone.Player qui dipait perceptuellement à -3 dB au milieu. */
+  private filePlayerGain?: Tone.Gain;
   /** URL de la track actuellement jouée (variante incluse). */
   private currentFileUrl?: string;
   /** Timestamp du dernier swap de track, pour debouncer les
@@ -407,13 +429,14 @@ class AudioEngine {
     if (!url) return false;
     // Si on joue déjà cette même URL, ne pas restart
     if (this.currentFileUrl === url && this.filePlayer) return true;
-    /* Charge le buffer via le callback onload du player plutôt que
-     * Tone.loaded() (qui résout parfois trop tôt entre deux loads
-     * consécutifs et fait que .start() joue avec un buffer vide).
+    /* Charge le buffer via onload (Tone.loaded() résout parfois trop
+     * tôt entre deux loads consécutifs).
      *
-     * fadeIn/fadeOut à 4 s pour un crossfade vraiment continu —
-     * l'ancienne et la nouvelle musique se chevauchent 4 secondes,
-     * fini l'effet de coupure entre ères. */
+     * Crossfade equal-power : chaque player a son propre Tone.Gain
+     * en sortie, ramped exponentiellement de 0 à 1 (in) ou 1 à 0
+     * (out) sur 4 s. La somme cos²+sin² ≈ 1 → loudness perçue
+     * constante. Mieux que fadeIn linéaire de Tone.Player qui dipait
+     * à -3 dB au milieu de la transition. */
     let next: Tone.Player;
     try {
       next = await new Promise<Tone.Player>((resolve, reject) => {
@@ -421,8 +444,9 @@ class AudioEngine {
         const p: Tone.Player = new Tone.Player({
           url,
           loop: true,
-          fadeIn: 4,
-          fadeOut: 4,
+          // fadeIn/Out gérés manuellement via gateGain pour courbe expo
+          fadeIn: 0,
+          fadeOut: 0,
           onload: () => { clearTimeout(timer); resolve(p); },
           onerror: () => { clearTimeout(timer); reject(new Error('decode')); },
         });
@@ -432,15 +456,30 @@ class AudioEngine {
       return false;
     }
     try {
-      next.connect(this.fileReverb ?? this.fileGain!);
-      next.start();
-      if (this.filePlayer) {
-        const old = this.filePlayer;
-        old.fadeOut = 4;
-        old.stop('+4');
-        setTimeout(() => { try { old.dispose(); } catch { /* ignore */ } }, 4500);
+      // Gate gain par player : démarre à ~0 puis ramp expo vers 1
+      const gateGain = new Tone.Gain(0.0001).connect(this.fileReverb ?? this.fileGain!);
+      next.connect(gateGain);
+      // Démarre le player à un offset aléatoire dans le fichier pour
+      // que le même loop ne sonne pas pareil d'une ère à l'autre.
+      const dur = next.buffer?.duration ?? 40;
+      const offset = Math.random() * Math.max(1, dur * 0.4);
+      next.start(undefined, offset);
+      // Ramp exponentielle vers la cible (~equal-power)
+      gateGain.gain.exponentialRampTo(1, 4);
+
+      if (this.filePlayer && this.filePlayerGain) {
+        const oldPlayer = this.filePlayer;
+        const oldGain = this.filePlayerGain;
+        // Ramp expo vers ~0 (Tone interdit ramp vers 0 strict)
+        oldGain.gain.exponentialRampTo(0.0001, 4);
+        setTimeout(() => {
+          try { oldPlayer.stop(); } catch { /* ignore */ }
+          try { oldPlayer.dispose(); } catch { /* ignore */ }
+          try { oldGain.dispose(); } catch { /* ignore */ }
+        }, 4500);
       }
       this.filePlayer = next;
+      this.filePlayerGain = gateGain;
       this.currentFileUrl = url;
       this.lastTrackSwapTs = Date.now();
       return true;
@@ -557,14 +596,19 @@ class AudioEngine {
       clearInterval(this.loopId);
       this.loopId = undefined;
     }
-    if (this.filePlayer) {
+    if (this.filePlayer && this.filePlayerGain) {
       try {
-        this.filePlayer.fadeOut = 0.6;
-        this.filePlayer.stop('+0.6');
         const p = this.filePlayer;
-        setTimeout(() => { try { p.dispose(); } catch { /* ignore */ } }, 800);
+        const g = this.filePlayerGain;
+        g.gain.exponentialRampTo(0.0001, 1.2);
+        setTimeout(() => {
+          try { p.stop(); } catch { /* ignore */ }
+          try { p.dispose(); } catch { /* ignore */ }
+          try { g.dispose(); } catch { /* ignore */ }
+        }, 1400);
       } catch { /* ignore */ }
       this.filePlayer = undefined;
+      this.filePlayerGain = undefined;
       this.currentFileUrl = undefined;
     }
   }
@@ -981,6 +1025,12 @@ class AudioEngine {
   /** Cache des disponibilités (HEAD probe). undefined = jamais testé. */
   private sfxFileAvailability: Partial<Record<SfxFileId, boolean>> = {};
 
+  /** Quels SFX passent par le bus "distance" (lowpass + reverb).
+   *  Donne un sentiment d'éloignement / d'espace. */
+  private isDistantSfx(id: SfxFileId): boolean {
+    return id === 'distant-crowd' || id === 'church-bell';
+  }
+
   private async loadSfxFile(id: SfxFileId): Promise<Tone.Player | null> {
     if (this.sfxFilePlayers[id]) return this.sfxFilePlayers[id]!;
     if (this.sfxFileAvailability[id] === false) return null;
@@ -997,19 +1047,21 @@ class AudioEngine {
       return null;
     }
     try {
-      /* Idem hybrid loader d'ère : on attend onload pour éviter la
-       * race condition de Tone.loaded() entre plusieurs SFX files. */
+      /* Fade plus doux sur les pads (loop) que sur les one-shots.
+       * Crossfade entre 2 starts du même player géré par fadeIn/Out. */
       const player = await new Promise<Tone.Player>((resolve, reject) => {
         const timer = setTimeout(() => reject(new Error('timeout')), 8000);
         const p: Tone.Player = new Tone.Player({
           url,
-          fadeIn: 0.05,
-          fadeOut: 0.4,
+          fadeIn: 0.4,
+          fadeOut: 0.6,
           onload: () => { clearTimeout(timer); resolve(p); },
           onerror: () => { clearTimeout(timer); reject(new Error('decode')); },
         });
       });
-      player.connect(this.sfxGain!);
+      // Routing : "distant" → bus lowpass+reverb (sensation d'espace)
+      const target = this.isDistantSfx(id) ? this.distanceFilter : this.sfxGain;
+      player.connect(target ?? this.sfxGain!);
       this.sfxFilePlayers[id] = player;
       return player;
     } catch {
@@ -1018,19 +1070,21 @@ class AudioEngine {
     }
   }
 
-  /** Joue un SFX fichier en one-shot. Idempotent : un nouveau déclenchement
-   *  pendant que le précédent joue le coupe et le redémarre.
+  /** Joue un SFX fichier en one-shot ou en loop.
    *
-   *  Sur les one-shots (pas en loop), on applique une micro-variation :
-   *  pitch ±5 % (~80 cents) + gain ±2 dB. Évite l'effet « robot » des
-   *  applaudissements qui sonnent à l'identique 10 fois d'affilée. */
+   *  One-shots : micro-variation pitch ±5 % + gain ±2 dB pour éviter
+   *  l'effet « robot » des applaudissements qui sonnent identiques.
+   *
+   *  Loops (pads) : random offset sur start pour que la même boucle
+   *  ne sonne pas pareil deux fois (inspiré des principes de
+   *  Disasterpeace / Lena Raine sur les pads granulaires). */
   async playSfxFile(id: SfxFileId, opts?: { gain?: number; loop?: boolean; vary?: boolean }) {
     if (this.sfxVol <= 0) return;
     await this.init();
     const player = await this.loadSfxFile(id);
     if (!player) return;
     const isLoop = opts?.loop ?? false;
-    const vary = opts?.vary ?? !isLoop; // par défaut on varie les one-shots
+    const vary = opts?.vary ?? !isLoop;
     try {
       if (player.state === 'started') player.stop();
       const baseGain = opts?.gain ?? 1;
@@ -1039,7 +1093,15 @@ class AudioEngine {
       player.volume.value = Tone.gainToDb(baseGain * gainVar);
       player.playbackRate = pitchVar;
       player.loop = isLoop;
-      player.start();
+      // Offset aléatoire pour les loops : démarre quelque part
+      // dans la première moitié du fichier.
+      if (isLoop) {
+        const dur = player.buffer?.duration ?? 0;
+        const offset = Math.random() * Math.max(0.5, dur * 0.5);
+        player.start(undefined, offset);
+      } else {
+        player.start();
+      }
     } catch { /* ignore */ }
   }
 

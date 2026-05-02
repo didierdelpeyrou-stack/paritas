@@ -1,5 +1,6 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
+  import { onMount } from 'svelte';
   import type { EndingRender } from '../../game/engine/endingEngine';
   import { TRAIT_LABELS, TRAIT_BLURBS } from '../../game/narrative/personalityEngine';
   import { rebirth } from '../../game/engine/gameState.svelte';
@@ -11,6 +12,19 @@
   let { ending, onReplay }: Props = $props();
 
   const trait = $derived(ending.stats.finalDominantTrait);
+
+  /* UX-N5 : incrémente le compteur de parties terminées pour que
+     le tutoriel passe en mode express au prochain démarrage. */
+  onMount(() => {
+    try {
+      const v = localStorage.getItem('paritas_played_count');
+      const n = v ? parseInt(v, 10) : 0;
+      const next = (Number.isFinite(n) ? n : 0) + 1;
+      localStorage.setItem('paritas_played_count', String(next));
+    } catch {
+      /* ignore */
+    }
+  });
 
   function statusOf(id: string): 'satisfied' | 'failed' | 'pending' {
     const item = ending.objectiveProgress.find(p => p.id === id);

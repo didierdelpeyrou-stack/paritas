@@ -21,6 +21,8 @@
   import Glossary from '../Glossary.svelte';
   import MyLegacyPanel from '../MyLegacyPanel.svelte';
   import Interlude from '../narrative/Interlude.svelte';
+  import Settings from '../Settings.svelte';
+  import GlossaryRefresher from '../GlossaryRefresher.svelte';
   import { eraForTurn, yearForTurn } from '../../game/content/eras';
   import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
   import { computeFinalScore } from '../../game/simulation/scoring';
@@ -96,6 +98,7 @@
   let activeTab = $state<Tab>(loadActiveTab());
   let orgSubTab = $state<OrgSubTab>(loadOrgSubTab());
   let glossaryOpen = $state(false);
+  let settingsOpen = $state(false);
   /* UX-1 : mode lecture-scène. Replie la sidebar pour que la scène
      respire. Auto-activé en phase consequence (DMN priority). */
   let focusMode = $state<boolean>(loadFocusMode());
@@ -270,6 +273,13 @@
               aria-label="Ouvrir le glossaire"
               title="Glossaire — termes syndicaux et paritaires"
             >?</button>
+            <button
+              type="button"
+              class="sfx-toggle"
+              onclick={() => (settingsOpen = true)}
+              aria-label="Options d'accessibilité"
+              title="Accessibilité (taille texte, contraste, daltonien)"
+            >⚙</button>
           </div>
         </div>
         <EraTimeline currentTurn={s.turn} />
@@ -315,6 +325,8 @@
           </section>
 
           <MyLegacyPanel memory={s.memory} />
+
+          <GlossaryRefresher turn={s.turn} />
         {:else if activeTab === 'organisation'}
           <!-- Sous-navigation pour les 4 outils d'organisation -->
           <div class="sub-tab-bar" role="tablist" aria-label="Sous-sections de l'organisation">
@@ -432,6 +444,7 @@
 {/if}
 
 <Glossary open={glossaryOpen} onClose={() => (glossaryOpen = false)} />
+<Settings open={settingsOpen} onClose={() => (settingsOpen = false)} />
 
 <style>
   /* === Grille principale (UX-1) ===

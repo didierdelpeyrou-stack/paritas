@@ -21,6 +21,49 @@
   --sem-select: #8b5cf6;
   --sem-loss-bg: rgba(127, 29, 29, 0.85);
   --sem-gain-bg: rgba(6, 78, 59, 0.65);
+  --a11y-text-scale: 1;
+}
+
+/* === Accessibilité (UX-6) ===
+   Trois leviers utilisateur appliqués sur <html>. Préférences
+   persistées par le composant Settings. */
+html.a11y-text-sm { --a11y-text-scale: 0.92; font-size: 14px; }
+html.a11y-text-md { --a11y-text-scale: 1; font-size: 16px; }
+html.a11y-text-lg { --a11y-text-scale: 1.12; font-size: 18px; }
+
+html.a11y-high-contrast {
+  --tw-text-opacity: 1 !important;
+}
+html.a11y-high-contrast body {
+  background: #000;
+  color: #fff;
+}
+html.a11y-high-contrast .bordered-card {
+  background: #0a0d11;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Mode daltonien : ajoute des chevrons devant les valeurs positives
+   et négatives, et bascule la couleur danger d'un rouge vers un
+   ambré-orange différenciable. */
+html.a11y-color-blind {
+  --sem-positive: #2563eb;  /* bleu pour les gains au lieu de vert */
+  --sem-danger: #d97706;    /* ambré vif pour les pertes au lieu de rouge */
+}
+
+html.a11y-color-blind [data-tone='positive']::before { content: '▲ '; }
+html.a11y-color-blind [data-tone='negative']::before { content: '▼ '; }
+html.a11y-color-blind [data-sign='pos']::before { content: '▲ '; }
+html.a11y-color-blind [data-sign='neg']::before { content: '▼ '; }
+
+/* Réduction des animations. Coupe pulses, shakes, fly-ins. */
+html.a11y-reduced-motion *,
+html.a11y-reduced-motion *::before,
+html.a11y-reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.05ms !important;
+  scroll-behavior: auto !important;
 }
 
 *, *::before, *::after { box-sizing: border-box; }

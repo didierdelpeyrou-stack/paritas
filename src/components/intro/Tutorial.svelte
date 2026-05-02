@@ -7,8 +7,35 @@
   }
   let { onDone }: Props = $props();
 
+  /* === UX-N5 : tutoriel adaptatif (Vygotsky ZPD) ===
+     Si le joueur a déjà fini une partie, on lui propose un mode
+     « rappel express » 1 écran. S'il en a fini ≥3, on lui propose
+     directement de skipper.
+     Le compteur paritas_played_count est incrémenté côté EndingReport. */
+  function readPlayedCount(): number {
+    try {
+      const v = localStorage.getItem('paritas_played_count');
+      const n = v ? parseInt(v, 10) : 0;
+      return Number.isFinite(n) ? n : 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  const playedCount = readPlayedCount();
+  const isReturning = playedCount >= 1;
+  const isVeteran = playedCount >= 3;
+
+  /* Vétéran : on saute immédiatement. */
+  if (isVeteran) {
+    queueMicrotask(() => onDone());
+  }
+
+  /* Mode express : 1 seul écran de rappel ; mode novice : 4 écrans. */
+  let expressMode = $state<boolean>(isReturning);
+
   let step = $state(0);
-  const TOTAL = 4;
+  const TOTAL = $derived(expressMode ? 1 : 4);
 
   function next() {
     if (step >= TOTAL - 1) {
@@ -27,15 +54,53 @@
 
 <div class="max-w-3xl mx-auto bordered-card p-6 sm:p-8 space-y-6" in:fade={{ duration: 320 }}>
   <header class="flex items-center justify-between gap-3">
-    <div class="text-xs uppercase tracking-wider text-parchment-dim/85">Avant d'entrer · {step + 1}/{TOTAL}</div>
-    <div class="flex gap-1">
-      {#each Array(TOTAL) as _, i}
-        <span class="dot" data-active={i <= step}></span>
-      {/each}
+    <div class="text-xs uppercase tracking-wider text-parchment-dim/85">
+      {expressMode ? 'Rappel express' : `Avant d'entrer · ${step + 1}/${TOTAL}`}
+    </div>
+    <div class="flex items-center gap-2">
+      {#if isReturning}
+        <button
+          type="button"
+          class="mode-switch"
+          onclick={() => { expressMode = !expressMode; step = 0; }}
+          title="Bascule entre rappel d'1 écran et tutoriel complet"
+        >
+          {expressMode ? 'Voir le tutoriel complet' : 'Mode express'}
+        </button>
+      {/if}
+      <div class="flex gap-1">
+        {#each Array(TOTAL) as _, i}
+          <span class="dot" data-active={i <= step}></span>
+        {/each}
+      </div>
     </div>
   </header>
 
-  {#if step === 0}
+  {#if expressMode}
+    <div in:fly={{ y: 8, duration: 240 }}>
+      <h2 class="font-display text-2xl text-gold mb-3">Rappel — tu as déjà joué</h2>
+      <ul class="express-list">
+        <li>
+          <b>6 ressources</b> — Confiance, Caisse, Santé sociale, Légitimité, Rapport de force, Institution. Aucun choix ne les bouge toutes.
+        </li>
+        <li>
+          <b>6 postures</b> — chaque choix porte une posture politique (rupture, institution, compromis, expertise, opinion, paternaliste). Tes choix sculptent un trait dominant.
+        </li>
+        <li>
+          <b>Mandat</b> — 2 à 3 objectifs nommés (court ou long). Suivis dans la sidebar.
+        </li>
+        <li>
+          <b>Conséquences en cascade</b> — texte, mesures concrètes, presse, voix intérieure, mémoire, chiffres. Clic pour tout révéler.
+        </li>
+        <li>
+          <b>Mode lecture</b> — bouton « Lecture » en haut de la colonne principale pour replier la sidebar et lire en plein écran.
+        </li>
+      </ul>
+      <p class="mt-3 text-parchment-dim/65 text-xs italic">
+        Tu as joué {playedCount} partie{playedCount > 1 ? 's' : ''}. Tu peux toujours revoir le tutoriel complet via le bouton ci-dessus.
+      </p>
+    </div>
+  {:else if step === 0}
     <div in:fly={{ y: 8, duration: 240 }}>
       <h2 class="font-display text-2xl text-gold mb-3">Le paritarisme, en deux phrases</h2>
       <p class="text-parchment leading-relaxed text-sm sm:text-base">
@@ -272,5 +337,52 @@
     border-bottom: 1px dashed rgba(244, 213, 139, 0.6);
     color: #f4d58b;
     cursor: help;
+  }
+
+  .mode-switch {
+    border: 1px solid rgba(244, 213, 139, 0.4);
+    border-radius: 0.4rem;
+    background: rgba(13, 16, 20, 0.55);
+    color: #f4d58b;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.55rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .mode-switch:hover {
+    background: rgba(201, 154, 64, 0.13);
+  }
+
+  .express-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .express-list li {
+    border-left: 2px solid rgba(244, 213, 139, 0.45);
+    background: rgba(201, 154, 64, 0.06);
+    border-radius: 0 0.45rem 0.45rem 0;
+    padding: 0.5rem 0.75rem;
+    color: rgba(237, 228, 201, 0.85);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+
+  .express-list b {
+    color: #f4d58b;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-right: 0.3rem;
   }
 </style>

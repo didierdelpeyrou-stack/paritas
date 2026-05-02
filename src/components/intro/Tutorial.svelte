@@ -296,36 +296,44 @@
   .scenario-anatomy li {
     counter-increment: anatomy;
     display: grid;
-    grid-template-columns: 1.5rem 1fr;
-    gap: 0.55rem;
-    padding: 0.4rem 0.55rem;
+    grid-template-columns: 1.6rem 1fr;
+    column-gap: 0.6rem;
+    row-gap: 0.18rem;
+    padding: 0.5rem 0.6rem;
     border-left: 2px solid rgba(244, 213, 139, 0.45);
     background: rgba(13, 16, 20, 0.32);
     border-radius: 0 0.45rem 0.45rem 0;
+    align-items: baseline;
   }
 
   .scenario-anatomy li::before {
     content: counter(anatomy);
     grid-column: 1;
+    grid-row: 1 / span 2;
     color: #f4d58b;
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.86rem;
-    line-height: 1.2;
+    font-size: 0.95rem;
+    line-height: 1;
+    align-self: start;
   }
 
   .scenario-anatomy li b {
+    grid-column: 2;
+    grid-row: 1;
     color: #ede4c9;
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    display: block;
   }
 
   .scenario-anatomy li span {
-    color: rgba(237, 228, 201, 0.7);
-    font-size: 0.78rem;
-    line-height: 1.35;
+    grid-column: 2;
+    grid-row: 2;
+    color: rgba(237, 228, 201, 0.78);
+    font-size: 0.84rem;
+    line-height: 1.45;
+    font-family: 'Source Serif 4', Georgia, serif;
   }
 
   .scenario-anatomy li em {

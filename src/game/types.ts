@@ -253,6 +253,10 @@ export interface RebirthGameState {
   traits: TraitScores;
   /** Trait dominant calculé par personalityEngine */
   dominantTrait: PlayerTrait;
+  /** Stress de personnalité (0-100). Augmente quand le joueur agit
+   *  contre son trait dominant ; diminue quand il agit dans son sens.
+   *  Inspiré du système de stress de Crusader Kings 3. */
+  personalityStress: number;
 
   /* Simulation */
   resources: Resources;

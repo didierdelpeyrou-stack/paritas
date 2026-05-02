@@ -9,7 +9,9 @@ import { applyResourceDelta } from '../simulation/resources';
 import { applyActorsDelta } from '../simulation/actors';
 import {
   applyTraitShift,
-  computeDominantTrait
+  clampStress,
+  computeDominantTrait,
+  computeStressDelta
 } from '../narrative/personalityEngine';
 import {
   consumeChoice,
@@ -33,11 +35,13 @@ export function resolveChoice(
     ? applyActorsDelta(state.actors, choice.effects.actors)
     : state.actors;
 
-  // 2. Traits & dominance
+  // 2. Traits & dominance + stress de personnalité (CK3-like)
   const nextTraits = choice.traitShift
     ? applyTraitShift(state.traits, choice.traitShift)
     : state.traits;
   const nextDominant = computeDominantTrait(nextTraits);
+  const stressDelta = computeStressDelta(choice.traitShift, state.dominantTrait);
+  const nextStress = clampStress(state.personalityStress + stressDelta);
 
   // 3. Mémoire (flag, longterm, played, dérivés)
   let nextMemory = consumeChoice(state.memory, scenario.id, choice, state.turn);
@@ -79,6 +83,7 @@ export function resolveChoice(
     actors: nextActors,
     traits: nextTraits,
     dominantTrait: nextDominant,
+    personalityStress: nextStress,
     memory: nextMemory,
     organization: nextOrganization,
     lastChoice: { scenarioId: scenario.id, choiceId: choice.id }

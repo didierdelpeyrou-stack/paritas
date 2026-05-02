@@ -8,7 +8,7 @@
     previewResources,
     resourceGlyph
   } from '../../game/narrative/choicePosture';
-  import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
+  import { TRAIT_LABELS, TRAIT_ANTAGONISTS } from '../../game/narrative/personalityEngine';
   import VoicePanel from './VoicePanel.svelte';
   import HistoricalImage from '../HistoricalImage.svelte';
   import GlossaryText from '../GlossaryText.svelte';
@@ -25,6 +25,23 @@
 
   function isLocked(choice: Choice): boolean {
     return !!choice.requiresTrait && choice.requiresTrait !== dominantTrait;
+  }
+
+  /**
+   * Cohérence d'un choix avec le trait dominant du joueur (CK3-like).
+   * - 'aligned' : pousse le trait dominant ≥+2 → renforce
+   * - 'opposed' : pousse l'antagoniste ≥+2 OU diminue le dominant ≥-2
+   *               → tension, le joueur agit contre lui-même
+   * - 'neutral' : ne touche ni l'un ni l'autre fortement
+   */
+  function coherenceOf(choice: Choice): 'aligned' | 'opposed' | 'neutral' {
+    const shift = choice.traitShift;
+    if (!shift) return 'neutral';
+    const dom = shift[dominantTrait] ?? 0;
+    const ant = shift[TRAIT_ANTAGONISTS[dominantTrait]] ?? 0;
+    if (ant >= 2 || dom <= -2) return 'opposed';
+    if (dom >= 2) return 'aligned';
+    return 'neutral';
   }
 
   /* === UX-#3 : swipe-to-decide sur mobile ===
@@ -245,18 +262,27 @@
       {@const style = POSTURE_STYLES[posture]}
       {@const previews = mode === 'reflechi' ? previewResources(ch) : []}
       {@const locked = isLocked(ch)}
+      {@const coh = coherenceOf(ch)}
       <li>
         <button
           type="button"
           class="choice-btn"
           data-posture={posture}
           data-locked={locked}
+          data-coh={coh}
           data-swipe-target={swipeTarget === i}
           disabled={locked}
           style="--accent: {style.accent}; --accent-soft: {style.accentSoft}; --accent-muted: {style.accentMuted};"
           onclick={() => onChoose(ch)}
           in:fly={{ y: 8, duration: 240, delay: 60 + i * 40 }}
         >
+          {#if coh === 'opposed' && !locked}
+            <span class="coh-flag opposed" aria-label="Ce choix va contre ton trait dominant"
+                  title={`Ce choix va contre ton ${TRAIT_LABELS[dominantTrait]}. Le faire crée de la tension intérieure.`}>⚠</span>
+          {:else if coh === 'aligned' && !locked}
+            <span class="coh-flag aligned" aria-label="Ce choix renforce ton trait dominant"
+                  title={`Ce choix te ressemble — renforce ton ${TRAIT_LABELS[dominantTrait]}.`}>✓</span>
+          {/if}
           <span class="glyph" aria-hidden="true">{style.glyph}</span>
 
           <span class="body">
@@ -318,6 +344,52 @@
     transform: translateX(2px);
     box-shadow: -2px 0 0 0 var(--accent);
     outline: none;
+  }
+
+  /* === Coherence flags (CK3-like) ===
+     Indicateur posé en haut-droite du bouton de choix. */
+  .coh-flag {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.45rem;
+    width: 1.2rem;
+    height: 1.2rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.75rem;
+    line-height: 1;
+    cursor: help;
+    z-index: 1;
+  }
+
+  .coh-flag.aligned {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+  }
+
+  .coh-flag.opposed {
+    background: rgba(220, 38, 38, 0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(220, 38, 38, 0.45);
+  }
+
+  .choice-btn[data-coh='opposed']:not([disabled])::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 2px;
+    background: rgba(220, 38, 38, 0.45);
+    border-radius: 2px 0 0 2px;
+  }
+
+  .choice-btn {
+    position: relative;
   }
 
   /* === UX-#3 — visual feedback du swipe ===

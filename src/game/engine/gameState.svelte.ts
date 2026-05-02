@@ -167,6 +167,7 @@ function freshRebirthState(
     currentScenarioId: null,
     traits,
     dominantTrait: computeDominantTrait(traits),
+    personalityStress: 0,
     resources,
     actors: freshActors(),
     organization: freshOrganization(camp, name),
@@ -680,6 +681,9 @@ class RebirthGameStore {
       }
       if (s.legendaryId === undefined) {
         s.legendaryId = null;
+      }
+      if (typeof s.personalityStress !== 'number') {
+        s.personalityStress = 0;
       }
       s.objectiveProgress = evaluateObjectives(s, s.objectives, s.objectiveProgress ?? []);
       this.state = s;

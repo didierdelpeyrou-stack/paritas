@@ -63,3 +63,80 @@ export const TRAIT_BLURBS: Record<PlayerTrait, string> = {
   tribun:
     'Tu parles aux foules. Ta force, c\'est la voix qui rassemble dans la rue.'
 };
+
+/* === Antagonismes de traits (style CK3) ===
+ * Chaque trait a un antagoniste fort. Agir contre son trait dominant
+ * (ou pousser son antagoniste) génère du stress de personnalité.
+ * Aligné = renforce le trait dominant → soulage. */
+export const TRAIT_ANTAGONISTS: Record<PlayerTrait, PlayerTrait> = {
+  rupture: 'pragmatique',     // tu ne peux pas être à la fois insurgé et négociateur
+  pragmatique: 'rupture',
+  tribun: 'technocrate',      // la rue contre le dossier
+  technocrate: 'tribun',
+  batisseur: 'paternaliste',  // institutions partagées vs autorité descendante
+  paternaliste: 'batisseur'
+};
+
+/**
+ * Calcule le delta de stress de personnalité induit par un choix.
+ * - +6 par point d'antagoniste poussé
+ * - −2 par point du trait dominant renforcé (au-delà de 1)
+ * - +4 si le trait dominant lui-même perd ≥2 points
+ *
+ * Renvoie le delta brut (positif = ça tend, négatif = ça soulage).
+ */
+export function computeStressDelta(
+  shift: Partial<TraitScores> | undefined,
+  dominantTrait: PlayerTrait
+): number {
+  if (!shift) return 0;
+  let delta = 0;
+  const antagonist = TRAIT_ANTAGONISTS[dominantTrait];
+  const dominantPush = shift[dominantTrait] ?? 0;
+  const antagonistPush = shift[antagonist] ?? 0;
+
+  if (antagonistPush > 0) delta += antagonistPush * 6;
+  if (dominantPush <= -2) delta += 4;
+  if (dominantPush >= 2) delta -= 2;
+  return delta;
+}
+
+/** Bornes pour la jauge de stress de personnalité (0-100). */
+export function clampStress(value: number): number {
+  return Math.max(0, Math.min(100, value));
+}
+
+/** Niveau qualitatif du stress, pour l'UI. */
+export function stressLevel(value: number): {
+  level: 'serein' | 'inquiet' | 'tendu' | 'effondré';
+  label: string;
+  hint: string;
+} {
+  if (value < 25) {
+    return {
+      level: 'serein',
+      label: 'Serein·e',
+      hint: 'Tes actes te ressemblent. Tu agis dans le sens de ton trait dominant.'
+    };
+  }
+  if (value < 55) {
+    return {
+      level: 'inquiet',
+      label: 'Inquiet·e',
+      hint: 'Quelques décisions qui ne te ressemblent pas. Tu sens la dissonance.'
+    };
+  }
+  if (value < 80) {
+    return {
+      level: 'tendu',
+      label: 'En tension',
+      hint: 'Tu as agi trop souvent contre toi-même. Le doute s\'installe.'
+    };
+  }
+  return {
+    level: 'effondré',
+    label: 'Au bord de la rupture',
+    hint: 'Tu n\'es plus celui que tu pensais être. Le miroir devient étranger.'
+  };
+}
+

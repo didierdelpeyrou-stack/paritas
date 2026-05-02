@@ -3,7 +3,10 @@
   import { onDestroy, onMount } from 'svelte';
   import type { ConsequenceRender } from '../../game/engine/consequenceEngine';
   import type { TensionAlert } from '../../game/simulation/tensions';
-  import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
+  import type { PlayerTrait } from '../../game/types';
+  import { TRAIT_LABELS, TRAIT_ANTAGONISTS } from '../../game/narrative/personalityEngine';
+  import { rebirth } from '../../game/engine/gameState.svelte';
+  import { legendaryById } from '../../game/content/legendaryCharacters';
 
   interface Props {
     consequence: ConsequenceRender;
@@ -11,6 +14,51 @@
     onContinue: () => void;
   }
   let { consequence, alerts = [], onContinue }: Props = $props();
+
+  /* === Commentaire du légendaire (CK3-like) ===
+     Si le joueur a choisi un personnage légendaire, et que le choix
+     fait bouger un trait significatif pour ce légendaire, on rend
+     une note manuscrite en marge — soit d'approbation, soit de
+     désaveu. Donne une présence diégétique du légendaire. */
+  const legendary = $derived.by(() => {
+    const id = rebirth.state?.legendaryId;
+    return id ? legendaryById(id) : undefined;
+  });
+
+  function legendarySignatureTrait(): PlayerTrait | null {
+    if (!legendary) return null;
+    let best: PlayerTrait | null = null;
+    let bestVal = 0;
+    for (const [trait, value] of Object.entries(legendary.traitBonus) as Array<[PlayerTrait, number]>) {
+      if (typeof value === 'number' && value > bestVal) {
+        bestVal = value;
+        best = trait;
+      }
+    }
+    return best;
+  }
+
+  const legendaryComment = $derived.by<{ tone: 'approve' | 'rebuke'; text: string } | null>(() => {
+    if (!legendary || !consequence.traitShift) return null;
+    const sig = legendarySignatureTrait();
+    if (!sig) return null;
+    const shift = consequence.traitShift;
+    const lastName = legendary.name.split(' ').pop() ?? legendary.name;
+    if (shift.trait === sig && shift.delta >= 2) {
+      return {
+        tone: 'approve',
+        text: `${lastName} hocherait la tête. Tu marches dans ses pas.`
+      };
+    }
+    const antagonist = TRAIT_ANTAGONISTS[sig];
+    if (shift.trait === antagonist && shift.delta >= 2) {
+      return {
+        tone: 'rebuke',
+        text: `${lastName} t'aurait désavoué. Ce n'est pas la voie qu'il avait tracée.`
+      };
+    }
+    return null;
+  });
 
   const alertHue: Record<TensionAlert['level'], string> = {
     info: 'border-cyan-500/40 bg-cyan-500/5 text-cyan-200',
@@ -126,6 +174,13 @@
       <div class="trait-shift" in:fly={{ y: 6, duration: 380 }}>
         Trait : <b>{TRAIT_LABELS[consequence.traitShift.trait]}</b>
         <em>+{consequence.traitShift.delta}</em>
+      </div>
+    {/if}
+
+    {#if legendaryComment}
+      <div class="legendary-margin" data-tone={legendaryComment.tone} in:fly={{ x: 8, duration: 420 }}>
+        <span class="quill" aria-hidden="true">✒</span>
+        <p>{legendaryComment.text}</p>
       </div>
     {/if}
   {/if}
@@ -281,5 +336,43 @@
 
   .reveal-skip:hover {
     color: #f4d58b;
+  }
+
+  /* === Commentaire du légendaire en marge (CK3-like) === */
+  .legendary-margin {
+    display: grid;
+    grid-template-columns: 1.6rem 1fr;
+    gap: 0.55rem;
+    align-items: start;
+    border-left: 2px solid rgba(244, 213, 139, 0.55);
+    background: rgba(201, 154, 64, 0.06);
+    padding: 0.5rem 0.7rem;
+    border-radius: 0 0.45rem 0.45rem 0;
+  }
+
+  .legendary-margin[data-tone='rebuke'] {
+    border-left-color: rgba(220, 38, 38, 0.55);
+    background: rgba(127, 29, 29, 0.12);
+  }
+
+  .legendary-margin .quill {
+    color: rgba(244, 213, 139, 0.7);
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.95rem;
+    line-height: 1;
+    margin-top: 0.18rem;
+  }
+
+  .legendary-margin[data-tone='rebuke'] .quill {
+    color: rgba(252, 165, 165, 0.85);
+  }
+
+  .legendary-margin p {
+    margin: 0;
+    color: rgba(237, 228, 201, 0.85);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 0.84rem;
+    font-style: italic;
+    line-height: 1.4;
   }
 </style>

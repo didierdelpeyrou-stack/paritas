@@ -351,7 +351,7 @@ class AudioEngine {
    * Formats testés : .mp3 puis .ogg dans /audio/eras/{eraId}.{ext}.
    */
   private async tryLoadEraFile(eraId: AudioEraId): Promise<boolean> {
-    const log = (m: string) => { try { (window as any).__paritasAudioLog?.(`[${eraId}] ${m}`); console.debug?.(`[paritas-audio][${eraId}] ${m}`); } catch { /* ignore */ } };
+    const log = (m: string) => { try { (window as any).__paritasAudioLog?.(`[${eraId}] ${m}`); console.log(`[paritas-audio][${eraId}] ${m}`); } catch { /* ignore */ } };
     log('tryLoadEraFile start');
     if (this.fileAvailability[eraId] === false) {
       log('skip: cached as unavailable');

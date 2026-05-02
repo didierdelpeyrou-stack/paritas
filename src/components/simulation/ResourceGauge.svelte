@@ -2,6 +2,7 @@
   import type { EraId, ResourceKey } from '../../game/types';
   import { RESOURCE_LABELS, RESOURCE_TOOLTIPS } from '../../game/simulation/resources';
   import { currencyForEra } from '../../game/content/eras';
+  import ResourceIcon from './ResourceIcon.svelte';
 
   interface Props {
     resource: ResourceKey;
@@ -104,9 +105,12 @@
   }
 </script>
 
-<div class="space-y-1" title={RESOURCE_TOOLTIPS[resource]}>
+<div class="space-y-1 resource-row" title={RESOURCE_TOOLTIPS[resource]}>
   <div class="flex items-center justify-between text-xs gap-2">
-    <span class="uppercase tracking-wider {c.text}">{label}</span>
+    <div class="flex items-center gap-2 min-w-0">
+      <ResourceIcon {resource} value={value} size={28} />
+      <span class="uppercase tracking-wider {c.text} truncate">{label}</span>
+    </div>
     <div class="flex items-center gap-1.5">
       {#if sparkPath}
         <svg class="spark" viewBox="0 0 60 12" width="60" height="12" aria-hidden="true">
@@ -116,7 +120,7 @@
       <span class="text-parchment-dim/80 tabular-nums">{Math.round(displayed)}</span>
     </div>
   </div>
-  <div class="h-1.5 rounded-full {c.track} overflow-hidden">
+  <div class="h-1.5 rounded-full {c.track} overflow-hidden ml-9">
     <div class="h-full {c.bar} transition-all duration-500" style="width:{pct}%"></div>
   </div>
 </div>

@@ -311,7 +311,17 @@ export const FILLER_SCENARIOS: Scenario[] = [
     voices: [
       { trait: 'pragmatique', text: 'Une CGT divisée est une CGT plus faible face au patronat. Trouve un pont, même fragile.' },
       { trait: 'rupture', text: 'Pas de pont avec ceux qui ont choisi Moscou. La trahison est consommée.' },
-      { trait: 'batisseur', text: 'Reconstruis un projet syndical international hors du Komintern. C\'est ça le futur.' }
+      { trait: 'batisseur', text: "Reconstruis un projet syndical international hors du Komintern. C'est ça le futur." }
+    ],
+    quotes: [
+      {
+        text: "Le syndicat, par sa nature même, ne saurait être inféodé à aucun parti politique, ni à aucune Internationale autre que celle des travailleurs eux-mêmes.",
+        source: "Léon Jouhaux, congrès confédéral CGT de Lille, 25 juillet 1921"
+      },
+      {
+        text: "Nous resterons des révolutionnaires. Nous quittons une CGT devenue social-démocrate. Nous fondons une CGT-Unitaire.",
+        source: "Communiqué de la minorité, congrès de Saint-Étienne, 25 décembre 1921"
+      }
     ],
     choices: [
       {

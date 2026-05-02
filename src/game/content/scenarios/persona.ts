@@ -108,9 +108,19 @@ export const PERSONA_SCENARIOS: Scenario[] = [
     },
     actors: ['base', 'adversaire', 'etat', 'opinion'],
     voices: [
-      { trait: 'rupture', text: 'Une refondation qui ne brise rien n’en est pas une.' },
-      { trait: 'pragmatique', text: 'Tu peux casser une institution. Reconstruire en prend trois autres.' },
-      { trait: 'technocrate', text: 'Le retrait n’a de valeur que s’il ouvre une renégociation immédiate.' }
+      { trait: 'rupture', text: "Une refondation qui ne brise rien n'en est pas une." },
+      { trait: 'pragmatique', text: "Tu peux casser une institution. Reconstruire en prend trois autres." },
+      { trait: 'technocrate', text: "Le retrait n'a de valeur que s'il ouvre une renégociation immédiate." }
+    ],
+    quotes: [
+      {
+        text: "Nous voulons refonder le contrat social français. Cela suppose que nous soyons capables, à un moment donné, de quitter la table.",
+        source: "Ernest-Antoine Seillière, président MEDEF, conférence de presse, juin 2001"
+      },
+      {
+        text: "Le patronat n'a pas vocation à gérer le chômage. C'est une responsabilité politique qui doit revenir à l'État.",
+        source: "Denis Kessler, vice-président MEDEF, Le Monde, mai 2001"
+      }
     ],
     choices: [
       {

@@ -189,8 +189,14 @@ export const PATRON_SCENARIOS: Scenario[] = [
     },
     actors: ['base', 'adversaire', 'etat', 'opinion'],
     voices: [
-      { trait: 'batisseur', text: 'Siéger, c’est exister. Refuser, c’est laisser la place.' },
-      { trait: 'paternaliste', text: 'L’entreprise reste le lieu propre du social. Le reste est politique.' }
+      { trait: 'batisseur', text: "Siéger, c'est exister. Refuser, c'est laisser la place." },
+      { trait: 'paternaliste', text: "L'entreprise reste le lieu propre du social. Le reste est politique." }
+    ],
+    quotes: [
+      {
+        text: "Le patronat n'a pas vocation à diriger ; il a vocation à se faire entendre. Cela suppose qu'il s'organise.",
+        source: "Georges Villiers, discours fondateur du CNPF, 12 juin 1946"
+      }
     ],
     choices: [
       {
@@ -437,8 +443,14 @@ export const PATRON_SCENARIOS: Scenario[] = [
     },
     actors: ['base', 'adversaire', 'etat', 'opinion'],
     voices: [
-      { trait: 'rupture', text: 'Une loi qu’on n’attaque pas devient un cadre acquis.' },
-      { trait: 'batisseur', text: 'Une bonne DRH transforme un texte hostile en méthode de gestion.' }
+      { trait: 'rupture', text: "Une loi qu'on n'attaque pas devient un cadre acquis." },
+      { trait: 'batisseur', text: "Une bonne DRH transforme un texte hostile en méthode de gestion." }
+    ],
+    quotes: [
+      {
+        text: "Les lois Auroux ne sont pas une attaque contre l'entreprise. Elles sont une opportunité de moderniser nos relations sociales — si nous savons nous en saisir.",
+        source: "Yvon Chotard, président CNPF, communication interne, septembre 1982"
+      }
     ],
     choices: [
       {

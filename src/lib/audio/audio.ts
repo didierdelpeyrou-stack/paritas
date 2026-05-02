@@ -439,11 +439,13 @@ class AudioEngine {
     /* Charge le buffer via onload (Tone.loaded() résout parfois trop
      * tôt entre deux loads consécutifs).
      *
-     * Crossfade equal-power : chaque player a son propre Tone.Gain
-     * en sortie, ramped exponentiellement de 0 à 1 (in) ou 1 à 0
-     * (out) sur 4 s. La somme cos²+sin² ≈ 1 → loudness perçue
-     * constante. Mieux que fadeIn linéaire de Tone.Player qui dipait
-     * à -3 dB au milieu de la transition. */
+     * Crossfade equal-power VRAI : chaque player a son propre
+     * Tone.Gain, ramped via setValueCurveAtTime avec courbes sin/cos.
+     *
+     * Pourquoi pas exponentialRampTo : le ramp expo passe par la
+     * moyenne géométrique (~0.01 = -40 dB) au milieu, donnant un
+     * creux audible — exactement le contraire d'un crossfade
+     * equal-power. sin²+cos²=1 garantit loudness perçue constante. */
     let next: Tone.Player;
     try {
       next = await new Promise<Tone.Player>((resolve, reject) => {
@@ -463,27 +465,47 @@ class AudioEngine {
       return false;
     }
     try {
-      // Gate gain par player : démarre à ~0 puis ramp expo vers 1
-      const gateGain = new Tone.Gain(0.0001).connect(this.fileReverb ?? this.fileGain!);
+      // Si on a déjà un player en cours, crossfade lent (3 s) pour
+      // overlap audible. Sinon on est en cold-start : fade-in
+      // beaucoup plus court (1 s) — le joueur ne doit pas attendre
+      // 3 secondes pour entendre la musique au premier ♫.
+      const isCrossfade = !!this.filePlayer;
+      const FADE_S = isCrossfade ? 3 : 1;
+
+      const gateGain = new Tone.Gain(0).connect(this.fileReverb ?? this.fileGain!);
       next.connect(gateGain);
-      // Démarre le player à un offset aléatoire dans le fichier pour
-      // que le même loop ne sonne pas pareil d'une ère à l'autre.
       const dur = next.buffer?.duration ?? 40;
       const offset = Math.random() * Math.max(1, dur * 0.4);
       next.start(undefined, offset);
-      // Ramp exponentielle vers la cible (~equal-power)
-      gateGain.gain.exponentialRampTo(1, 4);
+
+      const fadeInCurve = this.equalPowerCurve(64, true);
+      const now = Tone.now();
+      try {
+        gateGain.gain.cancelScheduledValues(now);
+        (gateGain.gain as unknown as AudioParam).setValueCurveAtTime(
+          fadeInCurve, now, FADE_S
+        );
+      } catch {
+        gateGain.gain.linearRampTo(1, FADE_S);
+      }
 
       if (this.filePlayer && this.filePlayerGain) {
         const oldPlayer = this.filePlayer;
         const oldGain = this.filePlayerGain;
-        // Ramp expo vers ~0 (Tone interdit ramp vers 0 strict)
-        oldGain.gain.exponentialRampTo(0.0001, 4);
+        const fadeOutCurve = this.equalPowerCurve(64, false);
+        try {
+          oldGain.gain.cancelScheduledValues(now);
+          (oldGain.gain as unknown as AudioParam).setValueCurveAtTime(
+            fadeOutCurve, now, FADE_S
+          );
+        } catch {
+          oldGain.gain.linearRampTo(0, FADE_S);
+        }
         setTimeout(() => {
           try { oldPlayer.stop(); } catch { /* ignore */ }
           try { oldPlayer.dispose(); } catch { /* ignore */ }
           try { oldGain.dispose(); } catch { /* ignore */ }
-        }, 4500);
+        }, (FADE_S + 0.4) * 1000);
       }
       this.filePlayer = next;
       this.filePlayerGain = gateGain;
@@ -495,6 +517,22 @@ class AudioEngine {
       this.fileAvailability[url] = false;
       return false;
     }
+  }
+
+  /** Génère une courbe equal-power pour Tone.AudioParam.setValueCurveAtTime.
+   *  fadeIn=true : sin(t·π/2) de 0 à 1
+   *  fadeIn=false : cos(t·π/2) de 1 à 0
+   *  Sum of squares = 1 quand on combine in + out simultanés.
+   *  64 samples donne une courbe lisse sans surcoût. */
+  private equalPowerCurve(samples: number, fadeIn: boolean): Float32Array {
+    const curve = new Float32Array(samples);
+    for (let i = 0; i < samples; i++) {
+      const t = i / (samples - 1);
+      curve[i] = fadeIn
+        ? Math.sin(t * Math.PI / 2)
+        : Math.cos(t * Math.PI / 2);
+    }
+    return curve;
   }
 
   /** Swap doux entre default et alt sur changement de mood, sans
@@ -607,12 +645,19 @@ class AudioEngine {
       try {
         const p = this.filePlayer;
         const g = this.filePlayerGain;
-        g.gain.exponentialRampTo(0.0001, 1.2);
+        const now = Tone.now();
+        const curve = this.equalPowerCurve(48, false);
+        try {
+          g.gain.cancelScheduledValues(now);
+          (g.gain as unknown as AudioParam).setValueCurveAtTime(curve, now, 1.0);
+        } catch {
+          g.gain.linearRampTo(0, 1.0);
+        }
         setTimeout(() => {
           try { p.stop(); } catch { /* ignore */ }
           try { p.dispose(); } catch { /* ignore */ }
           try { g.dispose(); } catch { /* ignore */ }
-        }, 1400);
+        }, 1200);
       } catch { /* ignore */ }
       this.filePlayer = undefined;
       this.filePlayerGain = undefined;

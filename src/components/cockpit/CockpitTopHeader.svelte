@@ -103,16 +103,50 @@
   let campColor = $derived({ primary: campData.primary, accent: campData.accent });
   let campSymbol = $derived(campData.symbol);
 
-  /* 7 ressources avec icônes paritaires */
+  /* 7 ressources avec icônes paritaires + description longue
+     pour tooltip enrichi (retour live test patronat P0 §1 :
+     « Je ne sais pas ce que mesure "Force int" vs "Force ext". »). */
   const RES_META = [
-    { key: 'caisse', label: 'Caisse', icon: 'sceau' as const, color: '#C9B26A' },
-    { key: 'confiance', label: 'Confiance', icon: 'carte' as const, color: '#1E5C8A' },
-    { key: 'santeSociale', label: 'Santé soc', icon: 'epis' as const, color: '#3A6B47' },
-    { key: 'legitimite', label: 'Légitimité', icon: 'balance' as const, color: '#5C2D5C' },
-    { key: 'rapportDeForce', label: 'Force ext', icon: 'pupitre' as const, color: '#D9821C' },
-    { key: 'cohesionInterne', label: 'Force int', icon: 'poing' as const, color: '#8B1F1B' },
-    { key: 'institution', label: 'Institution', icon: 'rouage' as const, color: '#7A5C3A' }
+    { key: 'caisse', label: 'Caisse', icon: 'sceau' as const, color: '#C9B26A',
+      desc: 'Trésorerie de l\'organisation. Finance les actions, salaires, locaux. Décroît passivement (frais courants).' },
+    { key: 'confiance', label: 'Confiance', icon: 'carte' as const, color: '#1E5C8A',
+      desc: 'Confiance des adhérents et sympathisants. Conditionne la mobilisation et le renouvellement des mandats.' },
+    { key: 'santeSociale', label: 'Santé soc', icon: 'epis' as const, color: '#3A6B47',
+      desc: 'État social du pays (Sen). Indicateur global du bien-être collectif — c\'est ce que la lutte vise au final.' },
+    { key: 'legitimite', label: 'Légitimité', icon: 'balance' as const, color: '#5C2D5C',
+      desc: 'Reconnaissance institutionnelle (presse, État, opinion). Permet la signature et l\'accès aux tables.' },
+    { key: 'rapportDeForce', label: 'Force ext', icon: 'pupitre' as const, color: '#D9821C',
+      desc: 'Force EXTERNE — pression que tu exerces sur le camp adverse (manifestations, grèves, lockouts).' },
+    { key: 'cohesionInterne', label: 'Force int', icon: 'poing' as const, color: '#8B1F1B',
+      desc: 'Force INTERNE — cohésion de tes troupes (militants, cadres, base). Sans elle, pas de mobilisation tenue.' },
+    { key: 'institution', label: 'Institution', icon: 'rouage' as const, color: '#7A5C3A',
+      desc: 'Capital institutionnel — sièges, mandats, conventions. Capital long-terme qui survit aux défaites.' }
   ];
+
+  /* Snapshot des ressources au début du tour pour calculer le
+     delta. Mis à jour quand gs.turn change. */
+  let snapshot = $state<Record<string, number>>({});
+  let lastSnapshotTurn = $state(-1);
+
+  $effect(() => {
+    if (gs.turn !== lastSnapshotTurn) {
+      snapshot = { ...(gs.resources as unknown as Record<string, number>) };
+      lastSnapshotTurn = gs.turn;
+    }
+  });
+
+  function deltaFor(key: string, current: number): number {
+    const prev = snapshot[key];
+    if (typeof prev !== 'number') return 0;
+    return Math.round(current - prev);
+  }
+
+  function tooltipFor(key: string, label: string, desc: string, v: number): string {
+    const d = deltaFor(key, v);
+    const deltaStr = d === 0 ? '' : `\n\nCe tour : ${d > 0 ? '+' : ''}${d}`;
+    const critStr = v < 25 ? '\n\n⚠ ZONE CRITIQUE — risque de cascade' : '';
+    return `${label} : ${Math.round(v)}/100${deltaStr}${critStr}\n\n${desc}`;
+  }
 
   let musicOn = $state(sfx.isMusicEnabled());
   $effect(() => sfx.onMusicChange((v) => (musicOn = v)));
@@ -208,12 +242,18 @@
     {#each RES_META as r}
       {@const v = (gs.resources as any)[r.key] ?? 0}
       {@const crit = v < 25}
+      {@const d = deltaFor(r.key, v)}
       <div class="res-chip" class:crit
-        title="{r.label} : {Math.round(v)}/100"
+        title={tooltipFor(r.key, r.label, r.desc, v)}
         style="--c: {r.color}"
       >
         <span class="res-ico"><CockpitIcon name={r.icon} size={14} /></span>
         <span class="res-val">{Math.round(v)}</span>
+        {#if d !== 0}
+          <span class="res-delta" class:up={d > 0} class:down={d < 0}>
+            {d > 0 ? '▲' : '▼'}{Math.abs(d)}
+          </span>
+        {/if}
       </div>
     {/each}
   </div>
@@ -425,6 +465,22 @@
   .res-ico { display: inline-flex; }
   .res-val { line-height: 1; }
 
+  /* Delta du tour : flèche + valeur, vert si gain rouge si perte
+     (retour live test patronat P0 §1 — feedback immédiat sur
+     l'effet d'une action). */
+  .res-delta {
+    margin-left: 0.18rem;
+    padding-left: 0.25rem;
+    border-left: 1px solid color-mix(in srgb, var(--c) 25%, transparent);
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .res-delta.up   { color: #7BCBA1; }
+  .res-delta.down { color: #E08F92; }
+
   /* === Contexte + boutons système (droite) === */
   .header-right {
     display: flex;
@@ -549,5 +605,6 @@
     .res-strip { gap: 0.2rem; }
     .res-chip { padding: 0.15rem 0.3rem; }
     .res-chip .res-val { font-size: 0.68rem; }
+    .res-delta { display: none; }
   }
 </style>

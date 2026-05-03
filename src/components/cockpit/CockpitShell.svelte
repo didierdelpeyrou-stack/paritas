@@ -262,7 +262,22 @@
       onShowHint={reopenHint}
     />
 
-    <CockpitEraTimeline turn={gameState.turn} />
+    <!-- Bloc temporel : timeline + bandeau d'anticipation des vents
+         (Johnson #3). Wrappé dans un seul grid item pour ne pas
+         décaler le 1fr de cockpit-main. -->
+    <div class="time-strip">
+      <CockpitEraTimeline turn={gameState.turn} />
+      {#if orchestrator.upcomingForcing}
+        <div class="upcoming-forcing-banner" in:fade={{ duration: 240 }}>
+          <span class="ufb-icon" aria-hidden="true">☄</span>
+          <span class="ufb-text">
+            <strong>{orchestrator.upcomingForcing.forcing.label}</strong>
+            dans {orchestrator.upcomingForcing.inTurns} tour{orchestrator.upcomingForcing.inTurns > 1 ? 's' : ''}
+            — <em>{orchestrator.upcomingForcing.forcing.description}</em>
+          </span>
+        </div>
+      {/if}
+    </div>
 
     <div class="cockpit-main">
       <CockpitTabs side="left" turn={currentTurn} />
@@ -623,6 +638,52 @@
     gap: 0;
     min-height: 0;
     overflow: hidden;
+  }
+
+  /* Bandeau d'anticipation vent historique (Johnson #3 — donner
+     au joueur le temps d'adapter sa stratégie). Slim 24px, en
+     écho doré ambré pour ne pas confondre avec une crise. */
+  /* time-strip wrappe la timeline + bandeau d'anticipation pour
+     les présenter comme un seul grid item (sinon le bandeau
+     conditionnel décalerait le 1fr de cockpit-main). */
+  .time-strip {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  .upcoming-forcing-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    background: linear-gradient(90deg,
+      rgba(217, 130, 28, 0.12) 0%,
+      rgba(201, 178, 106, 0.16) 50%,
+      rgba(217, 130, 28, 0.12) 100%);
+    border-bottom: 1px solid rgba(217, 130, 28, 0.30);
+    color: #F4D58C;
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 0.78rem;
+    line-height: 1.2;
+    flex-shrink: 0;
+  }
+  .ufb-icon {
+    font-size: 0.95rem;
+    color: #D9821C;
+    text-shadow: 0 0 6px rgba(217, 130, 28, 0.5);
+    animation: ufb-twinkle 2.4s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  .ufb-text { min-width: 0; }
+  .ufb-text strong { color: #F4EFE2; font-weight: 700; letter-spacing: 0.02em; }
+  .ufb-text em { color: rgba(244, 213, 140, 0.75); font-style: italic; }
+  @keyframes ufb-twinkle {
+    0%, 100% { opacity: 0.85; transform: scale(1); }
+    50%      { opacity: 1;    transform: scale(1.12); }
+  }
+  @media (max-width: 768px) {
+    .upcoming-forcing-banner { font-size: 0.7rem; padding: 0.2rem 0.5rem; }
+    .ufb-text em { display: none; }
   }
 
   /* Tablet : rails masqués (display:none) → 3 colonnes restantes */

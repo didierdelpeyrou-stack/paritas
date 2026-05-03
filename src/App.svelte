@@ -23,6 +23,23 @@
    * jeu principal — uniquement le mini-jeu Table. */
   const isTableWindow = typeof window !== 'undefined'
     && new URLSearchParams(window.location.search).has('session');
+
+  /* Retour live test : « garde le mode classique quand c'est sur
+   * mobile ». Sous 768px, le cockpit est trop dense pour être
+   * jouable confortablement → on force le mode classique
+   * automatiquement, indépendamment du toggle utilisateur. */
+  let isMobile = $state(false);
+  $effect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia('(max-width: 768px)');
+    const apply = () => { isMobile = mq.matches; };
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  });
+
+  /* Cockpit effectif : enabled par préférence ET pas mobile. */
+  const cockpitEffective = $derived(cockpit.enabled && !isMobile);
   import { loadAllScenarios } from './game/content/scenarios';
   import { loadPipelineContent } from './game/narrative/pipelineContent';
 
@@ -121,9 +138,10 @@
   <CockpitToggleBadge />
 {/if}
 
-{#if phase === 'game' && cockpit.enabled}
+{#if phase === 'game' && cockpitEffective}
   <!-- Cockpit en fullscreen au top level — pas dans <main max-w-7xl>
-       pour que les rails et popovers s'alignent au viewport edge. -->
+       pour que les rails et popovers s'alignent au viewport edge.
+       cockpitEffective = enabled ET pas mobile (force classique <768px). -->
   <CockpitShell onReplay={handleReplay} />
 {:else}
 <main class="min-h-dvh px-4 py-6 max-w-7xl mx-auto">

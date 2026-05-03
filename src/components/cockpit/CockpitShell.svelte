@@ -36,6 +36,7 @@
   import CockpitRightRail from './CockpitRightRail.svelte';
   import TheatrePortraitPanel from './TheatrePortraitPanel.svelte';
   import TheatreActorsTiles from './TheatreActorsTiles.svelte';
+  import AtelierAllocationPanel from './AtelierAllocationPanel.svelte';
   import CockpitPopover from './CockpitPopover.svelte';
   import type { IconKey } from './icons';
 
@@ -302,13 +303,16 @@
       <CockpitTabs side="left" turn={currentTurn} />
 
       {#if isTheatre}
-        <!-- Théâtre = CK3 : portrait latéral grand format à gauche.
-             Remplace le CockpitLeftRail (objectifs+acteurs en mini-cards)
-             qui reste accessible via les tabs latéraux. -->
+        <!-- Théâtre = CK3 : portrait latéral grand format à gauche. -->
         <TheatrePortraitPanel
           state={gameState}
           onOpenLegendaryBio={() => {/* TODO : ouvrir la modale bio depuis ici */}}
         />
+      {:else if isAtelier}
+        <!-- Atelier = Game Dev Tycoon : panneau d'allocation à gauche
+             (briefing déplié + barres ressources + talents quick).
+             Remplace les rails — la gestion devient la matière première. -->
+        <AtelierAllocationPanel />
       {:else}
         <CockpitLeftRail
           objectives={gameState.objectives}

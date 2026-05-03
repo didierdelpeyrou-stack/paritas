@@ -12,9 +12,12 @@
     statKey?: StatKey;
     target?: [number, number];
     onClick?: () => void;
+    /** Infobulle native (title attribute) — utilisée pour la lecture
+     *  Bourdieu des ressources/capitaux. */
+    tooltip?: string;
   }
 
-  let { value, label, icon = '•', statKey, target = [40, 80], onClick }: Props = $props();
+  let { value, label, icon = '•', statKey, target = [40, 80], onClick, tooltip }: Props = $props();
 
   const display = new Tween(0, { duration: 600, easing: cubicOut });
   $effect(() => { display.target = value; });
@@ -61,6 +64,7 @@
   type="button"
   class="gauge-row w-full text-left px-2 py-1.5 rounded-md hover:bg-gold/5 transition-colors flex flex-col gap-1 group relative {z}"
   class:pulse
+  title={tooltip}
   onclick={onClick}>
   <div class="flex items-baseline gap-2 text-sm">
     <span class="w-5 text-center text-base shrink-0">{icon}</span>

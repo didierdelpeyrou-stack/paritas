@@ -545,7 +545,7 @@
     color: rgba(237, 228, 201, 0.58);
     font-family: 'Cinzel', Georgia, serif;
     font-size: 0.8rem;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.10em;
     text-transform: uppercase;
   }
   @media (max-width: 480px) {

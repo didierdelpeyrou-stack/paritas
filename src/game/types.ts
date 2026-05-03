@@ -62,7 +62,15 @@ export type EraId =
 
 /* ============================================================
    Simulation légère
-   6 ressources, 4 acteurs.
+   7 ressources, 4 acteurs.
+
+   Note vague α (Omnès #88) : le rapport de force est désormais
+   décomposé en deux dimensions distinctes que la sociologie des
+   relations professionnelles distingue depuis Catherine Omnès :
+   - rapportDeForce       = force EXTERNE (pression du syndicat
+                            sur l'adversaire : manif, grève, presse)
+   - cohesionInterne      = force INTERNE (pression de la base sur
+                            le SG : assemblée, conseil, vote)
    ============================================================ */
 
 export interface Resources {
@@ -74,8 +82,14 @@ export interface Resources {
   santeSociale: number;
   /** Légitimité publique perçue (0-100) */
   legitimite: number;
-  /** Capacité à imposer dans le rapport de force (0-100) */
+  /** Force EXTERNE : capacité à imposer dans la négociation face à
+   *  l'adversaire (manif, grève, presse) (0-100) */
   rapportDeForce: number;
+  /** Force INTERNE : cohésion entre toi et ta base (assemblée,
+   *  conseil, vote interne). Ajoutée vague α (Omnès #88) pour
+   *  distinguer la pression interne de la pression externe.
+   *  (0-100) */
+  cohesionInterne: number;
   /** Solidité durable des institutions paritaires construites (0-100) */
   institution: number;
 }
@@ -88,6 +102,7 @@ export const ALL_RESOURCES: ResourceKey[] = [
   'santeSociale',
   'legitimite',
   'rapportDeForce',
+  'cohesionInterne',
   'institution'
 ];
 

@@ -11,6 +11,7 @@ export function freshResources(): Resources {
     santeSociale: 60,
     legitimite: 40,
     rapportDeForce: 30,
+    cohesionInterne: 50,
     institution: 20
   };
 }
@@ -43,7 +44,8 @@ export const RESOURCE_LABELS: Record<ResourceKey, string> = {
   caisse: 'Caisse',
   santeSociale: 'Santé sociale',
   legitimite: 'Légitimité',
-  rapportDeForce: 'Rapport de force',
+  rapportDeForce: 'Force externe',
+  cohesionInterne: 'Cohésion interne',
   institution: 'Institution'
 };
 
@@ -52,6 +54,7 @@ export const RESOURCE_TOOLTIPS: Record<ResourceKey, string> = {
   caisse: 'Réserves financières — sesterces, livres tournois, francs ou euros selon l\'époque.',
   santeSociale: 'Santé du tissu social : trop bas → grèves, sabotage.',
   legitimite: 'Comment l\'opinion publique te perçoit.',
-  rapportDeForce: 'Capacité à imposer dans la négociation.',
+  rapportDeForce: 'Force EXTERNE — capacité à imposer face à l\'adversaire (manif, grève, presse). Pression du syndicat vers le dehors.',
+  cohesionInterne: 'Force INTERNE — pression de la base sur toi (assemblée, conseil, vote). Si trop bas : risque de scission ou éviction au prochain congrès. (Omnès)',
   institution: 'Solidité durable des institutions paritaires construites.'
 };

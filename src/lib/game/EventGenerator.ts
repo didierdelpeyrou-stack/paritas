@@ -524,7 +524,9 @@ function makeSimulationState(camp: Camp): GameState {
     decisions: [],
     rival: { name: 'Rival', score: 35, lastMove: null },
     log: [],
-    ended: false
+    ended: false,
+    seed: 'SIMULATION00',
+    honteFierte: 50
   };
 }
 

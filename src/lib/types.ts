@@ -223,6 +223,22 @@ export interface GameState {
   /* Méta */
   log: string[];
   ended: 'evince' | 'fin' | false;
+
+  /* ────────────────────────────────────────────────────────────
+     Vague α — fondation systémique
+     ──────────────────────────────────────────────────────────── */
+
+  /** Seed reproductible pour audits RCT (Pineau #65, Duflo #94).
+   *  Posé au démarrage de la partie, jamais modifié ensuite.
+   *  Permet de rejouer la même partie avec ε de bruit (Doudna #156)
+   *  et d'exporter un dataset anonyme. */
+  seed: string;
+
+  /** Honte/Fierté — 7e jauge cachée jusqu'à l'épilogue (Ernaux #99).
+   *  Alimentée par les décisions de trahison (-) ou de fidélité (+)
+   *  à la base. 0 = honte abyssale, 50 = neutre, 100 = fierté pure.
+   *  Révélée seulement dans EndingReport. */
+  honteFierte: number;
 }
 
 export interface SystemLogEntry {

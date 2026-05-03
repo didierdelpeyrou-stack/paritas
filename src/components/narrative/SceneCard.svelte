@@ -14,6 +14,7 @@
   import GlossaryText from '../GlossaryText.svelte';
   import { imageFor } from '../../game/content/historicalImages';
   import { sfx } from '../../game/audio/sfx';
+  import { autoplay } from '$lib/stores/autoplay.svelte';
 
   interface Props {
     scenario: Scenario;
@@ -27,6 +28,29 @@
   function isLocked(choice: Choice): boolean {
     return !!choice.requiresTrait && choice.requiresTrait !== dominantTrait;
   }
+
+  /* ==== Mode auto-play (Cheng #194) ====
+   * Si activé, on planifie un clic auto sur le premier choix non
+   * verrouillé après autoplay.delayMs. Le timer est annulé si le
+   * scénario change ou si l'auto-play est désactivé entre-temps. */
+  let autoplayTimer: ReturnType<typeof setTimeout> | null = null;
+  $effect(() => {
+    /* Reactivité sur scenario.id + autoplay.enabled + autoplay.delayMs.
+     * Un nouveau scénario = un nouveau timer. */
+    const scenarioId = scenario.id;
+    if (!autoplay.enabled) return;
+    if (autoplayTimer) clearTimeout(autoplayTimer);
+    autoplayTimer = setTimeout(() => {
+      const pick = scenario.choices.find(c => !isLocked(c));
+      if (pick) onChoose(pick);
+    }, autoplay.delayMs);
+    return () => {
+      if (autoplayTimer) {
+        clearTimeout(autoplayTimer);
+        autoplayTimer = null;
+      }
+    };
+  });
 
   /**
    * Cohérence d'un choix avec le trait dominant du joueur (CK3-like).
@@ -203,6 +227,12 @@
       <span class="italic">{scenario.subtitle ?? ''}</span>
     </div>
     <h2 class="font-display text-2xl text-gold">{scenario.title}</h2>
+    {#if autoplay.enabled}
+      <div class="autoplay-banner" title="L'auto-play va sélectionner le premier choix dans {(autoplay.delayMs / 1000).toFixed(1)}s. Désactiver dans Settings.">
+        <span class="autoplay-dot" aria-hidden="true"></span>
+        AUTO-PLAY · {(autoplay.delayMs / 1000).toFixed(1)}s
+      </div>
+    {/if}
   </header>
 
   {#if hasImage}
@@ -636,5 +666,35 @@
     font-style: normal;
     font-size: 0.78rem;
     letter-spacing: 0.04em;
+  }
+
+  /* Auto-play banner — discret, en haut du scénario */
+  .autoplay-banner {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+    padding: 0.2rem 0.55rem;
+    background: rgba(201, 154, 64, 0.10);
+    border: 1px solid rgba(201, 154, 64, 0.32);
+    border-radius: 0.3rem;
+    color: #c89b3c;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+  }
+
+  .autoplay-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: #c89b3c;
+    animation: autoplay-pulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes autoplay-pulse {
+    0%, 100% { opacity: 0.4; transform: scale(0.85); }
+    50%      { opacity: 1;   transform: scale(1.1);  }
   }
 </style>

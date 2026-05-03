@@ -68,7 +68,7 @@
     <p>100 décisions. Deux camps. De 1789 à 2026.</p>
     <p class="mt-2">Tu rejoues les grands moments du syndicalisme français : <GlossaryText text="cahiers de doléances, Le Chapelier, Waldeck-Rousseau, charte d'Amiens, Matignon, Sécurité sociale, Mai 68, Auroux, Plan Juppé, ordonnances Macron" />, retraites 2023.</p>
     <p class="mt-2">À chaque tour, tu prends parti. Aucune décision n'est neutre.</p>
-    <p class="mt-2 italic text-parchment-dim/80">Ce n'est pas un divertissement. C'est une simulation historique.</p>
+    <p class="mt-2 italic text-parchment-dim/80">Une simulation historique exigeante. Chaque choix engage la suite.</p>
   </div>
 
   <!-- UX-7 : voie principale recommandée — incarner une figure légendaire -->

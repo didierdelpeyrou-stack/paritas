@@ -75,6 +75,15 @@ function pickPhrase(
       return sign === 'plus'
         ? `Les médecins de quartier rouvrent leurs consultations gratuites.`
         : `${q(40)} familles attendent au bureau de secours.`;
+
+    case 'cohesionInterne':
+      return sign === 'plus'
+        ? ctx.camp === 'salarie'
+          ? `L'assemblée générale ratifie l'orientation à ${q(60) + 30} % des voix.`
+          : `Le conseil d'administration valide la ligne à l'unanimité.`
+        : ctx.camp === 'salarie'
+          ? `${q(20)} délégués claquent la porte de la commission interne.`
+          : `Une motion de défiance circule entre les fédérations.`;
   }
 }
 

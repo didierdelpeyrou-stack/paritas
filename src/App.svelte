@@ -12,6 +12,8 @@
   import Tutorial from './components/intro/Tutorial.svelte';
   import SlotPicker from './components/intro/SlotPicker.svelte';
   import GameShell from './components/layout/GameShell.svelte';
+  import CockpitShell from './components/cockpit/CockpitShell.svelte';
+  import { cockpit } from '$lib/stores/cockpit.svelte';
   import ToastStack from './components/feedback/ToastStack.svelte';
   import { loadAllScenarios } from './game/content/scenarios';
   import { loadPipelineContent } from './game/narrative/pipelineContent';
@@ -56,16 +58,11 @@
 
   async function handleLandingDone() {
     setFlag(LANDING_KEY);
-    /* Le clic CTA fournit le user-gesture nécessaire pour démarrer
-     * l'AudioContext. On lance la musique d'accueil (revolution.mp3
-     * = Marseillaise) qui plante l'ambiance dès le tutoriel pour les
-     * nouveaux, ou direct slot pour les anciens. */
-    try {
-      const mod = await import('./game/audio/sfx');
-      if (!mod.sfx.isMusicEnabled()) {
-        await mod.sfx.setMusicEnabled(true);
-      }
-    } catch { /* ignore — pas critique */ }
+    /* La Marseillaise par défaut sur landing/tutoriel a été retirée
+     * (audit : Derivière #34 ×2, Eno #35 — « évidence facile »).
+     * Le joueur active la musique via le toggle ♫ quand il le
+     * souhaite, ou elle démarre naturellement quand il entre dans
+     * un scénario d'ère où la musique a un sens historique. */
     phase = flag(TUTORIAL_KEY) ? 'slot' : 'intro';
   }
 
@@ -127,7 +124,11 @@
     </div>
   {:else}
     <div in:fade={{ duration: 300 }}>
-      <GameShell onReplay={handleReplay} />
+      {#if cockpit.enabled}
+        <CockpitShell />
+      {:else}
+        <GameShell onReplay={handleReplay} />
+      {/if}
     </div>
   {/if}
 </main>

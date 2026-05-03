@@ -22,19 +22,23 @@
     { key: 'expertise', ico: '📚', lbl: 'Expertise' }
   ];
 
-  const RES_META: Record<string, { ico: string; lbl: string; target: [number, number] }> = {
-    prestige: { ico: '🏆', lbl: 'Prestige', target: [35, 75] },
-    caisse: { ico: '💰', lbl: 'Caisse', target: [30, 70] },
-    soutien: { ico: '❤️', lbl: 'Soutien', target: [40, 75] },
-    influence: { ico: '🏛️', lbl: 'Influence', target: [30, 75] },
-    sante: { ico: '💪', lbl: 'Santé', target: [40, 90] }
+  /* Tooltips Bourdieu : chaque ressource est lue dans le cadre des
+     capitaux de Bourdieu (économique, social, symbolique, culturel,
+     politique). Permet au joueur de comprendre la grille théorique
+     sans la réécrire. (Audit : Bourdieu #50 ×2 plays.) */
+  const RES_META: Record<string, { ico: string; lbl: string; target: [number, number]; bourdieu: string }> = {
+    prestige: { ico: '🏆', lbl: 'Prestige', target: [35, 75], bourdieu: 'Capital symbolique (Bourdieu) — reconnaissance publique de ton autorité' },
+    caisse: { ico: '💰', lbl: 'Caisse', target: [30, 70], bourdieu: 'Capital économique (Bourdieu) — ressources matérielles immédiatement mobilisables' },
+    soutien: { ico: '❤️', lbl: 'Soutien', target: [40, 75], bourdieu: 'Capital social (Bourdieu) — réseau d\'allié·es et de camarades' },
+    influence: { ico: '🏛️', lbl: 'Influence', target: [30, 75], bourdieu: 'Capital institutionnel — position dans les arènes officielles (paritarisme, État)' },
+    sante: { ico: '💪', lbl: 'Santé', target: [40, 90], bourdieu: 'Capital corporel — énergie disponible pour la lutte' }
   };
-  const CAP_META: Record<string, { ico: string; lbl: string; target: [number, number] }> = {
-    economique: { ico: '💼', lbl: 'Économique', target: [40, 75] },
-    social: { ico: '🤝', lbl: 'Social', target: [40, 75] },
-    militant: { ico: '🚩', lbl: 'Militant', target: [35, 75] },
-    institutionnel: { ico: '⚙️', lbl: 'Institutionnel', target: [35, 80] },
-    symbolique: { ico: '📜', lbl: 'Symbolique', target: [35, 75] }
+  const CAP_META: Record<string, { ico: string; lbl: string; target: [number, number]; bourdieu: string }> = {
+    economique: { ico: '💼', lbl: 'Économique', target: [40, 75], bourdieu: 'Capital économique structurel (Bourdieu) — patrimoine et flux durables' },
+    social: { ico: '🤝', lbl: 'Social', target: [40, 75], bourdieu: 'Capital social structurel (Bourdieu) — réseaux et fidélités tissés dans la durée' },
+    militant: { ico: '🚩', lbl: 'Militant', target: [35, 75], bourdieu: 'Capital militant — savoirs pratiques de la lutte collective accumulés' },
+    institutionnel: { ico: '⚙️', lbl: 'Institutionnel', target: [35, 80], bourdieu: 'Capital institutionnel — légitimité reconnue par les arènes paritaires' },
+    symbolique: { ico: '📜', lbl: 'Symbolique', target: [35, 75], bourdieu: 'Capital symbolique structurel (Bourdieu) — reconnaissance qui transcende l\'instant' }
   };
 
   let initial = $derived(game.state.name.trim().charAt(0).toUpperCase() || '?');
@@ -81,7 +85,7 @@
       <div class="mobile-section-title">Ressources</div>
       <div class="mobile-grid resources">
       {#each Object.entries(game.state.resources) as [k, v]}
-        <div class="mini-stat">
+        <div class="mini-stat" title={RES_META[k]?.bourdieu ?? ''}>
           <div class="mini-top"><span>{RES_META[k]?.ico}</span><b>{Math.round(v)}</b></div>
           <div class="mini-label">{RES_META[k]?.lbl ?? k}</div>
           <div class="mini-bar resource"><i style="width: {Math.max(2, Math.min(100, v))}%"></i></div>
@@ -94,7 +98,7 @@
       <summary>Capitaux et acquis</summary>
       <div class="mobile-grid capitals">
       {#each Object.entries(game.state.capitaux) as [k, v]}
-        <div class="mini-stat">
+        <div class="mini-stat" title={CAP_META[k]?.bourdieu ?? ''}>
           <div class="mini-top"><span>{CAP_META[k]?.ico}</span><b>{Math.round(v)}</b></div>
           <div class="mini-label">{CAP_META[k]?.lbl ?? k}</div>
           <div class="mini-bar capital"><i style="width: {Math.max(2, Math.min(100, v))}%"></i></div>
@@ -162,7 +166,7 @@
   <section>
     <h4 class="text-xs uppercase tracking-widest text-gold font-display mb-1">Ressources</h4>
     {#each Object.entries(game.state.resources) as [k, v]}
-      <Gauge statKey={k as any} value={v} label={RES_META[k]?.lbl ?? k} icon={RES_META[k]?.ico} target={RES_META[k]?.target} />
+      <Gauge statKey={k as any} value={v} label={RES_META[k]?.lbl ?? k} icon={RES_META[k]?.ico} target={RES_META[k]?.target} tooltip={RES_META[k]?.bourdieu} />
     {/each}
   </section>
 
@@ -172,7 +176,7 @@
       Capitaux <span class="text-parchment-dim/60 normal-case tracking-normal">— structures longues</span>
     </h4>
     {#each Object.entries(game.state.capitaux) as [k, v]}
-      <Gauge statKey={k as any} value={v} label={CAP_META[k]?.lbl ?? k} icon={CAP_META[k]?.ico} target={CAP_META[k]?.target} />
+      <Gauge statKey={k as any} value={v} label={CAP_META[k]?.lbl ?? k} icon={CAP_META[k]?.ico} target={CAP_META[k]?.target} tooltip={CAP_META[k]?.bourdieu} />
     {/each}
   </section>
 

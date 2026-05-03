@@ -22,41 +22,48 @@
   let { resources }: Props = $props();
 
   /* L'ordre des axes définit la disposition radiale.
-     Choisi pour que les paires antagonistes soient diamétralement opposées. */
+     Vague α (Omnès #88) : ajout cohesionInterne (force interne)
+     en face de rapportDeForce (force externe) — la tension visuelle
+     entre les deux est la signature de la relation syndicale. */
   const AXES: ResourceKey[] = [
-    'institution',     // 0° (top)
-    'legitimite',      // 60°
-    'caisse',          // 120°
-    'rapportDeForce',  // 180° (bottom)
-    'confiance',       // 240°
-    'santeSociale'     // 300°
+    'institution',       // 0° (top)
+    'legitimite',        // 51°
+    'caisse',            // 102°
+    'rapportDeForce',    // 154° (force externe)
+    'cohesionInterne',   // 206° (force interne — diamétralement opposée)
+    'confiance',         // 257°
+    'santeSociale'       // 308°
   ];
 
   const AXIS_LABELS: Record<ResourceKey, string> = {
     institution: 'Inst.',
     legitimite: 'Légi.',
     caisse: 'Caisse',
-    rapportDeForce: 'R. de force',
+    rapportDeForce: 'F. ext.',
+    cohesionInterne: 'F. int.',
     confiance: 'Conf.',
     santeSociale: 'Santé soc.'
   };
 
   /* Trajectoires modèles — valeurs typiques estimées de figures
-     historiques au pic de leur action. Toutes en 0-100. */
+     historiques au pic de leur action. Toutes en 0-100.
+     cohesionInterne : Jouhaux haut (cogestion CGT structurée),
+     Croizat moyen (forte ligne mais base diverse), Maire haut
+     (CFDT 1968 dialogue interne très soutenu). */
   const MODELS: Record<string, { name: string; values: Resources; color: string }> = {
     jouhaux: {
       name: 'Jouhaux 1947',
-      values: { institution: 78, legitimite: 70, caisse: 55, rapportDeForce: 35, confiance: 55, santeSociale: 60 },
+      values: { institution: 78, legitimite: 70, caisse: 55, rapportDeForce: 35, cohesionInterne: 65, confiance: 55, santeSociale: 60 },
       color: '#3b82f6'
     },
     croizat: {
       name: 'Croizat 1945',
-      values: { institution: 88, legitimite: 75, caisse: 65, rapportDeForce: 60, confiance: 70, santeSociale: 80 },
+      values: { institution: 88, legitimite: 75, caisse: 65, rapportDeForce: 60, cohesionInterne: 55, confiance: 70, santeSociale: 80 },
       color: '#10b981'
     },
     maire: {
       name: 'Maire 1968',
-      values: { institution: 55, legitimite: 65, caisse: 45, rapportDeForce: 70, confiance: 75, santeSociale: 60 },
+      values: { institution: 55, legitimite: 65, caisse: 45, rapportDeForce: 70, cohesionInterne: 70, confiance: 75, santeSociale: 60 },
       color: '#f59e0b'
     }
   };

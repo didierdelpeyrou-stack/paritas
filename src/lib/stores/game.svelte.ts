@@ -4,8 +4,21 @@
 
 import type { GameState, Camp, GameMode, Difficulty, SkillKey, StatKey } from '../types';
 import { LEGENDARY_CHARACTERS } from '../data/legendaryCharacters';
+import { seededPick } from '../seed';
 
 const SAVE_KEY = 'paritas_save_v1';
+
+/** Seed alphanumérique 12 chars, posé une seule fois au démarrage
+ *  de la partie. Permet la reproductibilité (Pineau #65) et le
+ *  replay perturbé ε (Doudna #156). */
+function makeSeed(): string {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sans 0/O/1/I
+  let s = '';
+  for (let i = 0; i < 12; i++) {
+    s += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return s;
+}
 
 function freshState(): GameState {
   return {
@@ -46,7 +59,10 @@ function freshState(): GameState {
     decisions: [],
     rival: { name: '', score: 35, lastMove: null },
     log: [],
-    ended: false
+    ended: false,
+    /* Vague α : seed reproductible + honteFierte caché. */
+    seed: makeSeed(),
+    honteFierte: 50
   };
 }
 
@@ -121,7 +137,7 @@ class GameStore {
         else if (key in next.skills) next.skills[key as keyof typeof next.skills] = clamp(next.skills[key as keyof typeof next.skills] + delta, 0, 100);
       }
     }
-    next.rival.name = pickRivalName(opts.camp);
+    next.rival.name = pickRivalName(opts.camp, next.seed);
     next.rival.score = 35 + opts.difficulty * 8;
     this.state = next;
     this.log(`<b>${opts.name}</b> entre dans l'histoire — côté ${opts.camp === 'patron' ? 'patronal' : 'salarié'}, mode ${opts.mode === 'reflechi' ? 'réfléchi' : 'compulsif'}${legendary ? `, lignée ${legendary.name}` : ''}.`);
@@ -203,6 +219,9 @@ class GameStore {
       if (loaded.mode === 'expert' || loaded.mode === 'perspicacite') loaded.mode = 'reflechi';
       if (loaded.mode !== 'reflechi' && loaded.mode !== 'compulsif') loaded.mode = 'compulsif';
       if (!('legendaryId' in loaded)) loaded.legendaryId = null;
+      /* Vague α : champs ajoutés. Backward compat sur saves existantes. */
+      if (typeof loaded.seed !== 'string' || !loaded.seed) loaded.seed = makeSeed();
+      if (typeof loaded.honteFierte !== 'number') loaded.honteFierte = 50;
       this.state = loaded as unknown as GameState;
       return true;
     } catch {
@@ -219,12 +238,14 @@ export function clamp(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, n));
 }
 
-function pickRivalName(camp: Camp): string {
+function pickRivalName(camp: Camp, seed: string): string {
   const pool =
     camp === 'patron'
       ? ['Eugène Schneider', 'Henri de Wendel', 'François Périgot', 'Ernest-Antoine Seillière']
       : ['Edmond Maire', 'Henri Krasucki', 'Marc Blondel', 'Laurent Berger', 'Nicole Notat'];
-  return pool[Math.floor(Math.random() * pool.length)]!;
+  /* Vague α : tirage déterministe via seed (Pineau #65). Deux parties
+   * lancées avec le même seed et le même camp produiront le même rival. */
+  return seededPick(seed, `rival:${camp}`, pool);
 }
 
 /* Singleton exporté */

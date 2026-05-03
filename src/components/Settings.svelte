@@ -14,6 +14,9 @@
   import { fade, fly } from 'svelte/transition';
   import { onMount } from 'svelte';
   import { sfx } from '../game/audio/sfx';
+  import { game } from '$lib/stores/game.svelte';
+  import { autoplay } from '$lib/stores/autoplay.svelte';
+  import { cockpit } from '$lib/stores/cockpit.svelte';
 
   interface Props {
     open: boolean;
@@ -152,6 +155,55 @@
 
   function onKey(e: KeyboardEvent) {
     if (e.key === 'Escape' && open) onClose();
+  }
+
+  /* ==== Vague α — partage seed + export anonyme ==== */
+  let seedCopied = $state(false);
+  async function copySeed() {
+    try {
+      await navigator.clipboard.writeText(game.state.seed || '');
+      seedCopied = true;
+      setTimeout(() => (seedCopied = false), 1500);
+    } catch { /* clipboard API peut être indispo */ }
+  }
+
+  function exportPartie() {
+    /* Export JSON anonymisé : on retire le nom (PII), on garde tout
+     * le reste. Format ouvert pour études RCT (Duflo #94, Pineau #65). */
+    const s = game.state;
+    const dump = {
+      schema: 'paritas-export-v1',
+      exportedAt: new Date().toISOString(),
+      seed: s.seed,
+      camp: s.camp,
+      legendaryId: s.legendaryId,
+      mode: s.mode,
+      difficulty: s.difficulty,
+      turn: s.turn,
+      era: s.era,
+      skills: s.skills,
+      resources: s.resources,
+      capitaux: s.capitaux,
+      profil: s.profil,
+      profilScores: s.profilScores,
+      flags: s.flags,
+      decisions: s.decisions,
+      history: s.history,
+      rollStats: s.rollStats,
+      figures: s.figures,
+      ended: s.ended,
+      honteFierte: s.honteFierte
+      /* PII volontairement omis : name. */
+    };
+    const blob = new Blob([JSON.stringify(dump, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `paritas-${s.seed || 'partie'}-T${s.turn}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 </script>
 
@@ -347,6 +399,83 @@
           style dense (uniquement quand Haiku enrichit la scène — sinon le contenu écrit est en FALC).
         </p>
       </section>
+
+      <section class="opt-group">
+        <h3>Données de partie</h3>
+        <div class="seed-row">
+          <span class="seed-label">Seed</span>
+          <code class="seed-value">{game.state.seed || '—'}</code>
+          <button type="button" class="seed-btn" onclick={copySeed}
+            title="Copier le seed dans le presse-papiers">
+            {seedCopied ? '✓ Copié' : 'Copier'}
+          </button>
+        </div>
+        <p class="opt-hint">
+          Le <b>seed</b> identifie ta partie de manière reproductible.
+          Communique-le à un·e camarade pour qu'iel rejoue la même
+          trajectoire (mêmes scénarios pivots).
+        </p>
+        <div class="export-row">
+          <button type="button" class="export-btn" onclick={exportPartie}>
+            Exporter ma partie en JSON
+          </button>
+        </div>
+        <p class="opt-hint">
+          L'export est <b>anonymisé</b> (ton nom est retiré). Utile pour
+          partager une trajectoire, ou pour des études RCT
+          (proposition Esther Duflo).
+        </p>
+      </section>
+
+      <section class="opt-group">
+        <h3>Interface (expérimental)</h3>
+        <label class="toggle-row">
+          <input
+            type="checkbox"
+            checked={cockpit.enabled}
+            onchange={(e) => cockpit.setEnabled((e.currentTarget as HTMLInputElement).checked)}
+          />
+          <span>Cockpit — Le Pupitre Paritaire</span>
+        </label>
+        <p class="opt-hint">
+          Active la nouvelle interface dashboard : viewport scénario
+          central (Le Ciel), instruments en cadrans laiton, onglets
+          glissants pour les mini-jeux gestion. <b>Alpha</b> — bascule
+          au classique avec ⊞ ou en décochant ici.
+        </p>
+      </section>
+
+      <section class="opt-group">
+        <h3>Mode auto-play (debug)</h3>
+        <label class="toggle-row">
+          <input
+            type="checkbox"
+            checked={autoplay.enabled}
+            onchange={(e) => autoplay.setEnabled((e.currentTarget as HTMLInputElement).checked)}
+          />
+          <span>Activer l'auto-play</span>
+        </label>
+        <div class="autoplay-row">
+          <label class="seed-label" for="autoplay-delay-input">Délai avant choix</label>
+          <input
+            id="autoplay-delay-input"
+            type="range"
+            min="400"
+            max="3000"
+            step="100"
+            value={autoplay.delayMs}
+            oninput={(e) => autoplay.setDelay(Number((e.currentTarget as HTMLInputElement).value))}
+            class="vol-slider"
+          />
+          <span class="seed-value autoplay-delay">{(autoplay.delayMs / 1000).toFixed(1)}s</span>
+        </div>
+        <p class="opt-hint">
+          Le moteur clique automatiquement le premier choix non-verrouillé
+          de chaque scénario. Utile pour observer une partie défiler sans
+          intervention (Ian Cheng), profiler le worker, ou faire défiler
+          des parties témoins. Désactive à tout moment.
+        </p>
+      </section>
     </div>
   </div>
 {/if}
@@ -504,6 +633,77 @@
   }
 
   .credits-content h4:first-child { margin-top: 0; }
+
+  /* ==== Vague α — partage seed + export ==== */
+  .seed-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .seed-label {
+    color: #f4d58b;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+  }
+
+  .seed-value {
+    flex: 1;
+    min-width: 8rem;
+    background: rgba(13, 16, 20, 0.55);
+    border: 1px solid rgba(244, 213, 139, 0.18);
+    border-radius: 0.35rem;
+    padding: 0.4rem 0.6rem;
+    color: #ede4c9;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
+    user-select: all;
+  }
+
+  .seed-btn,
+  .export-btn {
+    background: transparent;
+    border: 1px solid rgba(244, 213, 139, 0.35);
+    color: #f4d58b;
+    border-radius: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .seed-btn:hover,
+  .export-btn:hover {
+    background: rgba(201, 154, 64, 0.08);
+  }
+
+  .export-row {
+    margin-top: 0.7rem;
+  }
+
+  .autoplay-row {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 0.6rem 0 0;
+    flex-wrap: wrap;
+  }
+
+  .autoplay-row .vol-slider {
+    flex: 1;
+    min-width: 8rem;
+  }
+
+  .autoplay-delay {
+    min-width: 3.5rem;
+    text-align: center;
+  }
 
   .credits-content ul {
     margin: 0;

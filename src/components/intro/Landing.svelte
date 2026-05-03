@@ -36,8 +36,8 @@
       <em>Mai 68</em>, <em>retraites 2023</em>.
     </p>
     <p class="warn">
-      Aucune décision n'est neutre. Ce n'est pas un divertissement —
-      c'est une simulation politique.
+      Aucune décision n'est neutre. Chaque choix construit une trajectoire
+      historique — c'est un exercice de mémoire collective.
     </p>
   </section>
 
@@ -122,14 +122,10 @@
     font-weight: 900;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    /* Très grand sur desktop, sobre sur mobile */
     font-size: clamp(3.4rem, 12vw, 7rem);
     line-height: 0.95;
     margin: 0;
-    background: linear-gradient(180deg, #f4d58b 0%, #c89b3c 55%, #8a6520 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: #c89b3c;
     text-shadow: 0 2px 20px rgba(200, 155, 60, 0.18);
     animation: title-glow 4.5s ease-in-out infinite;
   }
@@ -142,7 +138,7 @@
   .subtitle {
     font-family: 'Cinzel', Georgia, serif;
     font-size: clamp(1rem, 3.5vw, 1.4rem);
-    letter-spacing: 0.18em;
+    letter-spacing: 0.10em;
     text-transform: uppercase;
     color: rgba(237, 228, 201, 0.9);
     margin: 0.55rem 0 0;
@@ -245,7 +241,7 @@
   }
 
   .cta-btn {
-    background: linear-gradient(135deg, #c89b3c 0%, #e07a3a 100%);
+    background: #c89b3c;
     color: #0d1014;
     border: none;
     border-radius: 0.55rem;
@@ -253,7 +249,7 @@
     font-family: 'Cinzel', Georgia, serif;
     font-weight: 700;
     font-size: clamp(0.95rem, 2.6vw, 1.05rem);
-    letter-spacing: 0.18em;
+    letter-spacing: 0.10em;
     text-transform: uppercase;
     cursor: pointer;
     box-shadow:

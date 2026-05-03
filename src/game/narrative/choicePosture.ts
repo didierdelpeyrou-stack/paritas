@@ -113,6 +113,7 @@ const RESOURCE_GLYPH: Record<ResourceKey, string> = {
   santeSociale: '✚',
   legitimite: '✦',
   rapportDeForce: '✕',
+  cohesionInterne: '◊',
   institution: '◈'
 };
 
@@ -140,6 +141,7 @@ export const RESOURCE_SHORT_LABEL: Record<ResourceKey, string> = {
   caisse: 'caisse',
   santeSociale: 'santé soc.',
   legitimite: 'légitimité',
-  rapportDeForce: 'rapport de force',
+  rapportDeForce: 'force ext.',
+  cohesionInterne: 'cohésion int.',
   institution: 'institution'
 };

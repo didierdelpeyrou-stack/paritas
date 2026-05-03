@@ -39,6 +39,7 @@
   import AtelierAllocationPanel from './AtelierAllocationPanel.svelte';
   import OnboardingTour from './OnboardingTour.svelte';
   import { onboarding } from '$lib/stores/onboarding.svelte';
+  import { epoqueForEra } from '$lib/themes/epoques';
   import CockpitPopover from './CockpitPopover.svelte';
   import type { IconKey } from './icons';
 
@@ -82,6 +83,8 @@
   const consequence = $derived(rebirth.consequence);
   const ending = $derived(rebirth.ending);
   const era = $derived(gameState ? eraForTurn(gameState.turn) : null);
+  /* Époque slot pour le theming visuel (5 slots vs 15 ères narratives). */
+  const epoque = $derived(epoqueForEra(era?.id ?? null));
 
   let settingsOpen = $state(false);
   let mobileMenuOpen = $state(false);
@@ -277,6 +280,7 @@
 
 {#if gameState}
   <div class="cockpit ambient-{gameState.mode} era-{era?.id ?? 'unknown'}"
+    data-epoque={epoque}
     class:crisis-active={orchestrator.isCrisis}
   >
 
@@ -652,6 +656,65 @@
 {/if}
 
 <style>
+  /* ============================================================
+     Tokens visuels par époque (V2.1 — fondations 5 époques)
+     ============================================================
+     Cinq slots de theming pour les 15 ères narratives. Chaque slot
+     définit son accent, son halo, sa profondeur, sa palette de
+     papier. Les composants enfants utilisent var(--epoque-*) pour
+     suivre l'évolution sans casser la grille canonique.
+     Cf. src/lib/themes/epoques.ts pour le mapping.
+     ============================================================ */
+  .cockpit {
+    /* Défaut : compromis-social (Trente Glorieuses, à la table). */
+    --epoque-accent: #C9B26A;
+    --epoque-accent-soft: #B89568;
+    --epoque-deep: #5A2F1C;
+    --epoque-glow: rgba(244, 213, 140, 0.18);
+    --epoque-paper: #ede4c9;
+    --epoque-tone: 'À la table des négociations';
+  }
+  .cockpit[data-epoque='ancien-regime'] {
+    --epoque-accent: #C9B26A;
+    --epoque-accent-soft: #B89568;
+    --epoque-deep: #5A2F1C;
+    --epoque-glow: rgba(244, 213, 140, 0.20);  /* lumière de bougie */
+    --epoque-paper: #f4ead0;                    /* papier vergé crème */
+    --epoque-tone: 'À la lumière des bougies';
+  }
+  .cockpit[data-epoque='industrielle'] {
+    --epoque-accent: #c89b3c;
+    --epoque-accent-soft: #a87a26;
+    --epoque-deep: #2a2520;                     /* fonte sombre, charbon */
+    --epoque-glow: rgba(217, 130, 28, 0.22);   /* halo cheminée */
+    --epoque-paper: #ddc890;                    /* affiche typographique */
+    --epoque-tone: 'À la cadence des machines';
+  }
+  .cockpit[data-epoque='compromis-social'] {
+    --epoque-accent: #c89b3c;
+    --epoque-accent-soft: #d9821c;
+    --epoque-deep: #1E5C8A;                     /* bleu institutionnel */
+    --epoque-glow: rgba(30, 92, 138, 0.18);
+    --epoque-paper: #ede4c9;                    /* dossier administratif */
+    --epoque-tone: 'À la table des négociations';
+  }
+  .cockpit[data-epoque='tertiarisation'] {
+    --epoque-accent: #5BA3C8;
+    --epoque-accent-soft: #4A88B0;
+    --epoque-deep: #1A2F3D;                     /* écran cathodique */
+    --epoque-glow: rgba(91, 163, 200, 0.22);
+    --epoque-paper: #d4e0e8;                    /* tableur, écran */
+    --epoque-tone: 'Au tournant des écrans';
+  }
+  .cockpit[data-epoque='plateformes-ia'] {
+    --epoque-accent: #7BCBA1;                   /* vert terminal */
+    --epoque-accent-soft: #5BA3C8;
+    --epoque-deep: #0F2C3A;                     /* noir bleuté */
+    --epoque-glow: rgba(123, 203, 161, 0.20);  /* données, IA */
+    --epoque-paper: #c8d4d8;                    /* dashboard numérique */
+    --epoque-tone: 'Algorithmes et données';
+  }
+
   .cockpit {
     display: grid;
     /* 4 lignes : status + time-strip + main 1fr + dashboard auto.
@@ -821,6 +884,12 @@
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
+    /* Signal d'époque persistant : fine bande inférieure qui prend
+       l'accent de l'époque courante (5 époques = 5 teintes). Permet
+       au joueur de sentir le passage d'époque sans rupture brutale. */
+    border-bottom: 1px solid var(--epoque-accent, #C9B26A);
+    box-shadow: 0 1px 12px var(--epoque-glow, rgba(244, 213, 140, 0.18));
+    transition: border-color 0.6s ease, box-shadow 0.6s ease;
   }
 
   /* Bouton actions flottant en mode Théâtre — remplace le dashboard

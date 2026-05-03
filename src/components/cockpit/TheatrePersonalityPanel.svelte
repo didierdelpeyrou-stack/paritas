@@ -241,7 +241,7 @@
     background:
       linear-gradient(270deg, transparent 0%, rgba(244, 213, 140, 0.025) 100%),
       linear-gradient(180deg, #1F1813 0%, #110D0A 100%);
-    box-shadow: inset 1px 0 0 0 rgba(201, 178, 106, 0.18);
+    box-shadow: inset 1px 0 0 0 var(--epoque-glow, rgba(201, 178, 106, 0.18));
     color: #F4EFE2;
     font-family: 'Source Serif 4', Georgia, serif;
     overflow-y: auto;

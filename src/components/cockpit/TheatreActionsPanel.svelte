@@ -167,8 +167,8 @@
     background:
       linear-gradient(90deg, transparent 0%, rgba(244, 213, 140, 0.025) 100%),
       linear-gradient(180deg, #1F1813 0%, #110D0A 100%);
-    /* Seam doré gradiant, pas une border franche (joint fluide). */
-    box-shadow: inset -1px 0 0 0 rgba(201, 178, 106, 0.18);
+    /* Seam doré gradiant, prend l'accent de l'époque courante. */
+    box-shadow: inset -1px 0 0 0 var(--epoque-glow, rgba(201, 178, 106, 0.18));
     color: #F4EFE2;
     font-family: 'Source Serif 4', Georgia, serif;
     overflow-y: auto;

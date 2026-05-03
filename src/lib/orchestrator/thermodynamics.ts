@@ -155,6 +155,20 @@ export function activeForcing(turn: number): ExternalForcing | null {
   return EXTERNAL_FORCINGS.find(f => turn >= f.fromTurn && turn <= f.toTurn) ?? null;
 }
 
+/** Prochain vent à venir dans <= N tours (Johnson #3 : anticipation).
+ *  Permet d'afficher « Front populaire dans 2 tours, prépare-toi ». */
+export function upcomingForcing(turn: number, withinTurns = 2): {
+  forcing: ExternalForcing;
+  inTurns: number;
+} | null {
+  for (const f of EXTERNAL_FORCINGS) {
+    if (f.fromTurn <= turn) continue;  // déjà passé ou actif
+    const inTurns = f.fromTurn - turn;
+    if (inTurns <= withinTurns) return { forcing: f, inTurns };
+  }
+  return null;
+}
+
 /** Retourne le modificateur applicable à une action donnée à un
  *  tour donné (cumulatif si plusieurs vents — on combine). */
 export function modifierFor(actionId: string, turn: number): ForcingModifier {

@@ -84,6 +84,11 @@
     hintDismissed = true;
     try { localStorage.setItem('paritas_cockpit_hint_seen', '1'); } catch { /* ignore */ }
   }
+  /* Nielsen #8 : rouvrir le hint mécanique à la demande. */
+  function reopenHint() {
+    hintDismissed = false;
+    try { localStorage.removeItem('paritas_cockpit_hint_seen'); } catch { /* ignore */ }
+  }
   /* Krug #1 : auto-dismiss dès qu'une action libre est exécutée
    * (preuve que le user a compris la mécanique). */
   $effect(() => {
@@ -254,6 +259,7 @@
       onToggleClassic={backToClassic}
       onOpenMobileMenu={() => (mobileMenuOpen = true)}
       showMobileBurger={isMobile}
+      onShowHint={reopenHint}
     />
 
     <CockpitEraTimeline turn={gameState.turn} />

@@ -14,7 +14,8 @@ import {
   applyOrchestratorUpdate, resetTurnCounters
 } from '../orchestrator/engine';
 import {
-  isCrisisActive, criticalResources, modifierFor, activeForcing
+  isCrisisActive, criticalResources, modifierFor, activeForcing,
+  upcomingForcing
 } from '../orchestrator/thermodynamics';
 import { rebirth } from '../../game/engine/gameState.svelte';
 import type { Resources, RebirthGameState } from '../../game/types';
@@ -149,6 +150,12 @@ class OrchestratorStore {
   get currentForcing() {
     const gs = rebirth.state;
     return gs ? activeForcing(gs.turn) : null;
+  }
+
+  /** Vent à venir dans <= 2 tours (Johnson #3 anticipation). */
+  get upcomingForcing() {
+    const gs = rebirth.state;
+    return gs ? upcomingForcing(gs.turn, 2) : null;
   }
 
   /** Vérifie si une action est exécutable (helper pour UI). */

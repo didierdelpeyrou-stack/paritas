@@ -26,11 +26,14 @@
     onToggleClassic?: () => void;
     onOpenMobileMenu?: () => void;
     showMobileBurger?: boolean;
+    /** Callback : rouvrir le hint mécanique (Nielsen #8). */
+    onShowHint?: () => void;
   }
   let {
     state: gs, era, mood,
     onOpenSettings, onToggleClassic, onOpenMobileMenu,
-    showMobileBurger = false
+    showMobileBurger = false,
+    onShowHint
   }: Props = $props();
 
   const ERA_LABEL: Record<string, string> = {
@@ -193,8 +196,8 @@
           <span class="trait-name">{traitLabel}</span>
           <span class="sep">·</span>
           <span class="score"
-            title="Score dialectique — moyenne pondérée des 7 ressources. Indique la santé globale de ton organisation (0 critique, 100 excellent)."
-          >S {score()}</span>
+            title="Position globale — moyenne pondérée des 7 ressources. Indique le rapport de force général de ton organisation (0 critique, 100 excellent)."
+          >P {score()}</span>
         </div>
       </div>
     </div>
@@ -232,6 +235,11 @@
 
     <!-- Boutons système -->
     <div class="sys-buttons">
+      {#if onShowHint}
+        <button type="button" class="sys-btn" onclick={onShowHint}
+          title="Rouvrir le rappel des mécaniques de jeu"
+          aria-label="Aide mécaniques">?</button>
+      {/if}
       <button type="button" class="sys-btn" onclick={toggleMusic}
         title={musicOn ? 'Couper la musique' : 'Lancer la musique'}
         aria-label={musicOn ? 'Couper la musique' : 'Lancer la musique'}

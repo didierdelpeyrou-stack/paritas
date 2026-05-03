@@ -247,7 +247,7 @@
 <svelte:window onkeydown={onKey} />
 
 {#if gameState}
-  <div class="cockpit ambient-{gameState.mode}"
+  <div class="cockpit ambient-{gameState.mode} era-{era?.id ?? 'unknown'}"
     class:crisis-active={orchestrator.isCrisis}
   >
 
@@ -331,6 +331,8 @@
                 mode={gameState.mode}
                 dominantTrait={gameState.dominantTrait}
                 camp={gameState.camp}
+                playerName={gameState.name}
+                organizationName={gameState.organization?.name}
                 onChoose={handleChoose}
               />
             {:else}
@@ -630,6 +632,102 @@
     50%      { filter: contrast(1.04) brightness(0.97); }
   }
 
+  /* === Couche ambiance par ère ===
+     Voile coloré + grain texturé en overlay (::before) pour évoquer
+     la matière de chaque période. Très subtil — n'écrase jamais le
+     contenu (opacity ≤ 0.10). Transition douce entre ères. */
+  .cockpit::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.08;
+    transition: background 1.6s ease, opacity 1.6s ease;
+    background-blend-mode: overlay;
+  }
+  .cockpit > * { position: relative; z-index: 1; }
+
+  /* Révolution — encre brune sur vélin, texture verge */
+  .cockpit.era-revolution::before {
+    background:
+      repeating-linear-gradient(0deg,
+        rgba(122, 70, 30, 0.18) 0,
+        rgba(122, 70, 30, 0.18) 1px,
+        transparent 1px,
+        transparent 4px),
+      radial-gradient(ellipse at 30% 20%, rgba(180, 140, 90, 0.4), transparent 65%);
+  }
+
+  /* XIXe — fumée d'usine, sépia industriel */
+  .cockpit.era-xixe::before {
+    background:
+      radial-gradient(ellipse at 70% 80%, rgba(60, 40, 30, 0.5), transparent 70%),
+      linear-gradient(180deg, rgba(110, 80, 50, 0.18) 0%, rgba(40, 30, 20, 0.30) 100%);
+  }
+
+  /* Belle Époque — gaz brûlé, halos dorés */
+  .cockpit.era-belle_epoque::before {
+    background:
+      radial-gradient(ellipse at 40% 30%, rgba(244, 213, 140, 0.30), transparent 55%),
+      radial-gradient(ellipse at 80% 70%, rgba(217, 130, 28, 0.20), transparent 60%);
+  }
+
+  /* Entre-deux-guerres — affiche Cassandre, contrastes ocres / verts */
+  .cockpit.era-entre_deux_guerres::before {
+    background:
+      linear-gradient(135deg, rgba(122, 70, 30, 0.25) 0%, transparent 40%, rgba(58, 107, 71, 0.18) 100%);
+  }
+
+  /* Reconstruction / Trentes Glorieuses — papier kraft, pastels usés */
+  .cockpit.era-reconstruction::before,
+  .cockpit.era-trente_glorieuses::before {
+    background:
+      repeating-linear-gradient(45deg,
+        rgba(180, 140, 90, 0.05) 0,
+        rgba(180, 140, 90, 0.05) 6px,
+        transparent 6px,
+        transparent 14px),
+      linear-gradient(180deg, rgba(180, 140, 90, 0.18), transparent 70%);
+  }
+
+  /* Guerre froide — gris béton, néon froid */
+  .cockpit.era-guerre_froide::before {
+    background:
+      linear-gradient(180deg, rgba(80, 90, 105, 0.28) 0%, rgba(35, 40, 50, 0.30) 100%);
+  }
+
+  /* Crise — fumée acide, urgence orange */
+  .cockpit.era-crise::before {
+    background:
+      radial-gradient(ellipse at 50% 80%, rgba(217, 130, 28, 0.30), transparent 70%),
+      linear-gradient(180deg, rgba(60, 50, 35, 0.25), transparent 60%);
+  }
+
+  /* Mitterrand → Cohabitations — moquette rose pâle institutionnelle */
+  .cockpit.era-mitterrand::before,
+  .cockpit.era-cohabitations::before {
+    background:
+      radial-gradient(ellipse at 30% 30%, rgba(176, 24, 30, 0.18), transparent 55%),
+      linear-gradient(180deg, rgba(122, 92, 110, 0.18), transparent 70%);
+  }
+
+  /* Sarkozy / Hollande — lumière froide LED, blanc bleuté */
+  .cockpit.era-sarkozy::before,
+  .cockpit.era-hollande::before {
+    background:
+      linear-gradient(180deg, rgba(180, 200, 220, 0.18) 0%, rgba(100, 120, 140, 0.18) 100%);
+  }
+
+  /* Macron — écran OLED, halos numériques */
+  .cockpit.era-macron_i::before,
+  .cockpit.era-macron_ii::before,
+  .cockpit.era-present::before {
+    background:
+      radial-gradient(ellipse at 80% 20%, rgba(120, 180, 220, 0.22), transparent 55%),
+      radial-gradient(ellipse at 20% 80%, rgba(244, 213, 140, 0.10), transparent 60%);
+  }
+
   .cockpit-main {
     display: grid;
     /* 5 colonnes strict : tabs L (80) | rail L (200) | sky (flex) |
@@ -794,8 +892,10 @@
     margin: 0;
   }
 
-  /* === Filigrane crise === */
-  .cockpit.crisis-active::before {
+  /* === Filigrane crise ===
+     Migré sur ::after pour ne pas écraser ::before (couche ambiance
+     par ère). Les deux overlays cohabitent désormais. */
+  .cockpit.crisis-active::after {
     content: '';
     position: absolute;
     inset: 0;

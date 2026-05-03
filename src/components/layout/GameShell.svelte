@@ -762,6 +762,8 @@
           mode={s.mode}
           dominantTrait={s.dominantTrait}
           camp={s.camp}
+          playerName={s.name}
+          organizationName={s.organization?.name}
           onChoose={handleChoose}
         />
       {:else if s.phase === 'consequence' && consequence}

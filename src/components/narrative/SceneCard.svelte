@@ -26,9 +26,17 @@
      *  rétrocompatibilité (les anciens callers continuent de marcher,
      *  on défaut à 'salarie'). */
     camp?: Camp;
+    /** Nom du joueur — utilisé en mode compulsif pour ancrer
+     *  l'identité avant le setup ("Toi, [Nom], ..."). Immersion. */
+    playerName?: string;
+    /** Nom de l'organisation du joueur — complète l'identity anchor. */
+    organizationName?: string;
     onChoose: (choice: Choice) => void;
   }
-  let { scenario, mode, dominantTrait, camp = 'salarie', onChoose }: Props = $props();
+  let {
+    scenario, mode, dominantTrait, camp = 'salarie',
+    playerName, organizationName, onChoose
+  }: Props = $props();
   const hasImage = $derived(!!imageFor(scenario.id));
 
   function isLocked(choice: Choice): boolean {
@@ -226,6 +234,34 @@
   const setupText = $derived(
     mode === 'reflechi' ? scenario.setup.reflechi : scenario.setup.compulsif
   );
+
+  /* === Identity anchor (mode compulsif uniquement) ===
+     Voix intérieure brève qui ancre le joueur dans son corps,
+     son rôle, son époque. S'affiche en exergue avant le setup
+     en mode Compulsif. Pas affichée en Réfléchi (plus distancié). */
+  const ERA_SENSORY: Record<string, string> = {
+    revolution:         'la chandelle vacille, le grain du papier accroche ta plume',
+    xixe:               'la machine à vapeur cogne deux étages plus bas',
+    belle_epoque:       'le bec de gaz ronronne, ton col cassé te scie le cou',
+    entre_deux_guerres: 'le téléphone à manivelle attend, les Gauloises planent',
+    reconstruction:     'la radio joue Trenet en sourdine, le café est tiède',
+    guerre_froide:      'la moquette épaisse mange les voix, la TV grésille',
+    trente_glorieuses:  'la Remington cliquète à côté, le tabac brun te brûle les doigts',
+    crise:              'le néon vacille, la photocopieuse bourdonne au fond du couloir',
+    mitterrand:         'ta secrétaire glisse une note, le minitel clignote dans l\'angle',
+    cohabitations:      'le fax crache une dépêche, la cafetière siffle',
+    sarkozy:            'ton BlackBerry vibre, l\'open space bourdonne',
+    hollande:           'ton iPhone vibre, l\'écran 27 pouces réchauffe la pièce',
+    macron_i:           'trois écrans, deux notifications Slack, un café froid',
+    macron_ii:          'Microsoft Teams sonne, Copilot suggère un brouillon',
+    present:            'écouteurs dans les oreilles, ChatGPT propose une formulation'
+  };
+  const identityAnchor = $derived.by(() => {
+    if (mode !== 'compulsif' || !playerName) return null;
+    const sensor = ERA_SENSORY[scenario.era] ?? '';
+    const orgPart = organizationName ? `, ${organizationName}` : '';
+    return `Toi, ${playerName}${orgPart}. ${sensor}.`;
+  });
   const showVoices = $derived(mode === 'compulsif' && (scenario.voices?.length ?? 0) > 0);
   const moodHue: Record<string, string> = {
     calme: 'border-cyan-500/40 bg-cyan-500/5',
@@ -279,6 +315,12 @@
 
   {#if hasImage}
     <HistoricalImage id={scenario.id} shape="tableau" />
+  {/if}
+
+  {#if identityAnchor}
+    <p class="identity-anchor" in:fade={{ duration: 240, delay: 80 }}>
+      {identityAnchor}
+    </p>
   {/if}
 
   <div class="text-parchment leading-relaxed whitespace-pre-line text-sm sm:text-base">
@@ -559,6 +601,21 @@
     color: var(--accent);
     font-style: normal;
     font-weight: 600;
+  }
+
+  /* Voix intérieure — courte ligne qui ancre l'identité du joueur
+     dans le mode Compulsif (immersion). Italique chaud, alignée à
+     gauche, séparée du setup par un fin trait or. */
+  .identity-anchor {
+    margin: 0;
+    padding: 0.5rem 0 0.6rem;
+    border-bottom: 1px solid rgba(201, 178, 106, 0.22);
+    color: rgba(244, 213, 140, 0.78);
+    font-family: 'Cinzel', Georgia, serif;
+    font-style: italic;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
   }
 
   /* Badge POV scénario — signale honnêtement le cadrage dont est

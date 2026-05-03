@@ -38,26 +38,72 @@
     return best;
   }
 
-  const legendaryComment = $derived.by<{ tone: 'approve' | 'rebuke'; text: string } | null>(() => {
+  /* Quatre tonalités de la voix légendaire (cf. critique designer
+     §Décision 4) : APPROVE (alignement), SURPASS (dépassement),
+     DRIFT (s'écarte sans renier), REBUKE (trahit). Chaque tonalité
+     a 3 variantes — picked déterministiquement via un hash de
+     l'id du légendaire + l'id du scénario, pour stabilité par scène.
+
+     Voix attendue : un mort qui te regarde du plus loin où il est. */
+  type LegendTone = 'approve' | 'surpass' | 'drift' | 'rebuke';
+
+  const LEGEND_LINES: Record<LegendTone, ((name: string) => string)[]> = {
+    approve: [
+      (n) => `${n} hocherait la tête. Tu marches dans ses pas.`,
+      (n) => `${n} reconnaîtrait sa main dans la tienne, ce soir.`,
+      (n) => `Sur ce geste-là, ${n} aurait signé le même.`
+    ],
+    surpass: [
+      (n) => `Tu fais ce que ${n} n'a pas osé.`,
+      (n) => `${n} s'arrêtait là. Tu vas plus loin.`,
+      (n) => `${n} aurait hésité. Toi, tu as tranché.`
+    ],
+    drift: [
+      (n) => `${n} ne te regarde plus. Tu joues sans lui.`,
+      (n) => `Tu sors du sillage de ${n}. Sans bruit, mais tu en sors.`,
+      (n) => `${n} aurait regardé ailleurs ce soir.`
+    ],
+    rebuke: [
+      (n) => `${n} t'aurait désavoué. Ce n'est pas la voie qu'il avait tracée.`,
+      (n) => `${n} retirerait sa signature de la tienne.`,
+      (n) => `${n} aurait quitté la salle quand tu as parlé.`
+    ]
+  };
+
+  /* Hash stable très simple — pour piquer une variante sans aléatoire. */
+  function pickVariant(seed: string, modulo: number): number {
+    let h = 0;
+    for (let i = 0; i < seed.length; i++) h = ((h << 5) - h + seed.charCodeAt(i)) | 0;
+    return Math.abs(h) % modulo;
+  }
+
+  const legendaryComment = $derived.by<{ tone: LegendTone; text: string } | null>(() => {
     if (!legendary || !consequence.traitShift) return null;
     const sig = legendarySignatureTrait();
     if (!sig) return null;
     const shift = consequence.traitShift;
     const lastName = legendary.name.split(' ').pop() ?? legendary.name;
-    if (shift.trait === sig && shift.delta >= 2) {
-      return {
-        tone: 'approve',
-        text: `${lastName} hocherait la tête. Tu marches dans ses pas.`
-      };
-    }
-    const antagonist = TRAIT_ANTAGONISTS[sig];
-    if (shift.trait === antagonist && shift.delta >= 2) {
-      return {
-        tone: 'rebuke',
-        text: `${lastName} t'aurait désavoué. Ce n'est pas la voie qu'il avait tracée.`
-      };
-    }
-    return null;
+
+    /* Détermine la tonalité.
+       - SURPASS  : delta sur le trait signature ≥ 4 (geste fort)
+       - APPROVE  : delta sur le trait signature ∈ [2..3]
+       - REBUKE   : delta sur l'antagoniste du trait signature ≥ 2
+       - DRIFT    : delta négatif sur le trait signature ≤ -2
+       - Sinon : pas de commentaire (geste neutre). */
+    let tone: LegendTone | null = null;
+    if (shift.trait === sig && shift.delta >= 4) tone = 'surpass';
+    else if (shift.trait === sig && shift.delta >= 2) tone = 'approve';
+    else if (shift.trait === sig && shift.delta <= -2) tone = 'drift';
+    else if (shift.trait === TRAIT_ANTAGONISTS[sig] && shift.delta >= 2) tone = 'rebuke';
+    if (!tone) return null;
+
+    /* Seed = legendary id + texte de la conséquence (qui change à chaque
+       scène) + tonalité. Garantit qu'un même choix montre toujours la
+       même variante, mais que des choix différents en montrent d'autres. */
+    const seed = `${legendary.id}:${consequence.text.slice(0, 40)}:${tone}`;
+    const variants = LEGEND_LINES[tone];
+    const idx = pickVariant(seed, variants.length);
+    return { tone, text: variants[idx](lastName) };
   });
 
   const alertHue: Record<TensionAlert['level'], string> = {
@@ -68,9 +114,9 @@
 
   /* === Révélation étagée ===
      Le texte arrive en premier, puis chaque bloc s'ajoute toutes ~360 ms.
-     Cliquer n'importe où dans la carte saute la séquence et révèle tout
-     d'un coup. Le bouton Continuer reste désactivé jusqu'à la dernière
-     étape — c'est ce qui donne au joueur le temps de lire. */
+     Cliquer n'importe où dans la carte saute la séquence et révèle tout.
+     Plus de bouton « Révéler… » à deux clics — le scellement final est
+     le SEUL geste rituel (cf. critique designer §Manie 2). */
   const STEP_MS = 360;
   const STEPS = 7; // mesures, headline, voix, mémoire, trait, chiffres, alertes
   let stage = $state(0);
@@ -92,6 +138,17 @@
   }
 
   const fullyRevealed = $derived(stage >= STEPS);
+
+  /* Cliquer n'importe où dans la carte avant la fin = saut de
+     révélation (sinon on attend l'animation puis on scelle). */
+  function onCardClick() {
+    if (!fullyRevealed) revealAll();
+  }
+
+  function seal() {
+    if (!fullyRevealed) { revealAll(); return; }
+    onContinue();
+  }
 </script>
 
 <article
@@ -205,20 +262,114 @@
     </div>
   {/if}
 
-  <div class="pt-2">
+  <!-- Sceau de cire (cf. designer note §Manie 2). Un seul geste
+       rituel à la fin : sceller. Pas de double clic « Révéler »/
+       « Continuer ». -->
+  <div class="seal-row">
     <button
       type="button"
-      class="btn-primary w-full"
-      class:btn-dim={!fullyRevealed}
-      onclick={() => { if (!fullyRevealed) { revealAll(); return; } onContinue(); }}
-      aria-label={fullyRevealed ? 'Continuer' : 'Révéler la suite, puis continuer'}
+      class="wax-seal"
+      class:ready={fullyRevealed}
+      onclick={seal}
+      aria-label={fullyRevealed ? 'Sceller ce choix et continuer' : 'Sauter la révélation et sceller'}
+      title={fullyRevealed
+        ? 'Ce choix a scellé une décision. Continuer.'
+        : 'Sauter la révélation pour sceller maintenant.'}
     >
-      {fullyRevealed ? 'Continuer' : 'Révéler…'}
+      <span class="seal-stamp" aria-hidden="true">
+        <!-- Sceau circulaire stylisé -->
+        <svg viewBox="0 0 60 60" width="48" height="48">
+          <defs>
+            <radialGradient id="wax-grad" cx="38%" cy="32%">
+              <stop offset="0%" stop-color="#E03A35"/>
+              <stop offset="55%" stop-color="#9B2A26"/>
+              <stop offset="100%" stop-color="#5A1410"/>
+            </radialGradient>
+          </defs>
+          <!-- Bavures de cire -->
+          <path d="M30 4 Q42 8 50 18 Q56 30 50 42 Q42 54 30 56 Q18 54 10 42 Q4 30 10 18 Q18 8 30 4 Z"
+                fill="url(#wax-grad)"
+                stroke="#3A0A09" stroke-width="0.8"/>
+          <!-- Empreinte centrale : monogramme P -->
+          <text x="30" y="38" text-anchor="middle"
+                fill="#F4D58C"
+                font-family="Cinzel, Georgia, serif"
+                font-size="22" font-weight="700"
+                style="text-shadow: 0 1px 0 rgba(0,0,0,0.4)">P</text>
+        </svg>
+      </span>
+      <span class="seal-text">
+        {fullyRevealed
+          ? 'Sceller ce choix · Continuer'
+          : 'Apposer le sceau · Sauter la révélation'}
+      </span>
     </button>
   </div>
 </article>
 
 <style>
+  /* === Sceau de cire (geste rituel de fin) ===
+     Remplace l'ancien double bouton « Révéler… » / « Continuer »
+     par un sceau unique qui ferme l'épisode. Cf. critique designer
+     §Manie 2 — un seul clic, pas deux. */
+  .seal-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px dashed rgba(201, 178, 106, 0.25);
+  }
+
+  .wax-seal {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.4rem 1.1rem 0.4rem 0.45rem;
+    background: linear-gradient(180deg, #2A1A0E 0%, #1A1108 100%);
+    border: 1px solid rgba(201, 178, 106, 0.35);
+    border-radius: 999px;
+    color: rgba(244, 213, 140, 0.65);
+    cursor: pointer;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: border-color 0.2s ease, color 0.2s ease, filter 0.18s ease;
+  }
+
+  .wax-seal:hover {
+    border-color: #C9B26A;
+    color: #F4D58C;
+    filter: brightness(1.06);
+  }
+
+  .wax-seal.ready {
+    border-color: #C9B26A;
+    color: #F4D58C;
+    box-shadow: 0 0 0 0 rgba(201, 178, 106, 0.35);
+    animation: seal-ready-pulse 2.4s ease-in-out infinite;
+  }
+
+  @keyframes seal-ready-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(201, 178, 106, 0.0); }
+    50%      { box-shadow: 0 0 0 8px rgba(201, 178, 106, 0.18); }
+  }
+
+  .seal-stamp {
+    display: inline-flex;
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 3px rgba(122, 30, 27, 0.4));
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .wax-seal:hover .seal-stamp { transform: scale(1.06) rotate(-3deg); }
+  .wax-seal:active .seal-stamp {
+    transform: scale(0.96) rotate(2deg);
+    filter: drop-shadow(0 1px 1px rgba(122, 30, 27, 0.6));
+  }
+
+  .seal-text { line-height: 1; }
+
+
   .trait-change {
     display: flex;
     align-items: center;
@@ -355,6 +506,20 @@
     background: rgba(127, 29, 29, 0.12);
   }
 
+  /* SURPASS — le légendaire dépassé. Doré plus chaud, halo discret. */
+  .legendary-margin[data-tone='surpass'] {
+    border-left-color: #F4D58C;
+    background: rgba(244, 213, 140, 0.10);
+    box-shadow: -1px 0 0 0 rgba(244, 213, 140, 0.3);
+  }
+
+  /* DRIFT — l'écart silencieux. Désaturé, plus froid. */
+  .legendary-margin[data-tone='drift'] {
+    border-left-color: rgba(125, 125, 138, 0.55);
+    background: rgba(60, 60, 70, 0.12);
+    color: rgba(180, 180, 195, 0.9);
+  }
+
   .legendary-margin .quill {
     color: rgba(244, 213, 139, 0.7);
     font-family: 'Cinzel', Georgia, serif;
@@ -365,6 +530,15 @@
 
   .legendary-margin[data-tone='rebuke'] .quill {
     color: rgba(252, 165, 165, 0.85);
+  }
+  .legendary-margin[data-tone='surpass'] .quill {
+    color: #F4D58C;
+  }
+  .legendary-margin[data-tone='drift'] .quill {
+    color: rgba(180, 180, 195, 0.7);
+  }
+  .legendary-margin[data-tone='drift'] p {
+    color: rgba(190, 190, 205, 0.75);
   }
 
   .legendary-margin p {

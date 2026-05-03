@@ -33,6 +33,97 @@ export interface HistoricalNews {
 }
 
 /* ============================================================
+   Causal news : items injectés dans le ticker en réaction aux
+   choix du joueur (cf. critique designer §Décision 5 : « Donner
+   au ticker du haut une vraie causalité »).
+
+   Indexé par flag du choix (pose le drapeau qui matche dans la
+   mémoire historique). Le store causalTicker prend cet item, le
+   place en tête du fil avec un marqueur "fresh" pour quelques
+   tours, puis il vit avec les autres news.
+   ============================================================ */
+
+export interface CausalNewsTemplate {
+  category: NewsCategory;
+  /** Headline avec un placeholder optionnel {year} qui sera remplacé. */
+  headline: string;
+  /** Tonalité : 'world-acquiesce' (le monde valide) / 'world-oppose'
+   *  (le monde résiste). UI peut le coloriser plus tard. */
+  tone?: 'acquiesce' | 'oppose' | 'neutral';
+}
+
+/** Un flag de choix → un (ou plusieurs) item de news que le monde
+ *  émet en réponse. La news vit dans le ticker pendant ~6 tours. */
+export const CAUSAL_NEWS_BY_FLAG: Record<string, CausalNewsTemplate[]> = {
+  /* === Matignon 1936 === */
+  'signe-matignon': [
+    { category: 'politique', tone: 'acquiesce',
+      headline: 'Accords Matignon signés — la presse ouvrière jubile, la presse patronale s\'incline.' },
+    { category: 'faitsdivers', tone: 'acquiesce',
+      headline: 'Premiers trains de congés payés vers la mer, Gare d\'Austerlitz pleine.' }
+  ],
+  'refuse-compromis': [
+    { category: 'politique', tone: 'oppose',
+      headline: 'Échec à Matignon — le patronat se reprend, l\'occupation des usines continue.' }
+  ],
+  /* === Matignon 1936 — branches patronales === */
+  'jouer-cgt-cgtu': [
+    { category: 'politique', tone: 'oppose',
+      headline: 'Tensions internes à la CGT — la presse patronale parle de « fissure réformiste ».' }
+  ],
+  'mediation-elysee': [
+    { category: 'politique', tone: 'oppose',
+      headline: 'Lebrun consulté en pleine nuit — l\'Élysée refuse de prendre position.' }
+  ],
+
+  /* === Side-events syndicaux === */
+  'corrompu-prefecture': [
+    { category: 'faitsdivers', tone: 'oppose',
+      headline: 'Rumeur en préfecture : un sergent de ville aurait été acheté pour un meeting.' }
+  ],
+  'police-avec-nous': [
+    { category: 'faitsdivers', tone: 'acquiesce',
+      headline: 'Un sergent de ville se range du côté des grévistes — chronique d\'un miracle.' }
+  ],
+  'rachete-talent': [
+    { category: 'faitsdivers',
+      headline: 'Caillou retire sa démission, monte à Paris — la fédération recase ses cadres.' }
+  ],
+  'trahi-talent': [
+    { category: 'faitsdivers', tone: 'oppose',
+      headline: 'Le bulletin syndical publie « Un des nôtres a vendu sa carte ». Indignation interne.' }
+  ],
+
+  /* === Side-events patronaux === */
+  'paye-prefet': [
+    { category: 'politique', tone: 'oppose',
+      headline: 'Trois meneurs CGT licenciés en quinzaine — le patronat satisfait.' }
+  ],
+  'protege-mouchard': [
+    { category: 'faitsdivers', tone: 'oppose',
+      headline: 'Un nouveau chef d\'équipe nommé sans ancienneté — l\'atelier murmure.' }
+  ],
+  'capital-anglais': [
+    { category: 'geopolitique',
+      headline: 'La City prend pied dans l\'industrie française — chronométrages à Manchester.' }
+  ],
+  'promu-vidal': [
+    { category: 'faitsdivers',
+      headline: 'Un nouveau cadre sort des rangs ouvriers — déjeuner au Cercle des dirigeants.' }
+  ],
+
+  /* === Long-terme === */
+  'epuise-mouvement': [
+    { category: 'faitsdivers', tone: 'oppose',
+      headline: 'Manifestants épuisés s\'éparpillent. Les caisses syndicales se vident.' }
+  ],
+  'desavoue-section': [
+    { category: 'politique', tone: 'oppose',
+      headline: 'Une section régionale rompt avec la fédération — début de scission ?' }
+  ]
+};
+
+/* ============================================================
    Pool : ~40 items répartis sur 100 tours, mélange de catégories
    ============================================================ */
 export const HISTORICAL_NEWS: HistoricalNews[] = [

@@ -31,6 +31,7 @@
   import CockpitEraTimeline from './CockpitEraTimeline.svelte';
   import NewsTicker from './NewsTicker.svelte';
   import SideEventModal from '../narrative/SideEventModal.svelte';
+  import ScenePreviewOverlay from './ScenePreviewOverlay.svelte';
   import CockpitLeftRail from './CockpitLeftRail.svelte';
   import CockpitRightRail from './CockpitRightRail.svelte';
   import CockpitPopover from './CockpitPopover.svelte';
@@ -296,6 +297,9 @@
       />
 
       <main class="sky" class:dimmed={cockpit.openTab !== null}>
+        <!-- Préfiguration sépia derrière le SceneCard, animée par
+             le hover des choices (cf. critique designer §Manie 1). -->
+        <ScenePreviewOverlay />
         {#key gameState.turn + ':' + gameState.phase + ':' + (scenario?.id ?? 'none')}
           <div class="sky-content"
             in:fly={{ y: 14, duration: 360, easing: cubicOut, delay: 80 }}
@@ -841,6 +845,9 @@
     max-width: 64rem;
     margin: 0 auto;
     color: #1A1411;
+    /* Reste devant l'overlay de préfiguration sépia (z-index:0). */
+    position: relative;
+    z-index: 1;
   }
 
   /* === Hint mécanique (Norman fix #2 + #6 + Krug #1 + #2) === */

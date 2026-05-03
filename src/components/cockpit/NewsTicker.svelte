@@ -21,12 +21,49 @@
   } from '../../game/content/historicalNews';
   import { sideEvents } from '$lib/stores/sideEvents.svelte';
   import { SIDE_EVENTS } from '../../game/content/sideEvents';
+  import { causalTicker, type CausalNewsItem } from '$lib/stores/causalTicker.svelte';
 
   const camp = $derived(rebirth.state?.camp ?? 'salarie');
   const turn = $derived(rebirth.state?.turn ?? 1);
 
-  /* Items actifs au tour courant — refresh quand le tour change. */
-  const items = $derived(activeNews(turn));
+  /* Items actifs au tour courant — refresh quand le tour change.
+     Causal d'abord (frais, en réaction au dernier choix), puis les
+     news historiques d'arrière-plan. */
+  const causalItems = $derived(causalTicker.active(turn));
+  const historicalItems = $derived(activeNews(turn));
+
+  /* Wrapper d'item unifié pour le rendu. Causal items portent un
+     id stable, headline, category, year, tone, et un flag fresh. */
+  type TickerEntry = {
+    kind: 'causal' | 'historical';
+    id: string;
+    headline: string;
+    category: HistoricalNews['category'];
+    year?: number;
+    tone?: 'acquiesce' | 'oppose' | 'neutral';
+    fresh?: boolean;
+    source?: HistoricalNews;
+  };
+
+  const items: TickerEntry[] = $derived([
+    ...causalItems.map((c: CausalNewsItem): TickerEntry => ({
+      kind: 'causal',
+      id: c.id,
+      headline: c.headline,
+      category: c.category,
+      year: c.year,
+      tone: c.tone,
+      fresh: causalTicker.isFresh(c, turn)
+    })),
+    ...historicalItems.map((h): TickerEntry => ({
+      kind: 'historical',
+      id: h.id,
+      headline: h.headline,
+      category: h.category,
+      year: h.year,
+      source: h
+    }))
+  ]);
 
   /* Si on a moins de 6 items, on duplique pour que le marquee
      ait toujours l'air continu sans "trou" visible. */
@@ -48,20 +85,31 @@
     return () => mq.removeEventListener('change', apply);
   });
 
-  function onClick(item: HistoricalNews) {
-    if (!isInteractive(item, camp)) return;
-    /* Vérifier que l'événement est dans le pool, et qu'il n'a pas
-     * déjà été joué — si c'est le cas, on ignore silencieusement
-     * (l'item reste affiché mais sans effet). */
-    const ev = SIDE_EVENTS.find(e => e.id === item.sideEventId);
+  function onClick(entry: TickerEntry) {
+    /* Causal items : pas cliquables (réaction du monde, pas un side
+       event). Seuls les historiques avec sideEventId sont cliquables. */
+    if (entry.kind !== 'historical' || !entry.source) return;
+    if (!isInteractive(entry.source, camp)) return;
+    const ev = SIDE_EVENTS.find(e => e.id === entry.source!.sideEventId);
     if (!ev) return;
-    sideEvents.forceTrigger(item.sideEventId!);
+    sideEvents.forceTrigger(entry.source.sideEventId!);
   }
 
-  function tooltipFor(item: HistoricalNews): string {
-    const interactive = isInteractive(item, camp);
-    const base = `${categoryLabel(item.category)} · ${item.year ?? ''}\n${item.headline}`;
-    if (interactive) {
+  function isEntryInteractive(entry: TickerEntry): boolean {
+    return entry.kind === 'historical'
+      && !!entry.source
+      && isInteractive(entry.source, camp);
+  }
+
+  function tooltipFor(entry: TickerEntry): string {
+    const base = `${categoryLabel(entry.category)} · ${entry.year ?? ''}\n${entry.headline}`;
+    if (entry.kind === 'causal') {
+      const toneLabel = entry.tone === 'acquiesce' ? '✓ Le monde acquiesce'
+        : entry.tone === 'oppose' ? '✗ Le monde s\'oppose'
+        : '· réaction du monde';
+      return `${base}\n\n${toneLabel} (réaction à ton dernier choix).`;
+    }
+    if (isEntryInteractive(entry)) {
       return `${base}\n\n→ Clique pour t'engager dans cette affaire.`;
     }
     return base;
@@ -76,23 +124,35 @@
     style:--duration="{durationSec}s"
   >
     <div class="ticker-track">
-      {#each renderItems as item, i (item.id + ':' + i)}
-        {@const interactive = isInteractive(item, camp)}
+      {#each renderItems as entry, i (entry.id + ':' + i)}
+        {@const interactive = isEntryInteractive(entry)}
         <button
           type="button"
           class="ticker-item"
           class:interactive
-          style:--cat-color={categoryColor(item.category)}
-          onclick={() => onClick(item)}
-          title={tooltipFor(item)}
+          class:causal={entry.kind === 'causal'}
+          class:fresh={entry.fresh}
+          data-tone={entry.tone ?? ''}
+          style:--cat-color={categoryColor(entry.category)}
+          onclick={() => onClick(entry)}
+          title={tooltipFor(entry)}
           tabindex={interactive ? 0 : -1}
           aria-disabled={!interactive}
         >
-          <span class="cat-tag">{categoryLabel(item.category)}</span>
-          {#if item.year}
-            <span class="year">{item.year}</span>
+          {#if entry.kind === 'causal'}
+            <span class="causal-tag" aria-hidden="true"
+              title={entry.tone === 'acquiesce' ? 'Le monde acquiesce'
+                : entry.tone === 'oppose' ? 'Le monde s\'oppose'
+                : 'Réaction du monde'}
+            >
+              {entry.tone === 'oppose' ? '⚑' : '◎'}
+            </span>
           {/if}
-          <span class="headline">{item.headline}</span>
+          <span class="cat-tag">{categoryLabel(entry.category)}</span>
+          {#if entry.year}
+            <span class="year">{entry.year}</span>
+          {/if}
+          <span class="headline">{entry.headline}</span>
           {#if interactive}
             <span class="action-glyph" aria-hidden="true">▸</span>
           {/if}
@@ -194,6 +254,43 @@
     text-transform: uppercase;
     letter-spacing: 0.08em;
     line-height: 1;
+  }
+
+  /* === Items causaux : réaction du monde aux choix du joueur ===
+     Distincts visuellement des news historiques d'arrière-plan.
+     Cf. critique designer §Décision 5. */
+  .ticker-item.causal {
+    background: rgba(244, 213, 140, 0.08);
+    color: #F4D58C;
+  }
+  .ticker-item.causal[data-tone='oppose'] {
+    background: rgba(176, 24, 30, 0.10);
+    color: #E08F92;
+    border-left-color: rgba(176, 24, 30, 0.7);
+  }
+  .ticker-item.causal[data-tone='acquiesce'] {
+    background: rgba(58, 107, 71, 0.10);
+    color: #7BCBA1;
+    border-left-color: rgba(58, 107, 71, 0.7);
+  }
+
+  /* Frais : émis dans les 2 derniers tours, pulse subtil pour
+     attirer l'œil. */
+  .ticker-item.fresh {
+    animation: causal-fresh-pulse 1.6s ease-in-out 3;
+  }
+  @keyframes causal-fresh-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 transparent; }
+    50%      { box-shadow: 0 0 8px 0 currentColor; }
+  }
+
+  .causal-tag {
+    display: inline-flex;
+    color: currentColor;
+    font-size: 0.85rem;
+    line-height: 1;
+    margin-right: 0.18rem;
+    text-shadow: 0 0 4px currentColor;
   }
 
   .year {

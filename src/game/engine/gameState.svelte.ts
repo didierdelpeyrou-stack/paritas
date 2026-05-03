@@ -36,7 +36,8 @@ import { advanceTurn, isFinalTurn } from './gameLoop';
 import { pickEnding, buildEnding, type EndingRender } from './endingEngine';
 import { pickNextScenario } from '../narrative/scenarioEngine';
 import { evaluateTensions, type TensionAlert } from '../simulation/tensions';
-import { eraForTurn } from '../content/eras';
+import { eraForTurn, yearForTurn } from '../content/eras';
+import { causalTicker } from '../../lib/stores/causalTicker.svelte';
 import {
   legendaryById,
   type LegendaryCharacter
@@ -267,6 +268,13 @@ class RebirthGameStore {
       ...this.log,
       `T${after.turn} — ${scenario.title} : ${choice.text}`
     ].slice(-50);
+
+    /* Causalité du ticker (cf. critique designer §Décision 5) :
+       le monde émet une news en réaction au flag posé par le choix.
+       Vit ~5 tours dans le bandeau d'actualités. */
+    causalTicker.prune(after.turn);
+    causalTicker.emitFor(choice.flag, after.turn, yearForTurn(after.turn) ?? 1789);
+
     this.persist();
     this.requestNarrativeEnrichment(after, scenario, choice);
   }
@@ -590,6 +598,7 @@ class RebirthGameStore {
     this.ending = null;
     this.alerts = [];
     this.log = [];
+    causalTicker.reset();
     try {
       localStorage.removeItem(activeSaveKey());
       localStorage.removeItem(LEGACY_SAVE_KEY); // best effort

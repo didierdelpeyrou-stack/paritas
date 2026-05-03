@@ -12,6 +12,7 @@
   import { TRAIT_LABELS, TRAIT_ANTAGONISTS } from '../../game/narrative/personalityEngine';
   import { rebirth } from '../../game/engine/gameState.svelte';
   import { abilityFuelScore, ABILITY_SHORT_LABEL } from '../../game/simulation/resourceUtility';
+  import { scenePreview } from '$lib/stores/scenePreview.svelte';
   import VoicePanel from './VoicePanel.svelte';
   import HistoricalImage from '../HistoricalImage.svelte';
   import GlossaryText from '../GlossaryText.svelte';
@@ -392,8 +393,16 @@
           data-swipe-target={swipeTarget === i}
           disabled={locked}
           style="--accent: {style.accent}; --accent-soft: {style.accentSoft}; --accent-muted: {style.accentMuted};"
-          onclick={() => onChoose(ch)}
+          onclick={() => { scenePreview.clear(); onChoose(ch); }}
           onpointerdown={locked ? () => void sfx.play('lock') : undefined}
+          onmouseenter={() => !locked && scenePreview.set({
+            posture, label: style.label, intent: intentTxt
+          })}
+          onmouseleave={() => scenePreview.clear()}
+          onfocus={() => !locked && scenePreview.set({
+            posture, label: style.label, intent: intentTxt
+          })}
+          onblur={() => scenePreview.clear()}
           in:fly={{ y: 8, duration: 240, delay: 60 + i * 40 }}
         >
           {#if coh === 'opposed' && !locked}

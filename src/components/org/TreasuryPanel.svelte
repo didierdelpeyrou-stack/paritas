@@ -5,6 +5,7 @@
   import type { RebirthGameState } from '../../game/types';
   import type { BudgetStrategy } from '../../game/org/types';
   import { computeBudget, strategyDescription, strategyLabel } from '../../game/org/treasury';
+  import MiniGameFuelHeader from '../cockpit/MiniGameFuelHeader.svelte';
 
   interface Props {
     gameState: RebirthGameState;
@@ -134,6 +135,8 @@
     <div class="text-xs uppercase tracking-wider text-parchment-dim/85">Caisse</div>
     <h3 class="font-display text-gold text-base">Recettes & dépenses, ce tour</h3>
   </div>
+
+  <MiniGameFuelHeader ability="tresorerie" title="ta gestion" />
 
   <!-- Stratégie active -->
   <div class="strategy-bar" role="radiogroup" aria-label="Stratégie budgétaire">

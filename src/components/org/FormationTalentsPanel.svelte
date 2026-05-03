@@ -5,6 +5,7 @@
   import type { ActorId, RebirthGameState, Resources } from '../../game/types';
   import type { OrganizationDelta, TalentGroup } from '../../game/org/types';
   import { GROUP_BLURBS, GROUP_LABELS, talentsForCamp } from '../../game/org/talents';
+  import MiniGameFuelHeader from '../cockpit/MiniGameFuelHeader.svelte';
 
   interface Props {
     gameState: RebirthGameState;
@@ -104,6 +105,8 @@
     <div class="text-xs uppercase tracking-wider text-parchment-dim/85">Capital humain</div>
     <h3 class="font-display text-gold text-base">Former, recruter, structurer</h3>
   </div>
+
+  <MiniGameFuelHeader ability="talents" title="ton vivier" />
 
   <!-- Sous-onglet Formation / Recruter / Groupes -->
   <div class="toggle-bar" role="tablist">

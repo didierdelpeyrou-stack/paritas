@@ -5,6 +5,7 @@
   import { currencyForEra } from '../../game/content/eras';
   import type { ActorId, RebirthGameState, Resources } from '../../game/types';
   import ManifMap from './ManifMap.svelte';
+  import MiniGameFuelHeader from '../cockpit/MiniGameFuelHeader.svelte';
   import { MANIF_CITIES, findCombosFor } from '../../game/org/manifCities';
 
   interface Props {
@@ -233,6 +234,8 @@
       Choisis la date, le lieu, alloue les forces, active les combinaisons. Coût indicatif : {cost} {currency}.
     </p>
   </div>
+
+  <MiniGameFuelHeader ability="manifestation" title="ta manif" />
 
   {#if !result}
     <div in:fade={{ duration: 200 }} class="space-y-3">

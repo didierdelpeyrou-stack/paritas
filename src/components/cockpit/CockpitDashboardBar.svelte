@@ -16,6 +16,8 @@
   import type { ActionDef } from '$lib/orchestrator/types';
   import { orchestrator } from '$lib/stores/orchestrator.svelte';
   import { rebirth } from '../../game/engine/gameState.svelte';
+  import { fuelsFor, type AbilityId } from '../../game/simulation/resourceUtility';
+  import { RESOURCE_LABELS } from '../../game/simulation/resources';
   import CockpitIcon from './CockpitIcon.svelte';
 
   interface Props {
@@ -72,6 +74,19 @@
     if (!exec.ok) return;
     orchestrator.dispatch(action);
   }
+
+  /* « Boosté par » : pour chaque action rapide, on lit dans la map de
+     resourceUtility les 2 ressources les plus pertinentes (poids 3 ou 2)
+     et on les expose dans le tooltip. Le joueur voit ainsi POURQUOI
+     son meeting est puissant ce tour, ou pourquoi sa manif va peiner. */
+  function boostedByLabel(actionId: string): string {
+    const fuels = fuelsFor(actionId as AbilityId, 2);
+    if (fuels.length === 0) return '';
+    const labels = fuels
+      .filter(f => f.weight >= 2)
+      .map(f => RESOURCE_LABELS[f.resource]);
+    return labels.length === 0 ? '' : ` · boosté par ${labels.join(' + ')}`;
+  }
 </script>
 
 <div class="dashboard" class:crisis={isCrisis}>
@@ -85,7 +100,7 @@
         class:disabled={!exec.ok}
         style:--accent={a.accent}
         title={exec.ok
-          ? `${a.label} — ${a.cost.caisse ?? 0}F · ${a.cost.mandat ?? 0}m`
+          ? `${a.label} — ${a.cost.caisse ?? 0}F · ${a.cost.mandat ?? 0}m${boostedByLabel(a.id)}`
           : `${a.label} — ${exec.reason}`}
         onclick={() => fire(a)}
       >

@@ -5,6 +5,7 @@
   import { currencyForEra } from '../../game/content/eras';
   import type { Camp } from '$lib/types';
   import type { ActorId, RebirthGameState, Resources } from '../../game/types';
+  import MiniGameFuelHeader from '../cockpit/MiniGameFuelHeader.svelte';
 
   interface Props {
     gameState: RebirthGameState;
@@ -211,6 +212,8 @@
       Choisis le thème, deux ou trois arguments, écris ton mot d’ordre. Coût : {cost} {currency}.
     </p>
   </div>
+
+  <MiniGameFuelHeader ability="meeting" title="ton meeting" />
 
   {#if !result}
     <div in:fade={{ duration: 200 }} class="space-y-3">

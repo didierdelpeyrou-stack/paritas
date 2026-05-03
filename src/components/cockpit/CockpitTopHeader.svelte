@@ -13,8 +13,9 @@
      Avis Sid Meier (Civ) : « Toutes les ressources lisibles
      en UN coup d'œil. »
      ============================================================ */
-  import type { EraId, RebirthGameState, SceneMood } from '../../game/types';
+  import type { EraId, RebirthGameState, ResourceKey, SceneMood } from '../../game/types';
   import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
+  import { abilitiesFor, ABILITY_SHORT_LABEL } from '../../game/simulation/resourceUtility';
   import { sfx } from '../../game/audio/sfx';
   import CockpitIcon from './CockpitIcon.svelte';
 
@@ -145,7 +146,15 @@
     const d = deltaFor(key, v);
     const deltaStr = d === 0 ? '' : `\n\nCe tour : ${d > 0 ? '+' : ''}${d}`;
     const critStr = v < 25 ? '\n\n⚠ ZONE CRITIQUE — risque de cascade' : '';
-    return `${label} : ${Math.round(v)}/100${deltaStr}${critStr}\n\n${desc}`;
+    /* Lecture transverse : quelles abilities sont alimentées par cette
+       ressource (autodétermination — le joueur voit l'utilité concrète). */
+    const fuels = abilitiesFor(key as ResourceKey);
+    let utilityStr = '';
+    if (fuels.length > 0) {
+      const top = fuels.slice(0, 3).map(a => `• ${ABILITY_SHORT_LABEL[a.ability]} (${a.impact})`).join('\n');
+      utilityStr = `\n\n→ Alimente :\n${top}`;
+    }
+    return `${label} : ${Math.round(v)}/100${deltaStr}${critStr}\n\n${desc}${utilityStr}`;
   }
 
   let musicOn = $state(sfx.isMusicEnabled());

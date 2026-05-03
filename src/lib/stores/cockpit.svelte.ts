@@ -10,8 +10,17 @@
 
 const KEY = 'paritas_cockpit_enabled';
 
+/* Cockpit ACTIVÉ par défaut (vague α-bis devenue stable). L'utilisateur
+ * peut toujours basculer au classique via le bouton ⊟ ou Settings.
+ * Si une valeur explicite est en localStorage, elle a priorité. */
 function load(): boolean {
-  try { return localStorage.getItem(KEY) === 'true'; } catch { return false; }
+  try {
+    const v = localStorage.getItem(KEY);
+    if (v === null) return true;   // jamais visité → cockpit par défaut
+    return v === 'true';
+  } catch {
+    return true;
+  }
 }
 
 class CockpitStore {

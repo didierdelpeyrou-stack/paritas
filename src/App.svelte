@@ -13,6 +13,7 @@
   import SlotPicker from './components/intro/SlotPicker.svelte';
   import GameShell from './components/layout/GameShell.svelte';
   import CockpitShell from './components/cockpit/CockpitShell.svelte';
+  import CockpitToggleBadge from './components/cockpit/CockpitToggleBadge.svelte';
   import TableWindow from './components/table/TableWindow.svelte';
   import { cockpit } from '$lib/stores/cockpit.svelte';
   import ToastStack from './components/feedback/ToastStack.svelte';
@@ -114,6 +115,11 @@
   <TableWindow />
 {:else}
 <ToastStack />
+
+<!-- Badge bascule cockpit/classique TOUJOURS visible -->
+{#if phase === 'game'}
+  <CockpitToggleBadge />
+{/if}
 
 {#if phase === 'game' && cockpit.enabled}
   <!-- Cockpit en fullscreen au top level — pas dans <main max-w-7xl>

@@ -414,12 +414,10 @@
     icon="parchemin"
     onClose={() => cockpit.close()}
   >
-    {#snippet children()}
-      <ObjectivePanel
-        objectives={gameState.objectives}
-        progress={gameState.objectiveProgress}
-        turn={gameState.turn} />
-    {/snippet}
+    <ObjectivePanel
+      objectives={gameState.objectives}
+      progress={gameState.objectiveProgress}
+      turn={gameState.turn} />
   </CockpitPopover>
 
   <CockpitPopover
@@ -429,16 +427,14 @@
     icon="carte"
     onClose={() => cockpit.close()}
   >
-    {#snippet children()}
-      <div class="popover-actors">
-        {#each ACTOR_IDS as id}
-          <ActorPanel
-            actorId={id}
-            actor={gameState.actors[id]}
-            subtitle={subtitleFor(id)} />
-        {/each}
-      </div>
-    {/snippet}
+    <div class="popover-actors">
+      {#each ACTOR_IDS as id}
+        <ActorPanel
+          actorId={id}
+          actor={gameState.actors[id]}
+          subtitle={subtitleFor(id)} />
+      {/each}
+    </div>
   </CockpitPopover>
 
   <CockpitPopover
@@ -448,9 +444,7 @@
     icon="masque"
     onClose={() => cockpit.close()}
   >
-    {#snippet children()}
-      <PersonalityPanel state={gameState} />
-    {/snippet}
+    <PersonalityPanel state={gameState} />
   </CockpitPopover>
 
   <CockpitPopover
@@ -460,9 +454,7 @@
     icon="bourse"
     onClose={() => cockpit.close()}
   >
-    {#snippet children()}
-      <MyLegacyPanel memory={gameState.memory} />
-    {/snippet}
+    <MyLegacyPanel memory={gameState.memory} />
   </CockpitPopover>
 
   <CockpitPopover
@@ -472,9 +464,7 @@
     icon="balance"
     onClose={() => cockpit.close()}
   >
-    {#snippet children()}
-      <StrategicRadar resources={gameState.resources} />
-    {/snippet}
+    <StrategicRadar resources={gameState.resources} />
   </CockpitPopover>
 
   <CockpitPopover
@@ -484,24 +474,22 @@
     icon="plume"
     onClose={() => cockpit.close()}
   >
-    {#snippet children()}
-      <div class="lexique-inline">
-        <p class="lex-intro">
-          {GLOSSARY.length} termes du paritarisme et du syndicalisme français.
-        </p>
-        <ul class="lex-list">
-          {#each GLOSSARY as g}
-            <li class="lex-entry">
-              <strong class="lex-term">{g.term}</strong>
-              {#if g.marker}
-                <span class="lex-marker">· {g.marker}</span>
-              {/if}
-              <p class="lex-def">{g.definition}</p>
-            </li>
-          {/each}
-        </ul>
-      </div>
-    {/snippet}
+    <div class="lexique-inline">
+      <p class="lex-intro">
+        {GLOSSARY.length} termes du paritarisme et du syndicalisme français.
+      </p>
+      <ul class="lex-list">
+        {#each GLOSSARY as g}
+          <li class="lex-entry">
+            <strong class="lex-term">{g.term}</strong>
+            {#if g.marker}
+              <span class="lex-marker">· {g.marker}</span>
+            {/if}
+            <p class="lex-def">{g.definition}</p>
+          </li>
+        {/each}
+      </ul>
+    </div>
   </CockpitPopover>
 
   <Settings open={settingsOpen} onClose={() => (settingsOpen = false)} />

@@ -7,6 +7,7 @@
   import { TRAIT_LABELS, TRAIT_ANTAGONISTS } from '../../game/narrative/personalityEngine';
   import { rebirth } from '../../game/engine/gameState.svelte';
   import { legendaryById } from '../../game/content/legendaryCharacters';
+  import LegendaryBioModal from './LegendaryBioModal.svelte';
 
   interface Props {
     consequence: ConsequenceRender;
@@ -145,6 +146,9 @@
   const PULSE_DELAY_MS = 8000;
   let pulseEligible = $state(false);
   let pulseTimer: number | null = null;
+  /* Fiche du légendaire ouverte ? Cliquer sur la phrase légendaire
+     l'ouvre (cf. retour panel — Norman, Yasmine, Hélène). */
+  let bioOpen = $state(false);
   $effect(() => {
     if (!fullyRevealed) {
       pulseEligible = false;
@@ -262,10 +266,18 @@
     {/if}
 
     {#if legendaryComment}
-      <div class="legendary-margin" data-tone={legendaryComment.tone} in:fly={{ x: 8, duration: 420 }}>
+      <button
+        type="button"
+        class="legendary-margin"
+        data-tone={legendaryComment.tone}
+        in:fly={{ x: 8, duration: 420 }}
+        onclick={(e) => { e.stopPropagation(); bioOpen = true; }}
+        title={`Cliquer pour ouvrir la fiche de ${legendary?.name ?? 'ce personnage'}.`}
+      >
         <span class="quill" aria-hidden="true">✒</span>
         <p>{legendaryComment.text}</p>
-      </div>
+        <span class="legendary-cta" aria-hidden="true">→ Ouvrir la fiche</span>
+      </button>
     {/if}
   {/if}
 
@@ -334,6 +346,10 @@
     </button>
   </div>
 </article>
+
+{#if bioOpen && legendary}
+  <LegendaryBioModal {legendary} onClose={() => (bioOpen = false)} />
+{/if}
 
 <style>
   /* === Sceau de cire (geste rituel de fin) ===
@@ -524,16 +540,60 @@
     color: #f4d58b;
   }
 
-  /* === Commentaire du légendaire en marge (CK3-like) === */
+  /* === Commentaire du légendaire en marge (CK3-like) ===
+     Devenu cliquable (cf. retour panel) — ouvre la fiche du
+     personnage. Reset du style button + cursor. */
   .legendary-margin {
     display: grid;
-    grid-template-columns: 1.6rem 1fr;
+    grid-template-columns: 1.6rem 1fr auto;
     gap: 0.55rem;
     align-items: start;
     border-left: 2px solid rgba(244, 213, 139, 0.55);
     background: rgba(201, 154, 64, 0.06);
     padding: 0.5rem 0.7rem;
     border-radius: 0 0.45rem 0.45rem 0;
+    /* Button reset */
+    border-top: 0;
+    border-right: 0;
+    border-bottom: 0;
+    text-align: left;
+    cursor: pointer;
+    width: 100%;
+    color: inherit;
+    font: inherit;
+    transition: background 0.18s ease, transform 0.15s ease;
+  }
+  .legendary-margin:hover {
+    background: rgba(201, 154, 64, 0.14);
+    transform: translateX(2px);
+  }
+  .legendary-margin:focus-visible {
+    outline: 2px solid #C9B26A;
+    outline-offset: 2px;
+  }
+
+  .legendary-cta {
+    grid-column: 3;
+    grid-row: 1;
+    align-self: center;
+    color: rgba(244, 213, 140, 0.55);
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .legendary-margin:hover .legendary-cta,
+  .legendary-margin:focus-visible .legendary-cta {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .legendary-margin p {
+    grid-column: 2;
   }
 
   .legendary-margin[data-tone='rebuke'] {

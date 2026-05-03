@@ -40,7 +40,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
           immediate: "Les réunions changent de lieu. De nom. Parfois de langage. On parle de maladie. De veuvage. De caisse. Chacun comprend qu'il s'agit aussi de salaire et de dignité.",
           longterm: "Cette mémoire clandestine nourrira les chambres syndicales du XIXe siècle."
         },
-        traitShift: { batisseur: 2, rupture: 1 }
+        traitShift: { batisseur: 2, rupture: 1 },
+        ability: 'tracts'
       },
       {
         id: 'chapelier-respect-loi',
@@ -64,7 +65,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
           immediate: "Le texte circule. Il est recopié à la main. Il ne change pas la loi. Mais il donne aux humiliations quotidiennes une phrase qu'on peut retenir."
         },
         traitShift: { tribun: 2 },
-        requiresTrait: 'tribun'
+        requiresTrait: 'tribun',
+        ability: 'presse'
       }
     ]
   },
@@ -112,7 +114,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
           longterm: "Même réprimée, la révolte des canuts entre dans la mémoire ouvrière. Pour cent ans."
         },
         traitShift: { rupture: 3, tribun: 1 },
-        flag: 'epuise-mouvement'
+        flag: 'epuise-mouvement',
+        ability: 'manifestation'
       },
       {
         id: 'canuts-prefet',
@@ -123,7 +126,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         consequence: {
           immediate: "Le préfet écoute. Il sait que la paix sociale vaut parfois un tarif. Mais Paris n'aime pas qu'une ville industrielle invente sa propre loi."
         },
-        traitShift: { batisseur: 2, technocrate: 1 }
+        traitShift: { batisseur: 2, technocrate: 1 },
+        ability: 'delegation'
       },
       {
         id: 'canuts-repli-mutuel',
@@ -134,7 +138,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         consequence: {
           immediate: "Certains crient à la retraite. D'autres comprennent le calcul : une grève sans caisse est une flamme sans bois."
         },
-        traitShift: { pragmatique: 2, batisseur: 2 }
+        traitShift: { pragmatique: 2, batisseur: 2 },
+        ability: 'tresorerie'
       }
     ]
   },
@@ -168,7 +173,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         theoryHint: "Apprendre sans brûler toutes ses ressources : c'est l'expérimentation contrôlée.",
         effects: { resources: { rapportDeForce: 8, confiance: 6, santeSociale: -4 }, actors: { base: { trust: 8 }, adversaire: { pressure: 8 }, etat: { pressure: 5 } } },
         consequence: { immediate: "La grève dure deux jours. La police observe plus qu'elle ne frappe. L'atelier découvre que la peur a changé de forme." },
-        traitShift: { pragmatique: 2, rupture: 1 }
+        traitShift: { pragmatique: 2, rupture: 1 },
+        ability: 'manifestation'
       },
       {
         id: 'ollivier-mutuelle',
@@ -178,7 +184,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         effects: { resources: { caisse: 10, institution: 6, rapportDeForce: -2 }, actors: { base: { patience: 10, trust: 5 } } },
         consequence: { immediate: "La caisse ne fait pas trembler les patrons. Pas encore. Mais le prochain refus se négociera avec quelques semaines de pain d'avance." },
         traitShift: { batisseur: 3 },
-        flag: 'cree-mutuelle-1864'
+        flag: 'cree-mutuelle-1864',
+        ability: 'tresorerie'
       },
       {
         id: 'ollivier-attendre',
@@ -222,7 +229,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         effects: { resources: { institution: 12, confiance: 8, legitimite: 7, caisse: -3 }, actors: { base: { trust: 10 }, etat: { trust: 6 }, adversaire: { trust: 2 } } },
         consequence: { immediate: "On élit un bureau. On loue une salle. On tient un registre. La lutte cesse d'être seulement un cri : elle devient une adresse.", longterm: "Les syndicats légaux rendront possibles les conventions collectives." },
         traitShift: { batisseur: 3, technocrate: 1 },
-        flag: 'cree-syndicat-1884'
+        flag: 'cree-syndicat-1884',
+        ability: 'congres'
       },
       {
         id: 'waldeck-action-directe',
@@ -231,7 +239,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         theoryHint: 'Théorie de l’agence : le mandat légal peut servir une stratégie plus dure que prévu.',
         effects: { resources: { rapportDeForce: 10, confiance: 7, institution: 3, legitimite: -4 }, actors: { adversaire: { trust: -10 }, etat: { pressure: 8 } } },
         consequence: { immediate: 'Le papier rassure la préfecture. Les réunions, elles, préparent autre chose : piquets, journaux, mots d’ordre.' },
-        traitShift: { rupture: 3, tribun: 1 }
+        traitShift: { rupture: 3, tribun: 1 },
+        ability: 'manifestation'
       },
       {
         id: 'waldeck-brancher-patrons',
@@ -240,7 +249,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         theoryHint: 'Jeu non nul : créer une table peut produire de la valeur pour les deux camps.',
         effects: { resources: { institution: 8, legitimite: 6, rapportDeForce: -3 }, actors: { adversaire: { trust: 8 }, base: { pressure: 5 }, etat: { trust: 5 } } },
         consequence: { immediate: 'Les militants murmurent. Pourtant, voir le patron s’asseoir face au registre a quelque chose d’inédit : il te reconnaît comme partie.' },
-        traitShift: { pragmatique: 3 }
+        traitShift: { pragmatique: 3 },
+        ability: 'table'
       }
     ]
   },
@@ -275,7 +285,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         effects: { resources: { institution: 12, legitimite: 7, confiance: 5, caisse: 2 }, actors: { adversaire: { trust: 5 }, etat: { trust: 8 }, base: { trust: 6 } } },
         consequence: { immediate: 'Les minima, les horaires, les catégories : tout devient ligne de texte. La branche acquiert une voix propre.', longterm: 'Les conventions deviendront un pilier du dialogue social français.' },
         traitShift: { batisseur: 3, technocrate: 2 },
-        flag: 'cree-conventions-1919'
+        flag: 'cree-conventions-1919',
+        ability: 'table'
       },
       {
         id: 'conventions-atelier',
@@ -293,7 +304,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         theoryHint: 'Dilemme classique : la règle protège, mais elle discipline.',
         effects: { resources: { rapportDeForce: 8, confiance: 5, institution: -8, legitimite: -5 }, actors: { etat: { trust: -6 }, adversaire: { stance: 'dur' } } },
         consequence: { immediate: 'Tu gardes les mains libres. Tu perds aussi la possibilité d’obliger l’autre camp demain.' },
-        traitShift: { rupture: 3 }
+        traitShift: { rupture: 3 },
+        ability: 'manifestation'
       }
     ]
   },
@@ -333,7 +345,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         consequence: { immediate: 'On ouvre les guichets avant même que tout soit parfaitement stable. Les assurés arrivent avec des papiers froissés, des maladies anciennes, une espérance neuve.', longterm: 'Les caisses deviennent un cœur institutionnel du modèle social français.' },
         traitShift: { batisseur: 4, technocrate: 2 },
         flag: 'cree-secu',
-        requiresTrait: 'batisseur'
+        requiresTrait: 'batisseur',
+        ability: 'congres'
       },
       {
         id: 'secu-etat',
@@ -342,7 +355,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         theoryHint: 'Principal-agent : l’État peut sécuriser l’exécution mais capter le mandat.',
         effects: { resources: { institution: 10, legitimite: 6, confiance: -5, rapportDeForce: -4 }, actors: { etat: { trust: 15 }, base: { trust: -7 }, adversaire: { trust: 4 } } },
         consequence: { immediate: 'Les circulaires arrivent vite, les arbitrages aussi. La machine avance, mais la base se demande si on lui confie une institution ou un guichet.' },
-        traitShift: { technocrate: 3, batisseur: 1 }
+        traitShift: { technocrate: 3, batisseur: 1 },
+        ability: 'delegation'
       },
       {
         id: 'secu-priorite-salaires',
@@ -386,7 +400,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         effects: { resources: { institution: 14, legitimite: 8, santeSociale: 8, caisse: -4 }, actors: { base: { trust: 8 }, adversaire: { trust: 10 }, etat: { trust: 4 } } },
         consequence: { immediate: 'La signature paraît technique. Elle ne l’est pas. Elle dit qu’un emploi perdu n’est pas seulement une affaire privée.', longterm: 'L’Unédic deviendra un terrain central des bras de fer entre État et partenaires sociaux.' },
         traitShift: { batisseur: 3, pragmatique: 2 },
-        flag: 'cree-unedic'
+        flag: 'cree-unedic',
+        ability: 'table'
       },
       {
         id: 'unedic-cotisations-basses',
@@ -404,7 +419,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         theoryHint: 'L’assurance gagne un filet, mais le principal peut reprendre la main sur l’agent.',
         effects: { resources: { institution: 8, legitimite: 4, rapportDeForce: -5 }, actors: { etat: { trust: 12, pressure: 8 }, adversaire: { trust: -2 } } },
         consequence: { immediate: 'Le régime paraît plus solide. Une ombre s’ajoute à la table : demain, qui paiera décidera peut-être.' },
-        traitShift: { technocrate: 3 }
+        traitShift: { technocrate: 3 },
+        ability: 'delegation'
       }
     ]
   },
@@ -443,7 +459,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         effects: { resources: { confiance: 8, legitimite: 8, institution: 10, santeSociale: 6 }, actors: { base: { trust: 7, patience: 8 }, etat: { trust: 8 }, adversaire: { trust: 5 } } },
         consequence: { immediate: 'Les chiffres sont énormes, mais la rue les trouve parfois insuffisants. Tu découvres une vérité dure : une victoire négociée peut sembler pâle face à une espérance révolutionnaire.' },
         traitShift: { pragmatique: 3, batisseur: 2 },
-        flag: 'signe-grenelle'
+        flag: 'signe-grenelle',
+        ability: 'table'
       },
       {
         id: 'grenelle-rejeter',
@@ -453,7 +470,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         effects: { resources: { rapportDeForce: 10, confiance: 9, santeSociale: -12, institution: -6 }, actors: { base: { pressure: 12 }, etat: { stance: 'dur', patience: -10 }, opinion: { trust: -5 } } },
         consequence: { immediate: 'Dans l’assemblée, le refus soulève un grondement. Pendant quelques heures, tu te crois porté par le siècle. Puis les payes manquées reviennent dans les conversations.' },
         traitShift: { rupture: 3, tribun: 2 },
-        flag: 'epuise-mouvement'
+        flag: 'epuise-mouvement',
+        ability: 'manifestation'
       },
       {
         id: 'grenelle-section',
@@ -462,7 +480,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         theoryHint: 'Institution locale : le droit d’être présent tous les jours vaut parfois plus qu’une prime.',
         effects: { resources: { institution: 12, rapportDeForce: 4, legitimite: 4, caisse: -2 }, actors: { base: { trust: 8 }, adversaire: { trust: -3 }, etat: { trust: 5 } } },
         consequence: { immediate: 'La hausse se voit tout de suite. La section syndicale, elle, changera la lumière des couloirs pendant des années.' },
-        traitShift: { batisseur: 3, technocrate: 1 }
+        traitShift: { batisseur: 3, technocrate: 1 },
+        ability: 'congres'
       }
     ]
   },
@@ -500,7 +519,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         theoryHint: 'La répétition change le jeu : elle rend la défection plus coûteuse.',
         effects: { resources: { institution: 10, legitimite: 6, confiance: 5 }, actors: { base: { trust: 7 }, adversaire: { trust: 4 }, etat: { trust: 5 } } },
         consequence: { immediate: 'La première réunion ressemble à un théâtre. La troisième commence à produire des chiffres. Le rituel devient une contrainte.' },
-        traitShift: { batisseur: 3, technocrate: 2 }
+        traitShift: { batisseur: 3, technocrate: 2 },
+        ability: 'table'
       },
       {
         id: 'auroux-chsct',
@@ -510,7 +530,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         effects: { resources: { santeSociale: 12, legitimite: 7, institution: 8, caisse: -3 }, actors: { base: { trust: 10 }, opinion: { trust: 8 } } },
         consequence: { immediate: 'L’accident cesse d’être une fatalité individuelle. Il devient une question d’organisation, donc une question de pouvoir.' },
         traitShift: { batisseur: 2, technocrate: 2 },
-        flag: 'cree-chsct'
+        flag: 'cree-chsct',
+        ability: 'petition'
       },
       {
         id: 'auroux-communication',
@@ -557,7 +578,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         theoryHint: 'Négociation raisonnée : accepter le cadre, discuter les moyens réels.',
         effects: { resources: { institution: 8, legitimite: 5, caisse: -4, santeSociale: 4 }, actors: { base: { trust: 6 }, adversaire: { trust: 4 }, etat: { trust: 3 } } },
         consequence: { immediate: 'Le CSE naît chargé, mais pas nu. Quelques heures de délégation sauvent plus de vigilance qu’un discours indigné.' },
-        traitShift: { pragmatique: 3, technocrate: 1 }
+        traitShift: { pragmatique: 3, technocrate: 1 },
+        ability: 'table'
       },
       {
         id: 'cse-denoncer',
@@ -566,7 +588,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         theoryHint: 'Aversion à la perte : certaines pertes institutionnelles mobilisent plus que des gains abstraits.',
         effects: { resources: { confiance: 8, rapportDeForce: 6, legitimite: -3, institution: -3 }, actors: { base: { trust: 10 }, etat: { trust: -8 }, opinion: { trust: 2 } } },
         consequence: { immediate: 'Le mot “mutilation” accroche. Il ne bloque pas l’ordonnance, mais il donne un nom au malaise qui monte dans les entreprises.' },
-        traitShift: { tribun: 3, rupture: 1 }
+        traitShift: { tribun: 3, rupture: 1 },
+        ability: 'presse'
       },
       {
         id: 'cse-performance',
@@ -613,7 +636,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         theoryHint: 'Coalition : la discipline entre acteurs augmente le coût politique du passage en force.',
         effects: { resources: { confiance: 12, legitimite: 8, rapportDeForce: 8, santeSociale: -6 }, actors: { base: { trust: 12 }, opinion: { trust: 8 }, etat: { trust: -12, stance: 'dur' } } },
         consequence: { immediate: 'Les divergences restent, mais elles ne débordent pas. L’unité devient elle-même un événement : le pays voit des organisations rivales marcher au même pas.' },
-        traitShift: { batisseur: 2, tribun: 2 }
+        traitShift: { batisseur: 2, tribun: 2 },
+        ability: 'manifestation'
       },
       {
         id: 'retraites-blocage',
@@ -623,7 +647,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         effects: { resources: { rapportDeForce: 12, confiance: 6, santeSociale: -12, legitimite: -6, caisse: -8 }, actors: { etat: { stance: 'dur', patience: -15 }, opinion: { trust: -6 }, base: { pressure: 10 } } },
         consequence: { immediate: 'Les dépôts, les raffineries, les gares : le pays redevient matériel. Mais chaque jour de blocage change aussi la patience publique.' },
         traitShift: { rupture: 3, tribun: 1 },
-        flag: 'epuise-mouvement'
+        flag: 'epuise-mouvement',
+        ability: 'manifestation'
       },
       {
         id: 'retraites-negocier-apres',
@@ -632,7 +657,8 @@ export const PREMIUM_SCENARIOS: Scenario[] = [
         theoryHint: 'MESORE : si l’accord central échoue, déplacer le terrain vers des accords sectoriels.',
         effects: { resources: { institution: 8, santeSociale: 6, confiance: -3, legitimite: 4 }, actors: { base: { trust: -3, patience: 5 }, adversaire: { trust: 5 }, etat: { trust: 4 } } },
         consequence: { immediate: 'La colère n’aime pas les issues de secours. Pourtant, dans certaines branches, les nuits pénibles et les carrières longues reprennent un nom négociable.' },
-        traitShift: { pragmatique: 3, technocrate: 2 }
+        traitShift: { pragmatique: 3, technocrate: 2 },
+        ability: 'table'
       }
     ]
   }

@@ -34,8 +34,8 @@
   import ScenePreviewOverlay from './ScenePreviewOverlay.svelte';
   import CockpitLeftRail from './CockpitLeftRail.svelte';
   import CockpitRightRail from './CockpitRightRail.svelte';
-  import TheatrePortraitPanel from './TheatrePortraitPanel.svelte';
-  import TheatreActorsTiles from './TheatreActorsTiles.svelte';
+  import TheatreActionsPanel from './TheatreActionsPanel.svelte';
+  import TheatrePersonalityPanel from './TheatrePersonalityPanel.svelte';
   import AtelierAllocationPanel from './AtelierAllocationPanel.svelte';
   import OnboardingTour from './OnboardingTour.svelte';
   import { onboarding } from '$lib/stores/onboarding.svelte';
@@ -322,15 +322,12 @@
       <CockpitTabs side="left" turn={currentTurn} />
 
       {#if isTheatre}
-        <!-- Théâtre = CK3 : portrait latéral grand format à gauche. -->
-        <TheatrePortraitPanel
-          state={gameState}
-          onOpenLegendaryBio={() => {/* TODO : ouvrir la modale bio depuis ici */}}
-        />
+        <!-- Théâtre refonte UX expert : ACTIONS à gauche en permanence.
+             Brief : « tous les boutons d'action sont à gauche. Aucun
+             bouton d'action principal ailleurs. » -->
+        <TheatreActionsPanel onOpenFullActions={() => (actionsDrawerOpen = true)} />
       {:else if isAtelier}
-        <!-- Atelier = Game Dev Tycoon : panneau d'allocation à gauche
-             (briefing déplié + barres ressources + talents quick).
-             Remplace les rails — la gestion devient la matière première. -->
+        <!-- Atelier = Game Dev Tycoon : panneau d'allocation à gauche. -->
         <AtelierAllocationPanel />
       {:else}
         <CockpitLeftRail
@@ -400,11 +397,14 @@
       </main>
 
       {#if isTheatre}
-        <!-- Théâtre = CK3 : tuiles acteurs en permanence à droite.
-             Sentiment narratif au lieu de stats brutes. -->
-        <TheatreActorsTiles
-          actors={gameState.actors}
-          camp={gameState.camp}
+        <!-- Théâtre refonte UX expert : PERSONNALITÉ + TRAJECTOIRE à
+             droite (portrait + score + tension + acteurs + mentor).
+             Le portrait n'est plus à gauche — il intègre la colonne
+             droite avec les acteurs et le mentor pour former le
+             « portrait vivant du mouvement ». -->
+        <TheatrePersonalityPanel
+          state={gameState}
+          onOpenLegendaryBio={() => {/* TODO : ouvrir la modale bio depuis ici */}}
         />
       {:else}
         <CockpitRightRail state={gameState} />
@@ -415,23 +415,13 @@
 
     {#if !isTheatre}
       <!-- Atelier garde le dashboard complet (mode Tycoon — gestion
-           visible). Théâtre s'en dispense (mode CK3 — récit pur). -->
+           visible). Théâtre s'en dispense : actions à gauche en
+           permanence via TheatreActionsPanel, drawer accessible
+           depuis le bouton « Toutes les actions » du panneau. -->
       <CockpitDashboardBar
         onOpenFullActions={() => (actionsDrawerOpen = true)}
         pendingValidation={false}
       />
-    {:else}
-      <!-- Théâtre : bouton flottant discret pour ouvrir les actions.
-           Le sceau de cire de ConsequenceScene reste le geste rituel. -->
-      <button type="button"
-        class="theatre-actions-trigger"
-        onclick={() => (actionsDrawerOpen = true)}
-        title="Ouvrir le tableau des actions"
-        aria-label="Ouvrir le tableau des actions"
-      >
-        <CockpitIcon name="rouage" size={16} />
-        <span>Actions</span>
-      </button>
     {/if}
 
     <!-- Drawer onglet -->

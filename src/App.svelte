@@ -13,8 +13,15 @@
   import SlotPicker from './components/intro/SlotPicker.svelte';
   import GameShell from './components/layout/GameShell.svelte';
   import CockpitShell from './components/cockpit/CockpitShell.svelte';
+  import TableWindow from './components/table/TableWindow.svelte';
   import { cockpit } from '$lib/stores/cockpit.svelte';
   import ToastStack from './components/feedback/ToastStack.svelte';
+
+  /* Routing minimal : si l'URL contient ?session=…, on est dans la
+   * fenêtre popup de La Table des Négociations. Aucun moteur de
+   * jeu principal — uniquement le mini-jeu Table. */
+  const isTableWindow = typeof window !== 'undefined'
+    && new URLSearchParams(window.location.search).has('session');
   import { loadAllScenarios } from './game/content/scenarios';
   import { loadPipelineContent } from './game/narrative/pipelineContent';
 
@@ -103,6 +110,9 @@
   <title>Paritas : la table des Ateliers</title>
 </svelte:head>
 
+{#if isTableWindow}
+  <TableWindow />
+{:else}
 <ToastStack />
 
 <main class="min-h-dvh px-4 py-6 max-w-7xl mx-auto">
@@ -132,3 +142,4 @@
     </div>
   {/if}
 </main>
+{/if}

@@ -40,6 +40,7 @@
   import OrganizationPanel from '../org/OrganizationPanel.svelte';
   import ManifSimulator from '../org/ManifSimulator.svelte';
   import MeetingSimulator from '../org/MeetingSimulator.svelte';
+  import CockpitTableLauncher from './CockpitTableLauncher.svelte';
 
   interface Props {
     onReplay?: () => void;
@@ -162,7 +163,7 @@
 <svelte:window onkeydown={onKey} />
 
 {#if gameState}
-  <div class="cockpit">
+  <div class="cockpit ambient-{gameState.mode}">
 
     <CockpitStatusBar
       turn={gameState.turn}
@@ -261,8 +262,14 @@
           {:else if cockpit.openTab === 'mandat'}
             <div class="placeholder">
               <h3>Mandat — La Salle du Congrès</h3>
-              <p>Mini-jeu en construction (vague β). Pour l'instant,
-                ton statut interne est visible dans Organisation.</p>
+              <p>Mini-jeu Mandat en construction (vague β).</p>
+              <p style="margin-top: 0.8rem; font-style: italic; color: rgba(244, 239, 226, 0.65);">
+                En attendant, tu peux ouvrir <strong>La Table des Négociations</strong>
+                dans une fenêtre séparée — premier mini-jeu pivot V2 livré.
+              </p>
+              <div style="margin-top: 1rem;">
+                <CockpitTableLauncher scenarioId="secu-1945" playerActorId="croizat" />
+              </div>
             </div>
           {:else if cockpit.openTab === 'monde'}
             <div class="placeholder">
@@ -356,6 +363,29 @@
     font-family: 'Source Serif 4', Georgia, serif;
     overflow: hidden;
     position: relative;
+    transition: background 0.8s ease;
+  }
+
+  /* Ambiances Réfléchi vs Compulsif (Grandin #89, Damasio #58) :
+     mode Réfléchi = lumière chaude jaune apaisante (lecture
+     studieuse). Mode Compulsif = contraste plus marqué, micro-
+     vibration, halo plus serré (immersion émotionnelle). */
+  .cockpit.ambient-reflechi {
+    background:
+      radial-gradient(ellipse at top, rgba(244, 213, 140, 0.06), transparent 65%),
+      linear-gradient(180deg, #1F1813 0%, #110D0A 100%);
+  }
+
+  .cockpit.ambient-compulsif {
+    background:
+      radial-gradient(ellipse at top, rgba(176, 24, 30, 0.05), transparent 55%),
+      linear-gradient(180deg, #1A0F0D 0%, #0D0807 100%);
+    animation: compulsif-vibe 4s ease-in-out infinite;
+  }
+
+  @keyframes compulsif-vibe {
+    0%, 100% { filter: contrast(1) brightness(1); }
+    50%      { filter: contrast(1.04) brightness(0.97); }
   }
 
   .cockpit-main {

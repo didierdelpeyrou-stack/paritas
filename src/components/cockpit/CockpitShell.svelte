@@ -26,7 +26,8 @@
   import CockpitStatusBar from './CockpitStatusBar.svelte';
   import CockpitTabs from './CockpitTabs.svelte';
   import CockpitInstruments from './CockpitInstruments.svelte';
-  import CockpitActionBar from './CockpitActionBar.svelte';
+  /* CockpitActionBar retirée — ses contrôles (Tour, Actions,
+   * Valider) sont rapatriés dans CockpitStatusBar. */
   import CockpitIcon from './CockpitIcon.svelte';
   import CockpitEraTimeline from './CockpitEraTimeline.svelte';
   import CockpitLeftRail from './CockpitLeftRail.svelte';
@@ -219,6 +220,10 @@
       onToggleClassic={backToClassic}
       onOpenMobileMenu={() => (mobileMenuOpen = true)}
       showMobileBurger={isMobile}
+      onOpenActions={() => (actionsDrawerOpen = true)}
+      actionsThisTurn={orchestrator.state.actionsThisTurn}
+      maxActions={orchestrator.state.maxActionsPerTurn}
+      crisisActive={orchestrator.isCrisis}
     />
 
     <CockpitEraTimeline turn={gameState.turn} />
@@ -270,15 +275,6 @@
     <CockpitInstruments
       resources={gameState.resources}
       turn={gameState.turn}
-    />
-
-    <CockpitActionBar
-      turn={gameState.turn}
-      pendingValidation={false}
-      onOpenActions={() => (actionsDrawerOpen = true)}
-      actionsThisTurn={orchestrator.state.actionsThisTurn}
-      maxActions={orchestrator.state.maxActionsPerTurn}
-      crisisActive={orchestrator.isCrisis}
     />
 
     <!-- Drawer onglet -->
@@ -511,7 +507,10 @@
 <style>
   .cockpit {
     display: grid;
-    grid-template-rows: auto 1fr auto auto;
+    /* 4 lignes : status (auto) + era timeline (auto) + main (1fr) +
+       instruments (auto). La barre d'action a été supprimée — ses
+       contrôles sont dans la status bar. */
+    grid-template-rows: auto auto 1fr auto;
     /* position: fixed pour échapper au max-w-7xl du parent App.svelte
        et garantir un alignement viewport-edge pour les rails et les
        popovers ancrés (sinon left:290px / right:290px tombent à
@@ -579,14 +578,17 @@
     position: relative;
     overflow-y: auto;
     overflow-x: hidden;
+    /* Plus de liseré blanc parchemin — fond papier vélin intégré
+       à la palette acajou cockpit. Le contenu garde sa lisibilité
+       grâce au sky-content qui a son propre cartouche papier. */
     background:
-      radial-gradient(ellipse at top, rgba(244, 213, 140, 0.06), transparent 65%),
-      linear-gradient(180deg, #F4EFE2 0%, #E8DCC8 100%);
-    color: #1A1411;
+      radial-gradient(ellipse at top, rgba(244, 213, 140, 0.05), transparent 60%),
+      linear-gradient(180deg, #2A1A0E 0%, #1F1308 100%);
+    color: #F4EFE2;
     transition: filter 0.4s ease, opacity 0.4s ease;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    scrollbar-color: rgba(90, 47, 28, 0.25) transparent;
+    scrollbar-color: rgba(201, 178, 106, 0.25) transparent;
   }
 
   .sky::-webkit-scrollbar { width: 6px; }
@@ -599,9 +601,19 @@
   }
 
   .sky-content {
+    /* Cartouche papier vélin avec coins arrondis et ombre subtile,
+       au lieu d'un fond pleine largeur (qui créait le liseré blanc). */
     padding: 1.4rem clamp(0.8rem, 3vw, 2.4rem) 2rem;
     max-width: 56rem;
-    margin: 0 auto;
+    margin: 1rem auto;
+    background:
+      radial-gradient(ellipse at top, rgba(244, 213, 140, 0.06), transparent 65%),
+      linear-gradient(180deg, #F4EFE2 0%, #E8DCC8 100%);
+    color: #1A1411;
+    border-radius: 0.5rem;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      0 4px 18px rgba(0, 0, 0, 0.35);
   }
 
   .sky-placeholder {

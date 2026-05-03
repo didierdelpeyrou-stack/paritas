@@ -17,11 +17,24 @@
     onToggleClassic?: () => void;
     onOpenMobileMenu?: () => void;
     showMobileBurger?: boolean;
+    /** Total tours (100 par défaut). */
+    totalTurns?: number;
+    /** Bouton Actions (orchestrator drawer). */
+    onOpenActions?: () => void;
+    actionsThisTurn?: number;
+    maxActions?: number;
+    crisisActive?: boolean;
+    /** Bouton Valider (cachet de cire). */
+    pendingValidation?: boolean;
+    onValidate?: () => void;
   }
   let {
     turn, era, mood,
     onOpenSettings, onToggleClassic, onOpenMobileMenu,
-    showMobileBurger = false
+    showMobileBurger = false,
+    totalTurns = 100,
+    onOpenActions, actionsThisTurn = 0, maxActions = 2, crisisActive = false,
+    pendingValidation = false, onValidate
   }: Props = $props();
 
   const ERA_LABEL: Record<string, string> = {
@@ -73,7 +86,7 @@
       <CockpitIcon name="horloge" size={20} />
     </span>
     <span class="date-era">
-      <span class="turn">Tour <strong>{turn}</strong></span>
+      <span class="turn">Tour <strong>{turn}</strong>/{totalTurns}</span>
       {#if era}
         <span class="era-sep">·</span>
         <span class="era">{ERA_LABEL[era] ?? era}</span>
@@ -91,6 +104,31 @@
   </div>
 
   <div class="status-right">
+    <!-- Bouton Actions (orchestrator) — déplacé depuis l'ancienne barre d'action -->
+    {#if onOpenActions}
+      <button type="button" class="actions-btn" class:crisis={crisisActive}
+        onclick={() => onOpenActions?.()}
+        title="Ouvrir les actions disponibles ce tour">
+        <CockpitIcon name="rouage" size={14} />
+        <span class="actions-label">Actions</span>
+        <span class="actions-count">{actionsThisTurn}/{maxActions}</span>
+        {#if crisisActive}
+          <span class="crisis-dot" aria-label="Crise active"></span>
+        {/if}
+      </button>
+    {/if}
+
+    <!-- Bouton Valider — cachet de cire compact -->
+    {#if onValidate}
+      <button type="button" class="validate-seal" class:pulsing={pendingValidation}
+        onclick={() => onValidate?.()}
+        disabled={!pendingValidation}
+        title={pendingValidation ? 'Valider ton choix' : 'Sélectionne d\'abord un choix'}
+        aria-label="Valider">
+        ●
+      </button>
+    {/if}
+
     <button type="button" class="status-btn" onclick={toggleMusic}
       title={musicOn ? 'Couper la musique' : 'Lancer la musique'}
       aria-label={musicOn ? 'Couper la musique' : 'Lancer la musique'}
@@ -275,14 +313,110 @@
     border-radius: 1px;
   }
 
+  /* === Boutons rapatriés depuis l'ancienne barre d'action === */
+
+  .actions-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.65rem;
+    background: linear-gradient(180deg, #5A2F1C 0%, #3D2615 100%);
+    border: 1px solid #C9B26A;
+    color: #F4D58C;
+    border-radius: 0.35rem;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: filter 0.18s ease, transform 0.18s ease;
+    height: 32px;
+  }
+
+  .actions-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+  .actions-count {
+    background: rgba(244, 213, 140, 0.18);
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.65rem;
+  }
+
+  .actions-btn.crisis {
+    border-color: #E08F92;
+    box-shadow: 0 0 12px rgba(176, 24, 30, 0.45);
+    animation: btn-crisis 1.6s ease-in-out infinite;
+  }
+
+  .crisis-dot {
+    position: absolute;
+    top: -3px; right: -3px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #B0181E;
+    box-shadow: 0 0 6px rgba(176, 24, 30, 0.8);
+    animation: btn-crisis-dot 1.2s ease-in-out infinite;
+  }
+
+  @keyframes btn-crisis {
+    0%, 100% { box-shadow: 0 0 12px rgba(176, 24, 30, 0.35); }
+    50%      { box-shadow: 0 0 18px rgba(176, 24, 30, 0.6); }
+  }
+  @keyframes btn-crisis-dot {
+    0%, 100% { transform: scale(1); opacity: 0.85; }
+    50%      { transform: scale(1.3); opacity: 1; }
+  }
+
+  /* Cachet de cire compact dans la status bar */
+  .validate-seal {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #9B2A26 0%, #7A1E1B 60%, #5A1410 100%);
+    border: 2px solid #5A1410;
+    color: #F4D58C;
+    font-size: 0.95rem;
+    cursor: pointer;
+    box-shadow:
+      inset 0 1px 3px rgba(255, 255, 255, 0.2),
+      inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+      0 2px 6px rgba(122, 30, 27, 0.4);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .validate-seal:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .validate-seal.pulsing:not(:disabled) {
+    animation: seal-pulse 1.4s ease-in-out infinite;
+  }
+
+  .validate-seal:hover:not(:disabled) {
+    transform: scale(1.06);
+  }
+
+  @keyframes seal-pulse {
+    0%, 100% { box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.2), inset 0 -2px 4px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(122, 30, 27, 0.4); }
+    50%      { box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.22), inset 0 -2px 4px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(244, 213, 140, 0.5), 0 2px 6px rgba(122, 30, 27, 0.6); }
+  }
+
   @media (max-width: 768px) {
     .status-bar { padding: 0.4rem 0.55rem; gap: 0.3rem; height: 44px; }
     .era { display: none; }
     .mood-label { display: none; }
     .clock-wrap { display: none; }
+    .actions-label { display: none; }
   }
 
   @media (max-width: 480px) {
     .turn { font-size: 0.78rem; }
+    .actions-count { display: none; }
   }
 </style>

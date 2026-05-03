@@ -39,6 +39,17 @@
     return { idx: idx as 0 | 1 | 2 | 3, label: labels[idx]!, color: colors[idx]! };
   }
 
+  /* Nudge actor : alerte si patience < 25 ou pression > 78 */
+  function actorAlert(a: Actor): boolean {
+    return a.patience <= 25 || a.pressure >= 78;
+  }
+  function objectiveAlert(o: RoleObjective): boolean {
+    /* Alerte si objectif a deadline rapprochée (< 3 tours) et pas satisfait */
+    if (status(o) !== 'pending') return false;
+    if (o.byTurn === undefined) return false;
+    return (o.byTurn - turn) <= 3 && (o.byTurn - turn) > 0;
+  }
+
   const ACTOR_NAMES: Record<ActorId, string> = {
     base: 'Base',
     adversaire: 'Adversaire',
@@ -58,14 +69,23 @@
     });
     return sorted.slice(0, 3);
   });
+
+  /* Nudges count par section (badges) */
+  let nbObjectifsAlerte = $derived(objectives.filter(objectiveAlert).length);
+  let nbActeursAlerte = $derived(ACTOR_ORDER.filter(id => actorAlert(actors[id])).length);
 </script>
 
 <aside class="left-rail" aria-label="Objectifs et acteurs">
   <!-- ===== Objectifs ===== -->
-  <section class="rail-section">
+  <section class="rail-section" class:has-alert={nbObjectifsAlerte > 0}>
     <button type="button" class="rail-head" onclick={() => onOpenObjectives?.()}>
       <span class="rail-icon"><CockpitIcon name="parchemin" size={14} /></span>
       <span class="rail-title">Objectifs</span>
+      {#if nbObjectifsAlerte > 0}
+        <span class="rail-badge" title="Échéance proche !">
+          <CockpitIcon name="alerte" size={10} />
+        </span>
+      {/if}
       <span class="rail-expand" aria-hidden="true">›</span>
     </button>
     <ul class="objectives-mini">
@@ -91,22 +111,33 @@
   </section>
 
   <!-- ===== Acteurs ===== -->
-  <section class="rail-section">
+  <section class="rail-section" class:has-alert={nbActeursAlerte > 0}>
     <button type="button" class="rail-head" onclick={() => onOpenActors?.()}>
       <span class="rail-icon"><CockpitIcon name="carte" size={14} /></span>
       <span class="rail-title">Acteurs</span>
+      {#if nbActeursAlerte > 0}
+        <span class="rail-badge" title="Patience limite ou pression extrême">
+          <CockpitIcon name="flamme" size={10} />
+        </span>
+      {/if}
       <span class="rail-expand" aria-hidden="true">›</span>
     </button>
     <ul class="actors-mini">
       {#each ACTOR_ORDER as id}
         {@const a = actors[id]}
         {@const m = actorMood(a)}
-        <li class="actor-mini">
+        {@const alert = actorAlert(a)}
+        <li class="actor-mini" class:alert>
           <span class="actor-dot" style:background={m.color}></span>
           <div class="actor-id">
             <strong>{ACTOR_NAMES[id]}</strong>
             <em>{m.label}</em>
           </div>
+          {#if alert}
+            <span class="actor-alert" title="Risque de rupture imminent">
+              <CockpitIcon name="flamme" size={11} />
+            </span>
+          {/if}
           <div class="actor-bars" title="Confiance / Pression / Patience">
             <span class="actor-bar"><i style:width="{a.trust}%" style:background={m.color}></i></span>
           </div>
@@ -137,10 +168,73 @@
   .left-rail::-webkit-scrollbar-thumb { background: rgba(201, 178, 106, 0.25); border-radius: 2px; }
 
   .rail-section {
+    position: relative;
     background: rgba(13, 11, 8, 0.4);
     border: 1px solid rgba(201, 178, 106, 0.18);
     border-radius: 0.4rem;
     overflow: hidden;
+    transition: border-color 0.4s ease, box-shadow 0.4s ease;
+  }
+
+  /* Nudge gamifié — quand une section a des alertes, halo
+     orange-doré pulsant subtil pour attirer l'œil */
+  .rail-section.has-alert {
+    border-color: rgba(217, 130, 28, 0.55);
+    box-shadow:
+      inset 0 0 0 1px rgba(217, 130, 28, 0.18),
+      0 0 14px rgba(217, 130, 28, 0.18);
+    animation: nudge-attention 3.5s ease-in-out infinite;
+  }
+
+  @keyframes nudge-attention {
+    0%, 100% { box-shadow: inset 0 0 0 1px rgba(217, 130, 28, 0.18), 0 0 10px rgba(217, 130, 28, 0.14); }
+    50%      { box-shadow: inset 0 0 0 1px rgba(217, 130, 28, 0.32), 0 0 20px rgba(217, 130, 28, 0.30); }
+  }
+
+  /* Badge alerte dans le head — petit triangle orange */
+  .rail-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-left: -0.2rem;
+    margin-right: 0.1rem;
+    color: #D9821C;
+    background: rgba(217, 130, 28, 0.15);
+    border: 1px solid rgba(217, 130, 28, 0.45);
+    border-radius: 50%;
+    animation: badge-flash 1.8s ease-in-out infinite;
+  }
+
+  @keyframes badge-flash {
+    0%, 100% { opacity: 0.65; transform: scale(1); }
+    50%      { opacity: 1;    transform: scale(1.1); }
+  }
+
+  /* Acteur en alerte — small flame icon next to name */
+  .actor-mini.alert .actor-dot {
+    box-shadow:
+      0 0 8px currentColor,
+      0 0 16px rgba(217, 130, 28, 0.5);
+  }
+
+  .actor-alert {
+    display: inline-flex;
+    color: #D9821C;
+    margin-left: 0.2rem;
+    align-self: center;
+    grid-column: 3;
+    animation: actor-flame 2.4s ease-in-out infinite;
+  }
+
+  @keyframes actor-flame {
+    0%, 100% { opacity: 0.55; transform: translateY(0); }
+    50%      { opacity: 1;    transform: translateY(-1px); }
+  }
+
+  .actor-mini.alert {
+    grid-template-columns: auto 1fr auto;
   }
 
   .rail-head {

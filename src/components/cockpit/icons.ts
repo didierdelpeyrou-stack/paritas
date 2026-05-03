@@ -44,7 +44,23 @@ export type IconKey =
   | 'cocarde'
   | 'horloge'
   | 'note'
-  | 'masque';
+  | 'masque'
+  /* === Actions du moteur (vague β) === */
+  | 'tract'
+  | 'affiche'
+  | 'petition'
+  | 'delegation'
+  | 'lockout'
+  | 'recrutement'
+  | 'boycott'
+  | 'presse'
+  | 'signature'
+  | 'megaphone'
+  | 'flamme'
+  | 'porte'
+  /* === Indicateurs de statut === */
+  | 'alerte'
+  | 'cle';
 
 /** Path data SVG, viewBox 0 0 24 24, stroke="currentColor", fill optionnel.
  *  Pas de transformations dans le path : c'est le composant qui scale. */
@@ -255,5 +271,214 @@ export const ICONS: Record<IconKey, string> = {
     <circle cx="14.5" cy="10" r="0.9" fill="currentColor"/>
     <path d="M9 14.5 Q12 17 15 14.5" stroke="currentColor"
           stroke-width="1.4" fill="none" stroke-linecap="round"/>
+  `,
+
+  /* === Actions du moteur (vague β) === */
+
+  /* Tract — feuille pliée avec lignes */
+  tract: `
+    <path d="M6 4 L17 4 Q19 4 19 6 L19 19 Q19 20.5 17.5 20.5 L8 20.5
+             Q6 20.5 6 18.5 Z"
+          stroke="currentColor" stroke-width="1.4" fill="none"
+          stroke-linejoin="round"/>
+    <path d="M6 4 L8 6 L6 8" stroke="currentColor"
+          stroke-width="1.2" fill="none" stroke-linejoin="round"/>
+    <line x1="9" y1="9" x2="16" y2="9" stroke="currentColor"
+          stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="9" y1="12" x2="16" y2="12" stroke="currentColor"
+          stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="9" y1="15" x2="14" y2="15" stroke="currentColor"
+          stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+  `,
+
+  /* Affiche — rectangle avec punaises et titre stylisé */
+  affiche: `
+    <rect x="4.5" y="4.5" width="15" height="15" rx="0.4"
+          stroke="currentColor" stroke-width="1.4" fill="none"/>
+    <circle cx="6" cy="6" r="0.7" fill="currentColor"/>
+    <circle cx="18" cy="6" r="0.7" fill="currentColor"/>
+    <circle cx="6" cy="18" r="0.7" fill="currentColor"/>
+    <circle cx="18" cy="18" r="0.7" fill="currentColor"/>
+    <line x1="7.5" y1="9" x2="16.5" y2="9" stroke="currentColor"
+          stroke-width="1.6" stroke-linecap="round"/>
+    <line x1="7.5" y1="12" x2="14" y2="12" stroke="currentColor"
+          stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="7.5" y1="14.5" x2="13" y2="14.5" stroke="currentColor"
+          stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+    <line x1="7.5" y1="17" x2="11" y2="17" stroke="currentColor"
+          stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+  `,
+
+  /* Pétition — feuille avec lignes de signatures */
+  petition: `
+    <path d="M5 3.5 L17 3.5 Q18.5 3.5 18.5 5 L18.5 20.5 L5.5 20.5
+             Q4 20.5 4 19 L4 5 Q4 3.5 5 3.5 Z"
+          stroke="currentColor" stroke-width="1.4" fill="none"
+          stroke-linejoin="round"/>
+    <line x1="7" y1="7" x2="15.5" y2="7" stroke="currentColor"
+          stroke-width="1.2" stroke-linecap="round"/>
+    <path d="M7 10 Q9 9 10 10 Q11 11 12 10 Q13 9 14.5 10"
+          stroke="currentColor" stroke-width="1" fill="none"
+          stroke-linecap="round" opacity="0.85"/>
+    <path d="M7 13 Q9 12 10 13 Q11 14 12 13 Q13 12 15 13"
+          stroke="currentColor" stroke-width="1" fill="none"
+          stroke-linecap="round" opacity="0.7"/>
+    <path d="M7 16 Q9 15 10.5 16 Q12 17 13.5 16"
+          stroke="currentColor" stroke-width="1" fill="none"
+          stroke-linecap="round" opacity="0.55"/>
+    <path d="M7 19 Q8.5 18 10 19" stroke="currentColor"
+          stroke-width="1" fill="none" stroke-linecap="round" opacity="0.35"/>
+  `,
+
+  /* Délégation — 3 silhouettes en marche */
+  delegation: `
+    <circle cx="6" cy="7" r="1.6" stroke="currentColor"
+          stroke-width="1.3" fill="none"/>
+    <path d="M4.5 12 Q6 10 7.5 12 L7.5 16 L6.5 16 L6.5 19
+             L5.5 19 L5.5 16 L4.5 16 Z"
+          stroke="currentColor" stroke-width="1.3" fill="none"
+          stroke-linejoin="round"/>
+    <circle cx="12" cy="6.5" r="1.7" stroke="currentColor"
+          stroke-width="1.4" fill="none"/>
+    <path d="M10 12 Q12 9.5 14 12 L14 16.5 L13 16.5 L13 20
+             L11 20 L11 16.5 L10 16.5 Z"
+          stroke="currentColor" stroke-width="1.4" fill="none"
+          stroke-linejoin="round"/>
+    <circle cx="18" cy="7" r="1.6" stroke="currentColor"
+          stroke-width="1.3" fill="none"/>
+    <path d="M16.5 12 Q18 10 19.5 12 L19.5 16 L18.5 16 L18.5 19
+             L17.5 19 L17.5 16 L16.5 16 Z"
+          stroke="currentColor" stroke-width="1.3" fill="none"
+          stroke-linejoin="round"/>
+  `,
+
+  /* Lock-out — porte avec cadenas */
+  lockout: `
+    <rect x="5" y="6" width="14" height="14" rx="0.4"
+          stroke="currentColor" stroke-width="1.4" fill="none"/>
+    <line x1="5" y1="9.5" x2="19" y2="9.5" stroke="currentColor"
+          stroke-width="1" opacity="0.55"/>
+    <rect x="9.5" y="11" width="5" height="6" rx="0.4"
+          stroke="currentColor" stroke-width="1.4" fill="none"/>
+    <path d="M10.5 11 L10.5 9.5 Q10.5 7.5 12 7.5 Q13.5 7.5 13.5 9.5 L13.5 11"
+          stroke="currentColor" stroke-width="1.4" fill="none"
+          stroke-linejoin="round"/>
+    <circle cx="12" cy="14" r="0.7" fill="currentColor"/>
+    <line x1="12" y1="14" x2="12" y2="15.5" stroke="currentColor"
+          stroke-width="1.2" stroke-linecap="round"/>
+  `,
+
+  /* Recrutement — silhouette avec + */
+  recrutement: `
+    <circle cx="10" cy="7" r="2.4" stroke="currentColor"
+          stroke-width="1.4" fill="none"/>
+    <path d="M5 18 Q5 13 10 13 Q15 13 15 18"
+          stroke="currentColor" stroke-width="1.4" fill="none"
+          stroke-linecap="round"/>
+    <circle cx="17.5" cy="16.5" r="3.5" stroke="currentColor"
+          stroke-width="1.4" fill="none"/>
+    <line x1="17.5" y1="14.8" x2="17.5" y2="18.2" stroke="currentColor"
+          stroke-width="1.4" stroke-linecap="round"/>
+    <line x1="15.8" y1="16.5" x2="19.2" y2="16.5" stroke="currentColor"
+          stroke-width="1.4" stroke-linecap="round"/>
+  `,
+
+  /* Boycott — cercle barré */
+  boycott: `
+    <circle cx="12" cy="12" r="8.5" stroke="currentColor"
+          stroke-width="1.6" fill="none"/>
+    <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor"
+          stroke-width="1.6" stroke-linecap="round"/>
+    <circle cx="9.5" cy="10" r="1" fill="currentColor"/>
+    <circle cx="14.5" cy="14" r="1" fill="currentColor"/>
+  `,
+
+  /* Presse — colonne de journal pliée */
+  presse: `
+    <rect x="4" y="5" width="13" height="14" rx="0.3"
+          stroke="currentColor" stroke-width="1.4" fill="none"/>
+    <rect x="17" y="8" width="3" height="11" rx="0.3"
+          stroke="currentColor" stroke-width="1.3" fill="none" opacity="0.7"/>
+    <line x1="6" y1="8" x2="15" y2="8" stroke="currentColor"
+          stroke-width="1.6" stroke-linecap="round"/>
+    <line x1="6" y1="11" x2="15" y2="11" stroke="currentColor"
+          stroke-width="1" stroke-linecap="round" opacity="0.7"/>
+    <line x1="6" y1="13" x2="15" y2="13" stroke="currentColor"
+          stroke-width="1" stroke-linecap="round" opacity="0.7"/>
+    <line x1="6" y1="15" x2="13" y2="15" stroke="currentColor"
+          stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+    <line x1="6" y1="17" x2="11" y2="17" stroke="currentColor"
+          stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+  `,
+
+  /* Signature — main qui signe avec stylo */
+  signature: `
+    <path d="M3 18 Q5 16 7 17 Q9 18 11 16 Q13 14 15 15 Q17 16 19 14"
+          stroke="currentColor" stroke-width="1.4" fill="none"
+          stroke-linecap="round"/>
+    <line x1="3" y1="20.5" x2="20" y2="20.5" stroke="currentColor"
+          stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
+    <path d="M16 6 L18.5 8.5 L13 14 L10 14 L10 11 Z"
+          stroke="currentColor" stroke-width="1.4" fill="none"
+          stroke-linejoin="round"/>
+    <line x1="14.5" y1="7.5" x2="17" y2="10" stroke="currentColor"
+          stroke-width="1" opacity="0.5"/>
+  `,
+
+  /* Mégaphone — appel à mobilisation */
+  megaphone: `
+    <path d="M3 14 L3 10 L11 7 L11 17 Z"
+          stroke="currentColor" stroke-width="1.4" fill="none"
+          stroke-linejoin="round"/>
+    <path d="M11 7 L11 17 L17 19 L17 5 Z"
+          stroke="currentColor" stroke-width="1.4" fill="none"
+          stroke-linejoin="round"/>
+    <line x1="5" y1="14" x2="5" y2="20" stroke="currentColor"
+          stroke-width="1.4" stroke-linecap="round"/>
+    <line x1="7" y1="14" x2="7" y2="19" stroke="currentColor"
+          stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+    <path d="M19 8 Q21 10 21 12 Q21 14 19 16"
+          stroke="currentColor" stroke-width="1.2" fill="none"
+          stroke-linecap="round" opacity="0.7"/>
+  `,
+
+  /* Flamme — symbole de tension/urgence */
+  flamme: `
+    <path d="M12 3 Q9 6 9 9 Q9 11 11 12 Q9 13 8 15 Q7 17 8 19
+             Q9 21 12 21 Q15 21 16 19 Q17 17 16 15 Q15 13 13 12
+             Q15 10 14 7 Q13 5 12 3 Z"
+          stroke="currentColor" stroke-width="1.4" fill="none"
+          stroke-linejoin="round" stroke-linecap="round"/>
+  `,
+
+  /* Porte — entrée/sortie */
+  porte: `
+    <path d="M6 21 L6 4 L18 4 L18 21" stroke="currentColor"
+          stroke-width="1.4" fill="none" stroke-linejoin="round"/>
+    <line x1="4" y1="21" x2="20" y2="21" stroke="currentColor"
+          stroke-width="1.4" stroke-linecap="round"/>
+    <circle cx="14" cy="13" r="0.9" fill="currentColor"/>
+  `,
+
+  /* Alerte — triangle exclamation */
+  alerte: `
+    <path d="M12 4 L21 19 L3 19 Z"
+          stroke="currentColor" stroke-width="1.4" fill="none"
+          stroke-linejoin="round"/>
+    <line x1="12" y1="10" x2="12" y2="14" stroke="currentColor"
+          stroke-width="1.6" stroke-linecap="round"/>
+    <circle cx="12" cy="16.5" r="0.9" fill="currentColor"/>
+  `,
+
+  /* Clé — déverrouillage */
+  cle: `
+    <circle cx="8" cy="12" r="3.5" stroke="currentColor"
+          stroke-width="1.4" fill="none"/>
+    <line x1="11" y1="12" x2="20" y2="12" stroke="currentColor"
+          stroke-width="1.4" stroke-linecap="round"/>
+    <line x1="17" y1="12" x2="17" y2="15" stroke="currentColor"
+          stroke-width="1.4" stroke-linecap="round"/>
+    <line x1="20" y1="12" x2="20" y2="14.5" stroke="currentColor"
+          stroke-width="1.4" stroke-linecap="round"/>
   `
 };

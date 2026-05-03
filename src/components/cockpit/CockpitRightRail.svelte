@@ -15,7 +15,7 @@
     onOpenTrajectory?: () => void;
     onOpenGlossary?: () => void;
   }
-  let { state, onOpenPersonality, onOpenWork, onOpenTrajectory,
+  let { state: gs, onOpenPersonality, onOpenWork, onOpenTrajectory,
     onOpenGlossary }: Props = $props();
 
   /* Tension intérieure en mots (Damasio #58, Grandin #89) */
@@ -26,17 +26,17 @@
     return { label: 'Au bord de la rupture', tone: '#E08F92' };
   }
 
-  let tension = $derived(tensionLabel(state.personalityStress));
-  let dominantLabel = $derived(TRAIT_LABELS[state.dominantTrait]);
-  let dominantValue = $derived(state.traits[state.dominantTrait] ?? 0);
+  let tension = $derived(tensionLabel(gs.personalityStress));
+  let dominantLabel = $derived(TRAIT_LABELS[gs.dominantTrait]);
+  let dominantValue = $derived(gs.traits[gs.dominantTrait] ?? 0);
 
   /* Œuvre */
-  let nbInstitutions = $derived(state.memory.builtInstitutions?.length ?? 0);
+  let nbInstitutions = $derived(gs.memory.builtInstitutions?.length ?? 0);
 
   /* Trajectoire — modèle approché (juste un nom + score) */
   function nearestModel(): { name: string; pct: number } {
     /* Calcul simplifié : compare resources avec 3 modèles canon */
-    const r = state.resources;
+    const r = gs.resources;
     const MODELS: Array<{ name: string; vals: Record<string, number> }> = [
       { name: 'Jouhaux 1947', vals: { institution: 78, legitimite: 70, caisse: 55, rapportDeForce: 35, cohesionInterne: 65, confiance: 55, santeSociale: 60 } },
       { name: 'Croizat 1945', vals: { institution: 88, legitimite: 75, caisse: 65, rapportDeForce: 60, cohesionInterne: 55, confiance: 70, santeSociale: 80 } },
@@ -58,14 +58,33 @@
   }
 
   let trajectory = $derived(nearestModel());
+
+  /* Nudges */
+  let personalityAlert = $derived(gs.personalityStress >= 70);
+  /* Détection institution qui vient d'être ajoutée — sparkle bref */
+  let workSparkle = $state(false);
+  let lastInstitutionCount = $state(0);
+  $effect(() => {
+    const current = nbInstitutions;
+    if (current > lastInstitutionCount && lastInstitutionCount > 0) {
+      workSparkle = true;
+      setTimeout(() => { workSparkle = false; }, 2400);
+    }
+    lastInstitutionCount = current;
+  });
 </script>
 
 <aside class="right-rail" aria-label="Personnalité, œuvre, trajectoire">
   <!-- ===== Personnalité ===== -->
-  <section class="rail-section">
+  <section class="rail-section" class:has-alert={personalityAlert}>
     <button type="button" class="rail-head" onclick={() => onOpenPersonality?.()}>
       <span class="rail-icon"><CockpitIcon name="masque" size={14} /></span>
       <span class="rail-title">Personnalité</span>
+      {#if personalityAlert}
+        <span class="rail-badge" title="Tension intérieure forte — risque d'éclatement">
+          <CockpitIcon name="flamme" size={10} />
+        </span>
+      {/if}
       <span class="rail-expand" aria-hidden="true">›</span>
     </button>
     <div class="perso-body">
@@ -82,10 +101,15 @@
   </section>
 
   <!-- ===== Mon œuvre ===== -->
-  <section class="rail-section">
+  <section class="rail-section" class:has-sparkle={workSparkle}>
     <button type="button" class="rail-head" onclick={() => onOpenWork?.()}>
       <span class="rail-icon"><CockpitIcon name="bourse" size={14} /></span>
       <span class="rail-title">Mon œuvre</span>
+      {#if workSparkle}
+        <span class="rail-badge sparkle-badge" title="Nouvelle institution construite !">
+          <CockpitIcon name="sceau" size={10} />
+        </span>
+      {/if}
       <span class="rail-expand" aria-hidden="true">›</span>
     </button>
     <div class="work-body">
@@ -148,10 +172,71 @@
   .right-rail::-webkit-scrollbar-thumb { background: rgba(201, 178, 106, 0.25); border-radius: 2px; }
 
   .rail-section {
+    position: relative;
     background: rgba(13, 11, 8, 0.4);
     border: 1px solid rgba(201, 178, 106, 0.18);
     border-radius: 0.4rem;
     overflow: hidden;
+    transition: border-color 0.4s ease, box-shadow 0.4s ease;
+  }
+
+  .rail-section.has-alert {
+    border-color: rgba(217, 130, 28, 0.55);
+    box-shadow:
+      inset 0 0 0 1px rgba(217, 130, 28, 0.18),
+      0 0 14px rgba(217, 130, 28, 0.18);
+    animation: nudge-attention 3.5s ease-in-out infinite;
+  }
+
+  .rail-section.has-sparkle {
+    border-color: rgba(244, 213, 140, 0.6);
+    box-shadow:
+      inset 0 0 0 1px rgba(244, 213, 140, 0.25),
+      0 0 18px rgba(244, 213, 140, 0.32);
+    animation: nudge-celebrate 2.4s ease-out;
+  }
+
+  @keyframes nudge-attention {
+    0%, 100% { box-shadow: inset 0 0 0 1px rgba(217, 130, 28, 0.18), 0 0 10px rgba(217, 130, 28, 0.14); }
+    50%      { box-shadow: inset 0 0 0 1px rgba(217, 130, 28, 0.32), 0 0 20px rgba(217, 130, 28, 0.30); }
+  }
+
+  @keyframes nudge-celebrate {
+    0%   { box-shadow: inset 0 0 0 1px rgba(244, 213, 140, 0.5), 0 0 30px rgba(244, 213, 140, 0.5); }
+    100% { box-shadow: inset 0 0 0 1px rgba(244, 213, 140, 0.18), 0 0 12px rgba(244, 213, 140, 0.18); }
+  }
+
+  .rail-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-left: -0.2rem;
+    margin-right: 0.1rem;
+    color: #D9821C;
+    background: rgba(217, 130, 28, 0.15);
+    border: 1px solid rgba(217, 130, 28, 0.45);
+    border-radius: 50%;
+    animation: badge-flash 1.8s ease-in-out infinite;
+  }
+
+  .sparkle-badge {
+    color: #F4D58C;
+    background: rgba(244, 213, 140, 0.18);
+    border-color: rgba(244, 213, 140, 0.5);
+    animation: sparkle-pop 1s ease-out;
+  }
+
+  @keyframes badge-flash {
+    0%, 100% { opacity: 0.65; transform: scale(1); }
+    50%      { opacity: 1;    transform: scale(1.1); }
+  }
+
+  @keyframes sparkle-pop {
+    0%   { transform: scale(0.4); opacity: 0; }
+    50%  { transform: scale(1.4); opacity: 1; }
+    100% { transform: scale(1);   opacity: 1; }
   }
 
   .rail-head {

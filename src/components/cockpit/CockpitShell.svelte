@@ -24,6 +24,7 @@
   import { eraForTurn } from '../../game/content/eras';
 
   import CockpitStatusBar from './CockpitStatusBar.svelte';
+  import CockpitTopHeader from './CockpitTopHeader.svelte';
   import CockpitTabs from './CockpitTabs.svelte';
   import CockpitInstruments from './CockpitInstruments.svelte';
   import CockpitDashboardBar from './CockpitDashboardBar.svelte';
@@ -209,10 +210,12 @@
 <svelte:window onkeydown={onKey} />
 
 {#if gameState}
-  <div class="cockpit ambient-{gameState.mode}">
+  <div class="cockpit ambient-{gameState.mode}"
+    class:crisis-active={orchestrator.isCrisis}
+  >
 
-    <CockpitStatusBar
-      turn={gameState.turn}
+    <CockpitTopHeader
+      state={gameState}
       era={era?.id ?? null}
       mood={scenario?.mood ?? null}
       onOpenSettings={handleSettings}
@@ -610,11 +613,28 @@
 
   .sky-content {
     /* Pleine surface — pas de cartouche centré, le scénario remplit
-       toute la zone Le Ciel disponible entre les rails. */
-    padding: 1.4rem clamp(0.8rem, 3vw, 2.4rem) 2rem;
+       toute la zone Le Ciel disponible entre les rails. Padding
+       généreux (Chen #7) : 2.5rem inner pour respiration du texte. */
+    padding: 2.2rem clamp(1.5rem, 4vw, 3rem);
     max-width: 64rem;
     margin: 0 auto;
     color: #1A1411;
+  }
+
+  /* === Filigrane crise === */
+  .cockpit.crisis-active::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, rgba(176, 24, 30, 0.05) 0%, transparent 70%);
+    z-index: 35;
+    animation: crisis-overlay 2.4s ease-in-out infinite;
+  }
+
+  @keyframes crisis-overlay {
+    0%, 100% { opacity: 0.4; }
+    50%      { opacity: 0.8; }
   }
 
   .sky-placeholder {

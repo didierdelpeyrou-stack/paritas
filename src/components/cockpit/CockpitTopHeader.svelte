@@ -198,8 +198,12 @@
         <CockpitIcon name="note" size={14} />
       </button>
       {#if onToggleClassic}
-        <button type="button" class="sys-btn" onclick={onToggleClassic}
-          title="Basculer vers l'interface classique" aria-label="Mode classique">⊟</button>
+        <button type="button" class="sys-btn classic-btn" onclick={onToggleClassic}
+          title="Tu es en mode Cockpit. Bascule vers l'interface classique."
+          aria-label="Basculer vers le mode classique">
+          <span class="classic-icon">⊟</span>
+          <span class="classic-label">Classique</span>
+        </button>
       {/if}
       {#if onOpenSettings}
         <button type="button" class="sys-btn" onclick={onOpenSettings}
@@ -429,6 +433,23 @@
 
   .sys-btn[aria-pressed="true"] {
     background: rgba(201, 178, 106, 0.18);
+  }
+
+  /* Bouton classique avec libellé (Norman fix #1) */
+  .classic-btn {
+    width: auto;
+    padding: 0 0.5rem;
+    gap: 0.3rem;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .classic-icon { font-size: 0.95rem; line-height: 1; }
+  @media (max-width: 768px) {
+    .classic-label { display: none; }
+    .classic-btn { width: 28px; padding: 0; }
   }
 
   .burger-bars {

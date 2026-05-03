@@ -122,6 +122,19 @@
     }
   }
 
+  /* Trait court pour le hint d'accueil tour 1 (Norman fix #2). */
+  function traitLabelShort(t: string): string {
+    const map: Record<string, string> = {
+      batisseur: 'Bâtisseur·e',
+      rupture: 'Tribun·e de la rupture',
+      technocrate: 'Technocrate',
+      pragmatique: 'Pragmatique',
+      paternaliste: 'Paternaliste',
+      tribun: 'Tribun·e'
+    };
+    return map[t] ?? 'camarade';
+  }
+
   /* Helpers d'affichage du drawer (mini-jeux uniquement). Les rail-*
      sont passés en popover et n'utilisent plus le drawer. */
   const LEFT_TABS = new Set(['tresorerie', 'mandat', 'monde', 'manifestation']);
@@ -250,6 +263,25 @@
                 onContinue={handleContinue}
               />
             {:else if scenario}
+              <!-- Fix Norman #2 + #6 : hint mécanique au tour 1-5 -->
+              {#if gameState.turn <= 5}
+                <aside class="how-to-play" in:fade={{ duration: 240 }}>
+                  <span class="htp-icon">
+                    <CockpitIcon name="parchemin" size={16} />
+                  </span>
+                  <p>
+                    {#if gameState.turn === 1}
+                      <strong>Bienvenue, {traitLabelShort(gameState.dominantTrait)}.</strong>
+                      Lis le scénario, puis clique l'une des options pour engager
+                      ton choix. Tu peux aussi déclencher 1 à 2 actions libres
+                      (tracts, meeting, manif…) depuis la barre du bas.
+                    {:else}
+                      <strong>Mécanique :</strong> 1 décision scénarique +
+                      0 à 2 actions libres par tour.
+                    {/if}
+                  </p>
+                </aside>
+              {/if}
               <SceneCard
                 {scenario}
                 mode={gameState.mode}
@@ -619,6 +651,38 @@
     max-width: 64rem;
     margin: 0 auto;
     color: #1A1411;
+  }
+
+  /* === Hint mécanique (Norman fix #2 + #6) === */
+  :global(.sky-content .how-to-play) {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.6rem;
+    padding: 0.7rem 0.95rem;
+    margin: 0 auto 1.2rem;
+    max-width: 64rem;
+    background: rgba(244, 213, 140, 0.10);
+    border-left: 3px solid #C9B26A;
+    border-radius: 0.35rem;
+    color: rgba(26, 20, 17, 0.85);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  :global(.sky-content .how-to-play .htp-icon) {
+    color: #5A2F1C;
+    align-self: start;
+    padding-top: 0.15rem;
+  }
+
+  :global(.sky-content .how-to-play strong) {
+    color: #5A2F1C;
+    font-family: 'Cinzel', Georgia, serif;
+  }
+
+  :global(.sky-content .how-to-play p) {
+    margin: 0;
   }
 
   /* === Filigrane crise === */

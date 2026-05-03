@@ -7,6 +7,7 @@
   import ManifMap from './ManifMap.svelte';
   import MiniGameFuelHeader from '../cockpit/MiniGameFuelHeader.svelte';
   import { MANIF_CITIES, findCombosFor } from '../../game/org/manifCities';
+  import { abilityFuelScore, fuelMultiplier, fuelAttribution } from '../../game/simulation/resourceUtility';
 
   interface Props {
     gameState: RebirthGameState;
@@ -120,15 +121,25 @@
        ajustant militants pour optimiser la sin). */
     const meteo = Math.round(Math.random() * 16) - 8;
 
-    const rawScore = prep + baseFoule * lieuMult + comboBoost + mediaBoost + juristeBoost + sloganBonus + meteo + comboScoreBonus;
+    /* Modulation par les ressources globales (autodétermination —
+       le joueur sent que ses stats ont compté). Centré sur 1.0,
+       borné à 0.8/1.2. */
+    const fuel = abilityFuelScore('manifestation', gs.resources);
+    const fuelMul = fuelMultiplier(fuel);
+
+    const rawScore = (prep + baseFoule * lieuMult + comboBoost + mediaBoost + juristeBoost + sloganBonus + comboScoreBonus) * fuelMul + meteo;
     const score = Math.max(0, Math.min(100, Math.round(rawScore)));
-    const foule = Math.max(0, Math.round(baseFoule * lieuMult * 110 + comboBoost * 80 + comboScoreBonus * 60));
+    const foule = Math.max(0, Math.round(baseFoule * lieuMult * 110 * fuelMul + comboBoost * 80 + comboScoreBonus * 60));
+
+    /* Phrase d'attribution : explique au joueur quelles ressources ont
+       fait la différence (ou ont manqué). */
+    const attribution = fuelAttribution('manifestation', gs.resources, fuel);
 
     return {
       score,
       foule,
       headline: composeHeadline(score, foule),
-      storyline: composeStoryline(score, prep, comboBoost)
+      storyline: composeStoryline(score, prep, comboBoost) + (attribution ? ` ${attribution}` : '')
     };
   }
 

@@ -6,6 +6,7 @@
   import type { Camp } from '$lib/types';
   import type { ActorId, RebirthGameState, Resources } from '../../game/types';
   import MiniGameFuelHeader from '../cockpit/MiniGameFuelHeader.svelte';
+  import { abilityFuelScore, fuelMultiplier, fuelAttribution } from '../../game/simulation/resourceUtility';
 
   interface Props {
     gameState: RebirthGameState;
@@ -145,15 +146,23 @@
 
     /* Le sloganBonus et le postureBonus sont déjà inclus dans `militants`
        et `opinion` ci-dessus — on ne les ré-ajoute pas. */
-    const score = Math.max(0, Math.min(100, 35 + (militants + opinion) * 1.4));
+    const baseScore = 35 + (militants + opinion) * 1.4;
 
-    const pressLine = composePressLine(score, opinion);
+    /* Modulation par les ressources globales : Confiance, Légitimité,
+       Caisse alimentent le meeting (cf. resourceUtility). Centré 1.0,
+       borné 0.8/1.2 — pour rendre tactile l'investissement préalable. */
+    const fuel = abilityFuelScore('meeting', gs.resources);
+    const fuelMul = fuelMultiplier(fuel);
+    const score = Math.max(0, Math.min(100, baseScore * fuelMul));
+
+    const attribution = fuelAttribution('meeting', gs.resources, fuel);
+    const pressLine = composePressLine(score, opinion) + (attribution ? ` ${attribution}` : '');
 
     return {
       score: Math.round(score),
       audience: {
-        militants: Math.round(militants),
-        opinion: Math.round(opinion),
+        militants: Math.round(militants * fuelMul),
+        opinion: Math.round(opinion * fuelMul),
         etat: Math.round(etat)
       },
       pressLine,

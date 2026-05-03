@@ -153,6 +153,56 @@ export function fuelScoreLabel(score: number): string {
   return 'À sec';
 }
 
+/** Multiplicateur appliqué au score d'un mini-jeu en fonction du fuel
+ *  composite courant. Centré sur 1.0 pour fuel=50, va de 0.80 (à sec)
+ *  à 1.20 (excellent). Volontairement borné pour ne pas dérégler la
+ *  balance des simulateurs existants — c'est un LEVIER lisible, pas
+ *  un game-changer. */
+export function fuelMultiplier(fuelScore: number): number {
+  const clamped = Math.max(0, Math.min(100, fuelScore));
+  return 1 + (clamped - 50) / 250; // pente 0.4/100
+}
+
+/** Phrase d'attribution narrative : explique au joueur POURQUOI son
+ *  mini-jeu a mieux ou moins bien marché en citant ses 1-2 ressources
+ *  les plus pertinentes. Renforce le sentiment de compétence
+ *  (Deci & Ryan) — les efforts du joueur sont reconnus dans le récit. */
+export function fuelAttribution(
+  ability: AbilityId,
+  res: Resources,
+  fuelScore: number
+): string {
+  const top = fuelsFor(ability, 2);
+  if (top.length === 0) return '';
+  const names = top
+    .map(e => ({ name: ABILITY_SHORT_LABEL_BY_RESOURCE[e.resource], v: (res[e.resource] as number) ?? 0 }))
+    .sort((a, b) => b.v - a.v);
+  const best = names[0];
+  const worst = names[names.length - 1];
+
+  if (fuelScore >= 70) {
+    return `Tes ${best.name} (${Math.round(best.v)}) ont porté l'action.`;
+  }
+  if (fuelScore >= 45) {
+    return `Tes ${best.name} ont tenu, mais ${worst.name} a manqué.`;
+  }
+  if (fuelScore >= 25) {
+    return `${worst.name} en panne — ça s'est vu sur le terrain.`;
+  }
+  return `Action engagée à sec : ni ${best.name} ni ${worst.name} n'étaient là.`;
+}
+
+/* Petit alias : noms français courts par ressource pour les attributions. */
+const ABILITY_SHORT_LABEL_BY_RESOURCE: Record<ResourceKey, string> = {
+  caisse:          'Caisse',
+  confiance:       'Confiance',
+  legitimite:      'Légitimité',
+  rapportDeForce:  'Force ext.',
+  cohesionInterne: 'Cohésion',
+  santeSociale:    'Santé soc.',
+  institution:     'Institution'
+};
+
 /** Étiquettes des abilities pour l'UI (utilisées dans les tooltips
  *  du top header : « → Alimente : Meeting, Manifestation, Talents »). */
 export const ABILITY_SHORT_LABEL: Record<AbilityId, string> = {

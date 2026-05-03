@@ -46,7 +46,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
           longterm: 'Le patronat des forges devient un acteur politique permanent — il l’est resté.'
         },
         traitShift: { pragmatique: 2, technocrate: 1 },
-        flag: 'patronat-organise'
+        flag: 'patronat-organise',
+        ability: 'delegation'
       },
       {
         id: 'forges-paternaliste',
@@ -64,7 +65,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
             'Le paternalisme aura sa réussite — Le Creusot, Mulhouse — et son échec : il ne survivra pas à la première grande grève du XXe siècle.'
         },
         traitShift: { paternaliste: 3, batisseur: 1 },
-        requiresTrait: 'paternaliste'
+        requiresTrait: 'paternaliste',
+        ability: 'tresorerie'
       },
       {
         id: 'forges-repression',
@@ -81,7 +83,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
           longterm:
             'Cette posture nourrira pour des décennies l’hostilité de la classe ouvrière au patronat français.'
         },
-        traitShift: { pragmatique: 1, paternaliste: -1 }
+        traitShift: { pragmatique: 1, paternaliste: -1 },
+        ability: 'manifestation'
       }
     ]
   },
@@ -131,7 +134,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
             'La cogestion d’après-Matignon nourrira plus tard la doctrine du paritarisme français.'
         },
         traitShift: { batisseur: 2, pragmatique: 1 },
-        flag: 'cgpf-cogestion'
+        flag: 'cgpf-cogestion',
+        ability: 'table'
       },
       {
         id: 'cgpf-gignoux',
@@ -149,7 +153,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
             'Cette ligne pèsera lourd dans la radicalisation du conflit social de 1937 et le retour des grèves.'
         },
         traitShift: { rupture: 2, paternaliste: 1 },
-        flag: 'epuise-mouvement'
+        flag: 'epuise-mouvement',
+        ability: 'presse'
       },
       {
         id: 'cgpf-scission',
@@ -165,7 +170,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
             'Le nouveau comité regroupe quelques industriels durs. Il publie. Il se réunit. Il pèse moins que ce qu’il dit peser.',
           longterm: 'La fragmentation du patronat affaiblira sa position face à l’État pendant l’Occupation.'
         },
-        traitShift: { rupture: 2 }
+        traitShift: { rupture: 2 },
+        ability: 'congres'
       }
     ]
   },
@@ -215,7 +221,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
             'Cette insertion fera du paritarisme à la française une institution stable jusqu’aux années 1990.'
         },
         traitShift: { batisseur: 2, pragmatique: 1 },
-        flag: 'cnpf-insertion'
+        flag: 'cnpf-insertion',
+        ability: 'congres'
       },
       {
         id: 'cnpf-autonomie',
@@ -232,7 +239,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
           longterm:
             'Ce choix nourrira plus tard un sentiment durable : "le paritarisme s’est fait sans nous".'
         },
-        traitShift: { paternaliste: 2, rupture: 1 }
+        traitShift: { paternaliste: 2, rupture: 1 },
+        ability: 'tresorerie'
       },
       {
         id: 'cnpf-rebattre',
@@ -249,7 +257,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
           longterm: 'L’histoire de la Sécu sera, pour partie, l’histoire de cette patience.'
         },
         traitShift: { pragmatique: 2, technocrate: 1 },
-        flag: 'refuse-compromis'
+        flag: 'refuse-compromis',
+        ability: 'delegation'
       }
     ]
   },
@@ -299,7 +308,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
             'La rupture de 2001 marquera un tournant : à partir de là, l’hypothèse étatique pèsera dans toute négociation paritaire.'
         },
         traitShift: { rupture: 3 },
-        flag: 'epuise-mouvement'
+        flag: 'epuise-mouvement',
+        ability: 'manifestation'
       },
       {
         id: 'medef-negocier',
@@ -317,7 +327,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
             'Cette ligne définira pour les années 2000 une grammaire patronale du dialogue social — efficace, technique, peu lisible pour le grand public.'
         },
         traitShift: { batisseur: 2, pragmatique: 1 },
-        flag: 'refondation-paritaire'
+        flag: 'refondation-paritaire',
+        ability: 'table'
       },
       {
         id: 'medef-statu-quo',
@@ -334,7 +345,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
           longterm:
             'Cette ligne perdra du terrain à l’intérieur du MEDEF — la refondation reviendra par d’autres canaux, lois Travail comprises.'
         },
-        traitShift: { pragmatique: 2, paternaliste: 1 }
+        traitShift: { pragmatique: 2, paternaliste: 1 },
+        ability: 'congres'
       }
     ]
   },
@@ -384,7 +396,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
             'Cette signature ancrera, à droite comme à gauche, l’idée que le patronat sait reculer quand il faut.'
         },
         traitShift: { batisseur: 2, pragmatique: 1 },
-        flag: 'cgpf-cogestion'
+        flag: 'cgpf-cogestion',
+        ability: 'table'
       },
       {
         id: 'grenelle-patron-rejeter',
@@ -402,7 +415,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
             'Le geste sera relu plus tard comme une démission stratégique. Le patronat perdra du terrain dans le récit social français pendant une décennie.'
         },
         traitShift: { rupture: 2 },
-        flag: 'epuise-mouvement'
+        flag: 'epuise-mouvement',
+        ability: 'delegation'
       },
       {
         id: 'grenelle-patron-section',
@@ -419,7 +433,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
           longterm:
             'Cette acceptation préparera, douze ans plus tard, l’accueil patronal pragmatique des lois Auroux.'
         },
-        traitShift: { batisseur: 2, paternaliste: 1 }
+        traitShift: { batisseur: 2, paternaliste: 1 },
+        ability: 'congres'
       }
     ]
   },
@@ -469,7 +484,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
             'Cette posture installera durablement l’idée d’un patronat structurellement hostile au droit du travail français.'
         },
         traitShift: { rupture: 2, technocrate: 1 },
-        flag: 'refuse-compromis'
+        flag: 'refuse-compromis',
+        ability: 'presse'
       },
       {
         id: 'auroux-patron-contreparties',
@@ -487,7 +503,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
             'Cette doctrine du donnant-donnant deviendra, dans les années 1990-2000, la grammaire dominante des accords de branche.'
         },
         traitShift: { batisseur: 2, pragmatique: 1 },
-        flag: 'cgpf-cogestion'
+        flag: 'cgpf-cogestion',
+        ability: 'table'
       },
       {
         id: 'auroux-patron-drh',
@@ -505,7 +522,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
             'Le management français des trente années suivantes naîtra largement de cette acculturation discrète.'
         },
         traitShift: { batisseur: 2, technocrate: 2 },
-        requiresTrait: 'technocrate'
+        requiresTrait: 'technocrate',
+        ability: 'talents'
       }
     ]
   },
@@ -549,7 +567,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
             'Cette doctrine alimentera durablement les critiques du dialogue social français — y compris dans le camp patronal.'
         },
         traitShift: { rupture: 2, pragmatique: 1 },
-        flag: 'epuise-mouvement'
+        flag: 'epuise-mouvement',
+        ability: 'table'
       },
       {
         id: 'loi-travail-patron-branche',
@@ -567,7 +586,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
             'La branche, qu’on disait morte, redevient un acteur central — au prix d’un patronat plus discipliné qu’il ne le souhaitait.'
         },
         traitShift: { batisseur: 2, pragmatique: 1 },
-        flag: 'refondation-paritaire'
+        flag: 'refondation-paritaire',
+        ability: 'congres'
       },
       {
         id: 'loi-travail-patron-stabiliser',
@@ -584,7 +604,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
           longterm:
             'Ce choix discret deviendra, vu de loin, l’une des contributions patronales les plus durables des années 2010.'
         },
-        traitShift: { batisseur: 2, technocrate: 1 }
+        traitShift: { batisseur: 2, technocrate: 1 },
+        ability: 'table'
       }
     ]
   },
@@ -634,7 +655,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
             'Cette séquence pèsera dans la perception patronale du dialogue social pour la décennie suivante.'
         },
         traitShift: { pragmatique: 1, paternaliste: 1 },
-        flag: 'epuise-mouvement'
+        flag: 'epuise-mouvement',
+        ability: 'presse'
       },
       {
         id: 'retraites-patron-retrait',
@@ -652,7 +674,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
             'Ce repli mesuré préparera la possibilité d’accords interprofessionnels nouveaux dans les deux à trois ans.'
         },
         traitShift: { batisseur: 2, pragmatique: 1 },
-        flag: 'refondation-paritaire'
+        flag: 'refondation-paritaire',
+        ability: 'delegation'
       },
       {
         id: 'retraites-patron-pacte',
@@ -669,7 +692,8 @@ export const PATRON_SCENARIOS: Scenario[] = [
           longterm:
             'Cette tentative — réussie ou non — laissera trace : elle aura prouvé que le patronat peut prendre l’initiative quand il accepte d’en payer le prix.'
         },
-        traitShift: { batisseur: 3, tribun: 1 }
+        traitShift: { batisseur: 3, tribun: 1 },
+        ability: 'table'
       }
     ]
   }

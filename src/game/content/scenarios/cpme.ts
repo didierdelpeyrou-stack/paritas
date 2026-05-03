@@ -54,7 +54,8 @@ export const CPME_SCENARIOS: Scenario[] = [
             "Cette posture renforce la CPME dans les TPE-PME pour les cinq années suivantes. Elle alimente aussi un débat permanent sur la représentativité patronale qui culminera dans les arrêtés de 2021."
         },
         traitShift: { pragmatique: 2, batisseur: 1 },
-        flag: 'cpme-divergence-medef'
+        flag: 'cpme-divergence-medef',
+        ability: 'presse'
       },
       {
         id: 'cpme-signer-amenagements',
@@ -71,7 +72,8 @@ export const CPME_SCENARIOS: Scenario[] = [
           longterm:
             "L'aménagement aide effectivement le passage. Mais l'image d'une CPME « MEDEF-bis » colle pour deux mandats. Le risque : voir surgir une organisation patronale plus radicale (U2P + dissidents)."
         },
-        traitShift: { technocrate: 2, batisseur: 1 }
+        traitShift: { technocrate: 2, batisseur: 1 },
+        ability: 'table'
       },
       {
         id: 'cpme-contre-projet',
@@ -89,7 +91,8 @@ export const CPME_SCENARIOS: Scenario[] = [
             "Le projet inspirera la création des Conseils d'entreprise expérimentaux (CEE) en 2020-2022 dans certaines branches. La CPME y gagne durablement en stature politique."
         },
         traitShift: { batisseur: 2, technocrate: 1 },
-        flag: 'refondation-paritaire'
+        flag: 'refondation-paritaire',
+        ability: 'congres'
       }
     ]
   },
@@ -139,7 +142,8 @@ export const CPME_SCENARIOS: Scenario[] = [
             "Le projet de fusion est repoussé à 2026, puis officiellement abandonné dans sa forme initiale. L'OPCO EP est préservé."
         },
         traitShift: { tribun: 2, batisseur: 1 },
-        flag: 'fait-victoire-historique'
+        flag: 'fait-victoire-historique',
+        ability: 'manifestation'
       },
       {
         id: 'u2p-coalition-cpme',
@@ -156,7 +160,8 @@ export const CPME_SCENARIOS: Scenario[] = [
           longterm:
             "Cette coalition reste active sur d'autres dossiers (apprentissage, prud'hommes, branches). Elle structurera durablement la voix patronale TPE-PME face au MEDEF."
         },
-        traitShift: { batisseur: 2, pragmatique: 1 }
+        traitShift: { batisseur: 2, pragmatique: 1 },
+        ability: 'congres'
       },
       {
         id: 'u2p-contentieux-conseil-etat',
@@ -173,7 +178,8 @@ export const CPME_SCENARIOS: Scenario[] = [
           longterm:
             "Le recours est jugé recevable en 2025. Il fait jurisprudence sur l'obligation de concertation paritaire avant toute réforme structurelle de la formation pro."
         },
-        traitShift: { technocrate: 3 }
+        traitShift: { technocrate: 3 },
+        ability: 'delegation'
       }
     ]
   }

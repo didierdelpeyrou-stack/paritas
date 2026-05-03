@@ -51,7 +51,8 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
           immediate:
             "La doléance entre dans le cahier. Elle ne sera pas suivie d'effet. Mais elle existe, noir sur blanc, dans les archives de Versailles. Ton nom y figure."
         },
-        traitShift: { batisseur: 2, technocrate: 1 }
+        traitShift: { batisseur: 2, technocrate: 1 },
+        ability: 'tracts'
       },
       {
         id: 'cahiers-abolition',
@@ -67,7 +68,8 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
             "La revendication choque les jurandes. Deux ans plus tard, la loi Le Chapelier abolira les corporations — sans rien mettre à la place. Les ouvriers se retrouveront seuls face à l'employeur."
         },
         traitShift: { rupture: 2 },
-        flag: 'refuse-compromis'
+        flag: 'refuse-compromis',
+        ability: 'presse'
       },
       {
         id: 'cahiers-commercants',
@@ -82,7 +84,8 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
           immediate:
             "La rédaction est solennelle. Lisible. Neutre. Elle parlera d'égalité civile. Elle parlera fort peu de salaires."
         },
-        traitShift: { pragmatique: 2 }
+        traitShift: { pragmatique: 2 },
+        ability: 'delegation'
       }
     ]
   },
@@ -130,7 +133,8 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
             "Quelques imprimeurs complaisants, beaucoup de courage. Au bout de six mois, quatre ouvriers sont arrêtés. Une centaine continue. Le réseau survit dans les caves et les arrière-boutiques."
         },
         traitShift: { rupture: 2, technocrate: 1 },
-        flag: 'trahit-base'
+        flag: 'trahit-base',
+        ability: 'tracts'
       },
       {
         id: 'livret-petitionner',
@@ -145,7 +149,8 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
           immediate:
             "Le préfet reçoit la délégation. Il écoute. Il promet. Trois articles du règlement sont assouplis. Le système, lui, reste."
         },
-        traitShift: { pragmatique: 2 }
+        traitShift: { pragmatique: 2 },
+        ability: 'petition'
       },
       {
         id: 'livret-mutuelle',
@@ -160,7 +165,8 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
           immediate:
             "La caisse de la rue des Compagnons recueille les cotisations volontaires. Quatre ouvriers chassés sont nourris pendant trois mois. Le précédent est posé."
         },
-        traitShift: { batisseur: 3 }
+        traitShift: { batisseur: 3 },
+        ability: 'tresorerie'
       }
     ]
   },
@@ -212,7 +218,8 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
             "La société rassemble 38 cotisants en trois ans. Trois enterrements payés. Deux veuves nourries. Personne ne dérange. Personne ne te connaît."
         },
         traitShift: { batisseur: 3 },
-        flag: 'cree-mutuelle-1864'
+        flag: 'cree-mutuelle-1864',
+        ability: 'tresorerie'
       },
       {
         id: 'mutuelle-coordination',
@@ -227,7 +234,8 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
           immediate:
             "La grève des fileurs de Mulhouse isole trois usines pendant deux semaines. La police soupçonne. Elle ne prouve pas. Le risque, lui, ne disparaît pas."
         },
-        traitShift: { rupture: 2 }
+        traitShift: { rupture: 2 },
+        ability: 'manifestation'
       },
       {
         id: 'mutuelle-fusion',
@@ -242,7 +250,8 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
           immediate:
             "Trois sociétés — Lyon, Saint-Étienne, Roanne — fusionnent en Caisse régionale du Devoir. Le préfet demande à voir le registre. Il repart sans rien à reprocher."
         },
-        traitShift: { technocrate: 2, batisseur: 1 }
+        traitShift: { technocrate: 2, batisseur: 1 },
+        ability: 'congres'
       }
     ]
   },
@@ -289,7 +298,8 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
           immediate:
             "Le plaidoyer dure deux heures. Trois feuilles parisiennes le reproduisent. Les peines tombent. Mais elles sont réduites de moitié pour la moitié des accusés."
         },
-        traitShift: { tribun: 3, batisseur: 1 }
+        traitShift: { tribun: 3, batisseur: 1 },
+        ability: 'delegation'
       },
       {
         id: 'proces-caisse-defense',
@@ -304,7 +314,8 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
           immediate:
             "La souscription rassemble 2 800 francs en six mois. Onze familles d'ouvriers emprisonnés tiennent l'hiver. La caisse, elle, durera bien après."
         },
-        traitShift: { batisseur: 2, paternaliste: 2 }
+        traitShift: { batisseur: 2, paternaliste: 2 },
+        ability: 'tresorerie'
       },
       {
         id: 'proces-presse',
@@ -319,7 +330,8 @@ export const EARLY_PERIOD_SCENARIOS: Scenario[] = [
           immediate:
             "Trois journaux ouvriers reprennent l'affaire pendant deux mois. Un député républicain interpelle le garde des Sceaux à la Chambre."
         },
-        traitShift: { technocrate: 2, tribun: 1 }
+        traitShift: { technocrate: 2, tribun: 1 },
+        ability: 'presse'
       }
     ]
   }

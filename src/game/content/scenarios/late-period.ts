@@ -62,7 +62,8 @@ export const LATE_PERIOD_SCENARIOS: Scenario[] = [
             "1995 reste le grand récit de la victoire syndicale. Mais l'État apprendra : plus jamais une réforme retraite ne sera annoncée sans concertation préalable et sans 49.3 prêt."
         },
         traitShift: { tribun: 2, rupture: 2 },
-        flag: 'fait-victoire-historique'
+        flag: 'fait-victoire-historique',
+        ability: 'manifestation'
       },
       {
         id: 'juppe-ouvrir-negociation',
@@ -79,7 +80,8 @@ export const LATE_PERIOD_SCENARIOS: Scenario[] = [
           longterm:
             "Le paritarisme retrouve un peu de souffle dans les caisses, mais la base te reprochera longtemps d'avoir « lâché les cheminots »."
         },
-        traitShift: { pragmatique: 2, batisseur: 1 }
+        traitShift: { pragmatique: 2, batisseur: 1 },
+        ability: 'table'
       },
       {
         id: 'juppe-defendre-secu',
@@ -96,7 +98,8 @@ export const LATE_PERIOD_SCENARIOS: Scenario[] = [
           longterm:
             'La Sécu garde sa gouvernance paritaire pour quinze ans encore. Mais la base cheminote et électricienne ne te le pardonne pas avant longtemps.'
         },
-        traitShift: { batisseur: 2, technocrate: 1 }
+        traitShift: { batisseur: 2, technocrate: 1 },
+        ability: 'congres'
       }
     ]
   },
@@ -149,7 +152,8 @@ export const LATE_PERIOD_SCENARIOS: Scenario[] = [
             "1995 ne se rejoue pas. La majorité de l'opinion finit par se lasser. La défaite politique laisse une trace : la légitimité du syndicalisme à bloquer le pays s'effrite."
         },
         traitShift: { rupture: 2, tribun: 1 },
-        flag: 'epuise-mouvement'
+        flag: 'epuise-mouvement',
+        ability: 'manifestation'
       },
       {
         id: 'elkhomri-amendements',
@@ -166,7 +170,8 @@ export const LATE_PERIOD_SCENARIOS: Scenario[] = [
           longterm:
             'Les branches protégées tiendront mieux dans les années qui suivent. Mais les confédérations qui ont signé portent l\'étiquette « collabo de la loi Travail » pour une décennie.'
         },
-        traitShift: { pragmatique: 2, technocrate: 1 }
+        traitShift: { pragmatique: 2, technocrate: 1 },
+        ability: 'table'
       },
       {
         id: 'elkhomri-investir-entreprise',
@@ -184,7 +189,8 @@ export const LATE_PERIOD_SCENARIOS: Scenario[] = [
             'Les négociations d\'entreprise produisent des accords mixtes — quelques bons, beaucoup de médiocres. Le syndicalisme apprend un nouveau métier en marche forcée.'
         },
         traitShift: { batisseur: 2, pragmatique: 1 },
-        flag: 'refondation-paritaire'
+        flag: 'refondation-paritaire',
+        ability: 'talents'
       }
     ]
   },
@@ -232,7 +238,8 @@ export const LATE_PERIOD_SCENARIOS: Scenario[] = [
           longterm:
             'Le coût en militants est limité, le bénéfice en cohérence interne est réel. La séquence prépare 2019.'
         },
-        traitShift: { tribun: 2, batisseur: 1 }
+        traitShift: { tribun: 2, batisseur: 1 },
+        ability: 'manifestation'
       },
       {
         id: 'ordonnances-cse',
@@ -250,7 +257,8 @@ export const LATE_PERIOD_SCENARIOS: Scenario[] = [
             'La maîtrise technique du CSE devient un avantage compétitif dans les négociations d\'entreprise. Quelques victoires locales nourrissent la confédération en récits.'
         },
         traitShift: { technocrate: 2, batisseur: 1 },
-        flag: 'refondation-paritaire'
+        flag: 'refondation-paritaire',
+        ability: 'talents'
       },
       {
         id: 'ordonnances-bareme-prudhommes',
@@ -267,7 +275,8 @@ export const LATE_PERIOD_SCENARIOS: Scenario[] = [
           longterm:
             'La bataille juridique a renforcé l\'image d\'un syndicalisme expert, sérieux. Quelques jurisprudences servent dans les négociations futures.'
         },
-        traitShift: { technocrate: 2, tribun: 1 }
+        traitShift: { technocrate: 2, tribun: 1 },
+        ability: 'delegation'
       }
     ]
   }

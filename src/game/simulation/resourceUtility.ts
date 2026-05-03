@@ -203,6 +203,87 @@ const ABILITY_SHORT_LABEL_BY_RESOURCE: Record<ResourceKey, string> = {
   institution:     'Institution'
 };
 
+/* ============================================================
+   Seuils de déblocage par ressource
+   ============================================================
+   Chaque ressource expose 3 paliers : critique (≤25), solide (≥50),
+   excellent (≥75). À chaque palier franchi, un message court
+   raconte ce qui s'ouvre / se ferme, en termes d'abilities. Sert
+   à l'UI (marqueurs sur chips, tooltips enrichis, badges quand
+   on traverse un seuil). Cadre théorique : autodétermination —
+   le joueur sait à quoi viser, et pourquoi.
+   ============================================================ */
+
+export interface ResourceThreshold {
+  level: 'critique' | 'fragile' | 'solide' | 'excellent';
+  /** Valeur minimum à atteindre pour être DANS ce palier. */
+  min: number;
+  /** Phrase courte affichée à proximité du chip ou en tooltip. */
+  unlock: string;
+}
+
+/* Modèle commun : pour chaque ressource, une rampe de 4 paliers.
+   Les unlocks citent une ability concrète, jamais juste « ça monte ». */
+export const RESOURCE_THRESHOLDS: Record<ResourceKey, ResourceThreshold[]> = {
+  caisse: [
+    { level: 'critique',  min: 0,  unlock: '⚠ Plus rien ne peut être engagé : ni manif, ni meeting, ni budget.' },
+    { level: 'fragile',   min: 25, unlock: 'Tracts et meetings tiennent, mais une grève longue te couche.' },
+    { level: 'solide',    min: 50, unlock: 'Manif multi-villes ouverte. Caisse de grève soutenable.' },
+    { level: 'excellent', min: 75, unlock: 'Lock-out / table musclée possibles. La trésorerie ne dicte plus.' }
+  ],
+  confiance: [
+    { level: 'critique',  min: 0,  unlock: '⚠ La base décroche. Meetings vides, talents qui démissionnent.' },
+    { level: 'fragile',   min: 25, unlock: 'Mobilisation possible mais hésitante. Tracts à diffuser fort.' },
+    { level: 'solide',    min: 50, unlock: 'Meeting double sa portée. Talents fidèles. Pétitions signent vite.' },
+    { level: 'excellent', min: 75, unlock: 'La base te suit aveuglément. Grève sauvage = adhésion garantie.' }
+  ],
+  legitimite: [
+    { level: 'critique',  min: 0,  unlock: '⚠ Pas reçu par les ministres. Articles refusés. Table fermée.' },
+    { level: 'fragile',   min: 25, unlock: 'Délégations possibles mais ignorées. Presse régionale seulement.' },
+    { level: 'solide',    min: 50, unlock: 'Table des négociations accessible. Articles publiés en une.' },
+    { level: 'excellent', min: 75, unlock: 'Tu signes au nom de l\'intérêt général. Ministres répondent en 24h.' }
+  ],
+  rapportDeForce: [
+    { level: 'critique',  min: 0,  unlock: '⚠ L\'adversaire dicte le tempo. Manif sans poids, table sans levier.' },
+    { level: 'fragile',   min: 25, unlock: 'Manif visible mais pas redoutée. Délégation en posture défensive.' },
+    { level: 'solide',    min: 50, unlock: 'Manif fait reculer l\'adversaire. Marges de négo correctes.' },
+    { level: 'excellent', min: 75, unlock: 'L\'adversaire évite l\'affrontement. Tu choisis le terrain.' }
+  ],
+  cohesionInterne: [
+    { level: 'critique',  min: 0,  unlock: '⚠ Risque de scission. Congrès tend vers la rupture. Tracts perdus.' },
+    { level: 'fragile',   min: 25, unlock: 'Cortège tient mais débandades possibles. Discipline incertaine.' },
+    { level: 'solide',    min: 50, unlock: 'Manif unie d\'un bout à l\'autre. Congrès vote en bloc.' },
+    { level: 'excellent', min: 75, unlock: 'Aucune motion contraire ne passe. Forme un appareil de fer.' }
+  ],
+  santeSociale: [
+    { level: 'critique',  min: 0,  unlock: '⚠ Société rendue cynique. Pétitions ignorées. Meeting sans écho.' },
+    { level: 'fragile',   min: 25, unlock: 'Présence dans les pages société. Public au-delà des militants : maigre.' },
+    { level: 'solide',    min: 50, unlock: 'Pétition franchit les 100k signatures. Meeting attire le grand public.' },
+    { level: 'excellent', min: 75, unlock: 'Tu pèses dans les sondages. Le pays t\'écoute.' }
+  ],
+  institution: [
+    { level: 'critique',  min: 0,  unlock: '⚠ Sans capital institutionnel. Table : tu n\'as rien à signer.' },
+    { level: 'fragile',   min: 25, unlock: 'Quelques sièges. Présence acquise mais pas décisive.' },
+    { level: 'solide',    min: 50, unlock: 'Conventions signées portent. Réseau institutionnel mobilisable.' },
+    { level: 'excellent', min: 75, unlock: 'Tu siège partout. Une signature engage tout un secteur.' }
+  ]
+};
+
+/** Renvoie le palier courant d'une ressource. */
+export function thresholdFor(resource: ResourceKey, value: number): ResourceThreshold {
+  const paliers = RESOURCE_THRESHOLDS[resource] ?? [];
+  let active = paliers[0];
+  for (const p of paliers) if (value >= p.min) active = p;
+  return active;
+}
+
+/** Renvoie le PROCHAIN palier (cible suivante), ou null si déjà au max. */
+export function nextThresholdFor(resource: ResourceKey, value: number): ResourceThreshold | null {
+  const paliers = RESOURCE_THRESHOLDS[resource] ?? [];
+  for (const p of paliers) if (p.min > value) return p;
+  return null;
+}
+
 /** Étiquettes des abilities pour l'UI (utilisées dans les tooltips
  *  du top header : « → Alimente : Meeting, Manifestation, Talents »). */
 export const ABILITY_SHORT_LABEL: Record<AbilityId, string> = {

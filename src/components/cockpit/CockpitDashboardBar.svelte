@@ -19,6 +19,7 @@
   import { fuelsFor, type AbilityId } from '../../game/simulation/resourceUtility';
   import { RESOURCE_LABELS } from '../../game/simulation/resources';
   import CockpitIcon from './CockpitIcon.svelte';
+  import TopActionsBriefing from './TopActionsBriefing.svelte';
 
   interface Props {
     /** Callback ouverture drawer complet (toutes catégories). */
@@ -140,6 +141,10 @@
     <span class="meter-turn">T{turn}</span>
   </div>
 
+  <!-- Briefing tactique avant le cachet : top 3 actions du tour
+       (autodétermination — autonomie de décision). -->
+  <TopActionsBriefing />
+
   <!-- Cachet de cire VALIDER à droite -->
   {#if onValidate}
     <button type="button" class="validate-seal" class:pulsing={pendingValidation}
@@ -156,7 +161,7 @@
 <style>
   .dashboard {
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: 1fr auto auto auto;
     align-items: stretch;
     gap: 0.6rem;
     padding: 0.5rem 0.85rem;

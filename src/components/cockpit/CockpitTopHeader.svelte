@@ -15,7 +15,7 @@
      ============================================================ */
   import type { EraId, RebirthGameState, ResourceKey, SceneMood } from '../../game/types';
   import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
-  import { abilitiesFor, ABILITY_SHORT_LABEL } from '../../game/simulation/resourceUtility';
+  import { abilitiesFor, ABILITY_SHORT_LABEL, thresholdFor, nextThresholdFor } from '../../game/simulation/resourceUtility';
   import { sfx } from '../../game/audio/sfx';
   import CockpitIcon from './CockpitIcon.svelte';
 
@@ -145,16 +145,21 @@
   function tooltipFor(key: string, label: string, desc: string, v: number): string {
     const d = deltaFor(key, v);
     const deltaStr = d === 0 ? '' : `\n\nCe tour : ${d > 0 ? '+' : ''}${d}`;
-    const critStr = v < 25 ? '\n\n⚠ ZONE CRITIQUE — risque de cascade' : '';
+    /* Palier courant + prochain — autodétermination, le joueur sait
+       à quoi viser et ce qui s'est ouvert. */
+    const cur = thresholdFor(key as ResourceKey, v);
+    const next = nextThresholdFor(key as ResourceKey, v);
+    const palierStr = `\n\n● ${cur.level.toUpperCase()} — ${cur.unlock}`;
+    const nextStr = next ? `\n\n→ Prochain palier (${next.min}/100) : ${next.unlock}` : '';
     /* Lecture transverse : quelles abilities sont alimentées par cette
-       ressource (autodétermination — le joueur voit l'utilité concrète). */
+       ressource. */
     const fuels = abilitiesFor(key as ResourceKey);
     let utilityStr = '';
     if (fuels.length > 0) {
       const top = fuels.slice(0, 3).map(a => `• ${ABILITY_SHORT_LABEL[a.ability]} (${a.impact})`).join('\n');
       utilityStr = `\n\n→ Alimente :\n${top}`;
     }
-    return `${label} : ${Math.round(v)}/100${deltaStr}${critStr}\n\n${desc}${utilityStr}`;
+    return `${label} : ${Math.round(v)}/100${deltaStr}${palierStr}${nextStr}\n\n${desc}${utilityStr}`;
   }
 
   let musicOn = $state(sfx.isMusicEnabled());
@@ -263,6 +268,15 @@
             {d > 0 ? '▲' : '▼'}{Math.abs(d)}
           </span>
         {/if}
+        <!-- Mini barre de progression avec ticks aux paliers 25/50/75
+             — le joueur voit instantanément où il est dans la rampe
+             et le prochain seuil à atteindre. -->
+        <span class="res-bar" aria-hidden="true">
+          <i class="bar-fill" style:width="{Math.max(0, Math.min(100, v))}%"></i>
+          <span class="tick" style:left="25%"></span>
+          <span class="tick" style:left="50%"></span>
+          <span class="tick" style:left="75%"></span>
+        </span>
       </div>
     {/each}
   </div>
@@ -490,6 +504,45 @@
   .res-delta.up   { color: #7BCBA1; }
   .res-delta.down { color: #E08F92; }
 
+  /* Mini-barre de progression sous la valeur, avec ticks aux paliers
+     25 / 50 / 75. Le joueur voit où il en est dans la rampe sans
+     ouvrir le tooltip. */
+  .res-bar {
+    position: relative;
+    display: block;
+    flex-basis: 100%;
+    width: 100%;
+    height: 3px;
+    margin-top: 0.18rem;
+    background: rgba(13, 11, 8, 0.55);
+    border-radius: 1.5px;
+    overflow: visible;
+    order: 99;       /* en flexbox row, le span passe à la ligne via wrap */
+  }
+  .res-chip { flex-wrap: wrap; }
+
+  .bar-fill {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--c), color-mix(in srgb, var(--c) 70%, #fff));
+    border-radius: 1.5px;
+    transition: width 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
+    box-shadow: 0 0 4px color-mix(in srgb, var(--c) 50%, transparent);
+  }
+  .res-bar .tick {
+    position: absolute;
+    top: -1px;
+    bottom: -1px;
+    width: 1px;
+    background: rgba(244, 213, 140, 0.45);
+    transform: translateX(-0.5px);
+    pointer-events: none;
+  }
+  .res-chip.crit .bar-fill {
+    background: linear-gradient(90deg, #B0181E, #E08F92);
+    box-shadow: 0 0 4px rgba(176, 24, 30, 0.6);
+  }
+
   /* === Contexte + boutons système (droite) === */
   .header-right {
     display: flex;
@@ -615,5 +668,6 @@
     .res-chip { padding: 0.15rem 0.3rem; }
     .res-chip .res-val { font-size: 0.68rem; }
     .res-delta { display: none; }
+    .res-bar { display: none; }
   }
 </style>

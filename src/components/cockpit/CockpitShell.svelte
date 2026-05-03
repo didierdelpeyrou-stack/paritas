@@ -34,6 +34,8 @@
   import ScenePreviewOverlay from './ScenePreviewOverlay.svelte';
   import CockpitLeftRail from './CockpitLeftRail.svelte';
   import CockpitRightRail from './CockpitRightRail.svelte';
+  import TheatrePortraitPanel from './TheatrePortraitPanel.svelte';
+  import TheatreActorsTiles from './TheatreActorsTiles.svelte';
   import CockpitPopover from './CockpitPopover.svelte';
   import type { IconKey } from './icons';
 
@@ -296,15 +298,25 @@
     <!-- Modale de quête secondaire (déclenchée depuis le ticker). -->
     <SideEventModal />
 
-    <div class="cockpit-main">
+    <div class="cockpit-main" class:cockpit-main-theatre={isTheatre}>
       <CockpitTabs side="left" turn={currentTurn} />
 
-      <CockpitLeftRail
-        objectives={gameState.objectives}
-        progress={gameState.objectiveProgress}
-        actors={gameState.actors}
-        turn={gameState.turn}
-      />
+      {#if isTheatre}
+        <!-- Théâtre = CK3 : portrait latéral grand format à gauche.
+             Remplace le CockpitLeftRail (objectifs+acteurs en mini-cards)
+             qui reste accessible via les tabs latéraux. -->
+        <TheatrePortraitPanel
+          state={gameState}
+          onOpenLegendaryBio={() => {/* TODO : ouvrir la modale bio depuis ici */}}
+        />
+      {:else}
+        <CockpitLeftRail
+          objectives={gameState.objectives}
+          progress={gameState.objectiveProgress}
+          actors={gameState.actors}
+          turn={gameState.turn}
+        />
+      {/if}
 
       <main class="sky" class:dimmed={cockpit.openTab !== null}>
         <!-- Préfiguration sépia derrière le SceneCard, animée par
@@ -364,7 +376,16 @@
         {/key}
       </main>
 
-      <CockpitRightRail state={gameState} />
+      {#if isTheatre}
+        <!-- Théâtre = CK3 : tuiles acteurs en permanence à droite.
+             Sentiment narratif au lieu de stats brutes. -->
+        <TheatreActorsTiles
+          actors={gameState.actors}
+          camp={gameState.camp}
+        />
+      {:else}
+        <CockpitRightRail state={gameState} />
+      {/if}
 
       <CockpitTabs side="right" turn={currentTurn} />
     </div>
@@ -767,6 +788,14 @@
     gap: 0;
     min-height: 0;
     overflow: hidden;
+  }
+
+  /* En mode Théâtre (CK3) : portrait latéral 200 + sky 1fr + tuiles
+     acteurs 240. Les colonnes sont définies par les composants
+     eux-mêmes via leur largeur fixe — le grid reste auto. */
+  .cockpit-main.cockpit-main-theatre {
+    /* Pas de changement de structure de grid ; les nouveaux composants
+       ont leur propre `width` (200 et 240). Le `auto` du grid s'adapte. */
   }
 
   /* Bandeau d'anticipation vent historique (Johnson #3 — donner

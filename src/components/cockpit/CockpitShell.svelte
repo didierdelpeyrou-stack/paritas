@@ -26,7 +26,6 @@
   import CockpitStatusBar from './CockpitStatusBar.svelte';
   import CockpitTopHeader from './CockpitTopHeader.svelte';
   import CockpitTabs from './CockpitTabs.svelte';
-  import CockpitInstruments from './CockpitInstruments.svelte';
   import CockpitDashboardBar from './CockpitDashboardBar.svelte';
   import CockpitIcon from './CockpitIcon.svelte';
   import CockpitEraTimeline from './CockpitEraTimeline.svelte';
@@ -356,11 +355,6 @@
       <CockpitTabs side="right" turn={currentTurn} />
     </div>
 
-    <CockpitInstruments
-      resources={gameState.resources}
-      turn={gameState.turn}
-    />
-
     <CockpitDashboardBar
       onOpenFullActions={() => (actionsDrawerOpen = true)}
       pendingValidation={false}
@@ -596,11 +590,11 @@
 <style>
   .cockpit {
     display: grid;
-    /* 5 lignes : status (auto) + era timeline (auto) + main (1fr) +
-       instruments (auto) + dashboard d'actions (auto). Le bandeau
-       bas est désormais riche : 8 boutons d'actions rapides + cachet
-       VALIDER + compteur Actions/crise. */
-    grid-template-rows: auto auto 1fr auto auto;
+    /* 4 lignes : status (auto) + time-strip (auto, timeline+ticker) +
+       main (1fr) + dashboard d'actions (auto). Le bandeau d'instruments
+       analogiques a été retiré (les 7 res sont déjà au top header avec
+       delta du tour) — gain de place + lisibilité. */
+    grid-template-rows: auto auto 1fr auto;
     /* position: fixed pour échapper au max-w-7xl du parent App.svelte
        et garantir un alignement viewport-edge pour les rails et les
        popovers ancrés (sinon left:290px / right:290px tombent à

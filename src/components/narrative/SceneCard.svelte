@@ -1,6 +1,7 @@
 <script lang="ts">
   import { fade, fly } from 'svelte/transition';
   import type { Choice, PlayerTrait, RenderMode, Scenario } from '../../game/types';
+  import type { Camp } from '$lib/types';
   import {
     POSTURE_STYLES,
     RESOURCE_SHORT_LABEL,
@@ -20,13 +21,32 @@
     scenario: Scenario;
     mode: RenderMode;
     dominantTrait: PlayerTrait;
+    /** Camp du joueur — filtre les choix `camp`-restreints et choisit
+     *  les variantes `campText` quand elles existent. Optionnel pour
+     *  rétrocompatibilité (les anciens callers continuent de marcher,
+     *  on défaut à 'salarie'). */
+    camp?: Camp;
     onChoose: (choice: Choice) => void;
   }
-  let { scenario, mode, dominantTrait, onChoose }: Props = $props();
+  let { scenario, mode, dominantTrait, camp = 'salarie', onChoose }: Props = $props();
   const hasImage = $derived(!!imageFor(scenario.id));
 
   function isLocked(choice: Choice): boolean {
     return !!choice.requiresTrait && choice.requiresTrait !== dominantTrait;
+  }
+
+  /** Filtre les choix dont le `camp` ne matche pas le joueur. Si pas
+   *  de `camp` sur le choix, il est universel (visible aux deux). */
+  function visibleChoices(scn: Scenario): Choice[] {
+    return scn.choices.filter(c => !c.camp || c.camp === camp);
+  }
+
+  /** Texte effectif du choix : campText[camp] si défini, sinon text. */
+  function effectiveText(c: Choice): string {
+    return c.campText?.[camp] ?? c.text;
+  }
+  function effectiveIntent(c: Choice): string {
+    return c.campIntent?.[camp] ?? c.intent;
   }
 
   /* ==== Mode auto-play (Cheng #194) ====
@@ -41,7 +61,7 @@
     if (!autoplay.enabled) return;
     if (autoplayTimer) clearTimeout(autoplayTimer);
     autoplayTimer = setTimeout(() => {
-      const pick = scenario.choices.find(c => !isLocked(c));
+      const pick = visibleChoices(scenario).find(c => !isLocked(c));
       if (pick) onChoose(pick);
     }, autoplay.delayMs);
     return () => {
@@ -227,6 +247,28 @@
       <span class="italic">{scenario.subtitle ?? ''}</span>
     </div>
     <h2 class="font-display text-2xl text-gold">{scenario.title}</h2>
+
+    <!-- Badge POV (audit asymétrie patron, retour live test) :
+         signale honnêtement quand un scénario est filtré pour un
+         camp donné (campFilter), ou quand le cadrage est commun
+         mais peut sembler tilté. -->
+    <div class="pov-badge"
+      data-camp={scenario.campFilter ?? 'shared'}
+      title={scenario.campFilter
+        ? (scenario.campFilter === camp
+            ? `Scénario réservé au camp ${camp === 'patron' ? 'patronal' : 'syndical'} — tu y es seul(e).`
+            : 'Tu ne devrais pas voir ce scénario, vérifie les filtres.')
+        : 'Scénario commun aux deux camps. Si une option te paraît cadrée du point de vue adverse, ouvre les yeux : c\'est précisément le piège historique.'}
+    >
+      {#if scenario.campFilter === 'patron'}
+        ◆ Vue patronale
+      {:else if scenario.campFilter === 'salarie'}
+        ✦ Vue syndicale
+      {:else}
+        ◇ Scène commune · vue depuis ton camp ({camp === 'patron' ? 'patronal' : 'syndical'})
+      {/if}
+    </div>
+
     {#if autoplay.enabled}
       <div class="autoplay-banner" title="L'auto-play va sélectionner le premier choix dans {(autoplay.delayMs / 1000).toFixed(1)}s. Désactiver dans Settings.">
         <span class="autoplay-dot" aria-hidden="true"></span>
@@ -288,12 +330,14 @@
         </span>
       </div>
     {/if}
-    {#each scenario.choices as ch, i}
+    {#each visibleChoices(scenario) as ch, i}
       {@const posture = derivePosture(ch)}
       {@const style = POSTURE_STYLES[posture]}
       {@const previews = mode === 'reflechi' ? previewResources(ch) : []}
       {@const locked = isLocked(ch)}
       {@const coh = coherenceOf(ch)}
+      {@const txt = effectiveText(ch)}
+      {@const intentTxt = effectiveIntent(ch)}
       <li>
         <button
           type="button"
@@ -319,9 +363,15 @@
 
           <span class="body">
             <span class="posture-tag" data-mode={mode}>
-              {#if mode === 'reflechi'}{style.label} · {ch.intent}{:else}{style.label}{/if}
+              {#if mode === 'reflechi'}{style.label} · {intentTxt}{:else}{style.label}{/if}
             </span>
-            <span class="text">{ch.text}</span>
+            <span class="text">{txt}</span>
+            {#if ch.camp === camp}
+              <span class="camp-flag" title={camp === 'patron'
+                ? 'Choix spécifique au camp patronal — branche alternative ouverte par ton positionnement.'
+                : 'Choix spécifique au camp salarié — branche alternative ouverte par ton positionnement.'}
+              >Branche {camp === 'patron' ? 'patronale' : 'syndicale'}</span>
+            {/if}
             {#if locked && ch.requiresTrait}
               <span class="lock-hint">
                 Réservé au trait <b>{TRAIT_LABELS[ch.requiresTrait]}</b>
@@ -509,6 +559,54 @@
     color: var(--accent);
     font-style: normal;
     font-weight: 600;
+  }
+
+  /* Badge POV scénario — signale honnêtement le cadrage dont est
+     vu le scénario (camp filter explicite ou cadrage commun). */
+  .pov-badge {
+    display: inline-block;
+    margin-top: 0.2rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: help;
+  }
+  .pov-badge[data-camp='patron'] {
+    background: rgba(30, 92, 138, 0.16);
+    border: 1px solid rgba(30, 92, 138, 0.55);
+    color: #7DB1D8;
+  }
+  .pov-badge[data-camp='salarie'] {
+    background: rgba(176, 24, 30, 0.14);
+    border: 1px solid rgba(176, 24, 30, 0.5);
+    color: #E08F92;
+  }
+  .pov-badge[data-camp='shared'] {
+    background: rgba(201, 178, 106, 0.10);
+    border: 1px solid rgba(201, 178, 106, 0.35);
+    color: rgba(201, 178, 106, 0.85);
+  }
+
+  /* Badge « branche patronale / syndicale » — signale au joueur que
+     ce choix lui est spécifique (audit asymétrie patron). Discret
+     pour ne pas surcharger, mais lisible. */
+  .choice-btn .camp-flag {
+    display: inline-block;
+    align-self: flex-start;
+    margin-top: 0.18rem;
+    padding: 0.05rem 0.45rem;
+    background: rgba(201, 178, 106, 0.14);
+    border: 1px solid rgba(201, 178, 106, 0.45);
+    border-radius: 999px;
+    color: #C9B26A;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: help;
   }
 
   .choice-btn .glyph {

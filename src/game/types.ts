@@ -145,7 +145,7 @@ export interface ChoiceConsequence {
 
 export interface Choice {
   id: string;
-  /** Texte du bouton */
+  /** Texte du bouton (fallback si pas de campText pour le camp courant). */
   text: string;
   /** Intention courte affichée en mode Réfléchi (label gris au-dessus du texte) */
   intent: string;
@@ -161,6 +161,17 @@ export interface Choice {
   flag?: string;
   /** Nécessite que ce trait soit dominant pour être sélectionnable. Sinon, le bouton apparaît verrouillé. */
   requiresTrait?: PlayerTrait;
+  /** Si défini, le choix n'apparaît QUE pour ce camp (filtrage strict).
+   *  Permet d'ajouter des branches alternatives patron/salarié sans
+   *  les imposer à l'autre camp. */
+  camp?: Camp;
+  /** Texte alternatif par camp — si présent, remplace `text` pour le
+   *  camp donné. Permet de reformuler un choix universel pour qu'il
+   *  reflète le point de vue stratégique du camp courant (vs. cadrage
+   *  syndicaliste implicite). Audit asymétrie patron, retour live test. */
+  campText?: Partial<Record<Camp, string>>;
+  /** Idem pour l'intent (libellé court au-dessus du texte). */
+  campIntent?: Partial<Record<Camp, string>>;
 }
 
 /* ============================================================

@@ -330,6 +330,7 @@
                 {scenario}
                 mode={gameState.mode}
                 dominantTrait={gameState.dominantTrait}
+                camp={gameState.camp}
                 onChoose={handleChoose}
               />
             {:else}

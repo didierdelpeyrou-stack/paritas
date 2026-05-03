@@ -761,6 +761,7 @@
           {scenario}
           mode={s.mode}
           dominantTrait={s.dominantTrait}
+          camp={s.camp}
           onChoose={handleChoose}
         />
       {:else if s.phase === 'consequence' && consequence}

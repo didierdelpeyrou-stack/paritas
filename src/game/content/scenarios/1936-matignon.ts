@@ -80,7 +80,15 @@ Tu pourrais signer ce soir et sauver des semaines. Tu pourrais aussi pousser le 
     {
       id: 'matignon-signe',
       text: 'Signer les six points proposés par Blum.',
+      campText: {
+        patron: 'Signer les six points pour stopper l\'occupation et sauver l\'outil.',
+        salarie: 'Signer les six points proposés par Blum.'
+      },
       intent: 'Le compromis classique. Une victoire historique.',
+      campIntent: {
+        patron: 'Concession lourde mais ordonnée — l\'usine redémarre.',
+        salarie: 'Le compromis classique. Une victoire historique.'
+      },
       theoryHint:
         'Modèle classique du compromis paritaire ascendant. Première grande convention collective interprofessionnelle.',
       effects: {
@@ -111,7 +119,15 @@ Tu pourrais signer ce soir et sauver des semaines. Tu pourrais aussi pousser le 
     {
       id: 'matignon-pousse-echelle-mobile',
       text: 'Refuser de signer tant que l\'échelle mobile des salaires n\'est pas concédée.',
+      campText: {
+        patron: 'Refuser le texte tant que la sortie de grève n\'est pas garantie sans échelle mobile.',
+        salarie: 'Refuser de signer tant que l\'échelle mobile des salaires n\'est pas concédée.'
+      },
       intent: 'Pousser l\'avantage. Risque d\'escalade.',
+      campIntent: {
+        patron: 'Tenir la ligne CGPF — pas d\'indexation des salaires sur les prix.',
+        salarie: 'Pousser l\'avantage. Risque d\'escalade.'
+      },
       theoryHint:
         'L\'échelle mobile indexe les salaires sur les prix. Concession majeure que le patronat refusera frontalement.',
       effects: {
@@ -142,7 +158,15 @@ Tu pourrais signer ce soir et sauver des semaines. Tu pourrais aussi pousser le 
     {
       id: 'matignon-cede-une-semaine-de-conges',
       text: 'Concéder un point pour gagner une troisième semaine de congés.',
+      campText: {
+        patron: 'Lâcher la fixation horaire pour solder une semaine de congés en plus — temps non travaillé plutôt que masse salariale.',
+        salarie: 'Concéder un point pour gagner une troisième semaine de congés.'
+      },
       intent: 'Un troc tactique. Tu sors de la table avec ce que personne n\'attendait.',
+      campIntent: {
+        patron: 'Échanger du flexible-horaire contre du temps libre — la masse salariale est sauvée.',
+        salarie: 'Un troc tactique. Tu sors de la table avec ce que personne n\'attendait.'
+      },
       theoryHint:
         'En 1936, le patronat préfère parfois céder du temps non travaillé que des hausses de masse salariale. À utiliser comme levier.',
       effects: {
@@ -172,7 +196,15 @@ Tu pourrais signer ce soir et sauver des semaines. Tu pourrais aussi pousser le 
     {
       id: 'matignon-tient-tant-quil-faut',
       text: 'Refuser tout accord tant que le droit de grève n\'est pas explicitement reconnu.',
+      campText: {
+        patron: 'Refuser tout accord tant que l\'évacuation des usines n\'est pas obtenue préalablement.',
+        salarie: 'Refuser tout accord tant que le droit de grève n\'est pas explicitement reconnu.'
+      },
       intent: 'Pari principiel. Tu joues la doctrine plutôt que la table.',
+      campIntent: {
+        patron: 'Pari principiel — pas de signature sous occupation.',
+        salarie: 'Pari principiel. Tu joues la doctrine plutôt que la table.'
+      },
       theoryHint:
         'Le droit de grève est de fait, non de droit, en 1936. Le faire reconnaître transformerait la nature du paritarisme.',
       effects: {
@@ -200,6 +232,76 @@ Tu pourrais signer ce soir et sauver des semaines. Tu pourrais aussi pousser le 
       traitShift: { rupture: +3, tribun: +2 },
       flag: 'epuise-mouvement',
       requiresTrait: 'rupture'
+    },
+
+    /* === Branches PATRONALES exclusives ===
+       Audit asymétrie patron, retour live test : le patron jouait
+       jusqu\'ici les choix syndicalistes en miroir. Voici deux
+       options stratégiques qui appartiennent en propre au camp
+       CGPF de 1936 — historiquement attestées. */
+    {
+      id: 'matignon-jouer-division-cgt',
+      text: 'En coulisses, faire jouer la division entre Jouhaux (réformistes) et Frachon (CGTU).',
+      intent: 'Diviser pour contenir — exploiter la fracture syndicale plutôt que la nier.',
+      theoryHint:
+        'La CGT vient à peine de se réunifier (mars 1936). Lambert-Ribot sait que Jouhaux veut signer vite, Frachon veut tenir. Cliver la délégation peut faire basculer le rapport de force.',
+      effects: {
+        resources: {
+          rapportDeForce: +10,
+          legitimite: -4,
+          institution: -2,
+          confiance: -6,
+          caisse: +2,
+          santeSociale: -4
+        },
+        actors: {
+          base: { trust: -8, patience: -6 },
+          adversaire: { trust: -10, stance: 'instable' },
+          etat: { trust: -4 },
+          opinion: { trust: -3 }
+        }
+      },
+      consequence: {
+        immediate:
+          'Pendant la suspension, tu envoies un émissaire à Jouhaux : « Signons cette nuit, sans Frachon, et nous évitons la généralisation des occupations. » Jouhaux hésite. La CGT entre en interne dans une nuit blanche. Au petit matin, l\'accord est signé — un demi-point de hausse en moins, mais sans l\'échelle mobile. Frachon claque la porte du bureau confédéral.',
+        longterm:
+          'La fracture entre confédérés et unitaires, ravivée à Matignon, ressurgira en 1947 avec la scission FO. Le patronat aura compris : la division syndicale est un outil paritaire à part entière.'
+      },
+      traitShift: { pragmatique: +3, technocrate: +2 },
+      flag: 'jouer-cgt-cgtu',
+      camp: 'patron'
+    },
+    {
+      id: 'matignon-mediation-presidentielle',
+      text: 'Demander l\'arbitrage personnel du président Lebrun pour neutraliser Blum.',
+      intent: 'Sortir du tête-à-tête CGT/CGPF — appeler la République par-dessus le Front populaire.',
+      theoryHint:
+        'En 1936, Lebrun est conservateur. Une médiation présidentielle au-dessus du gouvernement Blum est une manœuvre institutionnelle audacieuse mais constitutionnellement fragile.',
+      effects: {
+        resources: {
+          legitimite: +6,
+          institution: +4,
+          rapportDeForce: -4,
+          confiance: -8,
+          santeSociale: -6,
+          caisse: -2
+        },
+        actors: {
+          base: { trust: -12, pressure: +8 },
+          adversaire: { trust: -8, stance: 'dur' },
+          etat: { trust: -10, patience: -10, stance: 'instable' },
+          opinion: { trust: -6 }
+        }
+      },
+      consequence: {
+        immediate:
+          'À 22h, tu fais transmettre une note à l\'Élysée. Lebrun consulte, hésite, refuse de prendre position publiquement — la Constitution de 1875 ne lui donne pas ce levier face à un Premier ministre majoritaire. La rumeur fuite dans la presse de droite. Blum, prévenu à minuit, t\'ignore froidement et impose les six points sans amendements.',
+        longterm:
+          'L\'épisode renforcera la doctrine paritaire d\'autonomie : ni l\'État ni la présidence n\'arbitrent les négociations sociales. La CGPF en retiendra la leçon — passer par les institutions, jamais par-dessus.'
+      },
+      traitShift: { paternaliste: +2, technocrate: +2 },
+      flag: 'mediation-elysee',
+      camp: 'patron'
     }
   ]
 };

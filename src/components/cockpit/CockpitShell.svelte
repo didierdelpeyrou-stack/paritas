@@ -551,10 +551,27 @@
 
   .cockpit-main {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    /* 5 colonnes strict : tabs L (80) | rail L (200) | sky (flex) |
+       rail R (200) | tabs R (80). Les composants enfants ont leur
+       propre largeur fixe via leur CSS. */
+    grid-template-columns: auto auto 1fr auto auto;
     gap: 0;
     min-height: 0;
     overflow: hidden;
+  }
+
+  /* Tablet : rails masqués (display:none) → 3 colonnes restantes */
+  @media (max-width: 1024px) {
+    .cockpit-main {
+      grid-template-columns: auto 1fr auto;
+    }
+  }
+
+  /* Mobile : tabs aussi masqués (utilisation burger top) → 1 col */
+  @media (max-width: 768px) {
+    .cockpit-main {
+      grid-template-columns: 1fr;
+    }
   }
 
   .sky {

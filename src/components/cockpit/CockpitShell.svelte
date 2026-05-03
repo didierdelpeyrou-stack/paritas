@@ -511,15 +511,19 @@
   .cockpit {
     display: grid;
     grid-template-rows: auto 1fr auto auto;
-    height: 100dvh;
-    max-height: 100dvh;
+    /* position: fixed pour échapper au max-w-7xl du parent App.svelte
+       et garantir un alignement viewport-edge pour les rails et les
+       popovers ancrés (sinon left:290px / right:290px tombent à
+       côté des rails sur écran large). */
+    position: fixed;
+    inset: 0;
+    z-index: 30;
     background:
       radial-gradient(ellipse at top, rgba(244, 213, 140, 0.04), transparent 60%),
       linear-gradient(180deg, #1A1411 0%, #0F0B08 100%);
     color: #F4EFE2;
     font-family: 'Source Serif 4', Georgia, serif;
     overflow: hidden;
-    position: relative;
     transition: background 0.8s ease;
   }
 

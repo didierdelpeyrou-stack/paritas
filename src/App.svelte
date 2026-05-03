@@ -115,6 +115,11 @@
 {:else}
 <ToastStack />
 
+{#if phase === 'game' && cockpit.enabled}
+  <!-- Cockpit en fullscreen au top level — pas dans <main max-w-7xl>
+       pour que les rails et popovers s'alignent au viewport edge. -->
+  <CockpitShell onReplay={handleReplay} />
+{:else}
 <main class="min-h-dvh px-4 py-6 max-w-7xl mx-auto">
   {#if phase === 'landing'}
     <div in:fade={{ duration: 300 }}>
@@ -134,12 +139,9 @@
     </div>
   {:else}
     <div in:fade={{ duration: 300 }}>
-      {#if cockpit.enabled}
-        <CockpitShell />
-      {:else}
-        <GameShell onReplay={handleReplay} />
-      {/if}
+      <GameShell onReplay={handleReplay} />
     </div>
   {/if}
 </main>
+{/if}
 {/if}

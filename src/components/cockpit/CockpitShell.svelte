@@ -28,6 +28,9 @@
   import CockpitInstruments from './CockpitInstruments.svelte';
   import CockpitActionBar from './CockpitActionBar.svelte';
   import CockpitIcon from './CockpitIcon.svelte';
+  import CockpitEraTimeline from './CockpitEraTimeline.svelte';
+  import CockpitLeftRail from './CockpitLeftRail.svelte';
+  import CockpitRightRail from './CockpitRightRail.svelte';
   import type { IconKey } from './icons';
 
   import SceneCard from '../narrative/SceneCard.svelte';
@@ -40,6 +43,14 @@
   import OrganizationPanel from '../org/OrganizationPanel.svelte';
   import ManifSimulator from '../org/ManifSimulator.svelte';
   import MeetingSimulator from '../org/MeetingSimulator.svelte';
+  import ObjectivePanel from '../objectives/ObjectivePanel.svelte';
+  import ActorPanel from '../simulation/ActorPanel.svelte';
+  import PersonalityPanel from '../PersonalityPanel.svelte';
+  import MyLegacyPanel from '../MyLegacyPanel.svelte';
+  import StrategicRadar from '../StrategicRadar.svelte';
+  import Glossary from '../Glossary.svelte';
+  import type { ActorId } from '../../game/types';
+  import { ALL_RESOURCES } from '../../game/types';
   import CockpitTableLauncher from './CockpitTableLauncher.svelte';
   import StatutJuridique from './StatutJuridique.svelte';
 
@@ -106,7 +117,10 @@
   }
 
   /* Helpers d'affichage du drawer */
-  const LEFT_TABS = new Set(['tresorerie', 'mandat', 'monde', 'manifestation']);
+  const LEFT_TABS = new Set([
+    'tresorerie', 'mandat', 'monde', 'manifestation',
+    'rail-objectifs', 'rail-acteurs'
+  ]);
   function leftOrRight(id: string | null): 'left' | 'right' {
     return id && LEFT_TABS.has(id) ? 'left' : 'right';
   }
@@ -120,7 +134,13 @@
       talents: 'Talents — L\'École Syndicale',
       meeting: 'Meeting — La Tribune',
       journal: 'Journal de partie',
-      settings: 'Réglages'
+      settings: 'Réglages',
+      'rail-objectifs': 'Objectifs — Ce qu\'on attend de toi',
+      'rail-acteurs': 'Acteurs — Pression et patience',
+      'rail-personnalite': 'Personnalité — Trait dominant et tension',
+      'rail-oeuvre': 'Mon œuvre — Institutions construites',
+      'rail-trajectoire': 'Trajectoire stratégique — Radar',
+      'rail-lexique': 'Lexique — Glossaire historique'
     };
     return t[id ?? ''] ?? '';
   }
@@ -134,9 +154,24 @@
       talents: 'cocarde',
       meeting: 'pupitre',
       journal: 'parchemin',
-      settings: 'rouage'
+      settings: 'rouage',
+      'rail-objectifs': 'parchemin',
+      'rail-acteurs': 'carte',
+      'rail-personnalite': 'masque',
+      'rail-oeuvre': 'bourse',
+      'rail-trajectoire': 'balance',
+      'rail-lexique': 'plume'
     };
     return t[id ?? ''] ?? 'parchemin';
+  }
+
+  const ACTOR_IDS: ActorId[] = ['base', 'adversaire', 'etat', 'opinion'];
+
+  function subtitleFor(id: ActorId): string | undefined {
+    if (!gameState) return undefined;
+    if (id === 'adversaire') return gameState.worldAI.opponent.factionName;
+    if (id === 'etat') return gameState.worldAI.state.faction;
+    return undefined;
   }
 
   /* Mobile menu — liste les 9 tabs (déverrouillage Norman préservé). */
@@ -176,8 +211,19 @@
       showMobileBurger={isMobile}
     />
 
+    <CockpitEraTimeline turn={gameState.turn} />
+
     <div class="cockpit-main">
       <CockpitTabs side="left" turn={currentTurn} />
+
+      <CockpitLeftRail
+        objectives={gameState.objectives}
+        progress={gameState.objectiveProgress}
+        actors={gameState.actors}
+        turn={gameState.turn}
+        onOpenObjectives={() => cockpit.open('rail-objectifs')}
+        onOpenActors={() => cockpit.open('rail-acteurs')}
+      />
 
       <main class="sky" class:dimmed={cockpit.openTab !== null}>
         {#key gameState.turn + ':' + gameState.phase + ':' + (scenario?.id ?? 'none')}
@@ -207,6 +253,14 @@
           </div>
         {/key}
       </main>
+
+      <CockpitRightRail
+        state={gameState}
+        onOpenPersonality={() => cockpit.open('rail-personnalite')}
+        onOpenWork={() => cockpit.open('rail-oeuvre')}
+        onOpenTrajectory={() => cockpit.open('rail-trajectoire')}
+        onOpenGlossary={() => cockpit.open('rail-lexique')}
+      />
 
       <CockpitTabs side="right" turn={currentTurn} />
     </div>
@@ -301,6 +355,28 @@
                 Ouvrir les réglages
               </button>
             </div>
+          {:else if cockpit.openTab === 'rail-objectifs'}
+            <ObjectivePanel
+              objectives={gameState.objectives}
+              progress={gameState.objectiveProgress}
+              turn={gameState.turn} />
+          {:else if cockpit.openTab === 'rail-acteurs'}
+            <div class="rail-detail">
+              {#each ACTOR_IDS as id}
+                <ActorPanel
+                  actorId={id}
+                  actor={gameState.actors[id]}
+                  subtitle={subtitleFor(id)} />
+              {/each}
+            </div>
+          {:else if cockpit.openTab === 'rail-personnalite'}
+            <PersonalityPanel state={gameState} />
+          {:else if cockpit.openTab === 'rail-oeuvre'}
+            <MyLegacyPanel memory={gameState.memory} />
+          {:else if cockpit.openTab === 'rail-trajectoire'}
+            <StrategicRadar resources={gameState.resources} />
+          {:else if cockpit.openTab === 'rail-lexique'}
+            <Glossary open={true} onClose={() => cockpit.close()} />
           {/if}
         </div>
       </aside>

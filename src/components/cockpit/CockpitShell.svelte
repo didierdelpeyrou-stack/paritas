@@ -61,8 +61,16 @@
 
   interface Props {
     onReplay?: () => void;
+    /** Layout effectif (theatre / atelier / carnet) — détermine
+     *  l'IDENTITÉ visuelle, pas juste les breakpoints. CK3 (théâtre)
+     *  vs Tycoon (atelier). Cf. docs/V3_THREE_MODES_STRATEGY.md */
+    layout?: 'theatre' | 'atelier' | 'carnet';
   }
-  let { onReplay = () => {} }: Props = $props();
+  let { onReplay = () => {}, layout = 'theatre' }: Props = $props();
+
+  /* Booléens dérivés pour les rendus conditionnels par identité */
+  const isTheatre = $derived(layout === 'theatre');
+  const isAtelier = $derived(layout === 'atelier');
 
   const gameState = $derived(rebirth.state);
   const scenario = $derived(rebirth.currentScenario);
@@ -265,12 +273,14 @@
     />
 
     <!-- Bloc temporel : timeline (lent, ères) + ticker (présent,
-         actualités) + bandeau d'anticipation des vents (Johnson #3).
-         Wrappé dans un seul grid item pour ne pas décaler le 1fr
-         de cockpit-main. -->
-    <div class="time-strip">
+         actualités) + bandeau d'anticipation des vents.
+         En mode Théâtre (CK3) : ticker masqué (pollue le moment
+         narratif). Voir docs/V3_THREE_MODES_STRATEGY.md. -->
+    <div class="time-strip" class:theatre-strip={isTheatre}>
       <CockpitEraTimeline turn={gameState.turn} />
-      <NewsTicker />
+      {#if !isTheatre}
+        <NewsTicker />
+      {/if}
       {#if orchestrator.upcomingForcing}
         <div class="upcoming-forcing-banner" in:fade={{ duration: 240 }}>
           <span class="ufb-icon" aria-hidden="true">☄</span>
@@ -359,10 +369,26 @@
       <CockpitTabs side="right" turn={currentTurn} />
     </div>
 
-    <CockpitDashboardBar
-      onOpenFullActions={() => (actionsDrawerOpen = true)}
-      pendingValidation={false}
-    />
+    {#if !isTheatre}
+      <!-- Atelier garde le dashboard complet (mode Tycoon — gestion
+           visible). Théâtre s'en dispense (mode CK3 — récit pur). -->
+      <CockpitDashboardBar
+        onOpenFullActions={() => (actionsDrawerOpen = true)}
+        pendingValidation={false}
+      />
+    {:else}
+      <!-- Théâtre : bouton flottant discret pour ouvrir les actions.
+           Le sceau de cire de ConsequenceScene reste le geste rituel. -->
+      <button type="button"
+        class="theatre-actions-trigger"
+        onclick={() => (actionsDrawerOpen = true)}
+        title="Ouvrir le tableau des actions"
+        aria-label="Ouvrir le tableau des actions"
+      >
+        <CockpitIcon name="rouage" size={16} />
+        <span>Actions</span>
+      </button>
+    {/if}
 
     <!-- Drawer onglet -->
     {#if cockpit.openTab}
@@ -594,10 +620,9 @@
 <style>
   .cockpit {
     display: grid;
-    /* 4 lignes : status (auto) + time-strip (auto, timeline+ticker) +
-       main (1fr) + dashboard d'actions (auto). Le bandeau d'instruments
-       analogiques a été retiré (les 7 res sont déjà au top header avec
-       delta du tour) — gain de place + lisibilité. */
+    /* 4 lignes : status + time-strip + main 1fr + dashboard auto.
+       En mode Théâtre, le dashboard est remplacé par un bouton flottant
+       (auto = 0 quand vide), donc le main occupe presque tout. */
     grid-template-rows: auto auto 1fr auto;
     /* position: fixed pour échapper au max-w-7xl du parent App.svelte
        et garantir un alignement viewport-edge pour les rails et les
@@ -755,6 +780,37 @@
     flex-direction: column;
     flex-shrink: 0;
   }
+
+  /* Bouton actions flottant en mode Théâtre — remplace le dashboard
+     bar pour ne pas polluer le centre narratif. Position bottom-right
+     du viewport, ne bouge pas avec le scroll du Sky. */
+  .theatre-actions-trigger {
+    position: fixed;
+    bottom: 1.2rem;
+    right: 1.2rem;
+    z-index: 40;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.95rem;
+    background: linear-gradient(180deg, #3D2A1A 0%, #2A1A0E 100%);
+    color: #F4D58C;
+    border: 1px solid #C9B26A;
+    border-radius: 999px;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(244, 213, 140, 0.12);
+    transition: filter 0.18s ease, transform 0.18s ease;
+  }
+  .theatre-actions-trigger:hover {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+  }
+
   .upcoming-forcing-banner {
     display: flex;
     align-items: center;

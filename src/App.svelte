@@ -147,8 +147,9 @@
 {#if phase === 'game' && useCockpit}
   <!-- Cockpit en fullscreen au top level — pas dans <main max-w-7xl>
        pour que les rails et popovers s'alignent au viewport edge.
-       useCockpit couvre Théâtre + Atelier ; Carnet retombe sur GameShell. -->
-  <CockpitShell onReplay={handleReplay} />
+       useCockpit couvre Théâtre + Atelier ; Carnet retombe sur GameShell.
+       layout passé pour adapter l'identité (CK3 vs Tycoon). -->
+  <CockpitShell onReplay={handleReplay} layout={effectiveLayout} />
 {:else}
 <main class="min-h-dvh px-4 py-6 max-w-7xl mx-auto">
   {#if phase === 'landing'}

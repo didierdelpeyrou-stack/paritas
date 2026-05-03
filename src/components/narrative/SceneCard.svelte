@@ -278,6 +278,8 @@
 
 <article
   class="bordered-card p-5 space-y-4 {moodClass}"
+  class:preview-active={scenePreview.current}
+  data-preview-posture={scenePreview.current?.posture ?? ''}
   in:fade={{ duration: 240 }}
 >
   <header class="space-y-1">
@@ -436,14 +438,16 @@
             {#if !locked && ch.ability && rebirth.state}
               {@const fs = abilityFuelScore(ch.ability, rebirth.state.resources)}
               {@const tone = fs >= 65 ? 'high' : fs >= 35 ? 'mid' : 'low'}
+              {@const pct = Math.round(((fs - 50) / 250) * 100)}
+              {@const pctStr = pct >= 0 ? `+${pct}%` : `${pct}%`}
               <span class="ability-hint" data-tone={tone}
                 title={
-                  fs >= 65 ? `Énergie ${ABILITY_SHORT_LABEL[ch.ability]} solide → ce choix sera AMPLIFIÉ (effets ×${(1 + (fs - 50) / 250).toFixed(2)}).`
-                  : fs >= 35 ? `Énergie ${ABILITY_SHORT_LABEL[ch.ability]} moyenne → effets quasi nominaux.`
-                  : `Énergie ${ABILITY_SHORT_LABEL[ch.ability]} en panne → ce choix sera AFFAIBLI (effets ×${(1 + (fs - 50) / 250).toFixed(2)}).`
+                  fs >= 65 ? `Énergie ${ABILITY_SHORT_LABEL[ch.ability]} solide (${fs}/100) → effets AMPLIFIÉS de ${pctStr}.`
+                  : fs >= 35 ? `Énergie ${ABILITY_SHORT_LABEL[ch.ability]} moyenne (${fs}/100) → effets nominaux (${pctStr}).`
+                  : `Énergie ${ABILITY_SHORT_LABEL[ch.ability]} en panne (${fs}/100) → effets AFFAIBLIS de ${pctStr}.`
                 }
               >
-                ◎ Énergie {ABILITY_SHORT_LABEL[ch.ability]} : {fs}/100
+                ◎ Énergie {ABILITY_SHORT_LABEL[ch.ability]} : EFFETS {pctStr}
               </span>
             {/if}
             {#if !locked && previews.length > 0}
@@ -465,6 +469,48 @@
 </article>
 
 <style>
+  /* === Préfiguration sépia visible (cf. retour panel — Pope, Wikegård,
+     Chen, 7 ordinaires : la silhouette était invisible derrière le
+     card opaque). Quand le joueur survole un choix, le card se rend
+     semi-transparent (opacité 80%) et reçoit un halo subtil dans la
+     teinte de la posture survolée. La silhouette en arrière-plan
+     devient visible à travers le card.
+
+     Variables --posture-color injectées par data-preview-posture. */
+  :global(article.bordered-card.preview-active) {
+    background: rgba(26, 31, 38, 0.78);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    transition:
+      background 0.28s ease,
+      box-shadow 0.32s ease,
+      border-color 0.28s ease;
+  }
+  :global(article.bordered-card.preview-active[data-preview-posture='rupture']) {
+    border-color: rgba(217, 106, 91, 0.55);
+    box-shadow: 0 0 0 1px rgba(217, 106, 91, 0.15), 0 12px 36px rgba(0, 0, 0, 0.5);
+  }
+  :global(article.bordered-card.preview-active[data-preview-posture='institution']) {
+    border-color: rgba(126, 180, 255, 0.55);
+    box-shadow: 0 0 0 1px rgba(126, 180, 255, 0.15), 0 12px 36px rgba(0, 0, 0, 0.5);
+  }
+  :global(article.bordered-card.preview-active[data-preview-posture='compromis']) {
+    border-color: rgba(200, 155, 60, 0.55);
+    box-shadow: 0 0 0 1px rgba(200, 155, 60, 0.15), 0 12px 36px rgba(0, 0, 0, 0.5);
+  }
+  :global(article.bordered-card.preview-active[data-preview-posture='expertise']) {
+    border-color: rgba(141, 180, 168, 0.55);
+    box-shadow: 0 0 0 1px rgba(141, 180, 168, 0.15), 0 12px 36px rgba(0, 0, 0, 0.5);
+  }
+  :global(article.bordered-card.preview-active[data-preview-posture='opinion']) {
+    border-color: rgba(180, 151, 214, 0.55);
+    box-shadow: 0 0 0 1px rgba(180, 151, 214, 0.15), 0 12px 36px rgba(0, 0, 0, 0.5);
+  }
+  :global(article.bordered-card.preview-active[data-preview-posture='paternaliste']) {
+    border-color: rgba(122, 163, 122, 0.55);
+    box-shadow: 0 0 0 1px rgba(122, 163, 122, 0.15), 0 12px 36px rgba(0, 0, 0, 0.5);
+  }
+
   .choice-btn {
     display: grid;
     grid-template-columns: 2.4rem 1fr;

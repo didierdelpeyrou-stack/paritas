@@ -131,25 +131,28 @@
     overflow: hidden;
     z-index: 0;
     /* Teinte sépia chaude — l'image n'est jamais une photo, toujours
-       une marge encrée sur le parchemin. */
-    color: rgba(122, 80, 40, 0.50);
+       une marge encrée sur le parchemin. Opacité boostée à 0.80 pour
+       être visible à travers la SceneCard rendue semi-transparente
+       (cf. retour panel — la silhouette était quasi-invisible avant). */
+    color: rgba(122, 80, 40, 0.80);
   }
 
   .silhouette {
     position: absolute;
-    width: min(70%, 520px);
-    max-height: 65%;
-    opacity: 0.95;
-    filter: blur(0.4px);
+    width: min(78%, 580px);
+    max-height: 70%;
+    opacity: 1;
+    filter: blur(0.3px);
   }
 
-  /* Variantes de teinte par posture (subtile) */
-  .preview-overlay[data-posture='rupture']      { color: rgba(150, 60, 50, 0.45); }
-  .preview-overlay[data-posture='institution']  { color: rgba(60, 90, 130, 0.45); }
-  .preview-overlay[data-posture='compromis']    { color: rgba(160, 120, 50, 0.50); }
-  .preview-overlay[data-posture='expertise']    { color: rgba(90, 130, 110, 0.45); }
-  .preview-overlay[data-posture='opinion']      { color: rgba(130, 100, 160, 0.45); }
-  .preview-overlay[data-posture='paternaliste'] { color: rgba(100, 130, 80, 0.45); }
+  /* Variantes de teinte par posture (visibles désormais à travers
+     le card semi-transparent). */
+  .preview-overlay[data-posture='rupture']      { color: rgba(180, 70, 55, 0.75); }
+  .preview-overlay[data-posture='institution']  { color: rgba(70, 110, 160, 0.75); }
+  .preview-overlay[data-posture='compromis']    { color: rgba(190, 145, 60, 0.80); }
+  .preview-overlay[data-posture='expertise']    { color: rgba(110, 160, 135, 0.75); }
+  .preview-overlay[data-posture='opinion']      { color: rgba(155, 120, 195, 0.75); }
+  .preview-overlay[data-posture='paternaliste'] { color: rgba(115, 155, 95, 0.75); }
 
   .filigrane {
     position: absolute;
@@ -161,7 +164,8 @@
     align-items: center;
     gap: 0.35rem;
     text-align: center;
-    color: rgba(122, 80, 40, 0.55);
+    color: rgba(244, 213, 140, 0.85);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
     pointer-events: none;
     max-width: 80%;
   }

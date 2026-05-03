@@ -139,6 +139,23 @@
 
   const fullyRevealed = $derived(stage >= STEPS);
 
+  /* Pulsation différée (retour panel — Pope) : le sceau reste inerte
+     8 secondes après la révélation complète, puis pulse pour rappeler
+     au joueur de continuer. Pulse continu lasse, pulse différé attire. */
+  const PULSE_DELAY_MS = 8000;
+  let pulseEligible = $state(false);
+  let pulseTimer: number | null = null;
+  $effect(() => {
+    if (!fullyRevealed) {
+      pulseEligible = false;
+      return;
+    }
+    /* Reset à chaque entrée dans fullyRevealed */
+    if (pulseTimer) window.clearTimeout(pulseTimer);
+    pulseTimer = window.setTimeout(() => { pulseEligible = true; }, PULSE_DELAY_MS);
+    return () => { if (pulseTimer) window.clearTimeout(pulseTimer); };
+  });
+
   /* Cliquer n'importe où dans la carte (hors sceau) = saut de
      révélation. Cliquer le sceau = sceller + continuer (même si
      la révélation n'était pas terminée — c'est le geste explicite
@@ -280,6 +297,7 @@
       type="button"
       class="wax-seal"
       class:ready={fullyRevealed}
+      class:pulsing={pulseEligible}
       onclick={seal}
       aria-label={fullyRevealed ? 'Sceller ce choix et continuer' : 'Sauter la révélation et sceller'}
       title={fullyRevealed
@@ -353,10 +371,17 @@
     filter: brightness(1.06);
   }
 
+  /* Repos doré quand la révélation est terminée — pas d'animation
+     par défaut (cf. retour Pope). Le sceau attend, calme. */
   .wax-seal.ready {
     border-color: #C9B26A;
     color: #F4D58C;
-    box-shadow: 0 0 0 0 rgba(201, 178, 106, 0.35);
+    box-shadow: 0 0 0 0 rgba(201, 178, 106, 0);
+  }
+
+  /* La pulsation ne se déclenche qu'après 8s d'inactivité — rappel
+     délicat sans saturation. */
+  .wax-seal.pulsing {
     animation: seal-ready-pulse 2.4s ease-in-out infinite;
   }
 

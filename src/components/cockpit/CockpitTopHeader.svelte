@@ -15,7 +15,7 @@
      ============================================================ */
   import type { EraId, RebirthGameState, ResourceKey, SceneMood } from '../../game/types';
   import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
-  import { abilitiesFor, ABILITY_SHORT_LABEL, thresholdFor, nextThresholdFor } from '../../game/simulation/resourceUtility';
+  import { abilitiesFor, ABILITY_SHORT_LABEL, thresholdFor } from '../../game/simulation/resourceUtility';
   import { sfx } from '../../game/audio/sfx';
   import CockpitIcon from './CockpitIcon.svelte';
 
@@ -143,23 +143,25 @@
   }
 
   function tooltipFor(key: string, label: string, desc: string, v: number): string {
+    /* Tronqué à 5 lignes max (retour panel — Nielsen, Blow, Léa,
+       Pascal, Fullerton). Garde l'essentiel : valeur + delta + palier
+       courant + abilities alimentées en une ligne. Le palier suivant
+       et la description longue migrent vers la légende visible (mini-bar)
+       et le glossaire. */
     const d = deltaFor(key, v);
-    const deltaStr = d === 0 ? '' : `\n\nCe tour : ${d > 0 ? '+' : ''}${d}`;
-    /* Palier courant + prochain — autodétermination, le joueur sait
-       à quoi viser et ce qui s'est ouvert. */
+    const deltaStr = d === 0 ? '' : ` (${d > 0 ? '+' : ''}${d} ce tour)`;
     const cur = thresholdFor(key as ResourceKey, v);
-    const next = nextThresholdFor(key as ResourceKey, v);
-    const palierStr = `\n\n● ${cur.level.toUpperCase()} — ${cur.unlock}`;
-    const nextStr = next ? `\n\n→ Prochain palier (${next.min}/100) : ${next.unlock}` : '';
-    /* Lecture transverse : quelles abilities sont alimentées par cette
-       ressource. */
-    const fuels = abilitiesFor(key as ResourceKey);
-    let utilityStr = '';
-    if (fuels.length > 0) {
-      const top = fuels.slice(0, 3).map(a => `• ${ABILITY_SHORT_LABEL[a.ability]} (${a.impact})`).join('\n');
-      utilityStr = `\n\n→ Alimente :\n${top}`;
-    }
-    return `${label} : ${Math.round(v)}/100${deltaStr}${palierStr}${nextStr}\n\n${desc}${utilityStr}`;
+    const fuels = abilitiesFor(key as ResourceKey).slice(0, 3);
+    const fuelsStr = fuels.length > 0
+      ? fuels.map(a => ABILITY_SHORT_LABEL[a.ability]).join(' · ')
+      : '';
+    /* 5 lignes : titre · palier · alimente · description courte · valeur */
+    return [
+      `${label} : ${Math.round(v)}/100${deltaStr}`,
+      `● ${cur.level.toUpperCase()} — ${cur.unlock}`,
+      fuelsStr ? `Alimente : ${fuelsStr}` : '',
+      desc
+    ].filter(Boolean).join('\n');
   }
 
   let musicOn = $state(sfx.isMusicEnabled());

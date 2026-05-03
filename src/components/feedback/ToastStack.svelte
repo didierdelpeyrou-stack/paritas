@@ -85,6 +85,15 @@
     }, durationFor(tone));
   }
 
+  /* Franchissement de palier collecté pour fusion (retour panel —
+     Soueidan, Norman, Yasmine : surcharge cognitive avec 3+ toasts). */
+  interface PalierCrossing {
+    lbl: string;
+    level: 'critique' | 'fragile' | 'solide' | 'excellent';
+    climbing: boolean;
+    unlock: string;
+  }
+
   $effect(() => {
     const s = rebirth.state;
     if (!s) {
@@ -99,6 +108,10 @@
       previous = { ...cur };
       return;
     }
+
+    const crossings: PalierCrossing[] = [];
+    let critTriggered = false;
+
     /* Compare et émet pour les deltas significatifs (≥4). */
     for (const key of Object.keys(cur) as Array<keyof Resources>) {
       const delta = cur[key] - previous[key];
@@ -111,23 +124,50 @@
       if (cur[key] <= 18 && previous[key] > 18) {
         const hint = CRITICAL_HINT[key];
         push(`${lbl} en zone critique${hint ? '  ' + hint : ''}`, 'warning', s.era);
-        void sfx.play('criticalAlert');
+        critTriggered = true;
       }
-      /* Franchissement de palier (montée OU chute) — annonce ce qui
-         s'ouvre / se ferme avec le texte d'unlock. Compétence (Deci &
-         Ryan) : le joueur voit le franchissement comme un événement,
-         pas comme un nombre qui change. */
+      /* Franchissement de palier collecté — émis fusionné après la boucle. */
       const prevPalier = thresholdFor(key as ResourceKey, previous[key]);
       const curPalier  = thresholdFor(key as ResourceKey, cur[key]);
       if (curPalier.level !== prevPalier.level) {
-        const climbing = cur[key] > previous[key];
-        if (climbing) {
-          push(`${lbl} → palier ${curPalier.level.toUpperCase()}\n${curPalier.unlock}`, 'positive', s.era);
-        } else {
-          push(`${lbl} retombe en ${curPalier.level.toUpperCase()}\n${curPalier.unlock}`, 'warning', s.era);
-        }
+        crossings.push({
+          lbl,
+          level: curPalier.level,
+          climbing: cur[key] > previous[key],
+          unlock: curPalier.unlock
+        });
       }
     }
+
+    /* Fusion : si 1 franchissement → toast complet avec unlock.
+       Si 2+ → toast condensé groupé par direction (montée / chute). */
+    if (crossings.length === 1) {
+      const c = crossings[0];
+      const verb = c.climbing ? '→ palier' : 'retombe en';
+      push(`${c.lbl} ${verb} ${c.level.toUpperCase()}\n${c.unlock}`,
+        c.climbing ? 'positive' : 'warning', s.era);
+    } else if (crossings.length >= 2) {
+      const ups = crossings.filter(c => c.climbing);
+      const downs = crossings.filter(c => !c.climbing);
+      if (ups.length > 0) {
+        const names = ups.map(u => u.lbl).join(', ');
+        const targetLevel = ups[0].level.toUpperCase();
+        push(
+          `${ups.length} ressources franchissent un palier\n${names} → ${targetLevel}`,
+          'positive', s.era
+        );
+      }
+      if (downs.length > 0) {
+        const names = downs.map(d => d.lbl).join(', ');
+        const targetLevel = downs[0].level.toUpperCase();
+        push(
+          `${downs.length} ressources retombent\n${names} → ${targetLevel}`,
+          'warning', s.era
+        );
+      }
+    }
+
+    if (critTriggered) void sfx.play('criticalAlert');
     previous = { ...cur };
   });
 </script>

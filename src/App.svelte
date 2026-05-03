@@ -13,9 +13,9 @@
   import SlotPicker from './components/intro/SlotPicker.svelte';
   import GameShell from './components/layout/GameShell.svelte';
   import CockpitShell from './components/cockpit/CockpitShell.svelte';
-  import CockpitToggleBadge from './components/cockpit/CockpitToggleBadge.svelte';
+  import LayoutSwitcher from './components/cockpit/LayoutSwitcher.svelte';
   import TableWindow from './components/table/TableWindow.svelte';
-  import { cockpit } from '$lib/stores/cockpit.svelte';
+  import { cockpit, resolveLayout } from '$lib/stores/cockpit.svelte';
   import ToastStack from './components/feedback/ToastStack.svelte';
 
   /* Routing minimal : si l'URL contient ?session=…, on est dans la
@@ -24,22 +24,24 @@
   const isTableWindow = typeof window !== 'undefined'
     && new URLSearchParams(window.location.search).has('session');
 
-  /* Retour live test : « garde le mode classique quand c'est sur
-   * mobile ». Sous 768px, le cockpit est trop dense pour être
-   * jouable confortablement → on force le mode classique
-   * automatiquement, indépendamment du toggle utilisateur. */
-  let isMobile = $state(false);
+  /* Layout responsive (post-critique designer) : trois layouts assumés
+   * — Théâtre (≥1280px), Atelier (768-1280), Carnet (≤768). Le joueur
+   * peut forcer un layout depuis le LayoutSwitcher (ex : Carnet sur
+   * desktop pour lecture concentrée). Auto par défaut. */
+  let viewportWidth = $state(1280);
   $effect(() => {
     if (typeof window === 'undefined') return;
-    const mq = window.matchMedia('(max-width: 768px)');
-    const apply = () => { isMobile = mq.matches; };
+    const apply = () => { viewportWidth = window.innerWidth; };
     apply();
-    mq.addEventListener('change', apply);
-    return () => mq.removeEventListener('change', apply);
+    window.addEventListener('resize', apply, { passive: true });
+    return () => window.removeEventListener('resize', apply);
   });
 
-  /* Cockpit effectif : enabled par préférence ET pas mobile. */
-  const cockpitEffective = $derived(cockpit.enabled && !isMobile);
+  const effectiveLayout = $derived(resolveLayout(cockpit.preference, viewportWidth));
+  /* Théâtre + Atelier passent par CockpitShell (qui gère ses propres
+   * breakpoints internes pour rails/popovers). Carnet passe par
+   * GameShell (plein écran, lecture séquentielle). */
+  const useCockpit = $derived(effectiveLayout !== 'carnet');
   import { loadAllScenarios } from './game/content/scenarios';
   import { loadPipelineContent } from './game/narrative/pipelineContent';
 
@@ -133,15 +135,17 @@
 {:else}
 <ToastStack />
 
-<!-- Badge bascule cockpit/classique TOUJOURS visible -->
+<!-- Sélecteur de layout (Théâtre / Atelier / Carnet) — toujours
+     visible en partie. Le badge expose le layout effectif courant
+     et permet d'en forcer un autre. -->
 {#if phase === 'game'}
-  <CockpitToggleBadge />
+  <LayoutSwitcher {effectiveLayout} />
 {/if}
 
-{#if phase === 'game' && cockpitEffective}
+{#if phase === 'game' && useCockpit}
   <!-- Cockpit en fullscreen au top level — pas dans <main max-w-7xl>
        pour que les rails et popovers s'alignent au viewport edge.
-       cockpitEffective = enabled ET pas mobile (force classique <768px). -->
+       useCockpit couvre Théâtre + Atelier ; Carnet retombe sur GameShell. -->
   <CockpitShell onReplay={handleReplay} />
 {:else}
 <main class="min-h-dvh px-4 py-6 max-w-7xl mx-auto">

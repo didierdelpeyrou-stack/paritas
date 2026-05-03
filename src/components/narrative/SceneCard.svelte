@@ -469,46 +469,44 @@
 </article>
 
 <style>
-  /* === Préfiguration sépia visible (cf. retour panel — Pope, Wikegård,
-     Chen, 7 ordinaires : la silhouette était invisible derrière le
-     card opaque). Quand le joueur survole un choix, le card se rend
-     semi-transparent (opacité 80%) et reçoit un halo subtil dans la
-     teinte de la posture survolée. La silhouette en arrière-plan
-     devient visible à travers le card.
+  /* === Préfiguration sépia : signal par halo posture, pas par
+     transparence du card. Bug remonté : la transparence à 78% +
+     blur composite faisait apparaître l'écran de lecture comme
+     un rectangle blanc/gris illisible sur certains écrans
+     (parchment .sky bleeding through trop fort).
 
-     Variables --posture-color injectées par data-preview-posture. */
+     Le card RESTE opaque (lisible). Seul le halo bordure et le
+     box-shadow tinté à la posture signalent l'état preview-active.
+     La silhouette sépia reste visible dans la marge / gutter,
+     OK pour viewports larges. */
   :global(article.bordered-card.preview-active) {
-    background: rgba(26, 31, 38, 0.78);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
     transition:
-      background 0.28s ease,
       box-shadow 0.32s ease,
       border-color 0.28s ease;
   }
   :global(article.bordered-card.preview-active[data-preview-posture='rupture']) {
-    border-color: rgba(217, 106, 91, 0.55);
-    box-shadow: 0 0 0 1px rgba(217, 106, 91, 0.15), 0 12px 36px rgba(0, 0, 0, 0.5);
+    border-color: rgba(217, 106, 91, 0.65);
+    box-shadow: 0 0 0 1px rgba(217, 106, 91, 0.25), 0 12px 36px rgba(217, 106, 91, 0.15);
   }
   :global(article.bordered-card.preview-active[data-preview-posture='institution']) {
-    border-color: rgba(126, 180, 255, 0.55);
-    box-shadow: 0 0 0 1px rgba(126, 180, 255, 0.15), 0 12px 36px rgba(0, 0, 0, 0.5);
+    border-color: rgba(126, 180, 255, 0.65);
+    box-shadow: 0 0 0 1px rgba(126, 180, 255, 0.25), 0 12px 36px rgba(126, 180, 255, 0.15);
   }
   :global(article.bordered-card.preview-active[data-preview-posture='compromis']) {
-    border-color: rgba(200, 155, 60, 0.55);
-    box-shadow: 0 0 0 1px rgba(200, 155, 60, 0.15), 0 12px 36px rgba(0, 0, 0, 0.5);
+    border-color: rgba(200, 155, 60, 0.65);
+    box-shadow: 0 0 0 1px rgba(200, 155, 60, 0.25), 0 12px 36px rgba(200, 155, 60, 0.15);
   }
   :global(article.bordered-card.preview-active[data-preview-posture='expertise']) {
-    border-color: rgba(141, 180, 168, 0.55);
-    box-shadow: 0 0 0 1px rgba(141, 180, 168, 0.15), 0 12px 36px rgba(0, 0, 0, 0.5);
+    border-color: rgba(141, 180, 168, 0.65);
+    box-shadow: 0 0 0 1px rgba(141, 180, 168, 0.25), 0 12px 36px rgba(141, 180, 168, 0.15);
   }
   :global(article.bordered-card.preview-active[data-preview-posture='opinion']) {
-    border-color: rgba(180, 151, 214, 0.55);
-    box-shadow: 0 0 0 1px rgba(180, 151, 214, 0.15), 0 12px 36px rgba(0, 0, 0, 0.5);
+    border-color: rgba(180, 151, 214, 0.65);
+    box-shadow: 0 0 0 1px rgba(180, 151, 214, 0.25), 0 12px 36px rgba(180, 151, 214, 0.15);
   }
   :global(article.bordered-card.preview-active[data-preview-posture='paternaliste']) {
-    border-color: rgba(122, 163, 122, 0.55);
-    box-shadow: 0 0 0 1px rgba(122, 163, 122, 0.15), 0 12px 36px rgba(0, 0, 0, 0.5);
+    border-color: rgba(122, 163, 122, 0.65);
+    box-shadow: 0 0 0 1px rgba(122, 163, 122, 0.25), 0 12px 36px rgba(122, 163, 122, 0.15);
   }
 
   .choice-btn {

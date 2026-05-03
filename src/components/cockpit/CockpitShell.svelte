@@ -26,8 +26,7 @@
   import CockpitStatusBar from './CockpitStatusBar.svelte';
   import CockpitTabs from './CockpitTabs.svelte';
   import CockpitInstruments from './CockpitInstruments.svelte';
-  /* CockpitActionBar retirée — ses contrôles (Tour, Actions,
-   * Valider) sont rapatriés dans CockpitStatusBar. */
+  import CockpitDashboardBar from './CockpitDashboardBar.svelte';
   import CockpitIcon from './CockpitIcon.svelte';
   import CockpitEraTimeline from './CockpitEraTimeline.svelte';
   import CockpitLeftRail from './CockpitLeftRail.svelte';
@@ -220,10 +219,6 @@
       onToggleClassic={backToClassic}
       onOpenMobileMenu={() => (mobileMenuOpen = true)}
       showMobileBurger={isMobile}
-      onOpenActions={() => (actionsDrawerOpen = true)}
-      actionsThisTurn={orchestrator.state.actionsThisTurn}
-      maxActions={orchestrator.state.maxActionsPerTurn}
-      crisisActive={orchestrator.isCrisis}
     />
 
     <CockpitEraTimeline turn={gameState.turn} />
@@ -275,6 +270,11 @@
     <CockpitInstruments
       resources={gameState.resources}
       turn={gameState.turn}
+    />
+
+    <CockpitDashboardBar
+      onOpenFullActions={() => (actionsDrawerOpen = true)}
+      pendingValidation={false}
     />
 
     <!-- Drawer onglet -->
@@ -507,10 +507,11 @@
 <style>
   .cockpit {
     display: grid;
-    /* 4 lignes : status (auto) + era timeline (auto) + main (1fr) +
-       instruments (auto). La barre d'action a été supprimée — ses
-       contrôles sont dans la status bar. */
-    grid-template-rows: auto auto 1fr auto;
+    /* 5 lignes : status (auto) + era timeline (auto) + main (1fr) +
+       instruments (auto) + dashboard d'actions (auto). Le bandeau
+       bas est désormais riche : 8 boutons d'actions rapides + cachet
+       VALIDER + compteur Actions/crise. */
+    grid-template-rows: auto auto 1fr auto auto;
     /* position: fixed pour échapper au max-w-7xl du parent App.svelte
        et garantir un alignement viewport-edge pour les rails et les
        popovers ancrés (sinon left:290px / right:290px tombent à
@@ -578,17 +579,24 @@
     position: relative;
     overflow-y: auto;
     overflow-x: hidden;
-    /* Plus de liseré blanc parchemin — fond papier vélin intégré
-       à la palette acajou cockpit. Le contenu garde sa lisibilité
-       grâce au sky-content qui a son propre cartouche papier. */
+    /* Pleine surface papier vélin — Le Ciel rempli intégralement
+       entre les rails, pas de marges sombres. Le scénario respire
+       sur toute la largeur disponible. */
     background:
-      radial-gradient(ellipse at top, rgba(244, 213, 140, 0.05), transparent 60%),
-      linear-gradient(180deg, #2A1A0E 0%, #1F1308 100%);
-    color: #F4EFE2;
+      radial-gradient(ellipse at top, rgba(244, 213, 140, 0.10), transparent 70%),
+      linear-gradient(180deg, #F4EFE2 0%, #EBDCC4 100%);
+    color: #1A1411;
     transition: filter 0.4s ease, opacity 0.4s ease;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    scrollbar-color: rgba(201, 178, 106, 0.25) transparent;
+    scrollbar-color: rgba(90, 47, 28, 0.25) transparent;
+    /* Bordures intérieures discrètes acajou pour séparer des rails
+       sans liseré blanc */
+    border-left: 1px solid rgba(90, 47, 28, 0.4);
+    border-right: 1px solid rgba(90, 47, 28, 0.4);
+    box-shadow:
+      inset 8px 0 12px -8px rgba(90, 47, 28, 0.5),
+      inset -8px 0 12px -8px rgba(90, 47, 28, 0.5);
   }
 
   .sky::-webkit-scrollbar { width: 6px; }
@@ -601,19 +609,12 @@
   }
 
   .sky-content {
-    /* Cartouche papier vélin avec coins arrondis et ombre subtile,
-       au lieu d'un fond pleine largeur (qui créait le liseré blanc). */
+    /* Pleine surface — pas de cartouche centré, le scénario remplit
+       toute la zone Le Ciel disponible entre les rails. */
     padding: 1.4rem clamp(0.8rem, 3vw, 2.4rem) 2rem;
-    max-width: 56rem;
-    margin: 1rem auto;
-    background:
-      radial-gradient(ellipse at top, rgba(244, 213, 140, 0.06), transparent 65%),
-      linear-gradient(180deg, #F4EFE2 0%, #E8DCC8 100%);
+    max-width: 64rem;
+    margin: 0 auto;
     color: #1A1411;
-    border-radius: 0.5rem;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.4),
-      0 4px 18px rgba(0, 0, 0, 0.35);
   }
 
   .sky-placeholder {

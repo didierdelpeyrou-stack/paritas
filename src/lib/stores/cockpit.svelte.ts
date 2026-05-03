@@ -17,12 +17,21 @@ function load(): boolean {
 class CockpitStore {
   enabled = $state<boolean>(load());
 
-  /** Onglet ouvert dans le cockpit (`null` = aucun, sinon id du tab). */
+  /** Onglet ouvert dans le cockpit (`null` = aucun, sinon id du tab).
+   *  Réservé aux MINI-JEUX lourds qui ouvrent un drawer plein écran. */
   openTab = $state<string | null>(null);
+
+  /** Popover ouvert (`null` = aucun). Différent de openTab : un
+   *  popover est ancré au déclencheur (rail), beaucoup plus léger
+   *  qu'un drawer. Mutuellement exclusif avec openTab. */
+  openPopover = $state<{ id: string; side: 'left' | 'right' } | null>(null);
 
   setEnabled(v: boolean) {
     this.enabled = v;
-    if (!v) this.openTab = null;
+    if (!v) {
+      this.openTab = null;
+      this.openPopover = null;
+    }
     try { localStorage.setItem(KEY, String(v)); } catch { /* ignore */ }
   }
 
@@ -30,13 +39,25 @@ class CockpitStore {
     this.setEnabled(!this.enabled);
   }
 
-  /** Ouvre un onglet (ferme le précédent si différent). */
+  /** Ouvre un onglet (drawer mini-jeu). Ferme le popover ouvert. */
   open(tabId: string) {
+    this.openPopover = null;
     this.openTab = this.openTab === tabId ? null : tabId;
   }
 
   close() {
     this.openTab = null;
+    this.openPopover = null;
+  }
+
+  /** Ouvre un popover (rail). Toggle si même id, ferme l'autre rail. */
+  openRail(id: string, side: 'left' | 'right') {
+    this.openTab = null;
+    if (this.openPopover?.id === id) {
+      this.openPopover = null;
+    } else {
+      this.openPopover = { id, side };
+    }
   }
 }
 

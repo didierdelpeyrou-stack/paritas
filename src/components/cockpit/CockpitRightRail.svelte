@@ -3,20 +3,21 @@
      - Personnalité (trait dominant + tension intérieure)
      - Mon œuvre (institutions construites count)
      - Trajectoire stratégique mini (modèle le plus proche)
-     Click → drawer détaillé. */
+     - Lexique
+     Click head → ouvre un POPOVER ancré (pas un drawer plein écran). */
   import type { RebirthGameState } from '../../game/types';
   import { TRAIT_LABELS } from '../../game/narrative/personalityEngine';
+  import { cockpit } from '$lib/stores/cockpit.svelte';
   import CockpitIcon from './CockpitIcon.svelte';
 
   interface Props {
     state: RebirthGameState;
-    onOpenPersonality?: () => void;
-    onOpenWork?: () => void;
-    onOpenTrajectory?: () => void;
-    onOpenGlossary?: () => void;
   }
-  let { state: gs, onOpenPersonality, onOpenWork, onOpenTrajectory,
-    onOpenGlossary }: Props = $props();
+  let { state: gs }: Props = $props();
+
+  function openSection(id: 'rail-personnalite' | 'rail-oeuvre' | 'rail-trajectoire' | 'rail-lexique') {
+    cockpit.openRail(id, 'right');
+  }
 
   /* Tension intérieure en mots (Damasio #58, Grandin #89) */
   function tensionLabel(stress: number): { label: string; tone: string } {
@@ -77,7 +78,9 @@
 <aside class="right-rail" aria-label="Personnalité, œuvre, trajectoire">
   <!-- ===== Personnalité ===== -->
   <section class="rail-section" class:has-alert={personalityAlert}>
-    <button type="button" class="rail-head" onclick={() => onOpenPersonality?.()}>
+    <button type="button" class="rail-head"
+      class:active={cockpit.openPopover?.id === 'rail-personnalite'}
+      onclick={() => openSection('rail-personnalite')}>
       <span class="rail-icon"><CockpitIcon name="masque" size={14} /></span>
       <span class="rail-title">Personnalité</span>
       {#if personalityAlert}
@@ -102,7 +105,9 @@
 
   <!-- ===== Mon œuvre ===== -->
   <section class="rail-section" class:has-sparkle={workSparkle}>
-    <button type="button" class="rail-head" onclick={() => onOpenWork?.()}>
+    <button type="button" class="rail-head"
+      class:active={cockpit.openPopover?.id === 'rail-oeuvre'}
+      onclick={() => openSection('rail-oeuvre')}>
       <span class="rail-icon"><CockpitIcon name="bourse" size={14} /></span>
       <span class="rail-title">Mon œuvre</span>
       {#if workSparkle}
@@ -125,7 +130,9 @@
 
   <!-- ===== Trajectoire ===== -->
   <section class="rail-section">
-    <button type="button" class="rail-head" onclick={() => onOpenTrajectory?.()}>
+    <button type="button" class="rail-head"
+      class:active={cockpit.openPopover?.id === 'rail-trajectoire'}
+      onclick={() => openSection('rail-trajectoire')}>
       <span class="rail-icon"><CockpitIcon name="balance" size={14} /></span>
       <span class="rail-title">Trajectoire</span>
       <span class="rail-expand" aria-hidden="true">›</span>
@@ -140,7 +147,9 @@
 
   <!-- ===== Lexique ===== -->
   <section class="rail-section lexique-section">
-    <button type="button" class="rail-head" onclick={() => onOpenGlossary?.()}>
+    <button type="button" class="rail-head"
+      class:active={cockpit.openPopover?.id === 'rail-lexique'}
+      onclick={() => openSection('rail-lexique')}>
       <span class="rail-icon"><CockpitIcon name="plume" size={14} /></span>
       <span class="rail-title">Lexique</span>
       <span class="rail-expand" aria-hidden="true">›</span>
@@ -258,6 +267,11 @@
   }
 
   .rail-head:hover { background: linear-gradient(180deg, #4A3422 0%, #2D1C10 100%); }
+  .rail-head.active {
+    background: linear-gradient(180deg, #5C3622 0%, #3A2418 100%);
+    color: #F4D58C;
+    box-shadow: inset 0 -2px 0 #C9B26A;
+  }
 
   .rail-icon { display: inline-flex; color: #C9B26A; }
   .rail-title { flex: 1 1 auto; text-align: left; }

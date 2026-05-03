@@ -2,9 +2,10 @@
   /* Rail gauche du cockpit — 200px, deux sections empilées :
      - Objectifs (3 mini-cards compactes)
      - Acteurs (4 mini-cards : base / adversaire / état / opinion)
-     Click → ouvre un drawer avec le panel détaillé. */
+     Click head → ouvre un POPOVER ancré (pas un drawer plein écran). */
   import type { RoleObjective, ObjectiveProgress } from '../../game/objectives/types';
   import type { Actor, ActorId, Actors } from '../../game/types';
+  import { cockpit } from '$lib/stores/cockpit.svelte';
   import CockpitIcon from './CockpitIcon.svelte';
 
   interface Props {
@@ -12,11 +13,12 @@
     progress: ObjectiveProgress[];
     actors: Actors;
     turn: number;
-    onOpenObjectives?: () => void;
-    onOpenActors?: () => void;
   }
-  let { objectives, progress, actors, turn,
-    onOpenObjectives, onOpenActors }: Props = $props();
+  let { objectives, progress, actors, turn }: Props = $props();
+
+  function openSection(id: 'rail-objectifs' | 'rail-acteurs') {
+    cockpit.openRail(id, 'left');
+  }
 
   function status(o: RoleObjective): 'satisfied' | 'failed' | 'pending' {
     const item = progress.find(p => p.id === o.id);
@@ -78,7 +80,9 @@
 <aside class="left-rail" aria-label="Objectifs et acteurs">
   <!-- ===== Objectifs ===== -->
   <section class="rail-section" class:has-alert={nbObjectifsAlerte > 0}>
-    <button type="button" class="rail-head" onclick={() => onOpenObjectives?.()}>
+    <button type="button" class="rail-head"
+      class:active={cockpit.openPopover?.id === 'rail-objectifs'}
+      onclick={() => openSection('rail-objectifs')}>
       <span class="rail-icon"><CockpitIcon name="parchemin" size={14} /></span>
       <span class="rail-title">Objectifs</span>
       {#if nbObjectifsAlerte > 0}
@@ -112,7 +116,9 @@
 
   <!-- ===== Acteurs ===== -->
   <section class="rail-section" class:has-alert={nbActeursAlerte > 0}>
-    <button type="button" class="rail-head" onclick={() => onOpenActors?.()}>
+    <button type="button" class="rail-head"
+      class:active={cockpit.openPopover?.id === 'rail-acteurs'}
+      onclick={() => openSection('rail-acteurs')}>
       <span class="rail-icon"><CockpitIcon name="carte" size={14} /></span>
       <span class="rail-title">Acteurs</span>
       {#if nbActeursAlerte > 0}
@@ -256,6 +262,11 @@
   }
 
   .rail-head:hover { background: linear-gradient(180deg, #4A3422 0%, #2D1C10 100%); }
+  .rail-head.active {
+    background: linear-gradient(180deg, #5C3622 0%, #3A2418 100%);
+    color: #F4D58C;
+    box-shadow: inset 0 -2px 0 #C9B26A;
+  }
 
   .rail-icon {
     display: inline-flex;

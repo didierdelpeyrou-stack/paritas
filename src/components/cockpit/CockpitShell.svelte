@@ -31,6 +31,7 @@
   import CockpitEraTimeline from './CockpitEraTimeline.svelte';
   import CockpitLeftRail from './CockpitLeftRail.svelte';
   import CockpitRightRail from './CockpitRightRail.svelte';
+  import CockpitPopover from './CockpitPopover.svelte';
   import type { IconKey } from './icons';
 
   import SceneCard from '../narrative/SceneCard.svelte';
@@ -97,9 +98,10 @@
     mobileMenuOpen = false;
   }
 
-  /* Lock body scroll quand drawer/menu ouvert. */
+  /* Lock body scroll quand drawer/popover/menu ouvert. */
   $effect(() => {
-    const locked = !!cockpit.openTab || settingsOpen || mobileMenuOpen;
+    const locked = !!cockpit.openTab || !!cockpit.openPopover
+      || settingsOpen || mobileMenuOpen;
     if (typeof document !== 'undefined') {
       document.body.style.overflow = locked ? 'hidden' : '';
     }
@@ -110,16 +112,14 @@
 
   function onKey(e: KeyboardEvent) {
     if (e.key === 'Escape') {
-      if (cockpit.openTab) cockpit.close();
+      if (cockpit.openTab || cockpit.openPopover) cockpit.close();
       else if (mobileMenuOpen) mobileMenuOpen = false;
     }
   }
 
-  /* Helpers d'affichage du drawer */
-  const LEFT_TABS = new Set([
-    'tresorerie', 'mandat', 'monde', 'manifestation',
-    'rail-objectifs', 'rail-acteurs'
-  ]);
+  /* Helpers d'affichage du drawer (mini-jeux uniquement). Les rail-*
+     sont passés en popover et n'utilisent plus le drawer. */
+  const LEFT_TABS = new Set(['tresorerie', 'mandat', 'monde', 'manifestation']);
   function leftOrRight(id: string | null): 'left' | 'right' {
     return id && LEFT_TABS.has(id) ? 'left' : 'right';
   }
@@ -227,8 +227,6 @@
         progress={gameState.objectiveProgress}
         actors={gameState.actors}
         turn={gameState.turn}
-        onOpenObjectives={() => cockpit.open('rail-objectifs')}
-        onOpenActors={() => cockpit.open('rail-acteurs')}
       />
 
       <main class="sky" class:dimmed={cockpit.openTab !== null}>
@@ -260,13 +258,7 @@
         {/key}
       </main>
 
-      <CockpitRightRail
-        state={gameState}
-        onOpenPersonality={() => cockpit.open('rail-personnalite')}
-        onOpenWork={() => cockpit.open('rail-oeuvre')}
-        onOpenTrajectory={() => cockpit.open('rail-trajectoire')}
-        onOpenGlossary={() => cockpit.open('rail-lexique')}
-      />
+      <CockpitRightRail state={gameState} />
 
       <CockpitTabs side="right" turn={currentTurn} />
     </div>
@@ -361,44 +353,6 @@
                 Ouvrir les réglages
               </button>
             </div>
-          {:else if cockpit.openTab === 'rail-objectifs'}
-            <ObjectivePanel
-              objectives={gameState.objectives}
-              progress={gameState.objectiveProgress}
-              turn={gameState.turn} />
-          {:else if cockpit.openTab === 'rail-acteurs'}
-            <div class="rail-detail">
-              {#each ACTOR_IDS as id}
-                <ActorPanel
-                  actorId={id}
-                  actor={gameState.actors[id]}
-                  subtitle={subtitleFor(id)} />
-              {/each}
-            </div>
-          {:else if cockpit.openTab === 'rail-personnalite'}
-            <PersonalityPanel state={gameState} />
-          {:else if cockpit.openTab === 'rail-oeuvre'}
-            <MyLegacyPanel memory={gameState.memory} />
-          {:else if cockpit.openTab === 'rail-trajectoire'}
-            <StrategicRadar resources={gameState.resources} />
-          {:else if cockpit.openTab === 'rail-lexique'}
-            <div class="lexique-inline">
-              <p class="lex-intro">
-                {GLOSSARY.length} termes du paritarisme et du syndicalisme français.
-                Survole un terme italique dans le scénario pour sa définition rapide.
-              </p>
-              <ul class="lex-list">
-                {#each GLOSSARY as g}
-                  <li class="lex-entry">
-                    <strong class="lex-term">{g.term}</strong>
-                    {#if g.marker}
-                      <span class="lex-marker">· {g.marker}</span>
-                    {/if}
-                    <p class="lex-def">{g.definition}</p>
-                  </li>
-                {/each}
-              </ul>
-            </div>
           {/if}
         </div>
       </aside>
@@ -451,6 +405,104 @@
     {/if}
 
   </div>
+
+  <!-- Popovers ancrés aux rails (menus déroulants) -->
+  <CockpitPopover
+    open={cockpit.openPopover?.id === 'rail-objectifs'}
+    side="left"
+    title="Objectifs — Ce qu'on attend de toi"
+    icon="parchemin"
+    onClose={() => cockpit.close()}
+  >
+    {#snippet children()}
+      <ObjectivePanel
+        objectives={gameState.objectives}
+        progress={gameState.objectiveProgress}
+        turn={gameState.turn} />
+    {/snippet}
+  </CockpitPopover>
+
+  <CockpitPopover
+    open={cockpit.openPopover?.id === 'rail-acteurs'}
+    side="left"
+    title="Acteurs — Pression et patience"
+    icon="carte"
+    onClose={() => cockpit.close()}
+  >
+    {#snippet children()}
+      <div class="popover-actors">
+        {#each ACTOR_IDS as id}
+          <ActorPanel
+            actorId={id}
+            actor={gameState.actors[id]}
+            subtitle={subtitleFor(id)} />
+        {/each}
+      </div>
+    {/snippet}
+  </CockpitPopover>
+
+  <CockpitPopover
+    open={cockpit.openPopover?.id === 'rail-personnalite'}
+    side="right"
+    title="Personnalité — Trait et tension"
+    icon="masque"
+    onClose={() => cockpit.close()}
+  >
+    {#snippet children()}
+      <PersonalityPanel state={gameState} />
+    {/snippet}
+  </CockpitPopover>
+
+  <CockpitPopover
+    open={cockpit.openPopover?.id === 'rail-oeuvre'}
+    side="right"
+    title="Mon œuvre — Institutions construites"
+    icon="bourse"
+    onClose={() => cockpit.close()}
+  >
+    {#snippet children()}
+      <MyLegacyPanel memory={gameState.memory} />
+    {/snippet}
+  </CockpitPopover>
+
+  <CockpitPopover
+    open={cockpit.openPopover?.id === 'rail-trajectoire'}
+    side="right"
+    title="Trajectoire stratégique"
+    icon="balance"
+    onClose={() => cockpit.close()}
+  >
+    {#snippet children()}
+      <StrategicRadar resources={gameState.resources} />
+    {/snippet}
+  </CockpitPopover>
+
+  <CockpitPopover
+    open={cockpit.openPopover?.id === 'rail-lexique'}
+    side="right"
+    title="Lexique — Glossaire historique"
+    icon="plume"
+    onClose={() => cockpit.close()}
+  >
+    {#snippet children()}
+      <div class="lexique-inline">
+        <p class="lex-intro">
+          {GLOSSARY.length} termes du paritarisme et du syndicalisme français.
+        </p>
+        <ul class="lex-list">
+          {#each GLOSSARY as g}
+            <li class="lex-entry">
+              <strong class="lex-term">{g.term}</strong>
+              {#if g.marker}
+                <span class="lex-marker">· {g.marker}</span>
+              {/if}
+              <p class="lex-def">{g.definition}</p>
+            </li>
+          {/each}
+        </ul>
+      </div>
+    {/snippet}
+  </CockpitPopover>
 
   <Settings open={settingsOpen} onClose={() => (settingsOpen = false)} />
 {/if}

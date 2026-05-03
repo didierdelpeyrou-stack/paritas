@@ -6,8 +6,13 @@
   import type { ActorId, RebirthGameState, Resources } from '../../game/types';
   import ManifMap from './ManifMap.svelte';
   import MiniGameFuelHeader from '../cockpit/MiniGameFuelHeader.svelte';
+  import BrawlArena from './BrawlArena.svelte';
   import { MANIF_CITIES, findCombosFor } from '../../game/org/manifCities';
   import { abilityFuelScore, fuelMultiplier, fuelAttribution } from '../../game/simulation/resourceUtility';
+  import {
+    buildPlayerFaction, buildAdversaryFaction, resolveBrawl,
+    type FactionRoster, type BrawlOutcome
+  } from '../../game/org/factionBrawl';
 
   interface Props {
     gameState: RebirthGameState;
@@ -30,6 +35,18 @@
   let caisseGreve = $state(false);
 
   let result = $state<ManifResult | null>(null);
+
+  /* === Module baston : factions s'affrontent à République === */
+  /* Se déclenche uniquement si la manif passe par Paris + tension forte. */
+  interface BrawlState {
+    joueur: FactionRoster;
+    adversaire: FactionRoster;
+    outcome: BrawlOutcome;
+  }
+  let brawl = $state<BrawlState | null>(null);
+
+  /* Effets du brawl à appliquer quand le joueur referme l'arène. */
+  let pendingBrawlEffects = $state<{ outcome: BrawlOutcome } | null>(null);
 
   interface ManifResult {
     score: number;
@@ -224,6 +241,68 @@
       }
     });
     void sfx.play(r.score >= 70 ? 'fanfare' : r.score >= 45 ? 'impact' : 'fail');
+
+    /* === Module baston : déclenche le brawl si conditions remplies ===
+       - Paris est dans les villes ciblées
+       - Score ≥ 50 (manif significative)
+       - Soit adversaire stance dur, soit score >= 75 (rue tendue)
+       Force du joueur : foule effective à Paris (proportionnelle à
+       la part de Paris dans le multi-ville). */
+    const includesParis = cities.includes('paris');
+    const advStance = gs.actors.adversaire?.stance;
+    const tensionForte = advStance === 'dur' || r.score >= 75;
+    if (includesParis && r.score >= 50 && tensionForte) {
+      const parisCity = MANIF_CITIES.find(c => c.id === 'paris');
+      const parisWeight = parisCity?.cost ?? 1;
+      const totalCityCost = selectedCities.reduce((s, c) => s + c.cost, 0);
+      const parisRatio = totalCityCost > 0 ? parisWeight / totalCityCost : 1;
+      const fouleParis = Math.round(r.foule * parisRatio);
+
+      const joueur = buildPlayerFaction({
+        camp: gs.camp,
+        fouleParis,
+        militants: gs.organization.militants,
+        cadres: gs.organization.permanentStaff,
+        cohesion: gs.organization.cohesion
+      });
+
+      const policePressure = (gs.actors.etat?.pressure ?? 30) +
+        (advStance === 'dur' ? 25 : 0);
+      const adversaire = buildAdversaryFaction({
+        camp: gs.camp,
+        fouleParis,
+        era: gs.era,
+        policePressure
+      });
+
+      const initialMomentum = (r.score - 50) * 0.6;
+      const outcome = resolveBrawl({ joueur, adversaire, initialMomentum });
+      brawl = { joueur, adversaire, outcome };
+      pendingBrawlEffects = { outcome };
+    }
+  }
+
+  /* Quand le joueur referme l'arène : applique les effets du brawl
+     en plus des effets de la manif. */
+  function closeBrawl() {
+    if (pendingBrawlEffects) {
+      const out = pendingBrawlEffects.outcome;
+      rebirth.applyOperation({
+        label: `Affrontement Place de la République : ${out.result === 'victoire' ? 'victoire' : out.result === 'defaite' ? 'défaite' : 'nul'} (${out.totalJoueurLosses} blessés des nôtres, ${out.totalAdversaireLosses} en face)`,
+        resourceDelta: out.effects,
+        actorDelta: {
+          /* Pression État monte fortement en cas d'affrontement direct. */
+          etat: { pressure: out.result === 'defaite' ? +12 : +6, patience: -8 }
+        },
+        organizationDelta: {
+          mobilisationFatigue: 12,
+          militants: -Math.min(20, Math.round(out.totalJoueurLosses / 30))
+        }
+      });
+      void sfx.play(out.result === 'victoire' ? 'fanfare' : out.result === 'defaite' ? 'fail' : 'impact');
+      pendingBrawlEffects = null;
+    }
+    brawl = null;
   }
 
   function reset() {
@@ -368,6 +447,17 @@
     </div>
   {/if}
 </section>
+
+<!-- Module baston : arène Place de la République, déclenchée si la
+     manif passe par Paris + score ≥ 50 + tension forte. -->
+{#if brawl}
+  <BrawlArena
+    joueur={brawl.joueur}
+    adversaire={brawl.adversaire}
+    outcome={brawl.outcome}
+    onClose={closeBrawl}
+  />
+{/if}
 
 <style>
   .meta-label {

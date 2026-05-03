@@ -37,6 +37,8 @@
   import TheatrePortraitPanel from './TheatrePortraitPanel.svelte';
   import TheatreActorsTiles from './TheatreActorsTiles.svelte';
   import AtelierAllocationPanel from './AtelierAllocationPanel.svelte';
+  import OnboardingTour from './OnboardingTour.svelte';
+  import { onboarding } from '$lib/stores/onboarding.svelte';
   import CockpitPopover from './CockpitPopover.svelte';
   import type { IconKey } from './icons';
 
@@ -118,6 +120,20 @@
     apply();
     mq.addEventListener('change', apply);
     return () => mq.removeEventListener('change', apply);
+  });
+
+  /* Onboarding tour : déclenche au tour 1 si pas déjà vu pour ce mode
+     (P0 Argus 12 sessions). Délai de 1.2s pour laisser le DOM se
+     poser et le hint how-to-play apparaître d'abord. */
+  $effect(() => {
+    if (!gameState || gameState.turn !== 1) return;
+    const mode = layout;
+    if (mode === 'carnet') return;  // Carnet n'a pas de tour
+    if (typeof window === 'undefined') return;
+    const t = window.setTimeout(() => {
+      onboarding.start(mode);
+    }, 1200);
+    return () => window.clearTimeout(t);
   });
 
   function handleChoose(choice: Choice) {
@@ -298,6 +314,9 @@
 
     <!-- Modale de quête secondaire (déclenchée depuis le ticker). -->
     <SideEventModal />
+
+    <!-- Tour d'onboarding contextuel (P0 Argus 12 sessions). -->
+    <OnboardingTour />
 
     <div class="cockpit-main" class:cockpit-main-theatre={isTheatre}>
       <CockpitTabs side="left" turn={currentTurn} />

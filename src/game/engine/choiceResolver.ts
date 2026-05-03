@@ -4,9 +4,10 @@
  * Pure function : prend un state, renvoie un nouveau state.
  */
 
-import type { Choice, RebirthGameState, Scenario } from '../types';
+import type { Choice, Effects, RebirthGameState, Scenario } from '../types';
 import { applyResourceDelta } from '../simulation/resources';
 import { applyActorsDelta } from '../simulation/actors';
+import { abilityFuelScore, fuelMultiplier } from '../simulation/resourceUtility';
 import {
   applyTraitShift,
   clampStress,
@@ -26,9 +27,14 @@ export function resolveChoice(
   scenario: Scenario,
   choice: Choice
 ): RebirthGameState {
-  // 1. Effets numériques
-  const nextResources = choice.effects.resources
-    ? applyResourceDelta(state.resources, choice.effects.resources)
+  // 1. Effets numériques — modulés par l'énergie courante de l'ability
+  // d'attache si elle est définie (préparer ses ressources en amont rend
+  // les choix narratifs correspondants plus puissants ; les négliger
+  // les affaiblit, dans une fourchette ±20%).
+  const modulatedEffects = applyAbilityModulation(choice, state);
+
+  const nextResources = modulatedEffects.resources
+    ? applyResourceDelta(state.resources, modulatedEffects.resources)
     : state.resources;
 
   const nextActors = choice.effects.actors
@@ -88,4 +94,20 @@ export function resolveChoice(
     organization: nextOrganization,
     lastChoice: { scenarioId: scenario.id, choiceId: choice.id }
   };
+}
+
+/* Applique le multiplicateur d'énergie aux deltas de ressources d'un
+   choix dont l'ability est définie. Effets sur acteurs/flags non
+   touchés (rester narratif). Borné ±20% via fuelMultiplier. */
+function applyAbilityModulation(choice: Choice, state: RebirthGameState): Effects {
+  if (!choice.ability) return choice.effects;
+  if (!choice.effects.resources) return choice.effects;
+  const score = abilityFuelScore(choice.ability, state.resources);
+  const mul = fuelMultiplier(score);
+  if (mul === 1) return choice.effects;
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(choice.effects.resources)) {
+    out[k] = typeof v === 'number' ? Math.round(v * mul) : (v as number);
+  }
+  return { ...choice.effects, resources: out as Effects['resources'] };
 }

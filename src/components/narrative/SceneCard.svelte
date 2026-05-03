@@ -10,6 +10,8 @@
     resourceGlyph
   } from '../../game/narrative/choicePosture';
   import { TRAIT_LABELS, TRAIT_ANTAGONISTS } from '../../game/narrative/personalityEngine';
+  import { rebirth } from '../../game/engine/gameState.svelte';
+  import { abilityFuelScore, ABILITY_SHORT_LABEL } from '../../game/simulation/resourceUtility';
   import VoicePanel from './VoicePanel.svelte';
   import HistoricalImage from '../HistoricalImage.svelte';
   import GlossaryText from '../GlossaryText.svelte';
@@ -422,6 +424,19 @@
             {#if !locked && mode === 'reflechi' && ch.theoryHint}
               <span class="hint">{ch.theoryHint}</span>
             {/if}
+            {#if !locked && ch.ability && rebirth.state}
+              {@const fs = abilityFuelScore(ch.ability, rebirth.state.resources)}
+              {@const tone = fs >= 65 ? 'high' : fs >= 35 ? 'mid' : 'low'}
+              <span class="ability-hint" data-tone={tone}
+                title={
+                  fs >= 65 ? `Énergie ${ABILITY_SHORT_LABEL[ch.ability]} solide → ce choix sera AMPLIFIÉ (effets ×${(1 + (fs - 50) / 250).toFixed(2)}).`
+                  : fs >= 35 ? `Énergie ${ABILITY_SHORT_LABEL[ch.ability]} moyenne → effets quasi nominaux.`
+                  : `Énergie ${ABILITY_SHORT_LABEL[ch.ability]} en panne → ce choix sera AFFAIBLI (effets ×${(1 + (fs - 50) / 250).toFixed(2)}).`
+                }
+              >
+                ◎ Énergie {ABILITY_SHORT_LABEL[ch.ability]} : {fs}/100
+              </span>
+            {/if}
             {#if !locked && previews.length > 0}
               <span class="previews">
                 {#each previews as p}
@@ -645,6 +660,39 @@
     background: rgba(201, 178, 106, 0.10);
     border: 1px solid rgba(201, 178, 106, 0.35);
     color: rgba(201, 178, 106, 0.85);
+  }
+
+  /* Hint « énergie d'ability » : indique que ce choix sera modulé
+     par l'énergie courante de la ressource sous-jacente. Le ton
+     change selon le niveau d'énergie (high/mid/low) — autodétermination,
+     le joueur sait s'il joue avec ou contre ses préparations. */
+  .choice-btn .ability-hint {
+    display: inline-block;
+    align-self: flex-start;
+    margin-top: 0.18rem;
+    padding: 0.05rem 0.45rem;
+    border-radius: 999px;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: help;
+    border: 1px solid;
+  }
+  .choice-btn .ability-hint[data-tone='high'] {
+    background: rgba(58, 107, 71, 0.18);
+    border-color: rgba(58, 107, 71, 0.55);
+    color: #7BCBA1;
+  }
+  .choice-btn .ability-hint[data-tone='mid'] {
+    background: rgba(201, 178, 106, 0.12);
+    border-color: rgba(201, 178, 106, 0.4);
+    color: #C9B26A;
+  }
+  .choice-btn .ability-hint[data-tone='low'] {
+    background: rgba(217, 130, 28, 0.18);
+    border-color: rgba(217, 130, 28, 0.5);
+    color: #F0B870;
   }
 
   /* Badge « branche patronale / syndicale » — signale au joueur que

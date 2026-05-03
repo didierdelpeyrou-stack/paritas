@@ -114,7 +114,8 @@ Tu pourrais signer ce soir et sauver des semaines. Tu pourrais aussi pousser le 
           'Les conventions collectives signées en 1936 deviennent la matrice juridique du paritarisme français. À la Libération, on s\'en souviendra.'
       },
       traitShift: { batisseur: +3, pragmatique: +2 },
-      flag: 'signe-matignon'
+      flag: 'signe-matignon',
+      ability: 'table'
     },
     {
       id: 'matignon-pousse-echelle-mobile',
@@ -153,7 +154,8 @@ Tu pourrais signer ce soir et sauver des semaines. Tu pourrais aussi pousser le 
           'Le patronat retiendra ce refus. En 1968, Pompidou s\'en souviendra encore : ne jamais laisser la rue dicter le tempo.'
       },
       traitShift: { rupture: +3, tribun: +1 },
-      flag: 'refuse-compromis'
+      flag: 'refuse-compromis',
+      ability: 'manifestation'
     },
     {
       id: 'matignon-cede-une-semaine-de-conges',

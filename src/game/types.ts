@@ -172,6 +172,22 @@ export interface Choice {
   campText?: Partial<Record<Camp, string>>;
   /** Idem pour l'intent (libellé court au-dessus du texte). */
   campIntent?: Partial<Record<Camp, string>>;
+  /** Ability d'attache : si défini, les effets numériques de ce choix
+   *  sont MODULÉS par l'énergie courante de cette ability (fuel score).
+   *  Borné à ±20% (cf. resourceUtility.fuelMultiplier). Permet aux
+   *  scénarios d'utiliser le système de carburant — préparer ses
+   *  ressources en amont rend les choix correspondants plus puissants. */
+  ability?:
+    | 'tresorerie'
+    | 'manifestation'
+    | 'meeting'
+    | 'talents'
+    | 'tracts'
+    | 'petition'
+    | 'presse'
+    | 'delegation'
+    | 'table'
+    | 'congres';
 }
 
 /* ============================================================

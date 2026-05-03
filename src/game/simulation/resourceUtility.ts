@@ -92,7 +92,7 @@ export const RESOURCE_FUELS: Record<ResourceKey, AbilityImpact[]> = {
   ]
 };
 
-/* ====== Index inverse : pour un mini-jeu donné, quelles ressources le carburant ? ====== */
+/* ====== Index inverse : pour un mini-jeu donné, quelles ressources l'alimentent ? ====== */
 
 export interface FuelEntry {
   resource: ResourceKey;
@@ -166,7 +166,8 @@ export function fuelMultiplier(fuelScore: number): number {
 /** Phrase d'attribution narrative : explique au joueur POURQUOI son
  *  mini-jeu a mieux ou moins bien marché en citant ses 1-2 ressources
  *  les plus pertinentes. Renforce le sentiment de compétence
- *  (Deci & Ryan) — les efforts du joueur sont reconnus dans le récit. */
+ *  (Deci & Ryan) — les efforts du joueur sont reconnus dans le récit.
+ *  Grammaire française corrigée : article défini + accord singulier. */
 export function fuelAttribution(
   ability: AbilityId,
   res: Resources,
@@ -174,33 +175,55 @@ export function fuelAttribution(
 ): string {
   const top = fuelsFor(ability, 2);
   if (top.length === 0) return '';
-  const names = top
-    .map(e => ({ name: ABILITY_SHORT_LABEL_BY_RESOURCE[e.resource], v: (res[e.resource] as number) ?? 0 }))
+  const items = top
+    .map(e => ({
+      key: e.resource,
+      name: RESOURCE_NARRATIVE_NAME[e.resource],
+      art: RESOURCE_POSSESSIVE[e.resource], // 'ta' / 'ton' selon euphonie
+      v: (res[e.resource] as number) ?? 0
+    }))
     .sort((a, b) => b.v - a.v);
-  const best = names[0];
-  const worst = names[names.length - 1];
+  const best = items[0];
+  const worst = items[items.length - 1];
+
+  /* Capitalise le possessif quand il ouvre la phrase. */
+  const Cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
   if (fuelScore >= 70) {
-    return `Tes ${best.name} (${Math.round(best.v)}) ont porté l'action.`;
+    return `${Cap(best.art)} ${best.name} (${Math.round(best.v)}/100) a porté l'action.`;
   }
   if (fuelScore >= 45) {
-    return `Tes ${best.name} ont tenu, mais ${worst.name} a manqué.`;
+    return `${Cap(best.art)} ${best.name} a tenu, mais ${worst.art} ${worst.name} a manqué.`;
   }
   if (fuelScore >= 25) {
-    return `${worst.name} en panne — ça s'est vu sur le terrain.`;
+    return `${Cap(worst.art)} ${worst.name} en panne — ça s'est vu sur le terrain.`;
   }
-  return `Action engagée à sec : ni ${best.name} ni ${worst.name} n'étaient là.`;
+  return `Action engagée à sec : ni ${best.art} ${best.name} ni ${worst.art} ${worst.name} n'étaient là.`;
 }
 
-/* Petit alias : noms français courts par ressource pour les attributions. */
-const ABILITY_SHORT_LABEL_BY_RESOURCE: Record<ResourceKey, string> = {
-  caisse:          'Caisse',
-  confiance:       'Confiance',
-  legitimite:      'Légitimité',
-  rapportDeForce:  'Force ext.',
-  cohesionInterne: 'Cohésion',
-  santeSociale:    'Santé soc.',
-  institution:     'Institution'
+/* Noms narratifs (forme longue, sans abréviation) pour les phrases
+   d'attribution dans les récits de mini-jeu. */
+const RESOURCE_NARRATIVE_NAME: Record<ResourceKey, string> = {
+  caisse:          'caisse',
+  confiance:       'confiance de la base',
+  legitimite:      'légitimité',
+  rapportDeForce:  'force externe',
+  cohesionInterne: 'cohésion interne',
+  santeSociale:    'santé sociale',
+  institution:     'assise institutionnelle'
+};
+
+/* Possessif correct : « ta » devant consonne, « ton » devant voyelle.
+   Toutes nos ressources sont féminin singulier ; institution / assise
+   commence par une voyelle → « ton ». */
+const RESOURCE_POSSESSIVE: Record<ResourceKey, 'ta' | 'ton'> = {
+  caisse:          'ta',
+  confiance:       'ta',
+  legitimite:      'ta',
+  rapportDeForce:  'ta',
+  cohesionInterne: 'ta',
+  santeSociale:    'ta',
+  institution:     'ton'
 };
 
 /* ============================================================

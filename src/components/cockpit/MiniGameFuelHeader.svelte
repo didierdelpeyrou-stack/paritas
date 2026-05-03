@@ -1,6 +1,6 @@
 <script lang="ts">
   /* ============================================================
-     MiniGameFuelHeader — strip de carburant pour mini-jeu
+     MiniGameFuelHeader — strip d'énergie militante pour mini-jeu
      ============================================================
      Affiche les 3 ressources qui alimentent ce mini-jeu, avec :
      - leur valeur courante (0-100)
@@ -26,7 +26,8 @@
 
   interface Props {
     ability: AbilityId;
-    /** Titre humain pour la phrase d'introduction (« Carburant pour ta manif »). */
+    /** Titre humain pour la phrase d'introduction (« Énergie militante
+     *  pour ta manif »). */
     title?: string;
   }
   let { ability, title }: Props = $props();
@@ -35,6 +36,12 @@
   const entries = $derived(fuelsFor(ability, 3));
   const score = $derived(resources ? abilityFuelScore(ability, resources) : 0);
   const scoreLabel = $derived(fuelScoreLabel(score));
+  /* Nom de l'énergie adapté au camp (autonomie sémantique : un patron
+     ne mobilise pas une « énergie militante »). */
+  const camp = $derived(rebirth.state?.camp ?? 'salarie');
+  const energyName = $derived(
+    camp === 'patron' ? 'Énergie d\'organisation' : 'Énergie militante'
+  );
   const scoreClass = $derived(
     score >= 75 ? 'excellent' :
     score >= 55 ? 'solid' :
@@ -59,7 +66,7 @@
 {#if resources}
   <div class="fuel-header" class:crit={score < 18}>
     <div class="fuel-intro">
-      <span class="fuel-label">Carburant{title ? ` pour ${title}` : ''}</span>
+      <span class="fuel-label">{energyName}{title ? ` pour ${title}` : ''}</span>
       <span class="fuel-score" data-status={scoreClass}>
         <span class="score-num">{score}</span>
         <span class="score-tag">/100 · {scoreLabel}</span>

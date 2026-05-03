@@ -1,9 +1,10 @@
 <script lang="ts">
   import { fade, fly } from 'svelte/transition';
   import { rebirth } from '../../game/engine/gameState.svelte';
-  import type { EraId, Resources } from '../../game/types';
+  import type { EraId, Resources, ResourceKey } from '../../game/types';
   import { RESOURCE_LABELS } from '../../game/simulation/resources';
   import { currencyForEra } from '../../game/content/eras';
+  import { thresholdFor } from '../../game/simulation/resourceUtility';
   import { sfx } from '../../game/audio/sfx';
 
   function resourceLabel(key: keyof Resources, era: EraId): string {
@@ -112,6 +113,20 @@
         push(`${lbl} en zone critique${hint ? '  ' + hint : ''}`, 'warning', s.era);
         void sfx.play('criticalAlert');
       }
+      /* Franchissement de palier (montée OU chute) — annonce ce qui
+         s'ouvre / se ferme avec le texte d'unlock. Compétence (Deci &
+         Ryan) : le joueur voit le franchissement comme un événement,
+         pas comme un nombre qui change. */
+      const prevPalier = thresholdFor(key as ResourceKey, previous[key]);
+      const curPalier  = thresholdFor(key as ResourceKey, cur[key]);
+      if (curPalier.level !== prevPalier.level) {
+        const climbing = cur[key] > previous[key];
+        if (climbing) {
+          push(`${lbl} → palier ${curPalier.level.toUpperCase()}\n${curPalier.unlock}`, 'positive', s.era);
+        } else {
+          push(`${lbl} retombe en ${curPalier.level.toUpperCase()}\n${curPalier.unlock}`, 'warning', s.era);
+        }
+      }
     }
     previous = { ...cur };
   });
@@ -181,6 +196,9 @@
   .toast-body {
     display: block;
     font-family: 'Source Serif 4', Georgia, serif;
+    /* Permet aux toasts de palier d'afficher leur unlock multi-lignes
+       (ligne 1 = titre, ligne 2 = explication). */
+    white-space: pre-line;
   }
 
   /* === Supports diégétiques par ère ===

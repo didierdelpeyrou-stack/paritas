@@ -30,6 +30,8 @@
   import CockpitDashboardBar from './CockpitDashboardBar.svelte';
   import CockpitIcon from './CockpitIcon.svelte';
   import CockpitEraTimeline from './CockpitEraTimeline.svelte';
+  import NewsTicker from './NewsTicker.svelte';
+  import SideEventModal from '../narrative/SideEventModal.svelte';
   import CockpitLeftRail from './CockpitLeftRail.svelte';
   import CockpitRightRail from './CockpitRightRail.svelte';
   import CockpitPopover from './CockpitPopover.svelte';
@@ -262,11 +264,13 @@
       onShowHint={reopenHint}
     />
 
-    <!-- Bloc temporel : timeline + bandeau d'anticipation des vents
-         (Johnson #3). Wrappé dans un seul grid item pour ne pas
-         décaler le 1fr de cockpit-main. -->
+    <!-- Bloc temporel : timeline (lent, ères) + ticker (présent,
+         actualités) + bandeau d'anticipation des vents (Johnson #3).
+         Wrappé dans un seul grid item pour ne pas décaler le 1fr
+         de cockpit-main. -->
     <div class="time-strip">
       <CockpitEraTimeline turn={gameState.turn} />
+      <NewsTicker />
       {#if orchestrator.upcomingForcing}
         <div class="upcoming-forcing-banner" in:fade={{ duration: 240 }}>
           <span class="ufb-icon" aria-hidden="true">☄</span>
@@ -278,6 +282,9 @@
         </div>
       {/if}
     </div>
+
+    <!-- Modale de quête secondaire (déclenchée depuis le ticker). -->
+    <SideEventModal />
 
     <div class="cockpit-main">
       <CockpitTabs side="left" turn={currentTurn} />

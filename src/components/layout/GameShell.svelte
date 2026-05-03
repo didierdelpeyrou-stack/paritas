@@ -29,6 +29,8 @@
   import EndingReport from '../feedback/EndingReport.svelte';
   import ToastStack from '../feedback/ToastStack.svelte';
   import EraTimeline from './EraTimeline.svelte';
+  import NewsTicker from '../cockpit/NewsTicker.svelte';
+  import SideEventModal from '../narrative/SideEventModal.svelte';
   import Glossary from '../Glossary.svelte';
   import MyLegacyPanel from '../MyLegacyPanel.svelte';
   import Interlude from '../narrative/Interlude.svelte';
@@ -613,7 +615,11 @@
           </div>
         </div>
         <EraTimeline currentTurn={s.turn} />
+        <NewsTicker />
       </section>
+
+      <!-- Quête secondaire (déclenchée depuis le ticker) -->
+      <SideEventModal />
 
       <!-- Onglets : 3 grandes familles -->
       <div class="tab-bar" role="tablist" aria-label="Sections de la sidebar">

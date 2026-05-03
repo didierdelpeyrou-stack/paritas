@@ -236,6 +236,60 @@ export interface Scenario {
 }
 
 /* ============================================================
+   Quêtes secondaires & événements diégétiques (V3)
+   ============================================================
+   Petits vignettes interactives qui se glissent entre deux
+   scénarios principaux pour donner de la chair au camp joué.
+   Inspiration : événements CK3, "wandering encounters" RPG.
+   ============================================================ */
+
+export interface SideEventChoice {
+  id: string;
+  text: string;
+  /** Phrase courte sous le bouton qui donne le tempo / la couleur. */
+  intent?: string;
+  effects: Effects;
+  /** Texte de résolution affiché après le clic (court : 1-3 phrases). */
+  outcome: string;
+  /** Probabilité d'échec (0-1). Si tirée, applique `failOutcome` au lieu
+   *  de `outcome`, et `failEffects` à la place de `effects`. Permet les
+   *  choix risqués type "La police avec nous!". */
+  failProbability?: number;
+  failOutcome?: string;
+  failEffects?: Effects;
+  traitShift?: Partial<TraitScores>;
+  /** Filtre par trait dominant pour verrouiller un choix de caractère. */
+  requiresTrait?: PlayerTrait;
+  /** Drapeau historique posé (mémoire). */
+  flag?: string;
+}
+
+export interface SideEvent {
+  id: string;
+  /** Camp ciblé. Si absent → événement universel (rare). */
+  camp?: Camp;
+  /** Fenêtre temporelle (turns) — défaut : tout le jeu. */
+  fromTurn?: number;
+  toTurn?: number;
+  /** Ères ciblées (alternative à fromTurn/toTurn). */
+  eras?: EraId[];
+  /** Trait dominant requis (filtre additionnel). */
+  requiresTrait?: PlayerTrait;
+  /** Conditions de ressources (ex : caisse < 30). */
+  resourceCondition?: (r: Resources) => boolean;
+  /** Poids de tirage relatif (défaut 1). Plus élevé = plus probable. */
+  weight?: number;
+  /** Titre affiché en bandeau. */
+  title: string;
+  /** Sous-titre / lieu. */
+  subtitle?: string;
+  /** Court setup (≤ 4 lignes). */
+  setup: string;
+  /** 2-4 choix. */
+  choices: SideEventChoice[];
+}
+
+/* ============================================================
    Mémoire historique
    ============================================================ */
 

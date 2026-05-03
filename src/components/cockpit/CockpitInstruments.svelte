@@ -1,45 +1,49 @@
 <script lang="ts">
-  /* Instruments — 7 jauges en cadrans laiton (vague α-bis MVP).
-     V1 affiche les ressources V2 (Resources interface). Cadran
-     analogique simulé avec aiguille SVG qui pivote selon la valeur
-     0-100. Hover = tooltip Bourdieu. Honte/Fierté caché jusqu'à
-     épilogue (Ernaux #99). */
+  /* ============================================================
+     CockpitInstruments — strip d'instruments en cadrans laiton
+     ============================================================
+     7 jauges en cadrans analogiques + Honte/Fierté caché en mode
+     épilogue. Hauteur fixe (compact) pour respecter le viewport-fit
+     desktop. Mobile : scroll horizontal mais pas de wrap (préserve
+     la métaphore strip).
+
+     Direction : Vignelli #8 (sobriété) + Cooper #13 (icônes
+     paritaires métaphoriques) + Soueidan #191 (a11y aria).
+     ============================================================ */
+  import { fly } from 'svelte/transition';
+  import { cubicOut } from 'svelte/easing';
   import type { Resources } from '../../game/types';
   import { RESOURCE_LABELS, RESOURCE_TOOLTIPS } from '../../game/simulation/resources';
+  import CockpitIcon from './CockpitIcon.svelte';
+  import type { IconKey } from './icons';
 
   interface Props {
     resources: Resources;
-    /** Tour actuel — sert à la révélation Norman progressive. */
     turn: number;
-    /** Honte/Fierté caché tant que la partie n'est pas terminée. */
     showHonteFierte?: boolean;
-    /** Si fournie, affiche aussi cette jauge cachée. */
     honteFierte?: number;
   }
   let { resources, turn, showHonteFierte = false, honteFierte = 50 }: Props = $props();
 
-  /* Révélation Norman : tour 1 = Caisse + Confiance seulement.
-     Les autres se déverrouillent à des milestones narratifs. */
-  const REVEAL_AT: Record<keyof Resources | 'honteFierte', number> = {
+  /* Révélation Norman progressive */
+  const REVEAL_AT: Record<keyof Resources, number> = {
     caisse: 1,
     confiance: 1,
     santeSociale: 5,
     legitimite: 10,
     rapportDeForce: 15,
     cohesionInterne: 18,
-    institution: 25,
-    honteFierte: 9999  // jamais en partie, révélée à l'épilogue seulement
+    institution: 25
   };
 
-  /* Métadonnées d'affichage (icône + couleur dominante du cadran). */
-  const META: Record<keyof Resources, { ico: string; color: string }> = {
-    caisse:          { ico: '💰', color: '#C9B26A' },
-    confiance:       { ico: '🤝', color: '#1E5C8A' },
-    santeSociale:    { ico: '✚',  color: '#3A6B47' },
-    legitimite:      { ico: '⚖',  color: '#5C2D5C' },
-    rapportDeForce:  { ico: '📢', color: '#D9821C' },
-    cohesionInterne: { ico: '✊',  color: '#8B1F1B' },
-    institution:    { ico: '⚙',  color: '#7A5C3A' }
+  const META: Record<keyof Resources, { icon: IconKey; color: string }> = {
+    caisse:          { icon: 'sceau',     color: '#C9B26A' },
+    confiance:       { icon: 'carte',     color: '#1E5C8A' },
+    santeSociale:    { icon: 'epis',      color: '#3A6B47' },
+    legitimite:      { icon: 'balance',   color: '#5C2D5C' },
+    rapportDeForce:  { icon: 'pupitre',   color: '#D9821C' },
+    cohesionInterne: { icon: 'poing',     color: '#8B1F1B' },
+    institution:     { icon: 'rouage',    color: '#7A5C3A' }
   };
 
   const ORDER: Array<keyof Resources> = [
@@ -47,49 +51,82 @@
     'rapportDeForce', 'cohesionInterne', 'institution'
   ];
 
-  /* Aiguille tourne de -120° (valeur 0) à +120° (valeur 100). */
+  /* Aiguille de -120° (val 0) à +120° (val 100) */
   function angleFor(value: number): number {
     const v = Math.max(0, Math.min(100, value));
     return -120 + (v / 100) * 240;
+  }
+
+  /* Couleur arc dynamique selon zone (ok / warn / crit) */
+  function arcColor(value: number, base: string): string {
+    if (value < 18) return '#B0181E';
+    if (value < 30) return '#D9821C';
+    return base;
   }
 
   let visible = $derived(ORDER.filter(k => turn >= REVEAL_AT[k]));
 </script>
 
 <div class="instruments-strip" role="status" aria-label="Tableau des ressources">
-  {#each visible as key}
+  {#each visible as key (key)}
     {@const value = resources[key]}
     {@const meta = META[key]}
+    {@const arc = arcColor(value, meta.color)}
     <button
       type="button"
       class="instrument"
       title={RESOURCE_TOOLTIPS[key]}
       aria-label="{RESOURCE_LABELS[key]} : {Math.round(value)} sur 100"
+      in:fly={{ y: 8, duration: 280, easing: cubicOut }}
     >
-      <div class="cadran">
-        <svg viewBox="0 0 100 60" class="cadran-svg" aria-hidden="true">
-          <!-- Arc de fond (zone passive) -->
+      <div class="cadran" style:color={meta.color}>
+        <svg viewBox="0 0 100 64" class="cadran-svg" aria-hidden="true">
+          <!-- Halo lumineux subtil derrière le cadran -->
+          <defs>
+            <radialGradient id="halo-{key}">
+              <stop offset="0%" stop-color={meta.color} stop-opacity="0.08"/>
+              <stop offset="80%" stop-color={meta.color} stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <ellipse cx="50" cy="50" rx="44" ry="20" fill="url(#halo-{key})"/>
+
+          <!-- Arc de fond (zone passive, gris laiton) -->
           <path d="M 12 50 A 38 38 0 0 1 88 50" fill="none"
-            stroke="rgba(176, 145, 80, 0.30)" stroke-width="3" stroke-linecap="round"/>
-          <!-- Arc de remplissage (selon valeur) -->
+            stroke="rgba(176, 145, 80, 0.32)" stroke-width="3"
+            stroke-linecap="round"/>
+
+          <!-- Arc rempli selon valeur -->
           <path d="M 12 50 A 38 38 0 0 1 88 50" fill="none"
-            stroke={meta.color} stroke-width="3" stroke-linecap="round"
-            stroke-dasharray="119" stroke-dashoffset={119 - (value / 100) * 119}
+            stroke={arc} stroke-width="3" stroke-linecap="round"
+            stroke-dasharray="119"
+            stroke-dashoffset={119 - (Math.max(0, Math.min(100, value)) / 100) * 119}
             class="cadran-arc"/>
+
+          <!-- Graduations 0/50/100 -->
+          <line x1="12" y1="50" x2="14" y2="48" stroke="rgba(90,47,28,0.5)" stroke-width="1"/>
+          <line x1="50" y1="12" x2="50" y2="14" stroke="rgba(90,47,28,0.5)" stroke-width="1"/>
+          <line x1="88" y1="50" x2="86" y2="48" stroke="rgba(90,47,28,0.5)" stroke-width="1"/>
+
           <!-- Aiguille -->
-          <line x1="50" y1="50" x2="50" y2="14" stroke="#1A1411"
-            stroke-width="2" stroke-linecap="round"
-            transform="rotate({angleFor(value)} 50 50)"
-            class="cadran-needle"/>
-          <!-- Pivot central -->
-          <circle cx="50" cy="50" r="3" fill="#B09150"/>
+          <g transform="rotate({angleFor(value)} 50 50)" class="cadran-needle">
+            <line x1="50" y1="50" x2="50" y2="16" stroke="#1A1411"
+              stroke-width="2" stroke-linecap="round"/>
+            <line x1="50" y1="50" x2="50" y2="56" stroke="#1A1411"
+              stroke-width="2.5" stroke-linecap="round"/>
+          </g>
+
+          <!-- Pivot central style horloge -->
+          <circle cx="50" cy="50" r="3.5" fill="#3D2615" stroke="#B09150" stroke-width="0.8"/>
+          <circle cx="50" cy="50" r="1.4" fill="#C9B26A"/>
         </svg>
       </div>
-      <div class="instrument-label">
-        <span class="instrument-ico" aria-hidden="true">{meta.ico}</span>
+      <div class="instrument-meta">
+        <span class="instrument-icon">
+          <CockpitIcon name={meta.icon} size={14} />
+        </span>
         <span class="instrument-name">{RESOURCE_LABELS[key]}</span>
       </div>
-      <div class="instrument-value" style="color: {meta.color}">
+      <div class="instrument-value" style:color={meta.color}>
         {Math.round(value)}
       </div>
     </button>
@@ -97,24 +134,29 @@
 
   {#if showHonteFierte}
     <button type="button" class="instrument hidden-jauge"
-      title="Jauge cachée — révélée à l'épilogue. Mesure la cohérence entre tes actes et la fidélité à ta base. (Annie Ernaux)"
+      title="Jauge cachée — révélée à l'épilogue. Mesure la cohérence entre tes actes et la fidélité à ta base. (Annie Ernaux #99)"
       aria-label="Honte ou fierté : {Math.round(honteFierte)} sur 100"
     >
-      <div class="cadran">
-        <svg viewBox="0 0 100 60" class="cadran-svg" aria-hidden="true">
+      <div class="cadran" style:color="#C9B26A">
+        <svg viewBox="0 0 100 64" class="cadran-svg" aria-hidden="true">
           <path d="M 12 50 A 38 38 0 0 1 88 50" fill="none"
-            stroke="rgba(176, 145, 80, 0.30)" stroke-width="3" stroke-linecap="round"/>
+            stroke="rgba(176, 145, 80, 0.32)" stroke-width="3" stroke-linecap="round"/>
           <path d="M 12 50 A 38 38 0 0 1 88 50" fill="none"
             stroke="#C9B26A" stroke-width="3" stroke-linecap="round"
-            stroke-dasharray="119" stroke-dashoffset={119 - (honteFierte / 100) * 119}/>
-          <line x1="50" y1="50" x2="50" y2="14" stroke="#1A1411"
-            stroke-width="2" stroke-linecap="round"
-            transform="rotate({angleFor(honteFierte)} 50 50)"/>
-          <circle cx="50" cy="50" r="3" fill="#B09150"/>
+            stroke-dasharray="119"
+            stroke-dashoffset={119 - (Math.max(0, Math.min(100, honteFierte)) / 100) * 119}/>
+          <g transform="rotate({angleFor(honteFierte)} 50 50)">
+            <line x1="50" y1="50" x2="50" y2="16" stroke="#F4D58C"
+              stroke-width="2" stroke-linecap="round"/>
+            <line x1="50" y1="50" x2="50" y2="56" stroke="#F4D58C"
+              stroke-width="2.5" stroke-linecap="round"/>
+          </g>
+          <circle cx="50" cy="50" r="3.5" fill="#1A1411" stroke="#C9B26A" stroke-width="0.8"/>
+          <circle cx="50" cy="50" r="1.4" fill="#F4D58C"/>
         </svg>
       </div>
-      <div class="instrument-label">
-        <span class="instrument-ico" aria-hidden="true">🎭</span>
+      <div class="instrument-meta">
+        <span class="instrument-icon"><CockpitIcon name="masque" size={14} /></span>
         <span class="instrument-name">Honte / Fierté</span>
       </div>
       <div class="instrument-value">{Math.round(honteFierte)}</div>
@@ -125,49 +167,77 @@
 <style>
   .instruments-strip {
     display: flex;
-    gap: 0.6rem;
-    padding: 0.6rem 1rem;
-    background: linear-gradient(180deg, #C9A878 0%, #B89568 100%);
-    border-top: 1px solid rgba(90, 47, 28, 0.3);
-    border-bottom: 1px solid rgba(90, 47, 28, 0.3);
+    align-items: stretch;
+    gap: 0.55rem;
+    padding: 0.5rem 0.85rem;
+    background:
+      repeating-linear-gradient(
+        90deg,
+        rgba(90, 47, 28, 0) 0,
+        rgba(90, 47, 28, 0.03) 1px,
+        rgba(90, 47, 28, 0) 2px,
+        rgba(90, 47, 28, 0) 8px
+      ),
+      linear-gradient(180deg, #C9A878 0%, #B89568 100%);
+    border-top: 1px solid rgba(90, 47, 28, 0.4);
+    border-bottom: 1px solid rgba(90, 47, 28, 0.4);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      inset 0 -1px 2px rgba(90, 47, 28, 0.15);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(90, 47, 28, 0.3) transparent;
+  }
+
+  .instruments-strip::-webkit-scrollbar {
+    height: 4px;
+  }
+  .instruments-strip::-webkit-scrollbar-thumb {
+    background: rgba(90, 47, 28, 0.25);
+    border-radius: 2px;
   }
 
   .instrument {
-    flex: 1 1 auto;
-    min-width: 78px;
-    display: flex;
-    flex-direction: column;
+    flex: 1 1 110px;
+    min-width: 92px;
+    max-width: 140px;
+    display: grid;
+    grid-template-rows: auto auto auto;
     align-items: center;
+    justify-items: center;
     gap: 0.15rem;
-    padding: 0.4rem 0.3rem 0.5rem;
+    padding: 0.35rem 0.4rem 0.4rem;
     background: linear-gradient(180deg, #D8C088 0%, #C9A878 100%);
-    border: 1px solid #8C6E40;
+    border: 1px solid rgba(140, 110, 64, 0.55);
     border-radius: 0.4rem;
     box-shadow:
-      inset 0 1px 2px rgba(255, 255, 255, 0.3),
-      inset 0 -2px 4px rgba(90, 47, 28, 0.15),
-      0 2px 4px rgba(0, 0, 0, 0.15);
+      inset 0 1px 0 rgba(255, 255, 255, 0.32),
+      inset 0 -2px 3px rgba(90, 47, 28, 0.18),
+      0 1px 3px rgba(0, 0, 0, 0.18);
     color: #1A1411;
     font-family: 'Cinzel', Georgia, serif;
     cursor: pointer;
-    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    transition:
+      transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1),
+      box-shadow 0.22s ease,
+      border-color 0.18s ease;
   }
 
   .instrument:hover,
   .instrument:focus-visible {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    border-color: #8C6E40;
     box-shadow:
-      inset 0 1px 2px rgba(255, 255, 255, 0.4),
-      inset 0 -2px 4px rgba(90, 47, 28, 0.2),
-      0 4px 8px rgba(0, 0, 0, 0.2);
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -2px 3px rgba(90, 47, 28, 0.22),
+      0 4px 10px rgba(0, 0, 0, 0.22);
     outline: none;
   }
 
   .cadran {
     width: 100%;
-    max-width: 64px;
+    max-width: 76px;
   }
 
   .cadran-svg {
@@ -177,30 +247,33 @@
   }
 
   .cadran-arc {
-    transition: stroke-dashoffset 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
+    transition: stroke-dashoffset 0.65s cubic-bezier(0.34, 1.2, 0.64, 1),
+                stroke 0.4s ease;
   }
 
   .cadran-needle {
     transform-origin: 50px 50px;
-    transition: transform 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
+    transition: transform 0.65s cubic-bezier(0.34, 1.2, 0.64, 1);
   }
 
-  .instrument-label {
-    display: flex;
-    align-items: baseline;
-    gap: 0.25rem;
-    font-size: 0.62rem;
+  .instrument-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.6rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    line-height: 1;
+    line-height: 1.05;
+    color: rgba(26, 20, 17, 0.78);
   }
 
-  .instrument-ico {
-    font-size: 0.78rem;
+  .instrument-icon {
+    display: inline-flex;
+    align-items: center;
+    color: rgba(26, 20, 17, 0.82);
   }
 
   .instrument-name {
-    color: rgba(26, 20, 17, 0.78);
     white-space: nowrap;
   }
 
@@ -208,7 +281,8 @@
     font-size: 1.05rem;
     font-weight: 700;
     line-height: 1;
-    font-family: 'Courier New', monospace;
+    font-family: 'Courier Prime', 'Courier New', monospace;
+    color: var(--ink, #1A1411);
   }
 
   .hidden-jauge {
@@ -217,18 +291,28 @@
     color: #F4D58C;
   }
 
-  .hidden-jauge .instrument-name {
+  .hidden-jauge .instrument-meta,
+  .hidden-jauge .instrument-icon {
     color: rgba(244, 213, 140, 0.78);
   }
 
-  /* Mobile : strip horizontale qui scroll */
+  .hidden-jauge .instrument-value {
+    color: #F4D58C;
+  }
+
+  /* Mobile : strip qui scroll horizontalement, jauges plus compactes */
   @media (max-width: 768px) {
-    .instrument {
-      min-width: 64px;
-      padding: 0.3rem 0.2rem;
+    .instruments-strip {
+      padding: 0.4rem 0.5rem;
+      gap: 0.4rem;
     }
-    .cadran { max-width: 48px; }
-    .instrument-value { font-size: 0.9rem; }
-    .instrument-label { font-size: 0.55rem; }
+    .instrument {
+      min-width: 78px;
+      flex: 0 0 78px;
+      padding: 0.3rem;
+    }
+    .cadran { max-width: 56px; }
+    .instrument-value { font-size: 0.92rem; }
+    .instrument-meta { font-size: 0.55rem; gap: 0.2rem; }
   }
 </style>

@@ -41,6 +41,7 @@
   import ManifSimulator from '../org/ManifSimulator.svelte';
   import MeetingSimulator from '../org/MeetingSimulator.svelte';
   import CockpitTableLauncher from './CockpitTableLauncher.svelte';
+  import StatutJuridique from './StatutJuridique.svelte';
 
   interface Props {
     onReplay?: () => void;
@@ -274,8 +275,14 @@
           {:else if cockpit.openTab === 'monde'}
             <div class="placeholder">
               <h3>Monde — La Carte</h3>
-              <p>Mini-jeu en construction (vague δ). Couverture
-                régionale et accords européens à venir.</p>
+              <p>Carte régions + accords EU en construction (vague δ).</p>
+              <p style="margin-top: 0.8rem; font-style: italic; color: rgba(244, 239, 226, 0.65);">
+                En attendant : voici <strong>« Le Statut Juridique » 1864</strong> —
+                premier mini-jeu pivot V2-1 livré (loi Ollivier).
+              </p>
+              <div style="margin-top: 1rem; background: rgba(244, 239, 226, 0.97); border-radius: 0.5rem; padding: 1rem;">
+                <StatutJuridique />
+              </div>
             </div>
           {:else if cockpit.openTab === 'journal'}
             <div class="placeholder">

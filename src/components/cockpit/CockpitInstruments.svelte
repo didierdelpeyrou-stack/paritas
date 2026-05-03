@@ -25,9 +25,13 @@
   }
   let { resources, turn, showHonteFierte = false, honteFierte = 50 }: Props = $props();
 
-  /* Révélation Norman progressive */
-  const REVEAL_AT: Record<keyof Resources, number> = {
-    caisse: 1,
+  /* Révélation Norman progressive.
+     ⚠ Caisse retirée des dials (retour live test patronat P1 §4 :
+     « Je vois la caisse au top ET au dial, c'est redondant »).
+     Caisse = chip top header (avec delta numérique), trop volatile
+     pour un cadran analogique. Les dials se concentrent sur les
+     6 « vital signs » à mouvement plus lent. */
+  const REVEAL_AT: Record<string, number> = {
     confiance: 1,
     santeSociale: 5,
     legitimite: 10,
@@ -36,8 +40,7 @@
     institution: 25
   };
 
-  const META: Record<keyof Resources, { icon: IconKey; color: string }> = {
-    caisse:          { icon: 'sceau',     color: '#C9B26A' },
+  const META: Record<string, { icon: IconKey; color: string }> = {
     confiance:       { icon: 'carte',     color: '#1E5C8A' },
     santeSociale:    { icon: 'epis',      color: '#3A6B47' },
     legitimite:      { icon: 'balance',   color: '#5C2D5C' },
@@ -47,7 +50,7 @@
   };
 
   const ORDER: Array<keyof Resources> = [
-    'caisse', 'confiance', 'santeSociale', 'legitimite',
+    'confiance', 'santeSociale', 'legitimite',
     'rapportDeForce', 'cohesionInterne', 'institution'
   ];
 

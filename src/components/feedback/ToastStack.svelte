@@ -14,6 +14,19 @@
     return RESOURCE_LABELS[key];
   }
 
+  /* Suggestion d'action contextuelle quand une jauge bascule en
+     critique (retour live test patronat P1 §2 — « le toast me dit
+     que c'est critique mais je ne sais pas où aller »). */
+  const CRITICAL_HINT: Partial<Record<keyof Resources, string>> = {
+    caisse:          '→ Budget (Trésorerie)',
+    confiance:       '→ Meeting public',
+    cohesionInterne: '→ Tracts ou Congrès',
+    rapportDeForce:  '→ Manifestation',
+    legitimite:      '→ Presse ou Délégation',
+    institution:     '→ Aménager le siège',
+    santeSociale:    '→ Pétition'
+  };
+
   /* Snapshot précédent des ressources — non réactif pour ne pas re-trigger
      l'effet sur écriture. */
   let previous: Resources | null = null;
@@ -69,7 +82,8 @@
       }
       /* Alerte de seuil critique sur transition descendante uniquement. */
       if (cur[key] <= 18 && previous[key] > 18) {
-        push(`${lbl} en zone critique`, 'warning');
+        const hint = CRITICAL_HINT[key];
+        push(`${lbl} en zone critique${hint ? '  ' + hint : ''}`, 'warning');
         void sfx.play('criticalAlert');
       }
     }

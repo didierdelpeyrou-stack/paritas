@@ -41,6 +41,23 @@
     'table'           // négociation
   ];
 
+  /* Labels courts lisibles 2 lignes sur mobile (retour live test
+     patronat P1 §1 — l'ancien `label.split(' ')[0]` produisait
+     « Organiser », « Tenir », « Distribuer » qui ne disaient rien). */
+  const SHORT_LABEL: Record<string, string> = {
+    tracts:         'Tracts',
+    meeting:        'Meeting',
+    manifestation: 'Manif.',
+    petition:       'Pétition',
+    delegation:     'Délégation',
+    presse:         'Presse',
+    tresorerie:     'Budget',
+    table:          'Table'
+  };
+  function shortLabel(a: ActionDef): string {
+    return SHORT_LABEL[a.id] ?? a.label.split(' ').slice(0, 2).join(' ');
+  }
+
   const quickActions = $derived(
     QUICK_ACTION_IDS
       .map(id => ACTIONS.find(a => a.id === id))
@@ -75,7 +92,7 @@
         <span class="quick-icon" style:color={a.accent}>
           <CockpitIcon name={a.icon} size={18} />
         </span>
-        <span class="quick-label">{a.label.split(' ')[0]?.replace(/^(une|un|le|la|les|des)$/i, a.label.split(' ')[1] ?? a.label.split(' ')[0]) ?? a.label}</span>
+        <span class="quick-label">{shortLabel(a)}</span>
         {#if a.cost.caisse}
           <span class="quick-cost">{a.cost.caisse}F</span>
         {/if}
@@ -210,10 +227,10 @@
   .quick-icon { display: inline-flex; }
 
   .quick-label {
-    line-height: 1;
+    line-height: 1.05;
     text-align: center;
     white-space: nowrap;
-    max-width: 60px;
+    max-width: 64px;
     overflow: hidden;
     text-overflow: ellipsis;
   }
@@ -347,7 +364,9 @@
     50%      { box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.22), inset 0 -3px 5px rgba(0, 0, 0, 0.3), 0 5px 16px rgba(244, 213, 140, 0.5), 0 3px 8px rgba(122, 30, 27, 0.6); }
   }
 
-  /* Mobile */
+  /* Mobile : labels lisibles sur 2 lignes (retour live test patronat
+     P1 — l'icône + label tronqué = bouton illisible au pouce). On
+     élargit légèrement les boutons et on permet le wrap. */
   @media (max-width: 768px) {
     .dashboard {
       grid-template-columns: 1fr auto;
@@ -359,9 +378,22 @@
       margin-top: 0.4rem;
     }
     .quick-btn {
-      min-width: 56px;
-      font-size: 0.55rem;
+      min-width: 64px;
+      font-size: 0.6rem;
+      padding: 0.4rem 0.4rem 0.45rem;
     }
-    .quick-label { max-width: 50px; }
+    .quick-label {
+      max-width: 60px;
+      white-space: normal;
+      line-height: 1.1;
+      /* 2 lignes max via line-clamp */
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      hyphens: auto;
+      word-break: break-word;
+    }
   }
 </style>

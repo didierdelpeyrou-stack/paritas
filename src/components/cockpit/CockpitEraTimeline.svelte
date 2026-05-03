@@ -5,6 +5,7 @@
      ⚠ Source de vérité : ERAS de game/content/eras.ts. Ne jamais
      hardcoder les fromTurn ici (cause de désalignement curseur). */
   import { ERAS as GAME_ERAS } from '../../game/content/eras';
+  import { EXTERNAL_FORCINGS } from '$lib/orchestrator/thermodynamics';
 
   interface Props {
     turn: number;
@@ -26,12 +27,61 @@
       return turn >= e.startTurn && (!next || turn < next.startTurn);
     })
   );
+
+  /* Tooltip enrichi par tic : ère + tour + forçages chevauchants.
+     Réponse au retour live test patronat P1 — « les marqueurs
+     timeline sont muets, je sais juste l'année ». */
+  function tickTooltip(eraLabel: string, startTurn: number): string {
+    const overlapping = EXTERNAL_FORCINGS.filter(
+      f => f.fromTurn <= startTurn && f.toTurn >= startTurn
+    );
+    let s = `${eraLabel} — démarre au tour ${startTurn}`;
+    if (overlapping.length) {
+      s += '\n\n☄ Vent(s) actif(s) à ce moment :';
+      for (const f of overlapping) {
+        s += `\n• ${f.label} (T${f.fromTurn}–${f.toTurn})\n  ${f.description}`;
+      }
+    }
+    return s;
+  }
+
+  /* Marqueurs des vents historiques sur la timeline (Krug : rendre
+     l'invisible visible). Bande horizontale entre fromTurn/toTurn,
+     pulse pour le vent actif. */
+  const FORCING_BANDS = EXTERNAL_FORCINGS.map(f => ({
+    label: f.label,
+    description: f.description,
+    fromTurn: f.fromTurn,
+    toTurn: f.toTurn,
+    leftPct: (f.fromTurn / 100) * 100,
+    widthPct: ((f.toTurn - f.fromTurn + 1) / 100) * 100
+  }));
+
+  function isForcingActive(f: { fromTurn: number; toTurn: number }, t: number): boolean {
+    return t >= f.fromTurn && t <= f.toTurn;
+  }
+  function isForcingPast(f: { toTurn: number }, t: number): boolean {
+    return t > f.toTurn;
+  }
 </script>
 
 <nav class="era-timeline" aria-label="Timeline des ères historiques">
   <div class="track">
     <!-- Axe + tic-marks -->
     <div class="axis"></div>
+
+    <!-- Bandes des vents historiques (sous l'axe, semi-transparent) -->
+    {#each FORCING_BANDS as f (f.label)}
+      <div
+        class="forcing-band"
+        class:active={isForcingActive(f, turn)}
+        class:past={isForcingPast(f, turn)}
+        style:left="{f.leftPct}%"
+        style:width="{f.widthPct}%"
+        title={`☄ ${f.label} (T${f.fromTurn}–${f.toTurn})\n${f.description}`}
+      ></div>
+    {/each}
+
     {#each ERAS as e, i}
       {@const left = (e.startTurn / totalTurns) * 100}
       <div
@@ -39,7 +89,7 @@
         class:active={i === currentEraIdx}
         class:past={i < currentEraIdx}
         style:left="{left}%"
-        title={`${e.label} — démarre au tour ${e.startTurn}`}
+        title={tickTooltip(e.label, e.startTurn)}
       >
         <span class="tick-mark"></span>
         <span class="tick-label">{e.short}</span>
@@ -111,6 +161,43 @@
     width: 2px;
     height: 6px;
     background: currentColor;
+  }
+
+  /* Bandes des vents historiques sous l'axe (Krug : rendre
+     l'invisible visible). Échelle dorée ambrée comme le banner
+     d'anticipation pour cohérence sémantique. */
+  .forcing-band {
+    position: absolute;
+    top: 50%;
+    height: 4px;
+    transform: translateY(2px);
+    background: linear-gradient(90deg,
+      rgba(217, 130, 28, 0.18),
+      rgba(217, 130, 28, 0.32),
+      rgba(217, 130, 28, 0.18));
+    border-radius: 2px;
+    pointer-events: auto;
+    cursor: help;
+    transition: opacity 0.2s ease;
+  }
+  .forcing-band:hover { opacity: 0.85; filter: brightness(1.2); }
+  .forcing-band.past {
+    background: linear-gradient(90deg,
+      rgba(122, 92, 58, 0.20),
+      rgba(122, 92, 58, 0.30),
+      rgba(122, 92, 58, 0.20));
+  }
+  .forcing-band.active {
+    background: linear-gradient(90deg,
+      rgba(217, 130, 28, 0.45),
+      rgba(244, 213, 140, 0.55),
+      rgba(217, 130, 28, 0.45));
+    box-shadow: 0 0 8px rgba(217, 130, 28, 0.5);
+    animation: band-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes band-pulse {
+    0%, 100% { box-shadow: 0 0 6px rgba(217, 130, 28, 0.4); }
+    50%      { box-shadow: 0 0 12px rgba(217, 130, 28, 0.7); }
   }
 
   .tick.active .tick-mark {

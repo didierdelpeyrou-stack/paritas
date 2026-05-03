@@ -72,6 +72,25 @@
   let mobileMenuOpen = $state(false);
   let isMobile = $state(false);
   let actionsDrawerOpen = $state(false);
+  /* Krug #2 : hint mécanique dismissable. Persisté en localStorage
+   * pour que le user qui ferme ne soit pas réimposé au reload. */
+  let hintDismissed = $state(false);
+  if (typeof window !== 'undefined') {
+    try {
+      hintDismissed = localStorage.getItem('paritas_cockpit_hint_seen') === '1';
+    } catch { /* ignore */ }
+  }
+  function dismissHint() {
+    hintDismissed = true;
+    try { localStorage.setItem('paritas_cockpit_hint_seen', '1'); } catch { /* ignore */ }
+  }
+  /* Krug #1 : auto-dismiss dès qu'une action libre est exécutée
+   * (preuve que le user a compris la mécanique). */
+  $effect(() => {
+    if (!hintDismissed && orchestrator.state.history.length > 0) {
+      dismissHint();
+    }
+  });
 
   /* Détection responsive simple — évite import lourd. */
   $effect(() => {
@@ -263,8 +282,10 @@
                 onContinue={handleContinue}
               />
             {:else if scenario}
-              <!-- Fix Norman #2 + #6 : hint mécanique au tour 1-5 -->
-              {#if gameState.turn <= 5}
+              <!-- Fix Norman #2 + #6 + Krug #1 + #2 : hint mécanique
+                   dismissable, auto-éteint après la 1ʳᵉ action libre,
+                   au tour 1-5 sinon. -->
+              {#if gameState.turn <= 5 && !hintDismissed}
                 <aside class="how-to-play" in:fade={{ duration: 240 }}>
                   <span class="htp-icon">
                     <CockpitIcon name="parchemin" size={16} />
@@ -280,6 +301,8 @@
                       0 à 2 actions libres par tour.
                     {/if}
                   </p>
+                  <button type="button" class="htp-close" onclick={dismissHint}
+                    title="Compris, masquer ce rappel" aria-label="Fermer le rappel">×</button>
                 </aside>
               {/if}
               <SceneCard
@@ -653,10 +676,10 @@
     color: #1A1411;
   }
 
-  /* === Hint mécanique (Norman fix #2 + #6) === */
+  /* === Hint mécanique (Norman fix #2 + #6 + Krug #1 + #2) === */
   :global(.sky-content .how-to-play) {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto 1fr auto;
     gap: 0.6rem;
     padding: 0.7rem 0.95rem;
     margin: 0 auto 1.2rem;
@@ -668,6 +691,24 @@
     font-family: 'Source Serif 4', Georgia, serif;
     font-size: 0.88rem;
     line-height: 1.5;
+  }
+
+  :global(.sky-content .how-to-play .htp-close) {
+    background: transparent;
+    border: 1px solid rgba(90, 47, 28, 0.3);
+    color: rgba(90, 47, 28, 0.8);
+    width: 24px; height: 24px;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    align-self: start;
+    transition: background 0.15s ease;
+  }
+
+  :global(.sky-content .how-to-play .htp-close:hover) {
+    background: rgba(90, 47, 28, 0.1);
+    color: #5A2F1C;
   }
 
   :global(.sky-content .how-to-play .htp-icon) {

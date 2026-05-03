@@ -83,18 +83,22 @@
     return Math.round(total);
   });
 
-  /* Couleurs camp pour drapeau */
-  let campColor = $derived.by(() => {
-    /* RebirthGameState n'a pas de camp explicite — on l'infère
-     * via l'organisation ou via le legendaryId. Default = neutre. */
+  /* Couleurs + symbole camp pour drapeau (Scher #4 : symboles
+   * spécifiquement français paritaires, pas l'étoile US). */
+  let campData = $derived.by(() => {
     const name = gs.organization?.name?.toLowerCase() ?? '';
     if (name.includes('cgt') || name.includes('cfdt') || name.includes('fo')
-      || name.includes('cftc') || name.includes('solid'))
-      return { primary: '#B0181E', accent: '#F4D58C' };
-    if (name.includes('medef') || name.includes('cnpf') || name.includes('cpme'))
-      return { primary: '#1E5C8A', accent: '#F4D58C' };
-    return { primary: '#5A2F1C', accent: '#C9B26A' };
+      || name.includes('cftc') || name.includes('solid')) {
+      return { primary: '#B0181E', accent: '#F4D58C', symbol: 'epis' as const };
+    }
+    if (name.includes('medef') || name.includes('cnpf') || name.includes('cpme')
+      || name.includes('u2p')) {
+      return { primary: '#1E5C8A', accent: '#F4D58C', symbol: 'rouage' as const };
+    }
+    return { primary: '#5A2F1C', accent: '#C9B26A', symbol: 'fleuron' as const };
   });
+  let campColor = $derived({ primary: campData.primary, accent: campData.accent });
+  let campSymbol = $derived(campData.symbol);
 
   /* 7 ressources avec icônes paritaires */
   const RES_META = [
@@ -127,20 +131,55 @@
       </button>
     {/if}
 
-    <!-- Drapeau organisation -->
-    <div class="flag" aria-hidden="true">
+    <!-- Drapeau organisation — symbole adapté au camp (Scher #4 :
+         évite l'étoile US, préfère épi de blé syndical / roue
+         dentée patronale / fleuron neutre). -->
+    <div class="flag" aria-hidden="true" title="Drapeau de ton organisation">
       <svg viewBox="0 0 32 32" class="flag-svg">
         <!-- Mât -->
         <line x1="6" y1="2" x2="6" y2="30" stroke="#3D2A1A" stroke-width="2" stroke-linecap="round"/>
-        <!-- Tissu -->
-        <path d="M6 4 L26 4 L22 11 L26 18 L6 18 Z"
-              fill="var(--camp-primary)"
-              stroke="#1A1411"
-              stroke-width="0.5"
-              stroke-linejoin="round"/>
-        <!-- Symbole central (étoile à 5 branches stylisée) -->
-        <path d="M16 7.5 L16.6 9.5 L18.7 9.5 L17 10.7 L17.6 12.7 L16 11.5 L14.4 12.7 L15 10.7 L13.3 9.5 L15.4 9.5 Z"
-              fill="var(--camp-accent)"/>
+        <!-- Tissu (drapé légèrement, ondulation tessellée) -->
+        <g class="flag-cloth">
+          <path d="M6 4 L26 4 L22 11 L26 18 L6 18 Z"
+                fill="var(--camp-primary)"
+                stroke="#1A1411"
+                stroke-width="0.5"
+                stroke-linejoin="round"/>
+          <!-- Symbole français selon camp -->
+          {#if campSymbol === 'epis'}
+            <!-- Épi de blé stylisé (CGT historique) -->
+            <line x1="16" y1="6.5" x2="16" y2="15.5" stroke="var(--camp-accent)" stroke-width="0.8" stroke-linecap="round"/>
+            <path d="M16 8 Q14 8 13.5 9.5 Q15 9 16 9.5
+                     M16 8 Q18 8 18.5 9.5 Q17 9 16 9.5
+                     M16 10 Q14 10 13.5 11.5 Q15 11 16 11.5
+                     M16 10 Q18 10 18.5 11.5 Q17 11 16 11.5
+                     M16 12 Q14 12 13.5 13.5 Q15 13 16 13.5
+                     M16 12 Q18 12 18.5 13.5 Q17 13 16 13.5"
+                  stroke="var(--camp-accent)" stroke-width="0.7" fill="none"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+          {:else if campSymbol === 'rouage'}
+            <!-- Roue dentée patronat -->
+            <circle cx="16" cy="11" r="2.6" stroke="var(--camp-accent)" stroke-width="1" fill="none"/>
+            <circle cx="16" cy="11" r="0.8" fill="var(--camp-accent)"/>
+            <g stroke="var(--camp-accent)" stroke-width="1" stroke-linecap="round">
+              <line x1="16" y1="7.4" x2="16" y2="8.4"/>
+              <line x1="16" y1="13.6" x2="16" y2="14.6"/>
+              <line x1="12.4" y1="11" x2="13.4" y2="11"/>
+              <line x1="18.6" y1="11" x2="19.6" y2="11"/>
+              <line x1="13.5" y1="8.5" x2="14.2" y2="9.2"/>
+              <line x1="17.8" y1="12.8" x2="18.5" y2="13.5"/>
+              <line x1="13.5" y1="13.5" x2="14.2" y2="12.8"/>
+              <line x1="17.8" y1="9.2" x2="18.5" y2="8.5"/>
+            </g>
+          {:else}
+            <!-- Fleuron ❦ pour neutre -->
+            <text x="16" y="13.5" text-anchor="middle"
+                  fill="var(--camp-accent)"
+                  font-family="Cinzel, Georgia, serif"
+                  font-size="9"
+                  font-weight="700">❦</text>
+          {/if}
+        </g>
       </svg>
     </div>
 
@@ -153,7 +192,9 @@
           <span class="trait-star">★</span>
           <span class="trait-name">{traitLabel}</span>
           <span class="sep">·</span>
-          <span class="score">S {score()}</span>
+          <span class="score"
+            title="Score dialectique — moyenne pondérée des 7 ressources. Indique la santé globale de ton organisation (0 critique, 100 excellent)."
+          >S {score()}</span>
         </div>
       </div>
     </div>
@@ -253,6 +294,20 @@
     width: 32px;
     height: 32px;
     filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+    cursor: help;
+  }
+
+  /* Wikegård #4 : ondulation héraldique au hover */
+  .flag:hover .flag-cloth {
+    animation: flag-wave 1.6s ease-in-out;
+    transform-origin: 6px 11px;
+  }
+
+  @keyframes flag-wave {
+    0%, 100% { transform: skewY(0) translateX(0); }
+    25%      { transform: skewY(-3deg) translateX(0.5px); }
+    50%      { transform: skewY(0) translateX(0); }
+    75%      { transform: skewY(3deg) translateX(-0.5px); }
   }
 
   .identity {
@@ -271,8 +326,11 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    /* Scher #1 : Cinzel pour cohérence d'identité */
+    font-family: 'Cinzel', Georgia, serif;
     font-weight: 800;
-    font-size: 1rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
     border: 2px solid var(--camp-primary);
     box-shadow:
       inset 0 2px 4px rgba(255, 255, 255, 0.3),

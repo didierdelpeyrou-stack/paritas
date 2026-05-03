@@ -53,6 +53,8 @@
   import type { ActorId } from '../../game/types';
   import CockpitTableLauncher from './CockpitTableLauncher.svelte';
   import StatutJuridique from './StatutJuridique.svelte';
+  import CockpitActionsDrawer from './CockpitActionsDrawer.svelte';
+  import { orchestrator } from '$lib/stores/orchestrator.svelte';
 
   interface Props {
     onReplay?: () => void;
@@ -68,6 +70,7 @@
   let settingsOpen = $state(false);
   let mobileMenuOpen = $state(false);
   let isMobile = $state(false);
+  let actionsDrawerOpen = $state(false);
 
   /* Détection responsive simple — évite import lourd. */
   $effect(() => {
@@ -98,10 +101,10 @@
     mobileMenuOpen = false;
   }
 
-  /* Lock body scroll quand drawer/popover/menu ouvert. */
+  /* Lock body scroll quand drawer/popover/menu/actions ouvert. */
   $effect(() => {
     const locked = !!cockpit.openTab || !!cockpit.openPopover
-      || settingsOpen || mobileMenuOpen;
+      || settingsOpen || mobileMenuOpen || actionsDrawerOpen;
     if (typeof document !== 'undefined') {
       document.body.style.overflow = locked ? 'hidden' : '';
     }
@@ -112,7 +115,8 @@
 
   function onKey(e: KeyboardEvent) {
     if (e.key === 'Escape') {
-      if (cockpit.openTab || cockpit.openPopover) cockpit.close();
+      if (actionsDrawerOpen) actionsDrawerOpen = false;
+      else if (cockpit.openTab || cockpit.openPopover) cockpit.close();
       else if (mobileMenuOpen) mobileMenuOpen = false;
     }
   }
@@ -271,6 +275,10 @@
     <CockpitActionBar
       turn={gameState.turn}
       pendingValidation={false}
+      onOpenActions={() => (actionsDrawerOpen = true)}
+      actionsThisTurn={orchestrator.state.actionsThisTurn}
+      maxActions={orchestrator.state.maxActionsPerTurn}
+      crisisActive={orchestrator.isCrisis}
     />
 
     <!-- Drawer onglet -->
@@ -491,6 +499,11 @@
       </ul>
     </div>
   </CockpitPopover>
+
+  <CockpitActionsDrawer
+    open={actionsDrawerOpen}
+    onClose={() => (actionsDrawerOpen = false)}
+  />
 
   <Settings open={settingsOpen} onClose={() => (settingsOpen = false)} />
 {/if}

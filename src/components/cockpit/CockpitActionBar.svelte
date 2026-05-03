@@ -1,6 +1,8 @@
 <script lang="ts">
   /* Barre d'action (bottom du cockpit) — tour, chapitre, bouton
      VALIDER cachet de cire, vitesse, replay. Vague α-bis MVP. */
+  import CockpitIcon from './CockpitIcon.svelte';
+
   interface Props {
     turn: number;
     /** Total de tours (100 par défaut). */
@@ -11,8 +13,17 @@
     pendingValidation?: boolean;
     /** Callback de validation. */
     onValidate?: () => void;
+    /** Callback ouverture drawer d'actions. */
+    onOpenActions?: () => void;
+    /** Nb d'actions joués ce tour / max. */
+    actionsThisTurn?: number;
+    maxActions?: number;
+    /** Crise active ? affiche un badge ⚠ rouge sur le bouton Actions */
+    crisisActive?: boolean;
   }
-  let { turn, totalTurns = 100, chapter, pendingValidation = false, onValidate }: Props = $props();
+  let { turn, totalTurns = 100, chapter, pendingValidation = false,
+    onValidate, onOpenActions, actionsThisTurn = 0, maxActions = 2,
+    crisisActive = false }: Props = $props();
 
   let progressPct = $derived((Math.min(turn, totalTurns) / totalTurns) * 100);
 </script>
@@ -45,8 +56,18 @@
     </div>
 
     <div class="action-right">
-      <!-- Slot futur pour Auto / Vitesse / Replay -->
-      <span class="action-hint">{pendingValidation ? 'Choix prêt' : ''}</span>
+      {#if onOpenActions}
+        <button type="button" class="actions-btn" class:crisis={crisisActive}
+          onclick={() => onOpenActions?.()}
+          title="Ouvrir les actions disponibles ce tour">
+          <CockpitIcon name="rouage" size={14} />
+          <span>Actions</span>
+          <span class="actions-count">{actionsThisTurn}/{maxActions}</span>
+          {#if crisisActive}
+            <span class="crisis-dot" aria-label="Crise active"></span>
+          {/if}
+        </button>
+      {/if}
     </div>
   </div>
 </footer>
@@ -151,6 +172,59 @@
     text-transform: uppercase;
     letter-spacing: 0.06em;
     min-height: 1rem;
+  }
+
+  .actions-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    background: linear-gradient(180deg, #5A2F1C 0%, #3D2615 100%);
+    border: 1px solid #C9B26A;
+    color: #F4D58C;
+    border-radius: 0.35rem;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: filter 0.18s ease, transform 0.18s ease;
+  }
+
+  .actions-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+  .actions-count {
+    background: rgba(244, 213, 140, 0.18);
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.7rem;
+  }
+
+  .actions-btn.crisis {
+    border-color: #E08F92;
+    box-shadow: 0 0 12px rgba(176, 24, 30, 0.45);
+    animation: btn-crisis 1.6s ease-in-out infinite;
+  }
+
+  .crisis-dot {
+    position: absolute;
+    top: -3px; right: -3px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #B0181E;
+    box-shadow: 0 0 6px rgba(176, 24, 30, 0.8);
+    animation: btn-crisis-dot 1.2s ease-in-out infinite;
+  }
+
+  @keyframes btn-crisis {
+    0%, 100% { box-shadow: 0 0 12px rgba(176, 24, 30, 0.35); }
+    50%      { box-shadow: 0 0 18px rgba(176, 24, 30, 0.6); }
+  }
+  @keyframes btn-crisis-dot {
+    0%, 100% { transform: scale(1); opacity: 0.85; }
+    50%      { transform: scale(1.3); opacity: 1; }
   }
 
   @media (max-width: 600px) {

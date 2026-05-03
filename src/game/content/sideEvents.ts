@@ -276,7 +276,8 @@ export const SIDE_EVENTS: SideEvent[] = [
         },
         outcome:
           'Le préfet sourit, change de sujet. Mais la prochaine fois qu\'il vous faudra une autorisation administrative, elle traînera six semaines. La presse libérale, elle, vous citera comme « patron de tradition républicaine ».',
-        traitShift: { batisseur: +2 }
+        traitShift: { batisseur: +2 },
+        flag: 'refuse-prefet'
       },
       {
         id: 'payer-documenter',
@@ -435,7 +436,8 @@ export const SIDE_EVENTS: SideEvent[] = [
         },
         outcome:
           'Roux s\'en va, mortifié. La grève du 15 a lieu : trois jours, finalement gérable. Le délégué CGT entendra parler de votre refus — il vous saluera désormais, sans plus.',
-        traitShift: { batisseur: +2, paternaliste: +1 }
+        traitShift: { batisseur: +2, paternaliste: +1 },
+        flag: 'refuse-mouchard'
       },
       {
         id: 'recompenser-secret',

@@ -11,7 +11,7 @@
   } from '../../game/narrative/choicePosture';
   import { TRAIT_LABELS, TRAIT_ANTAGONISTS } from '../../game/narrative/personalityEngine';
   import { rebirth } from '../../game/engine/gameState.svelte';
-  import { abilityFuelScore, ABILITY_SHORT_LABEL } from '../../game/simulation/resourceUtility';
+  import { abilityFuelScore, ABILITY_SHORT_LABEL, fuelBreakdown } from '../../game/simulation/resourceUtility';
   import { scenePreview } from '$lib/stores/scenePreview.svelte';
   import VoicePanel from './VoicePanel.svelte';
   import HistoricalImage from '../HistoricalImage.svelte';
@@ -440,11 +440,13 @@
               {@const tone = fs >= 65 ? 'high' : fs >= 35 ? 'mid' : 'low'}
               {@const pct = Math.round(((fs - 50) / 250) * 100)}
               {@const pctStr = pct >= 0 ? `+${pct}%` : `${pct}%`}
+              {@const breakdown = fuelBreakdown(ch.ability, rebirth.state.resources)}
               <span class="ability-hint" data-tone={tone}
                 title={
-                  fs >= 65 ? `Énergie ${ABILITY_SHORT_LABEL[ch.ability]} solide (${fs}/100) → effets AMPLIFIÉS de ${pctStr}.`
-                  : fs >= 35 ? `Énergie ${ABILITY_SHORT_LABEL[ch.ability]} moyenne (${fs}/100) → effets nominaux (${pctStr}).`
-                  : `Énergie ${ABILITY_SHORT_LABEL[ch.ability]} en panne (${fs}/100) → effets AFFAIBLIS de ${pctStr}.`
+                  (fs >= 65 ? `Énergie ${ABILITY_SHORT_LABEL[ch.ability]} solide (${fs}/100) → effets AMPLIFIÉS de ${pctStr}.`
+                   : fs >= 35 ? `Énergie ${ABILITY_SHORT_LABEL[ch.ability]} moyenne (${fs}/100) → effets nominaux (${pctStr}).`
+                   : `Énergie ${ABILITY_SHORT_LABEL[ch.ability]} en panne (${fs}/100) → effets AFFAIBLIS de ${pctStr}.`)
+                  + `\n\nCalcul : ${breakdown}`
                 }
               >
                 ◎ Énergie {ABILITY_SHORT_LABEL[ch.ability]} : EFFETS {pctStr}

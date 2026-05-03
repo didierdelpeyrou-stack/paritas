@@ -11,6 +11,8 @@
 
 import { rebirth } from '../../game/engine/gameState.svelte';
 import { SIDE_EVENTS, compatibleSideEvents } from '../../game/content/sideEvents';
+import { yearForTurn } from '../../game/content/eras';
+import { causalTicker } from './causalTicker.svelte';
 import type { SideEvent, SideEventChoice, Resources, RebirthGameState } from '../../game/types';
 
 const KEY = 'paritas_side_events_v1';
@@ -137,6 +139,13 @@ class SideEventStore {
       lastTriggerTurn: gs.turn
     };
     this.persist();
+
+    /* Causalité du ticker — émet une news en réaction au flag posé
+       par le choix de side event (cf. Argus P0-1 — refus éthiques
+       patron sans récompense narrative). */
+    if (choice.flag) {
+      causalTicker.emitFor(choice.flag, gs.turn, yearForTurn(gs.turn) ?? 1789);
+    }
 
     this.lastOutcome = { text: outcomeText, success: !failed, choiceId: choice.id };
     this.current = null;

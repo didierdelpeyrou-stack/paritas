@@ -39,14 +39,18 @@
     return best;
   }
 
-  /* Quatre tonalités de la voix légendaire (cf. critique designer
-     §Décision 4) : APPROVE (alignement), SURPASS (dépassement),
-     DRIFT (s'écarte sans renier), REBUKE (trahit). Chaque tonalité
-     a 3 variantes — picked déterministiquement via un hash de
-     l'id du légendaire + l'id du scénario, pour stabilité par scène.
+  /* Cinq tonalités de la voix légendaire :
+     - APPROVE (alignement), SURPASS (dépassement), DRIFT (écart),
+       REBUKE (trahison) — quand un légendaire est choisi
+     - SELF — quand AUCUN légendaire n'est choisi mais qu'un trait
+       shift significatif a eu lieu. Le silence du mentor est
+       thématisé : « Personne ne te regarde ce soir. Tu es ton
+       propre juge. » (cf. Argus P0-3 — Marc D., Yoko Taro).
 
-     Voix attendue : un mort qui te regarde du plus loin où il est. */
-  type LegendTone = 'approve' | 'surpass' | 'drift' | 'rebuke';
+     Chaque tonalité a 3 variantes picked déterministiquement.
+     Voix attendue : un mort qui te regarde du plus loin où il est —
+     ou ton propre reflet quand personne ne regarde. */
+  type LegendTone = 'approve' | 'surpass' | 'drift' | 'rebuke' | 'self';
 
   const LEGEND_LINES: Record<LegendTone, ((name: string) => string)[]> = {
     approve: [
@@ -68,6 +72,11 @@
       (n) => `${n} t'aurait désavoué. Ce n'est pas la voie qu'il avait tracée.`,
       (n) => `${n} retirerait sa signature de la tienne.`,
       (n) => `${n} aurait quitté la salle quand tu as parlé.`
+    ],
+    self: [
+      () => `Personne ne te regarde ce soir. Tu es ton propre juge.`,
+      () => `Aucune ombre ne se penche sur toi. Tu écris seul·e ta ligne.`,
+      () => `Le silence des mentors te laisse face à toi-même.`
     ]
   };
 
@@ -79,10 +88,22 @@
   }
 
   const legendaryComment = $derived.by<{ tone: LegendTone; text: string } | null>(() => {
-    if (!legendary || !consequence.traitShift) return null;
+    if (!consequence.traitShift) return null;
+    const shift = consequence.traitShift;
+
+    /* Cas SANS légendaire : si le geste est marqué (delta absolu ≥ 3),
+       activer la voix « SELF » — le silence du mentor thématisé. */
+    if (!legendary) {
+      if (Math.abs(shift.delta) < 3) return null;
+      const seed = `noone:${consequence.text.slice(0, 40)}:self`;
+      const variants = LEGEND_LINES.self;
+      const idx = pickVariant(seed, variants.length);
+      return { tone: 'self', text: variants[idx]('') };
+    }
+
+    /* Cas AVEC légendaire : 4 tonalités selon trait signature. */
     const sig = legendarySignatureTrait();
     if (!sig) return null;
-    const shift = consequence.traitShift;
     const lastName = legendary.name.split(' ').pop() ?? legendary.name;
 
     /* Détermine la tonalité.
@@ -266,18 +287,31 @@
     {/if}
 
     {#if legendaryComment}
-      <button
-        type="button"
-        class="legendary-margin"
-        data-tone={legendaryComment.tone}
-        in:fly={{ x: 8, duration: 420 }}
-        onclick={(e) => { e.stopPropagation(); bioOpen = true; }}
-        title={`Cliquer pour ouvrir la fiche de ${legendary?.name ?? 'ce personnage'}.`}
-      >
-        <span class="quill" aria-hidden="true">✒</span>
-        <p>{legendaryComment.text}</p>
-        <span class="legendary-cta" aria-hidden="true">→ Ouvrir la fiche</span>
-      </button>
+      {#if legendary && legendaryComment.tone !== 'self'}
+        <!-- Voix d'un légendaire incarné — cliquable pour ouvrir la fiche. -->
+        <button
+          type="button"
+          class="legendary-margin"
+          data-tone={legendaryComment.tone}
+          in:fly={{ x: 8, duration: 420 }}
+          onclick={(e) => { e.stopPropagation(); bioOpen = true; }}
+          title={`Cliquer pour ouvrir la fiche de ${legendary.name}.`}
+        >
+          <span class="quill" aria-hidden="true">✒</span>
+          <p>{legendaryComment.text}</p>
+          <span class="legendary-cta" aria-hidden="true">→ Ouvrir la fiche</span>
+        </button>
+      {:else}
+        <!-- Voix « SELF » — pas de mentor. Pas cliquable, pas de CTA. -->
+        <div
+          class="legendary-margin self-voice"
+          data-tone="self"
+          in:fly={{ x: 8, duration: 420 }}
+        >
+          <span class="quill" aria-hidden="true">◯</span>
+          <p>{legendaryComment.text}</p>
+        </div>
+      {/if}
     {/if}
   {/if}
 
@@ -613,6 +647,29 @@
     border-left-color: rgba(125, 125, 138, 0.55);
     background: rgba(60, 60, 70, 0.12);
     color: rgba(180, 180, 195, 0.9);
+  }
+
+  /* SELF — pas de mentor. Argent contemplatif, pas de pulse, pas de
+     hover (la div remplace le button quand legendary est null). */
+  .legendary-margin[data-tone='self'] {
+    border-left-color: rgba(200, 210, 220, 0.45);
+    background: rgba(40, 45, 55, 0.10);
+    color: rgba(220, 220, 230, 0.85);
+    cursor: default;
+  }
+  .legendary-margin.self-voice {
+    /* Override hover/cursor du button-style */
+    transform: none;
+  }
+  .legendary-margin.self-voice:hover {
+    background: rgba(40, 45, 55, 0.10);
+    transform: none;
+  }
+  .legendary-margin[data-tone='self'] .quill {
+    color: rgba(200, 210, 220, 0.7);
+  }
+  .legendary-margin[data-tone='self'] p {
+    color: rgba(220, 220, 230, 0.85);
   }
 
   .legendary-margin .quill {

@@ -99,9 +99,21 @@ export const CAUSAL_NEWS_BY_FLAG: Record<string, CausalNewsTemplate[]> = {
     { category: 'politique', tone: 'oppose',
       headline: 'Trois meneurs CGT licenciés en quinzaine — le patronat satisfait.' }
   ],
+  /* Refus éthique du préfet : récompense narrative pour le geste de
+     dignité (cf. retour Argus — Patrick R., Rosanvallon : sans cette
+     news le bon choix éthique côté patron est silencieux). */
+  'refuse-prefet': [
+    { category: 'faitsdivers', tone: 'acquiesce',
+      headline: 'La presse libérale cite un patron qui « refuse les méthodes de la préfecture ».' }
+  ],
   'protege-mouchard': [
     { category: 'faitsdivers', tone: 'oppose',
       headline: 'Un nouveau chef d\'équipe nommé sans ancienneté — l\'atelier murmure.' }
+  ],
+  /* Refus éthique du mouchard interne : moralité d'entreprise reconnue. */
+  'refuse-mouchard': [
+    { category: 'faitsdivers', tone: 'acquiesce',
+      headline: 'Un délégué CGT salue un patron qui « refuse les méthodes de dénonciation ».' }
   ],
   'capital-anglais': [
     { category: 'geopolitique',

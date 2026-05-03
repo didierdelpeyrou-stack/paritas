@@ -144,6 +144,24 @@ export function abilityFuelScore(ability: AbilityId, res: Resources): number {
   return Math.round(weighted / totalWeight);
 }
 
+/** Décomposition lisible du fuel score : « Légitimité 70 (×3) +
+ *  Force 60 (×2) + Caisse 50 (×1) ÷ 6 = 62 ». À utiliser dans les
+ *  tooltips pour rendre le calcul transparent au joueur (cf. retour
+ *  panel — Cooper, Soren Johnson, Jeff Johnson, Marc D., Patrick R. :
+ *  5 voix convergentes, score = boîte noire). */
+export function fuelBreakdown(ability: AbilityId, res: Resources): string {
+  const entries = fuelsFor(ability, 5);
+  if (entries.length === 0) return '';
+  const totalWeight = entries.reduce((s, e) => s + e.weight, 0);
+  const weighted = entries.reduce((s, e) => s + ((res[e.resource] as number) ?? 0) * e.weight, 0);
+  const score = Math.round(weighted / totalWeight);
+  const parts = entries.map(e => {
+    const v = Math.round((res[e.resource] as number) ?? 0);
+    return `${RESOURCE_NARRATIVE_NAME[e.resource]} ${v} (×${e.weight})`;
+  });
+  return `${parts.join(' + ')} ÷ ${totalWeight} = ${score}`;
+}
+
 /** Étiquette courte pour le score composite. */
 export function fuelScoreLabel(score: number): string {
   if (score >= 75) return 'Excellent';

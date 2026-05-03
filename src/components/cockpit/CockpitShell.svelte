@@ -906,24 +906,21 @@
     position: relative;
     overflow-y: auto;
     overflow-x: hidden;
-    /* Pleine surface papier vélin — Le Ciel rempli intégralement
-       entre les rails, pas de marges sombres. Le scénario respire
-       sur toute la largeur disponible. */
+    /* Sky DARK uniforme — fini le contraste parchment/dark qui
+       faisait apparaître un « fond blanc » autour du card. Le sky
+       prend le même ton que le cockpit + un voile doré au top pour
+       rester chaud. Texte clair par défaut, lisible en plein page. */
     background:
-      radial-gradient(ellipse at top, rgba(244, 213, 140, 0.10), transparent 70%),
-      linear-gradient(180deg, #F4EFE2 0%, #EBDCC4 100%);
-    color: #1A1411;
+      radial-gradient(ellipse at top, rgba(244, 213, 140, 0.06), transparent 65%),
+      linear-gradient(180deg, #1F1813 0%, #110D0A 100%);
+    color: #F4EFE2;
     transition: filter 0.4s ease, opacity 0.4s ease;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    scrollbar-color: rgba(90, 47, 28, 0.25) transparent;
-    /* Bordures intérieures discrètes acajou pour séparer des rails
-       sans liseré blanc */
-    border-left: 1px solid rgba(90, 47, 28, 0.4);
-    border-right: 1px solid rgba(90, 47, 28, 0.4);
-    box-shadow:
-      inset 8px 0 12px -8px rgba(90, 47, 28, 0.5),
-      inset -8px 0 12px -8px rgba(90, 47, 28, 0.5);
+    scrollbar-color: rgba(201, 178, 106, 0.25) transparent;
+    /* Liseré doré subtil pour séparer des panneaux latéraux. */
+    border-left: 1px solid rgba(201, 178, 106, 0.18);
+    border-right: 1px solid rgba(201, 178, 106, 0.18);
   }
 
   .sky::-webkit-scrollbar { width: 6px; }
@@ -936,19 +933,33 @@
   }
 
   .sky-content {
-    /* Pleine surface — pas de cartouche centré, le scénario remplit
-       toute la zone Le Ciel disponible entre les rails. Padding
-       généreux (Chen #7) : 2.5rem inner pour respiration du texte. */
+    /* Pleine largeur — le texte du scénario s'étend sur toute la zone
+       Le Ciel entre les panneaux, sans cartouche centré. Padding
+       généreux pour respiration du texte. Texte clair par défaut
+       (hérite de .sky color: #F4EFE2). */
     padding: 2.2rem clamp(1.5rem, 4vw, 3rem);
-    max-width: 64rem;
-    margin: 0 auto;
-    color: #1A1411;
+    max-width: none;
+    width: 100%;
+    margin: 0;
     /* Reste devant l'overlay de préfiguration sépia (z-index:0). */
     position: relative;
     z-index: 1;
   }
 
-  /* === Hint mécanique (Norman fix #2 + #6 + Krug #1 + #2) === */
+  /* Le sky est maintenant DARK (cf. .sky) — on aplatit la
+     bordered-card pour qu'elle se fonde dans le sky sombre, sans
+     cadre rapporté qui créerait un contraste « card on background ».
+     Texte clair par défaut, plein page. */
+  :global(.sky-content article.bordered-card) {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  /* === Hint mécanique (Norman fix #2 + #6 + Krug #1 + #2) ===
+     Adapté au sky DARK : palette dorée sur fond translucide. */
   :global(.sky-content .how-to-play) {
     display: grid;
     grid-template-columns: auto 1fr auto;
@@ -956,10 +967,10 @@
     padding: 0.7rem 0.95rem;
     margin: 0 auto 1.2rem;
     max-width: 64rem;
-    background: rgba(244, 213, 140, 0.10);
+    background: rgba(201, 178, 106, 0.08);
     border-left: 3px solid #C9B26A;
     border-radius: 0.35rem;
-    color: rgba(26, 20, 17, 0.85);
+    color: rgba(244, 239, 226, 0.85);
     font-family: 'Source Serif 4', Georgia, serif;
     font-size: 0.88rem;
     line-height: 1.5;
@@ -967,8 +978,8 @@
 
   :global(.sky-content .how-to-play .htp-close) {
     background: transparent;
-    border: 1px solid rgba(90, 47, 28, 0.3);
-    color: rgba(90, 47, 28, 0.8);
+    border: 1px solid rgba(201, 178, 106, 0.3);
+    color: rgba(244, 213, 140, 0.7);
     width: 24px; height: 24px;
     border-radius: 0.25rem;
     font-size: 1rem;
@@ -979,18 +990,18 @@
   }
 
   :global(.sky-content .how-to-play .htp-close:hover) {
-    background: rgba(90, 47, 28, 0.1);
-    color: #5A2F1C;
+    background: rgba(201, 178, 106, 0.12);
+    color: #F4D58C;
   }
 
   :global(.sky-content .how-to-play .htp-icon) {
-    color: #5A2F1C;
+    color: #C9B26A;
     align-self: start;
     padding-top: 0.15rem;
   }
 
   :global(.sky-content .how-to-play strong) {
-    color: #5A2F1C;
+    color: #F4D58C;
     font-family: 'Cinzel', Georgia, serif;
   }
 

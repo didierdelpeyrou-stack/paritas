@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <meta name="theme-color" content="#0d1014" />
+    <!-- Cache-control : index.html ne doit JAMAIS être servi depuis
+         le cache browser. Les bundles JS/CSS ont leur hash de
+         contenu géré par Vite, ils peuvent rester en cache long. -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <title>Paritas : la table des Ateliers</title>
     <meta name="description" content="Paritas : la table des Ateliers. Une simulation politique narrative sur le paritarisme français, de 1789 à 2026. 100 décisions, deux camps, des fins multiples." />

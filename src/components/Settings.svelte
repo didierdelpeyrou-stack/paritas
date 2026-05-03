@@ -167,6 +167,52 @@
     } catch { /* clipboard API peut être indispo */ }
   }
 
+  /* ==== Maintenance — version + vidage cache ==== */
+  /* __BUILD_VERSION__ injecté par vite.config.ts au build. En dev,
+   * fallback sur Date.now(). */
+  const buildVersion: string = (typeof __BUILD_VERSION__ !== 'undefined'
+    ? __BUILD_VERSION__
+    : `dev-${new Date().toISOString().slice(0, 19)}Z`);
+
+  let cachePurged = $state(false);
+
+  async function purgeCacheAndReload() {
+    cachePurged = true;
+    try {
+      /* 1. Caches API (Service Workers / fetch cache) */
+      if (typeof caches !== 'undefined') {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+      }
+      /* 2. Service Workers (s'il y en a un déclaré ailleurs) */
+      if (navigator.serviceWorker?.getRegistrations) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.unregister()));
+      }
+      /* 3. localStorage : ON NE TOUCHE PAS aux sauvegardes du jeu
+       *    (paritas_save_v1 + paritas_rebirth_save_slot_*). On retire
+       *    seulement les caches de session/preferences renouvelables. */
+      /* (rien à faire — Vite cache HTTP a déjà été géré par
+       *  caches.delete() ci-dessus.) */
+    } catch { /* ignore */ }
+    /* 4. Hard reload — bypass le cache HTTP */
+    setTimeout(() => {
+      try {
+        /* @ts-ignore — paramètre non-standard mais supporté */
+        window.location.reload(true);
+      } catch {
+        window.location.reload();
+      }
+    }, 600);
+  }
+
+  function hardReload() {
+    /* Force-reload sans vider les caches API. Équivalent
+     *  Ctrl+Maj+R — bust le cache HTTP via cache-busting query. */
+    const sep = window.location.href.includes('?') ? '&' : '?';
+    window.location.href = `${window.location.href}${sep}_t=${Date.now()}`;
+  }
+
   function exportPartie() {
     /* Export JSON anonymisé : on retire le nom (PII), on garde tout
      * le reste. Format ouvert pour études RCT (Duflo #94, Pineau #65). */
@@ -437,12 +483,40 @@
           />
           <span>Cockpit — Le Pupitre Paritaire</span>
         </label>
+        <div class="status-line">
+          Statut actuel :
+          <strong class="status-tag" class:on={cockpit.enabled}>
+            {cockpit.enabled ? '● ACTIVÉ' : '○ DÉSACTIVÉ'}
+          </strong>
+        </div>
         <p class="opt-hint">
           Active la nouvelle interface dashboard : viewport scénario
-          central (Le Ciel), instruments en cadrans laiton, onglets
-          glissants pour les mini-jeux gestion. <b>Alpha</b> — bascule
-          au classique avec ⊞ ou en décochant ici.
+          central (Le Ciel), instruments en cadrans laiton, rails
+          gauche/droite avec popovers, onglets pour mini-jeux. <b>Alpha</b>
+          — bascule au classique avec ⊟ ou en décochant ici.
         </p>
+      </section>
+
+      <section class="opt-group">
+        <h3>Maintenance</h3>
+        <div class="maint-row">
+          <span class="maint-label">Version chargée</span>
+          <code class="maint-value">{buildVersion}</code>
+        </div>
+        <p class="opt-hint">
+          Si tu vois une vieille version après une mise à jour, le
+          navigateur a peut-être mis le bundle en cache. Vide le
+          cache du navigateur avec le bouton ci-dessous (ne touche
+          pas à tes sauvegardes).
+        </p>
+        <div class="maint-actions">
+          <button type="button" class="maint-btn" onclick={purgeCacheAndReload}>
+            {cachePurged ? '✓ Cache vidé — rechargement…' : 'Vider le cache navigateur et recharger'}
+          </button>
+          <button type="button" class="maint-btn ghost" onclick={hardReload}>
+            Recharger en force (Ctrl+Maj+R)
+          </button>
+        </div>
       </section>
 
       <section class="opt-group">
@@ -703,6 +777,94 @@
   .autoplay-delay {
     min-width: 3.5rem;
     text-align: center;
+  }
+
+  /* ===== Statut toggle cockpit ===== */
+  .status-line {
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: rgba(237, 228, 201, 0.75);
+    font-family: 'Cinzel', Georgia, serif;
+  }
+
+  .status-tag {
+    display: inline-block;
+    margin-left: 0.4rem;
+    padding: 0.15rem 0.5rem;
+    background: rgba(176, 24, 30, 0.18);
+    border: 1px solid rgba(176, 24, 30, 0.45);
+    color: #E08F92;
+    border-radius: 0.3rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.10em;
+  }
+
+  .status-tag.on {
+    background: rgba(58, 107, 71, 0.20);
+    border-color: rgba(58, 107, 71, 0.55);
+    color: #8DC09F;
+  }
+
+  /* ===== Maintenance ===== */
+  .maint-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .maint-label {
+    color: #f4d58b;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.10em;
+  }
+
+  .maint-value {
+    flex: 1;
+    background: rgba(13, 16, 20, 0.55);
+    border: 1px solid rgba(244, 213, 139, 0.18);
+    border-radius: 0.35rem;
+    padding: 0.4rem 0.6rem;
+    color: #ede4c9;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    user-select: all;
+  }
+
+  .maint-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.6rem;
+  }
+
+  .maint-btn {
+    background: linear-gradient(180deg, #c89b3c 0%, #a87a26 100%);
+    border: 1px solid #c89b3c;
+    color: #0d1014;
+    padding: 0.5rem 0.95rem;
+    border-radius: 0.4rem;
+    font-family: 'Cinzel', Georgia, serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: filter 0.15s ease, transform 0.15s ease;
+  }
+
+  .maint-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+  .maint-btn.ghost {
+    background: transparent;
+    color: rgba(244, 213, 139, 0.85);
+    border-color: rgba(244, 213, 139, 0.35);
+  }
+
+  .maint-btn.ghost:hover {
+    background: rgba(201, 154, 64, 0.10);
   }
 
   .credits-content ul {

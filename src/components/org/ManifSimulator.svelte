@@ -36,14 +36,23 @@
 
   let result = $state<ManifResult | null>(null);
 
-  /* === Module baston : factions s'affrontent à République === */
-  /* Se déclenche uniquement si la manif passe par Paris + tension forte. */
+  /* === Module baston : factions s'affrontent à République ===
+     Le bouton « Place de la République » n'apparaît que si la manif
+     passe par Paris + score ≥ 50 + tension forte. Le joueur décide. */
   interface BrawlState {
     joueur: FactionRoster;
     adversaire: FactionRoster;
     outcome: BrawlOutcome;
   }
+  interface BrawlContext {
+    fouleParis: number;
+    policePressure: number;
+    initialMomentum: number;
+  }
   let brawl = $state<BrawlState | null>(null);
+  let brawlContext = $state<BrawlContext | null>(null);
+  /* Bloque le bouton après lancement (un brawl par manif). */
+  let brawlConsumed = $state(false);
 
   /* Effets du brawl à appliquer quand le joueur referme l'arène. */
   let pendingBrawlEffects = $state<{ outcome: BrawlOutcome } | null>(null);
@@ -242,12 +251,15 @@
     });
     void sfx.play(r.score >= 70 ? 'fanfare' : r.score >= 45 ? 'impact' : 'fail');
 
-    /* === Module baston : déclenche le brawl si conditions remplies ===
+    /* === Module baston : prépare le contexte si conditions remplies ===
        - Paris est dans les villes ciblées
        - Score ≥ 50 (manif significative)
        - Soit adversaire stance dur, soit score >= 75 (rue tendue)
-       Force du joueur : foule effective à Paris (proportionnelle à
-       la part de Paris dans le multi-ville). */
+       Le déclenchement reste à la main du joueur via le bouton
+       « Place de la République ». Force du joueur : foule effective
+       à Paris (proportionnelle à la part de Paris dans le multi-ville). */
+    brawlContext = null;
+    brawlConsumed = false;
     const includesParis = cities.includes('paris');
     const advStance = gs.actors.adversaire?.stance;
     const tensionForte = advStance === 'dur' || r.score >= 75;
@@ -257,29 +269,34 @@
       const totalCityCost = selectedCities.reduce((s, c) => s + c.cost, 0);
       const parisRatio = totalCityCost > 0 ? parisWeight / totalCityCost : 1;
       const fouleParis = Math.round(r.foule * parisRatio);
-
-      const joueur = buildPlayerFaction({
-        camp: gs.camp,
-        fouleParis,
-        militants: gs.organization.militants,
-        cadres: gs.organization.permanentStaff,
-        cohesion: gs.organization.cohesion
-      });
-
       const policePressure = (gs.actors.etat?.pressure ?? 30) +
         (advStance === 'dur' ? 25 : 0);
-      const adversaire = buildAdversaryFaction({
-        camp: gs.camp,
-        fouleParis,
-        era: gs.era,
-        policePressure
-      });
-
       const initialMomentum = (r.score - 50) * 0.6;
-      const outcome = resolveBrawl({ joueur, adversaire, initialMomentum });
-      brawl = { joueur, adversaire, outcome };
-      pendingBrawlEffects = { outcome };
+      brawlContext = { fouleParis, policePressure, initialMomentum };
     }
+  }
+
+  /* Lance le brawl à la demande du joueur depuis l'écran de résultat. */
+  function launchBrawl() {
+    if (!brawlContext || brawlConsumed) return;
+    const { fouleParis, policePressure, initialMomentum } = brawlContext;
+    const joueur = buildPlayerFaction({
+      camp: gs.camp,
+      fouleParis,
+      militants: gs.organization.militants,
+      cadres: gs.organization.permanentStaff,
+      cohesion: gs.organization.cohesion
+    });
+    const adversaire = buildAdversaryFaction({
+      camp: gs.camp,
+      fouleParis,
+      era: gs.era,
+      policePressure
+    });
+    const outcome = resolveBrawl({ joueur, adversaire, initialMomentum });
+    brawl = { joueur, adversaire, outcome };
+    pendingBrawlEffects = { outcome };
+    brawlConsumed = true;
   }
 
   /* Quand le joueur referme l'arène : applique les effets du brawl
@@ -313,6 +330,8 @@
     juristes = 0;
     medias = 0;
     preMeeting = tractMassif = saisineJuridique = caisseGreve = false;
+    brawlContext = null;
+    brawlConsumed = false;
   }
 </script>
 
@@ -442,6 +461,20 @@
 
       <p class="result-line"><b>{result.headline}</b></p>
       <p class="result-line italic text-parchment-dim/90">{result.storyline}</p>
+
+      {#if brawlContext && !brawlConsumed}
+        <button type="button" class="btn-brawl w-full" onclick={launchBrawl}>
+          <span class="brawl-icon" aria-hidden="true">⚔</span>
+          <span class="brawl-stack">
+            <b>Place de la République : ça chauffe</b>
+            <small>{brawlContext.fouleParis.toLocaleString('fr-FR')} dans la rue · CRS en face · entrer dans la mêlée ?</small>
+          </span>
+        </button>
+      {:else if brawlConsumed}
+        <p class="text-[0.78rem] italic text-parchment-dim/70 text-center">
+          Affrontement de République consommé pour cette manif.
+        </p>
+      {/if}
 
       <button type="button" class="btn-ghost w-full" onclick={reset}>Préparer une autre manifestation</button>
     </div>
@@ -640,6 +673,59 @@
 
   .combo-line small {
     grid-column: 1;
+    color: rgba(237, 228, 201, 0.78);
+    font-size: 0.74rem;
+    line-height: 1.3;
+    font-style: italic;
+  }
+
+  /* Bouton « Place de la République » : déclenche l'arène. */
+  .btn-brawl {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    width: 100%;
+    border: 1px solid rgba(217, 41, 26, 0.55);
+    border-radius: 0.55rem;
+    background: linear-gradient(135deg, rgba(217, 41, 26, 0.15), rgba(122, 15, 15, 0.18));
+    padding: 0.7rem 0.85rem;
+    text-align: left;
+    color: #ede4c9;
+    transition: border-color 0.18s ease, background 0.18s ease, transform 0.12s ease;
+    cursor: pointer;
+  }
+
+  .btn-brawl:hover {
+    border-color: rgba(244, 213, 139, 0.7);
+    background: linear-gradient(135deg, rgba(217, 41, 26, 0.22), rgba(122, 15, 15, 0.28));
+    transform: translateY(-1px);
+  }
+
+  .btn-brawl:active {
+    transform: translateY(0);
+  }
+
+  .brawl-icon {
+    font-size: 1.5rem;
+    color: #f4d58b;
+    flex-shrink: 0;
+  }
+
+  .brawl-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    flex: 1;
+  }
+
+  .brawl-stack b {
+    color: #f4d58b;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+  }
+
+  .brawl-stack small {
     color: rgba(237, 228, 201, 0.78);
     font-size: 0.74rem;
     line-height: 1.3;

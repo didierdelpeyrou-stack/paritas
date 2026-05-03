@@ -27,8 +27,10 @@
   /* Layout responsive (post-critique designer) : trois layouts assumés
    * — Théâtre (≥1280px), Atelier (768-1280), Carnet (≤768). Le joueur
    * peut forcer un layout depuis le LayoutSwitcher (ex : Carnet sur
-   * desktop pour lecture concentrée). Auto par défaut. */
-  let viewportWidth = $state(1280);
+   * desktop pour lecture concentrée). Auto par défaut.
+   * Initialisation depuis window dès l'init pour éviter un flicker
+   * entre l'écran assumé (1280) et le viewport réel sur mobile. */
+  let viewportWidth = $state(typeof window !== 'undefined' ? window.innerWidth : 1280);
   $effect(() => {
     if (typeof window === 'undefined') return;
     const apply = () => { viewportWidth = window.innerWidth; };

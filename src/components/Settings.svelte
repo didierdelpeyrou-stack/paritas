@@ -16,7 +16,9 @@
   import { sfx } from '../game/audio/sfx';
   import { game } from '$lib/stores/game.svelte';
   import { autoplay } from '$lib/stores/autoplay.svelte';
-  import { cockpit } from '$lib/stores/cockpit.svelte';
+  import { cockpit, LAYOUT_LABEL, LAYOUT_DESC, type LayoutPref } from '$lib/stores/cockpit.svelte';
+
+  const LAYOUT_OPTIONS: LayoutPref[] = ['auto', 'theatre', 'atelier', 'carnet'];
 
   interface Props {
     open: boolean;
@@ -474,27 +476,28 @@
       </section>
 
       <section class="opt-group">
-        <h3>Interface (expérimental)</h3>
-        <label class="toggle-row">
-          <input
-            type="checkbox"
-            checked={cockpit.enabled}
-            onchange={(e) => cockpit.setEnabled((e.currentTarget as HTMLInputElement).checked)}
-          />
-          <span>Cockpit — Le Pupitre Paritaire</span>
-        </label>
-        <div class="status-line">
-          Statut actuel :
-          <strong class="status-tag" class:on={cockpit.enabled}>
-            {cockpit.enabled ? '● ACTIVÉ' : '○ DÉSACTIVÉ'}
-          </strong>
-        </div>
+        <h3>Layout</h3>
         <p class="opt-hint">
-          Active la nouvelle interface dashboard : viewport scénario
-          central (Le Ciel), instruments en cadrans laiton, rails
-          gauche/droite avec popovers, onglets pour mini-jeux. <b>Alpha</b>
-          — bascule au classique avec ⊟ ou en décochant ici.
+          Trois layouts assumés. <b>Auto</b> choisit selon la largeur
+          de ta fenêtre — c'est le défaut. Force-en un autre si tu
+          préfères : ex. <i>Carnet</i> sur desktop pour une lecture
+          concentrée.
         </p>
+        <div class="layout-radio">
+          {#each LAYOUT_OPTIONS as p (p)}
+            <label class="layout-option" class:active={cockpit.preference === p}>
+              <input
+                type="radio"
+                name="layout-pref"
+                value={p}
+                checked={cockpit.preference === p}
+                onchange={() => cockpit.setPreference(p)}
+              />
+              <span class="layout-name">{LAYOUT_LABEL[p]}</span>
+              <span class="layout-desc">{LAYOUT_DESC[p]}</span>
+            </label>
+          {/each}
+        </div>
       </section>
 
       <section class="opt-group">
@@ -779,30 +782,51 @@
     text-align: center;
   }
 
-  /* ===== Statut toggle cockpit ===== */
-  .status-line {
-    margin-top: 0.4rem;
-    font-size: 0.82rem;
-    color: rgba(237, 228, 201, 0.75);
+  /* === Sélecteur de layout 4 options === */
+  .layout-radio {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.6rem;
+  }
+  .layout-option {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    gap: 0.1rem 0.6rem;
+    padding: 0.5rem 0.7rem;
+    background: rgba(201, 178, 106, 0.05);
+    border: 1px solid rgba(201, 178, 106, 0.2);
+    border-radius: 0.35rem;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .layout-option:hover {
+    background: rgba(201, 178, 106, 0.10);
+    border-color: rgba(201, 178, 106, 0.4);
+  }
+  .layout-option.active {
+    background: rgba(201, 178, 106, 0.14);
+    border-color: rgba(201, 178, 106, 0.6);
+  }
+  .layout-option input[type='radio'] {
+    grid-row: 1 / 3;
+    align-self: center;
+    accent-color: #C9B26A;
+  }
+  .layout-name {
     font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #F4D58C;
   }
-
-  .status-tag {
-    display: inline-block;
-    margin-left: 0.4rem;
-    padding: 0.15rem 0.5rem;
-    background: rgba(176, 24, 30, 0.18);
-    border: 1px solid rgba(176, 24, 30, 0.45);
-    color: #E08F92;
-    border-radius: 0.3rem;
-    font-size: 0.75rem;
-    letter-spacing: 0.10em;
-  }
-
-  .status-tag.on {
-    background: rgba(58, 107, 71, 0.20);
-    border-color: rgba(58, 107, 71, 0.55);
-    color: #8DC09F;
+  .layout-desc {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 0.74rem;
+    line-height: 1.35;
+    color: rgba(244, 239, 226, 0.7);
+    font-style: italic;
   }
 
   /* ===== Maintenance ===== */

@@ -139,24 +139,34 @@
 
   const fullyRevealed = $derived(stage >= STEPS);
 
-  /* Cliquer n'importe où dans la carte avant la fin = saut de
-     révélation (sinon on attend l'animation puis on scelle). */
-  function onCardClick() {
+  /* Cliquer n'importe où dans la carte (hors sceau) = saut de
+     révélation. Cliquer le sceau = sceller + continuer (même si
+     la révélation n'était pas terminée — c'est le geste explicite
+     du joueur, ne le force pas à cliquer 2 fois). */
+  function onCardClick(e: MouseEvent) {
+    /* Ignorer les clics sur le sceau lui-même (il a son propre handler). */
+    const target = e.target as HTMLElement;
+    if (target.closest('.wax-seal')) return;
     if (!fullyRevealed) revealAll();
   }
 
   function seal() {
-    if (!fullyRevealed) { revealAll(); return; }
+    /* Saut éventuel de la révélation + continuation immédiate.
+       UN seul clic, comme le veut la critique designer §Manie 2. */
+    if (!fullyRevealed) revealAll();
     onContinue();
   }
 </script>
 
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <article
   class="bordered-card p-5 space-y-4"
   in:fade={{ duration: 280 }}
   role="region"
-  aria-label="Conséquence de ton choix"
+  aria-label="Conséquence de ton choix — cliquer ailleurs que sur le sceau pour sauter la révélation"
   aria-live="polite"
+  onclick={onCardClick}
 >
   <header class="flex items-baseline justify-between gap-2">
     <div class="text-xs uppercase tracking-wider text-parchment-dim/85">Conséquence</div>

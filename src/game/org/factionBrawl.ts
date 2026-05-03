@@ -29,84 +29,132 @@ export type BrawlerType =
   | 'infiltre'         // patron : agent en civil
   | 'crs';             // état : matraques, boucliers
 
+export type AttackKind = 'melee' | 'melee_push' | 'projectile' | 'thrown_arc';
+export type SuperKind = 'rally' | 'cordon' | 'nuee' | 'molotov'
+                     | 'lockdown' | 'vpush' | 'flip' | 'charge';
+
 export interface Brawler {
   type: BrawlerType;
   /** Nom court affiché. */
   label: string;
-  /** Force individuelle (1-10). */
-  strength: number;
   /** Couleur primaire (hex). Pour le rendu canvas. */
   color: string;
+  /** Couleur sombre (ombre). */
+  colorDark: string;
   /** Description courte FALC. */
   description: string;
   /** Faction symbol pour le rendu. */
   glyph: string;
+  /* === Stats Brawl Stars-style (portées du build Phaser) === */
+  /** Points de vie individuel. */
+  hp: number;
+  /** Dégâts par attaque. */
+  atk: number;
+  /** Vitesse de déplacement (px/s en réf, abstrait pour la sim). */
+  speed: number;
+  /** Portée d'attaque (px en réf). */
+  range: number;
+  /** Type d'attaque (mêlée, projectile, lancé en arc). */
+  attackKind: AttackKind;
+  /** Cooldown entre 2 attaques (ms). */
+  cooldown: number;
+  /** Vitesse projectile (si projectile). */
+  bulletSpeed?: number;
+  /** Force de répulsion (si melee_push). */
+  pushForce?: number;
+  /** Super activable. */
+  super: SuperKind;
+  /** Description du super (FALC). */
+  superDesc: string;
+  /** Cooldown du super (ms). Calibré ~12-25s. */
+  superCooldown: number;
+  /** Rétrocompat : force composite ancienne (Σ pour le résolveur legacy). */
+  strength: number;
 }
 
+/* Stats portées du build Phaser arena (3242 lignes, calibrées par
+   3 audits Argus + paritarisme historique). Ratios HP/ATK conservés,
+   cooldowns en ms. Le supercooldown est dérivé : 12-25s selon l'impact. */
 export const BRAWLER_CATALOG: Record<BrawlerType, Brawler> = {
   manifestant: {
-    type: 'manifestant',
-    label: 'Manifestants',
-    strength: 1,
-    color: '#B0181E',
-    description: 'Foule en colère. Faibles seuls, redoutables en nombre.',
-    glyph: '✊'
+    type: 'manifestant', label: 'Manifestants',
+    color: '#D9291A', colorDark: '#7A0F0F', glyph: '✊',
+    description: 'Pousse, intimide, occupe le terrain. Bonus de groupe.',
+    hp: 4800, atk: 350, speed: 225, range: 90,
+    attackKind: 'melee_push', pushForce: 380, cooldown: 480,
+    super: 'rally', superCooldown: 14000,
+    superDesc: 'Ralliement : soigne les manifestants alliés (+800 PV) et +25% vitesse 6s.',
+    strength: 1
   },
   'service-ordre': {
-    type: 'service-ordre',
-    label: 'Service d\'ordre',
-    strength: 4,
-    color: '#7C1D17',
-    description: 'Encadrement syndical. Discipline et expérience.',
-    glyph: '◆'
+    type: 'service-ordre', label: 'Service d\'Ordre',
+    color: '#A52015', colorDark: '#5A0808', glyph: '◆',
+    description: 'Tank mains nues. Cordon défensif. -50% dmg subi quand entouré.',
+    hp: 8200, atk: 750, speed: 165, range: 100,
+    attackKind: 'melee', pushForce: 120, cooldown: 720,
+    super: 'cordon', superCooldown: 22000,
+    superDesc: 'Cordon : invulnérable 3s + onde de choc qui inflige 600 dégâts.',
+    strength: 4
   },
   pigeon: {
-    type: 'pigeon',
-    label: 'Pigeons',
-    strength: 2,
-    color: '#DA9221',
-    description: 'Jeunes mobiles. Vifs, tactiques de harcèlement.',
-    glyph: '✦'
+    type: 'pigeon', label: 'Dresseur de pigeons',
+    color: '#FF7E68', colorDark: '#A53528', glyph: '🕊',
+    description: 'Sniper léger longue portée. Nuée passive auto.',
+    hp: 3000, atk: 600, speed: 240, range: 500,
+    attackKind: 'projectile', bulletSpeed: 900, cooldown: 320,
+    super: 'nuee', superCooldown: 16000,
+    superDesc: 'Nuée aveuglante : zone qui ralentit -50% et empêche de tirer 4s.',
+    strength: 2
   },
   'coup-de-force': {
-    type: 'coup-de-force',
-    label: 'Coup de force',
-    strength: 6,
-    color: '#3D1A14',
-    description: 'Cagoulés et déterminés. Frappes ciblées.',
-    glyph: '⚒'
+    type: 'coup-de-force', label: 'Coup de force',
+    color: '#7A0F0F', colorDark: '#3A0606', glyph: '⚒',
+    description: 'Lance des cocktails molotov en arc. Zone de feu persistante.',
+    hp: 4200, atk: 0, speed: 195, range: 280,
+    attackKind: 'thrown_arc', cooldown: 900,
+    super: 'molotov', superCooldown: 25000,
+    superDesc: 'Cocktail géant : zone de feu, 350 dégâts/sec pendant 5s.',
+    strength: 6
   },
   'securite-privee': {
-    type: 'securite-privee',
-    label: 'Sécurité privée',
-    strength: 3,
-    color: '#1E5C8A',
-    description: 'Vigiles d\'entreprise. Gilet fluo, ordres simples.',
-    glyph: '◆'
+    type: 'securite-privee', label: 'Sécurité d\'usine',
+    color: '#1E5C8A', colorDark: '#0D3D5C', glyph: '🚧',
+    description: 'Tank tireur défensif.',
+    hp: 6800, atk: 850, speed: 170, range: 300,
+    attackKind: 'projectile', bulletSpeed: 720, cooldown: 520,
+    super: 'lockdown', superCooldown: 18000,
+    superDesc: 'Lockdown : root l\'ennemi le plus proche pendant 2,5s.',
+    strength: 3
   },
   'bande-palis': {
-    type: 'bande-palis',
-    label: 'Bande à Palis',
-    strength: 5,
-    color: '#0F2C4A',
-    description: 'Bras armés du patronat. Manches de pioche.',
-    glyph: '⚒'
+    type: 'bande-palis', label: 'Bande à Palis',
+    color: '#0D3D5C', colorDark: '#062539', glyph: '👊',
+    description: 'Mêlée brutale. Disperse au contact.',
+    hp: 4800, atk: 950, speed: 215, range: 120,
+    attackKind: 'melee_push', pushForce: 280, cooldown: 600,
+    super: 'vpush', superCooldown: 15000,
+    superDesc: 'Charge en V : dash et pousse les ennemis touchés.',
+    strength: 5
   },
   infiltre: {
-    type: 'infiltre',
-    label: 'Infiltrés',
-    strength: 4,
-    color: '#2A1A0E',
-    description: 'En civil dans la foule. Provocations et arrestations ciblées.',
-    glyph: '✸'
+    type: 'infiltre', label: 'Infiltré',
+    color: '#6FAFD6', colorDark: '#3D7BA0', glyph: '🕴',
+    description: 'Fast. Stealth. Super flip puissant mais long cooldown.',
+    hp: 3200, atk: 700, speed: 250, range: 250,
+    attackKind: 'projectile', bulletSpeed: 800, cooldown: 420,
+    super: 'flip', superCooldown: 60000,
+    superDesc: 'Trahison : convertit 1 ennemi adjacent au camp adverse pour 4s.',
+    strength: 4
   },
   crs: {
-    type: 'crs',
-    label: 'CRS',
-    strength: 5,
-    color: '#1A2F3D',
-    description: 'Compagnies républicaines. Matraques, boucliers, gaz.',
-    glyph: '▣'
+    type: 'crs', label: 'Matraques (CRS)',
+    color: '#444444', colorDark: '#222222', glyph: '🛂',
+    description: 'CRS pied. Mêlée brutale + dash super.',
+    hp: 5500, atk: 950, speed: 200, range: 110,
+    attackKind: 'melee_push', pushForce: 180, cooldown: 540,
+    super: 'charge', superCooldown: 17000,
+    superDesc: 'Charge : dash et 1,5x dégâts au prochain coup.',
+    strength: 5
   }
 };
 

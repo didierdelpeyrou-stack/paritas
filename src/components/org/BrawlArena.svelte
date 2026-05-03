@@ -1,22 +1,24 @@
 <script lang="ts">
   /* ============================================================
-     BrawlArena — visualisation Place de la République
+     BrawlArena — simulation temps-réel Place de la République
      ============================================================
-     S'affiche après le calcul de la manif quand le brawl est
-     déclenché. Canvas 2D simple : Place avec statue + façades
-     stylisées, deux factions face-à-face, animations de base
-     (avancée, choc, recul), récit textuel à droite.
+     Port du build Phaser 3 dans canvas Svelte natif. Pack-based
+     simulation avec animation continue rAF, HP bars, projectiles,
+     supers automatiques, et bouton « Rallier » pour interaction
+     joueur pendant le combat.
 
-     Pas de Phaser, pas de sprites externes. Tout en stroke + fill
-     procédural pour rester léger et stylisé Paritas (or + dark).
+     Reste compatible avec resolveBrawl() : utilise l'outcome comme
+     « cible » et interpole l'animation pour matcher les pertes
+     prévues, tout en restant visuellement vivant.
      ============================================================ */
   import { fade, fly } from 'svelte/transition';
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import {
     BRAWLER_CATALOG,
     type FactionRoster,
     type BrawlOutcome,
-    type BrawlerType
+    type BrawlerType,
+    type Brawler
   } from '../../game/org/factionBrawl';
 
   interface Props {
@@ -27,250 +29,497 @@
   }
   let { joueur, adversaire, outcome, onClose }: Props = $props();
 
+  /* ====== Etat de la simulation ====== */
+  interface PackSim {
+    type: BrawlerType;
+    side: 'left' | 'right';
+    initialCount: number;
+    /** Compte courant (peut être fractionnaire pendant interpolation). */
+    count: number;
+    /** HP total restant (interpolé). */
+    hp: number;
+    initialHp: number;
+    /** Position simulée (le pack avance vers le centre). */
+    x: number;
+    y: number;
+    targetX: number;
+    /** Cooldown super en cours (ms restants). */
+    superCooldown: number;
+    /** Telegraph super actif pendant 800ms après déclenchement. */
+    superTelegraph: number;
+  }
+
   let canvas: HTMLCanvasElement | null = $state(null);
-  let currentRound = $state(0);
-  let animating = $state(true);
-  let visibleRounds = $derived(outcome.rounds.slice(0, currentRound));
+  let packs = $state<PackSim[]>([]);
+  let particles = $state<Array<{
+    x: number; y: number; vx: number; vy: number;
+    life: number; maxLife: number; color: string; kind: 'hit' | 'projectile';
+    targetX?: number; targetY?: number;
+  }>>([]);
+  let elapsed = $state(0);            // ms écoulées dans la sim
+  let phase = $state<'fight' | 'resolved'>('fight');
+  let rallyCooldown = $state(0);      // ms avant prochain rally
+  let rallyActive = $state(0);        // ms restants de boost
+  let lastTimestamp = 0;
+  let rafId = 0;
 
-  /* Animation : un round par 1.6s, puis affiche le récit final. */
-  onMount(() => {
-    let step = 0;
-    const interval = setInterval(() => {
-      step++;
-      currentRound = step;
-      if (step >= outcome.rounds.length) {
-        clearInterval(interval);
-        setTimeout(() => { animating = false; }, 800);
+  const ARENA_W = 360;
+  const ARENA_H = 220;
+  const TOTAL_DURATION = 11000;       // 11s de combat puis resolved
+  const RALLY_COOLDOWN_MS = 9000;
+  const RALLY_DURATION_MS = 3000;
+
+  /* ====== Initialisation ====== */
+  function initPacks() {
+    const list: PackSim[] = [];
+    /* Côté joueur (gauche) */
+    const jBrawlers = Object.entries(joueur.brawlers) as [BrawlerType, number][];
+    jBrawlers.forEach(([type, count], i) => {
+      if (!count) return;
+      const meta = BRAWLER_CATALOG[type];
+      const yOffset = (i - (jBrawlers.length - 1) / 2) * 36;
+      list.push({
+        type, side: 'left',
+        initialCount: count, count,
+        hp: count * meta.hp,
+        initialHp: count * meta.hp,
+        x: 40, y: ARENA_H * 0.55 + yOffset,
+        targetX: ARENA_W * 0.38,
+        superCooldown: meta.superCooldown * 0.4 + Math.random() * meta.superCooldown * 0.4,
+        superTelegraph: 0
+      });
+    });
+    /* Côté adversaire (droite) */
+    const aBrawlers = Object.entries(adversaire.brawlers) as [BrawlerType, number][];
+    aBrawlers.forEach(([type, count], i) => {
+      if (!count) return;
+      const meta = BRAWLER_CATALOG[type];
+      const yOffset = (i - (aBrawlers.length - 1) / 2) * 36;
+      list.push({
+        type, side: 'right',
+        initialCount: count, count,
+        hp: count * meta.hp,
+        initialHp: count * meta.hp,
+        x: ARENA_W - 40, y: ARENA_H * 0.55 + yOffset,
+        targetX: ARENA_W * 0.62,
+        superCooldown: meta.superCooldown * 0.4 + Math.random() * meta.superCooldown * 0.4,
+        superTelegraph: 0
+      });
+    });
+    return list;
+  }
+
+  /* ====== Boucle de simulation ====== */
+  function tick(timestamp: number) {
+    if (!lastTimestamp) lastTimestamp = timestamp;
+    const dt = Math.min(50, timestamp - lastTimestamp);  // clamp à 50ms
+    lastTimestamp = timestamp;
+
+    if (phase === 'fight') {
+      elapsed += dt;
+      simulate(dt);
+
+      if (elapsed >= TOTAL_DURATION) {
+        phase = 'resolved';
+        /* Force l'état final pour matcher l'outcome déterministe. */
+        applyFinalOutcome();
       }
-    }, 1600);
-    return () => clearInterval(interval);
-  });
+    }
 
-  /* Dessine le canvas à chaque update. */
-  $effect(() => {
-    if (!canvas) return;
-    /* Re-render à chaque round. */
-    void currentRound;
-    drawScene(canvas, joueur, adversaire, currentRound, outcome);
-  });
+    /* Cooldowns rally + actif */
+    if (rallyCooldown > 0) rallyCooldown = Math.max(0, rallyCooldown - dt);
+    if (rallyActive > 0) rallyActive = Math.max(0, rallyActive - dt);
 
-  function drawScene(
-    cv: HTMLCanvasElement,
-    j: FactionRoster,
-    a: FactionRoster,
-    round: number,
-    out: BrawlOutcome
-  ) {
+    /* Particules */
+    particles = particles.map(p => ({
+      ...p,
+      x: p.x + p.vx * (dt / 16.67),
+      y: p.y + p.vy * (dt / 16.67),
+      life: p.life - dt
+    })).filter(p => p.life > 0);
+
+    if (canvas) draw(canvas);
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function simulate(dt: number) {
+    /* Cible totale : appliquer ~outcome.totalLosses sur la durée totale.
+       Progress 0..1 selon elapsed/total. */
+    const progress = Math.min(1, elapsed / TOTAL_DURATION);
+    /* Courbe douce avec accélération au milieu. */
+    const easedProgress = 0.5 - 0.5 * Math.cos(progress * Math.PI);
+
+    const targetJLossRatio = easedProgress * (outcome.totalJoueurLosses / Math.max(1, joueur.total));
+    const targetALossRatio = easedProgress * (outcome.totalAdversaireLosses / Math.max(1, adversaire.total));
+
+    /* Boost rally : multiplie la perte adverse pendant le rally. */
+    const rallyMul = rallyActive > 0 ? 1.4 : 1;
+
+    /* Move + simulate damage by side. */
+    for (const pack of packs) {
+      const meta = BRAWLER_CATALOG[pack.type];
+
+      /* Mouvement vers targetX (avancée + recul léger). */
+      const speedFactor = 0.0006 * meta.speed * (rallyActive > 0 && pack.side === 'left' ? 1.25 : 1);
+      const dx = pack.targetX - pack.x;
+      pack.x += dx * speedFactor * dt;
+
+      /* Légère oscillation Y pour donner vie. */
+      const baseY = ARENA_H * 0.55 + (packs.indexOf(pack) - (packs.length - 1) / 2) * 0.5;
+      pack.y += (baseY - pack.y) * 0.05;
+      pack.y += Math.sin((elapsed + pack.x * 7) / 200) * 0.15;
+
+      /* Attaques : génère des particules */
+      if (Math.random() < dt / meta.cooldown * 0.5) {
+        spawnAttackEffect(pack);
+      }
+
+      /* Cooldown super */
+      pack.superCooldown -= dt;
+      pack.superTelegraph = Math.max(0, pack.superTelegraph - dt);
+      if (pack.superCooldown <= 0) {
+        triggerSuper(pack);
+        pack.superCooldown = meta.superCooldown;
+      }
+
+      /* Apply target loss */
+      if (pack.side === 'left') {
+        const targetCount = Math.max(0, pack.initialCount * (1 - targetJLossRatio));
+        pack.count = pack.count + (targetCount - pack.count) * 0.05;
+      } else {
+        const targetCount = Math.max(0, pack.initialCount * (1 - targetALossRatio * rallyMul));
+        pack.count = pack.count + (targetCount - pack.count) * 0.05;
+      }
+      pack.hp = pack.count * meta.hp;
+    }
+  }
+
+  function spawnAttackEffect(pack: PackSim) {
+    const meta = BRAWLER_CATALOG[pack.type];
+    /* Cible : pack ennemi le plus proche en X. */
+    const enemies = packs.filter(p => p.side !== pack.side && p.count > 0.5);
+    if (!enemies.length) return;
+    const target = enemies.reduce((best, e) =>
+      Math.abs(e.x - pack.x) < Math.abs(best.x - pack.x) ? e : best, enemies[0]);
+    const dx = target.x - pack.x;
+    const dy = target.y - pack.y;
+    const dist = Math.hypot(dx, dy);
+
+    if (meta.attackKind === 'projectile') {
+      particles = [...particles, {
+        x: pack.x, y: pack.y,
+        vx: (dx / dist) * 4,
+        vy: (dy / dist) * 4,
+        life: 600, maxLife: 600,
+        color: meta.color, kind: 'projectile',
+        targetX: target.x, targetY: target.y
+      }];
+    } else if (meta.attackKind === 'thrown_arc') {
+      /* Particle arc — vélocité avec gravité simulée */
+      particles = [...particles, {
+        x: pack.x, y: pack.y,
+        vx: (dx / dist) * 3,
+        vy: -2.5 + (dy / dist) * 2,
+        life: 800, maxLife: 800,
+        color: meta.color, kind: 'projectile',
+        targetX: target.x, targetY: target.y
+      }];
+    } else {
+      /* Mêlée : impact direct au centre de l'ennemi */
+      particles = [...particles, {
+        x: target.x + (Math.random() - 0.5) * 10,
+        y: target.y + (Math.random() - 0.5) * 10,
+        vx: (Math.random() - 0.5) * 3,
+        vy: -1 - Math.random() * 2,
+        life: 400, maxLife: 400,
+        color: meta.color, kind: 'hit'
+      }];
+    }
+  }
+
+  function triggerSuper(pack: PackSim) {
+    pack.superTelegraph = 800;
+    const meta = BRAWLER_CATALOG[pack.type];
+    /* Effet visuel : burst de particules */
+    for (let i = 0; i < 14; i++) {
+      const angle = (i / 14) * Math.PI * 2;
+      particles = [...particles, {
+        x: pack.x, y: pack.y,
+        vx: Math.cos(angle) * 3,
+        vy: Math.sin(angle) * 3,
+        life: 700, maxLife: 700,
+        color: meta.color, kind: 'hit'
+      }];
+    }
+  }
+
+  function applyFinalOutcome() {
+    /* Snap les counts à l'outcome déterministe. */
+    const jLossRatio = outcome.totalJoueurLosses / Math.max(1, joueur.total);
+    const aLossRatio = outcome.totalAdversaireLosses / Math.max(1, adversaire.total);
+    for (const pack of packs) {
+      const ratio = pack.side === 'left' ? jLossRatio : aLossRatio;
+      pack.count = Math.max(0, pack.initialCount * (1 - ratio));
+      const meta = BRAWLER_CATALOG[pack.type];
+      pack.hp = pack.count * meta.hp;
+    }
+  }
+
+  function rally() {
+    if (rallyCooldown > 0 || phase !== 'fight') return;
+    rallyCooldown = RALLY_COOLDOWN_MS;
+    rallyActive = RALLY_DURATION_MS;
+    /* Burst doré sur tous les packs joueur */
+    for (const pack of packs.filter(p => p.side === 'left')) {
+      for (let i = 0; i < 6; i++) {
+        const angle = (i / 6) * Math.PI * 2;
+        particles = [...particles, {
+          x: pack.x, y: pack.y,
+          vx: Math.cos(angle) * 2,
+          vy: Math.sin(angle) * 2 - 1,
+          life: 600, maxLife: 600,
+          color: '#F4D58C', kind: 'hit'
+        }];
+      }
+    }
+  }
+
+  /* ====== Rendu canvas ====== */
+  function draw(cv: HTMLCanvasElement) {
     const ctx = cv.getContext('2d');
     if (!ctx) return;
     const W = cv.width;
     const H = cv.height;
 
-    /* Background : place pavée nuit sombre + halo doré au centre */
+    /* Background nuit + halo */
     const bg = ctx.createLinearGradient(0, 0, 0, H);
     bg.addColorStop(0, '#1F1813');
     bg.addColorStop(1, '#0a0807');
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
-    /* Halo central — la statue de Marianne */
-    const halo = ctx.createRadialGradient(W/2, H*0.45, 20, W/2, H*0.45, W/2);
-    halo.addColorStop(0, 'rgba(244, 213, 140, 0.10)');
+    /* Halo central — réverbère */
+    const halo = ctx.createRadialGradient(W/2, H*0.5, 20, W/2, H*0.5, W*0.6);
+    halo.addColorStop(0, rallyActive > 0 ? 'rgba(244, 213, 140, 0.18)' : 'rgba(244, 213, 140, 0.10)');
     halo.addColorStop(1, 'transparent');
     ctx.fillStyle = halo;
     ctx.fillRect(0, 0, W, H);
 
-    /* Pavés : grille subtile */
-    ctx.strokeStyle = 'rgba(201, 178, 106, 0.06)';
+    /* Pavés */
+    ctx.strokeStyle = 'rgba(201, 178, 106, 0.05)';
     ctx.lineWidth = 1;
     for (let y = 0; y < H; y += 24) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(W, y);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
     }
     for (let x = 0; x < W; x += 24) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, H);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
     }
 
-    /* Façades stylisées en haut */
+    /* Façades */
     ctx.fillStyle = '#2A1A0E';
-    ctx.fillRect(0, 0, W, 30);
+    ctx.fillRect(0, 0, W, 28);
     ctx.fillStyle = '#3D2615';
     for (let x = 8; x < W - 8; x += 22) {
-      ctx.fillRect(x, 4, 14, 22);  // fenêtres
+      ctx.fillRect(x, 4, 14, 20);
     }
 
-    /* Statue de la République au centre, simplifiée */
-    drawStatue(ctx, W/2, H*0.42);
+    /* Marianne */
+    drawStatue(ctx, W/2, H*0.4);
 
-    /* Joueur à gauche, adversaire à droite */
-    drawFactionLine(ctx, j, 'left', round, out);
-    drawFactionLine(ctx, a, 'right', round, out);
+    /* Particules — derrière les packs si projectiles */
+    drawParticles(ctx);
 
-    /* Indicateur de round au centre haut */
-    ctx.fillStyle = 'rgba(244, 213, 140, 0.75)';
-    ctx.font = 'bold 12px "Cinzel", serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    if (round > 0 && round <= out.rounds.length) {
-      ctx.fillText(`ROUND ${round} / ${out.rounds.length}`, W/2, 50);
-    } else if (round > out.rounds.length) {
-      const resultText = out.result === 'victoire' ? '✓ VICTOIRE'
-                       : out.result === 'defaite' ? '✗ DÉFAITE'
-                       : '— NUL —';
-      ctx.fillStyle = out.result === 'victoire' ? '#7BCBA1'
-                    : out.result === 'defaite' ? '#E08F92'
-                    : '#C9B26A';
-      ctx.font = 'bold 16px "Cinzel", serif';
-      ctx.fillText(resultText, W/2, 50);
-    }
+    /* Packs */
+    for (const pack of packs) drawPack(ctx, pack);
+
+    /* HP bars par camp */
+    drawFactionHpBar(ctx, 'left', W, H);
+    drawFactionHpBar(ctx, 'right', W, H);
+
+    /* Indicateurs */
+    drawTimer(ctx, W);
+    if (phase === 'resolved') drawResultBanner(ctx, W, H);
   }
 
   function drawStatue(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
-    /* Socle */
     ctx.fillStyle = '#3D2615';
-    ctx.fillRect(cx - 18, cy + 24, 36, 14);
-    /* Marianne stylisée — silhouette */
+    ctx.fillRect(cx - 14, cy + 18, 28, 12);
     ctx.fillStyle = '#5A2F1C';
     ctx.beginPath();
-    ctx.ellipse(cx, cy + 4, 8, 18, 0, 0, Math.PI * 2);  // corps
+    ctx.ellipse(cx, cy + 2, 6, 14, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(cx, cy - 16, 6, 0, Math.PI * 2);  // tête
+    ctx.arc(cx, cy - 12, 4.5, 0, Math.PI * 2);
     ctx.fill();
-    /* Bonnet phrygien — détail */
     ctx.fillStyle = '#8B1F1B';
     ctx.beginPath();
-    ctx.moveTo(cx - 6, cy - 18);
-    ctx.lineTo(cx + 6, cy - 18);
-    ctx.lineTo(cx + 4, cy - 25);
-    ctx.lineTo(cx - 4, cy - 25);
+    ctx.moveTo(cx - 4.5, cy - 14);
+    ctx.lineTo(cx + 4.5, cy - 14);
+    ctx.lineTo(cx + 3, cy - 19);
+    ctx.lineTo(cx - 3, cy - 19);
     ctx.closePath();
     ctx.fill();
-    /* Bras tendu (drapeau) */
-    ctx.strokeStyle = '#5A2F1C';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(cx + 6, cy - 8);
-    ctx.lineTo(cx + 16, cy - 22);
-    ctx.stroke();
-    /* Drapeau tricolore au bout du bras */
-    ctx.fillStyle = '#1E5C8A'; ctx.fillRect(cx + 14, cy - 30, 4, 8);
-    ctx.fillStyle = '#F4EFE2'; ctx.fillRect(cx + 18, cy - 30, 4, 8);
-    ctx.fillStyle = '#B0181E'; ctx.fillRect(cx + 22, cy - 30, 4, 8);
+    /* Drapeau tricolore */
+    ctx.fillStyle = '#1E5C8A'; ctx.fillRect(cx + 9, cy - 22, 3, 6);
+    ctx.fillStyle = '#F4EFE2'; ctx.fillRect(cx + 12, cy - 22, 3, 6);
+    ctx.fillStyle = '#B0181E'; ctx.fillRect(cx + 15, cy - 22, 3, 6);
   }
 
-  function drawFactionLine(
-    ctx: CanvasRenderingContext2D,
-    faction: FactionRoster,
-    side: 'left' | 'right',
-    round: number,
-    out: BrawlOutcome
-  ) {
-    /* Calcul des survivants à ce round (interpole). */
-    const totalLossThisStep = side === 'left'
-      ? out.rounds.slice(0, round).reduce((s, r) => s + r.joueurLosses, 0)
-      : out.rounds.slice(0, round).reduce((s, r) => s + r.adversaireLosses, 0);
-    const remaining = Math.max(0, faction.total - totalLossThisStep);
-
-    /* Les brawlers sont dessinés en "vague" — packs par type. */
-    const W = ctx.canvas.width;
-    const H = ctx.canvas.height;
-    const baseX = side === 'left' ? 40 : W - 40;
-    const dirX = side === 'left' ? 1 : -1;
-    const baseY = H * 0.62;
-
-    /* Avance vers le centre selon le round (les troupes avancent). */
-    const advance = round * 18;
-    const xStart = baseX + dirX * advance;
-
-    /* Dessine packs par type. */
-    let xCursor = xStart;
-    let yCursor = baseY;
-    const ratio = remaining / Math.max(1, faction.total);
-
-    for (const [t, count] of Object.entries(faction.brawlers) as [BrawlerType, number][]) {
-      if (!count || count <= 0) continue;
-      const remainingInType = Math.max(0, Math.round(count * ratio));
-      const meta = BRAWLER_CATALOG[t];
-      drawPack(ctx, xCursor, yCursor, dirX, remainingInType, meta);
-      /* Décale pour le prochain pack */
-      xCursor += dirX * 38;
-      /* Wrap si on s'approche du milieu */
-      if (side === 'left' && xCursor > W / 2 - 30) {
-        xCursor = xStart;
-        yCursor += 28;
-      } else if (side === 'right' && xCursor < W / 2 + 30) {
-        xCursor = xStart;
-        yCursor += 28;
-      }
-    }
-
-    /* Étiquette de la faction */
-    ctx.fillStyle = side === 'left' ? '#E08F92' : '#7DB1D8';
-    ctx.font = 'bold 11px "Cinzel", serif';
-    ctx.textAlign = side === 'left' ? 'left' : 'right';
-    ctx.textBaseline = 'top';
-    ctx.fillText(faction.label.toUpperCase(),
-      side === 'left' ? 12 : W - 12,
-      H - 20);
-    /* Compteur restant */
-    ctx.fillStyle = 'rgba(244, 239, 226, 0.75)';
-    ctx.font = '10px "Courier Prime", monospace';
-    ctx.fillText(`${remaining} / ${faction.total}`,
-      side === 'left' ? 12 : W - 12,
-      H - 8);
-  }
-
-  function drawPack(
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    dirX: number,
-    count: number,
-    meta: typeof BRAWLER_CATALOG[BrawlerType]
-  ) {
-    if (count <= 0) {
-      /* Pack décimé : dessine une croix grise */
-      ctx.strokeStyle = 'rgba(244, 239, 226, 0.2)';
-      ctx.lineWidth = 1;
+  function drawPack(ctx: CanvasRenderingContext2D, pack: PackSim) {
+    if (pack.count < 0.5) {
+      /* Pack décimé : croix grise */
+      ctx.strokeStyle = 'rgba(244, 239, 226, 0.25)';
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
-      ctx.moveTo(x - 6, y - 6); ctx.lineTo(x + 6, y + 6);
-      ctx.moveTo(x + 6, y - 6); ctx.lineTo(x - 6, y + 6);
+      ctx.moveTo(pack.x - 8, pack.y - 8); ctx.lineTo(pack.x + 8, pack.y + 8);
+      ctx.moveTo(pack.x + 8, pack.y - 8); ctx.lineTo(pack.x - 8, pack.y + 8);
       ctx.stroke();
       return;
     }
-    /* Cercle représentant le groupe, taille ∝ count, couleur de la faction */
-    const r = Math.min(20, 6 + Math.log2(count + 1) * 2);
+    const meta = BRAWLER_CATALOG[pack.type];
+    const r = Math.min(22, 7 + Math.log2(pack.count + 1) * 2.2);
+
+    /* Telegraph super (anneau pulse) */
+    if (pack.superTelegraph > 0) {
+      const pulse = 1 + (1 - pack.superTelegraph / 800) * 0.8;
+      ctx.strokeStyle = '#F4D58C';
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = pack.superTelegraph / 800;
+      ctx.beginPath();
+      ctx.arc(pack.x, pack.y, r * pulse, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
     /* Halo */
     ctx.fillStyle = meta.color + '33';
     ctx.beginPath();
-    ctx.arc(x, y, r + 4, 0, Math.PI * 2);
+    ctx.arc(pack.x, pack.y, r + 4, 0, Math.PI * 2);
     ctx.fill();
-    /* Disque principal */
+
+    /* Disque */
     ctx.fillStyle = meta.color;
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = meta.colorDark;
+    ctx.lineWidth = 1.2;
     ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.arc(pack.x, pack.y, r, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
-    /* Glyph centré */
+
+    /* Glyph */
     ctx.fillStyle = '#F4EFE2';
-    ctx.font = `bold ${Math.round(r * 0.9)}px "Cinzel", serif`;
+    ctx.font = `bold ${Math.round(r * 0.95)}px "Cinzel", serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(meta.glyph, x, y + 1);
-    /* Compteur sous le disque */
-    ctx.fillStyle = 'rgba(244, 239, 226, 0.75)';
+    ctx.fillText(meta.glyph, pack.x, pack.y + 1);
+
+    /* HP bar pack (étroite) */
+    const barW = r * 1.8;
+    const barH = 2.5;
+    const hpRatio = pack.hp / Math.max(1, pack.initialHp);
+    ctx.fillStyle = 'rgba(13, 11, 8, 0.7)';
+    ctx.fillRect(pack.x - barW/2, pack.y - r - 6, barW, barH);
+    ctx.fillStyle = hpRatio > 0.5 ? '#7BCBA1' : hpRatio > 0.25 ? '#F0B870' : '#E08F92';
+    ctx.fillRect(pack.x - barW/2, pack.y - r - 6, barW * hpRatio, barH);
+
+    /* Compteur */
+    ctx.fillStyle = 'rgba(244, 239, 226, 0.85)';
     ctx.font = '9px "Courier Prime", monospace';
     ctx.textBaseline = 'top';
-    ctx.fillText(String(count), x, y + r + 3);
+    ctx.fillText(String(Math.round(pack.count)), pack.x, pack.y + r + 3);
   }
+
+  function drawParticles(ctx: CanvasRenderingContext2D) {
+    for (const p of particles) {
+      const a = p.life / p.maxLife;
+      ctx.globalAlpha = a;
+      if (p.kind === 'projectile') {
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+        /* Traînée */
+        ctx.strokeStyle = p.color + '88';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(p.x - p.vx * 4, p.y - p.vy * 4);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+      } else {
+        /* Hit : petite étoile/cross */
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 1.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function drawFactionHpBar(ctx: CanvasRenderingContext2D, side: 'left' | 'right', W: number, H: number) {
+    const sidePacks = packs.filter(p => p.side === side);
+    const totalHp = sidePacks.reduce((s, p) => s + p.hp, 0);
+    const initialHp = sidePacks.reduce((s, p) => s + p.initialHp, 0);
+    const ratio = initialHp > 0 ? totalHp / initialHp : 0;
+    const label = side === 'left' ? joueur.label : adversaire.label;
+    const colorLine = side === 'left' ? '#E08F92' : '#7DB1D8';
+
+    ctx.fillStyle = colorLine;
+    ctx.font = 'bold 10px "Cinzel", serif';
+    ctx.textBaseline = 'top';
+    ctx.textAlign = side === 'left' ? 'left' : 'right';
+    ctx.fillText(label.toUpperCase(), side === 'left' ? 8 : W - 8, H - 28);
+
+    /* Bar */
+    const barX = side === 'left' ? 8 : W - 100 - 8;
+    const barY = H - 14;
+    const barW = 100;
+    ctx.fillStyle = 'rgba(13, 11, 8, 0.7)';
+    ctx.fillRect(barX, barY, barW, 5);
+    ctx.fillStyle = ratio > 0.5 ? '#7BCBA1' : ratio > 0.25 ? '#F0B870' : '#E08F92';
+    ctx.fillRect(barX, barY, barW * ratio, 5);
+    ctx.strokeStyle = 'rgba(201, 178, 106, 0.4)';
+    ctx.lineWidth = 0.6;
+    ctx.strokeRect(barX, barY, barW, 5);
+  }
+
+  function drawTimer(ctx: CanvasRenderingContext2D, W: number) {
+    if (phase === 'resolved') return;
+    const ratio = elapsed / TOTAL_DURATION;
+    ctx.fillStyle = 'rgba(13, 11, 8, 0.6)';
+    ctx.fillRect(W/2 - 50, 38, 100, 3);
+    ctx.fillStyle = '#C9B26A';
+    ctx.fillRect(W/2 - 50, 38, 100 * ratio, 3);
+  }
+
+  function drawResultBanner(ctx: CanvasRenderingContext2D, W: number, H: number) {
+    const text = outcome.result === 'victoire' ? '✓ VICTOIRE'
+               : outcome.result === 'defaite' ? '✗ DÉFAITE'
+               : '— NUL —';
+    const color = outcome.result === 'victoire' ? '#7BCBA1'
+                : outcome.result === 'defaite' ? '#E08F92'
+                : '#C9B26A';
+    ctx.fillStyle = 'rgba(13, 11, 8, 0.85)';
+    ctx.fillRect(W/2 - 80, H/2 - 14, 160, 28);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(W/2 - 80, H/2 - 14, 160, 28);
+    ctx.fillStyle = color;
+    ctx.font = 'bold 16px "Cinzel", serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, W/2, H/2 + 1);
+  }
+
+  /* ====== Lifecycle ====== */
+  onMount(() => {
+    packs = initPacks();
+    rafId = requestAnimationFrame(tick);
+  });
+
+  onDestroy(() => {
+    if (rafId) cancelAnimationFrame(rafId);
+  });
 </script>
 
 <div class="brawl-backdrop" in:fade={{ duration: 240 }} role="presentation"></div>
@@ -290,26 +539,53 @@
   </header>
 
   <div class="arena-body">
-    <canvas
-      bind:this={canvas}
-      width="640"
-      height="320"
-      class="arena-canvas"
-      aria-label="Visualisation de l'affrontement à Place de la République"
-    ></canvas>
+    <div class="canvas-wrap">
+      <canvas
+        bind:this={canvas}
+        width={ARENA_W}
+        height={ARENA_H}
+        class="arena-canvas"
+        aria-label="Combat à Place de la République en temps réel"
+      ></canvas>
+      <!-- Bouton Rallier (interaction joueur) -->
+      <button type="button"
+        class="rally-btn"
+        class:active={rallyActive > 0}
+        class:cooling={rallyCooldown > 0 && rallyActive === 0}
+        disabled={rallyCooldown > 0 || phase === 'resolved'}
+        onclick={rally}
+        title={rallyActive > 0 ? 'Boost actif' : rallyCooldown > 0 ? `Disponible dans ${(rallyCooldown / 1000).toFixed(1)}s` : 'Rallie tes troupes (boost 3s)'}
+      >
+        {#if rallyActive > 0}
+          ✊ Boost {(rallyActive / 1000).toFixed(1)}s
+        {:else if rallyCooldown > 0}
+          ⏱ {(rallyCooldown / 1000).toFixed(1)}s
+        {:else}
+          ✊ Rallier !
+        {/if}
+      </button>
+    </div>
 
     <div class="arena-narrative">
-      <h3>Récit de l'affrontement</h3>
-      {#each visibleRounds as round (round.roundNumber)}
-        <p class="round-line" in:fade={{ duration: 280 }}>
-          {round.narrative}
-        </p>
-      {/each}
-      {#if !animating}
-        <p class="final-line" in:fade={{ duration: 320, delay: 200 }}>
+      <h3>Brawlers en présence</h3>
+      <ul class="rosters">
+        {#each Object.entries(joueur.brawlers) as [type, n]}
+          {#if n}
+            {@const meta = BRAWLER_CATALOG[type as BrawlerType]}
+            <li class="roster-row" style:--c={meta.color}>
+              <span class="roster-glyph">{meta.glyph}</span>
+              <span class="roster-name">{meta.label}</span>
+              <span class="roster-count">×{n}</span>
+            </li>
+          {/if}
+        {/each}
+      </ul>
+
+      {#if phase === 'resolved'}
+        <p class="final-line" in:fade={{ duration: 320 }}>
           {outcome.finalNarrative}
         </p>
-        <div class="effects-block" in:fade={{ duration: 320, delay: 400 }}>
+        <div class="effects-block" in:fade={{ duration: 320, delay: 200 }}>
           <span class="effects-tag">Conséquences :</span>
           <ul class="effects-list">
             {#each Object.entries(outcome.effects) as [k, v]}
@@ -321,14 +597,21 @@
             {/each}
           </ul>
         </div>
+      {:else}
+        <p class="hint-line">
+          Clique <strong>« Rallier »</strong> au bon moment : tes troupes
+          gagnent +25% vitesse et infligent +40% de dégâts pendant 3 secondes.
+        </p>
       {/if}
     </div>
   </div>
 
   <footer class="arena-foot">
-    <button type="button" class="close-btn" onclick={onClose} disabled={animating}
-      title={animating ? 'Attends la fin du combat' : 'Refermer l\'arène'}>
-      {animating ? 'Combat en cours…' : 'Refermer l\'arène'}
+    <button type="button" class="close-btn"
+      onclick={onClose}
+      disabled={phase !== 'resolved'}
+      title={phase !== 'resolved' ? 'Attends la fin du combat' : 'Refermer l\'arène'}>
+      {phase !== 'resolved' ? 'Combat en cours…' : 'Refermer l\'arène'}
     </button>
   </footer>
 </aside>
@@ -363,7 +646,7 @@
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 101;
-    width: min(720px, calc(100vw - 2rem));
+    width: min(740px, calc(100vw - 2rem));
     max-height: calc(100vh - 4rem);
     overflow-y: auto;
     background: linear-gradient(180deg, #2A1A0E 0%, #1A1108 100%);
@@ -413,13 +696,60 @@
     gap: 1rem;
   }
 
+  .canvas-wrap {
+    position: relative;
+    width: 360px;
+  }
+
   .arena-canvas {
     border: 1px solid rgba(201, 178, 106, 0.35);
     border-radius: 0.4rem;
     background: #1F1813;
     width: 360px;
-    height: 200px;
+    height: 220px;
     display: block;
+  }
+
+  .rally-btn {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.4rem 0.9rem;
+    background: linear-gradient(180deg, #c89b3c 0%, #a87a26 100%);
+    color: #0d1014;
+    border: 1px solid #c89b3c;
+    border-radius: 999px;
+    font-family: 'Cinzel', Georgia, serif;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    transition: filter 0.18s ease, transform 0.12s ease;
+  }
+  .rally-btn:hover:not(:disabled) {
+    filter: brightness(1.15);
+    transform: translateX(-50%) translateY(-2px);
+  }
+  .rally-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .rally-btn.active {
+    background: linear-gradient(180deg, #F4D58C 0%, #C9B26A 100%);
+    box-shadow: 0 0 16px rgba(244, 213, 140, 0.55);
+    animation: rally-pulse 0.8s ease-in-out infinite;
+  }
+  .rally-btn.cooling {
+    background: linear-gradient(180deg, #4A3322 0%, #2A1A0E 100%);
+    color: rgba(244, 213, 140, 0.65);
+    border-color: rgba(201, 178, 106, 0.4);
+  }
+  @keyframes rally-pulse {
+    0%, 100% { box-shadow: 0 0 16px rgba(244, 213, 140, 0.55); }
+    50% { box-shadow: 0 0 24px rgba(244, 213, 140, 0.85); }
   }
 
   .arena-narrative {
@@ -434,16 +764,55 @@
     color: #C9B26A;
   }
 
-  .round-line {
-    margin: 0 0 0.45rem 0;
-    padding: 0.4rem 0.55rem;
-    background: rgba(201, 178, 106, 0.06);
+  .rosters {
+    list-style: none;
+    margin: 0 0 0.75rem 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .roster-row {
+    --c: #C9B26A;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.25rem 0.5rem;
+    background: rgba(13, 11, 8, 0.4);
+    border-left: 2px solid var(--c);
+    border-radius: 0.25rem;
+    font-size: 0.78rem;
+  }
+  .roster-glyph {
+    color: var(--c);
+    font-size: 0.95rem;
+    line-height: 1;
+  }
+  .roster-name {
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.7rem;
+    color: rgba(244, 239, 226, 0.85);
+    letter-spacing: 0.02em;
+  }
+  .roster-count {
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #F4D58C;
+  }
+
+  .hint-line {
+    margin: 0.55rem 0 0 0;
+    padding: 0.45rem 0.6rem;
+    background: rgba(244, 213, 140, 0.08);
     border-left: 2px solid rgba(201, 178, 106, 0.45);
     border-radius: 0.25rem;
-    font-size: 0.82rem;
+    font-size: 0.76rem;
     line-height: 1.45;
-    color: rgba(244, 239, 226, 0.92);
+    color: rgba(244, 239, 226, 0.85);
   }
+  .hint-line strong { color: #F4D58C; }
 
   .final-line {
     margin: 0.55rem 0;
@@ -454,6 +823,7 @@
     font-style: italic;
     line-height: 1.5;
     color: #F4D58C;
+    font-size: 0.85rem;
   }
 
   .effects-block {
@@ -523,13 +893,12 @@
     filter: brightness(1.12);
   }
 
-  @media (max-width: 720px) {
+  @media (max-width: 740px) {
     .arena-body {
       grid-template-columns: 1fr;
     }
-    .arena-canvas {
+    .canvas-wrap, .arena-canvas {
       width: 100%;
-      height: 200px;
     }
   }
 </style>

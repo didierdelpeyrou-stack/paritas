@@ -74,13 +74,22 @@
   }
 
   function tooltipFor(action: ActionDef): string {
+    /* FALC : phrases courtes, sans abréviation. */
     const exec = orchestrator.canExec(action);
-    if (!exec.ok) return `${action.label} — ${exec.reason ?? 'indisponible'}`;
+    if (!exec.ok) return `${action.label}\n${exec.reason ?? 'Action indisponible.'}`;
     const fs = rebirth.state ? abilityFuelScore(action.id as AbilityId, rebirth.state.resources) : 50;
     const fuels = fuelsFor(action.id as AbilityId, 2)
-      .map(f => RESOURCE_LABELS[f.resource]).join(' + ');
-    const cost = `${action.cost.caisse ?? 0}F · ${action.cost.mandat ?? 0}m`;
-    return `${action.label}\nCoût : ${cost}\nÉnergie : ${fs}/100${fuels ? `\nBoosté par : ${fuels}` : ''}`;
+      .map(f => RESOURCE_LABELS[f.resource]).join(' et ');
+    const c = action.cost.caisse ?? 0;
+    const m = action.cost.mandat ?? 0;
+    let cost = '';
+    if (c && m) cost = `Coût : ${c} francs et ${m} mandat${m > 1 ? 's' : ''}`;
+    else if (c) cost = `Coût : ${c} francs`;
+    else if (m) cost = `Coût : ${m} mandat${m > 1 ? 's' : ''}`;
+    else cost = 'Action gratuite';
+    const energie = `Énergie : ${fs} sur 100`;
+    const boost = fuels ? `\nBoosté par : ${fuels}` : '';
+    return `${action.label}\n${cost}\n${energie}${boost}`;
   }
 </script>
 
@@ -152,17 +161,20 @@
   .theatre-actions-panel {
     width: 220px;
     flex-shrink: 0;
-    padding: 0.7rem 0.55rem 0.7rem;
+    padding: 0.75rem 0.6rem 0.75rem;
+    /* Continuum visuel avec le sky : même base sombre, voile doré
+       latéral pour suggérer la profondeur sans border franche. */
     background:
-      radial-gradient(ellipse at top, rgba(244, 213, 140, 0.04), transparent 70%),
+      linear-gradient(90deg, transparent 0%, rgba(244, 213, 140, 0.025) 100%),
       linear-gradient(180deg, #1F1813 0%, #110D0A 100%);
-    border-right: 1px solid rgba(201, 178, 106, 0.25);
+    /* Seam doré gradiant, pas une border franche (joint fluide). */
+    box-shadow: inset -1px 0 0 0 rgba(201, 178, 106, 0.18);
     color: #F4EFE2;
     font-family: 'Source Serif 4', Georgia, serif;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.65rem;
     scrollbar-width: thin;
     scrollbar-color: rgba(201, 178, 106, 0.25) transparent;
   }
@@ -258,42 +270,66 @@
     grid-template-columns: 1.6rem 1fr;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.45rem 0.55rem;
-    background: linear-gradient(180deg, rgba(58, 38, 21, 0.55) 0%, rgba(42, 26, 14, 0.55) 100%);
-    border: 1px solid rgba(140, 110, 64, 0.4);
-    border-left: 2px solid var(--accent);
-    border-radius: 0.32rem;
-    color: rgba(244, 213, 140, 0.85);
+    padding: 0.5rem 0.6rem;
+    background: linear-gradient(180deg, rgba(58, 38, 21, 0.6) 0%, rgba(42, 26, 14, 0.6) 100%);
+    border: 1px solid rgba(140, 110, 64, 0.35);
+    border-left: 3px solid var(--accent);
+    border-radius: 0.4rem;
+    color: rgba(244, 239, 226, 0.92);
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     text-align: left;
     cursor: pointer;
-    transition: transform 0.18s cubic-bezier(0.34, 1.2, 0.64, 1),
-                background 0.18s ease,
-                border-color 0.18s ease;
+    transition: transform 0.22s cubic-bezier(0.34, 1.36, 0.64, 1),
+                background 0.22s ease,
+                border-color 0.22s ease,
+                box-shadow 0.22s ease;
+    will-change: transform;
   }
 
   .action-btn:hover:not(:disabled) {
-    transform: translateX(2px);
-    background: linear-gradient(180deg, rgba(74, 46, 26, 0.7) 0%, rgba(58, 38, 21, 0.65) 100%);
+    transform: translateX(3px);
+    background: linear-gradient(180deg, rgba(82, 52, 30, 0.78) 0%, rgba(64, 42, 24, 0.72) 100%);
     color: #F4D58C;
+    border-color: rgba(201, 178, 106, 0.55);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(244, 213, 140, 0.08);
+  }
+
+  .action-btn:active:not(:disabled) {
+    transform: translateX(1px) scale(0.98);
+    transition-duration: 0.08s;
+  }
+
+  .action-btn:focus-visible {
+    outline: 2px solid #F4D58C;
+    outline-offset: 2px;
   }
 
   .action-btn:disabled,
   .action-btn[data-state='verrouille'] {
-    opacity: 0.45;
+    opacity: 0.4;
     cursor: not-allowed;
-    filter: grayscale(0.45);
+    filter: grayscale(0.55);
   }
 
   .action-btn[data-state='recommande'] {
-    border-color: rgba(58, 107, 71, 0.7);
+    border-color: rgba(58, 107, 71, 0.55);
     border-left-color: #7BCBA1;
-    box-shadow: 0 0 0 1px rgba(58, 107, 71, 0.15);
+    box-shadow: 0 0 0 1px rgba(123, 203, 161, 0.12),
+                inset 0 1px 0 rgba(123, 203, 161, 0.08);
+  }
+  .action-btn[data-state='recommande']:hover:not(:disabled) {
+    border-color: rgba(123, 203, 161, 0.7);
+    box-shadow: 0 2px 12px rgba(123, 203, 161, 0.2),
+                inset 0 1px 0 rgba(123, 203, 161, 0.12);
   }
   .action-btn[data-state='dangereux'] {
-    border-color: rgba(217, 130, 28, 0.55);
+    border-color: rgba(217, 130, 28, 0.45);
     border-left-color: #F0B870;
+  }
+  .action-btn[data-state='dangereux']:hover:not(:disabled) {
+    border-color: rgba(240, 184, 112, 0.65);
   }
 
   .btn-icon {

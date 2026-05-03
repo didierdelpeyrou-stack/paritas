@@ -906,10 +906,9 @@
     position: relative;
     overflow-y: auto;
     overflow-x: hidden;
-    /* Sky DARK uniforme — fini le contraste parchment/dark qui
-       faisait apparaître un « fond blanc » autour du card. Le sky
-       prend le même ton que le cockpit + un voile doré au top pour
-       rester chaud. Texte clair par défaut, lisible en plein page. */
+    /* Sky DARK uniforme — joint fluide avec les panneaux latéraux
+       (les bordures inter-panneaux sont assurées par les panneaux
+       eux-mêmes, sky n'en ajoute pas, pour un continuum visuel). */
     background:
       radial-gradient(ellipse at top, rgba(244, 213, 140, 0.06), transparent 65%),
       linear-gradient(180deg, #1F1813 0%, #110D0A 100%);
@@ -918,9 +917,7 @@
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     scrollbar-color: rgba(201, 178, 106, 0.25) transparent;
-    /* Liseré doré subtil pour séparer des panneaux latéraux. */
-    border-left: 1px solid rgba(201, 178, 106, 0.18);
-    border-right: 1px solid rgba(201, 178, 106, 0.18);
+    /* Pas de border — fluidité avec les panneaux adjacents. */
   }
 
   .sky::-webkit-scrollbar { width: 6px; }

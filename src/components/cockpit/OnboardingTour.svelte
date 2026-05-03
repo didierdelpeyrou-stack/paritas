@@ -30,24 +30,19 @@
   const STEPS: Record<OnboardingMode, Step[]> = {
     theatre: [
       {
-        selector: '.theatre-portrait-panel',
-        title: '◆ Ton portrait',
-        body: 'Tu es ici. Ton score globale, ton trait dominant, ta tension intérieure. Le mentor légendaire en bas est cliquable — sa fiche s\'ouvre.'
+        selector: '.theatre-actions-panel',
+        title: '◆ Tes actions',
+        body: 'À gauche : tout ce que tu peux faire. Huit actions rapides, classées par énergie. Vert = recommandé. Orange = risqué. Le bouton du bas ouvre le tableau complet.'
       },
       {
         selector: '.sky',
-        title: '✦ Le scénario à décider',
-        body: 'Au centre, l\'événement historique. Tes choix sont écrits par camp — un patron ne lit pas Matignon de la même façon qu\'un syndicaliste.'
+        title: '✦ La scène historique',
+        body: 'Au centre : l\'événement à décider. Tes choix sont écrits selon ton camp — un patron ne lit pas Matignon comme un syndicaliste.'
       },
       {
-        selector: '.theatre-actors-tiles',
-        title: '⚭ Les acteurs en scène',
-        body: 'Base, Adversaire, État, Opinion. Leur ressenti est écrit en français — il évolue avec tes décisions. Quand une tuile dit « perd patience », c\'est une menace.'
-      },
-      {
-        selector: '.theatre-actions-trigger',
-        title: '⚙ Actions libres',
-        body: 'En plus du scénario, tu peux engager 1 à 2 actions libres par tour (tracts, meeting, manif…). Cliquer ouvre le tableau complet.'
+        selector: '.theatre-personality-panel',
+        title: '⚭ Toi et les acteurs',
+        body: 'À droite : ton portrait, ta tension intérieure, et les quatre acteurs en scène (base, adversaire, État, opinion). Leur ressenti évolue avec tes décisions.'
       }
     ],
     atelier: [

@@ -235,17 +235,19 @@
   .theatre-personality-panel {
     width: 280px;
     flex-shrink: 0;
-    padding: 0.85rem 0.7rem 0.85rem;
+    padding: 0.9rem 0.75rem 0.9rem;
+    /* Continuum visuel symétrique au TheatreActionsPanel : voile
+       doré du côté SKY, seam doré gradiant à la place d'une border. */
     background:
-      radial-gradient(ellipse at top, rgba(244, 213, 140, 0.05), transparent 70%),
+      linear-gradient(270deg, transparent 0%, rgba(244, 213, 140, 0.025) 100%),
       linear-gradient(180deg, #1F1813 0%, #110D0A 100%);
-    border-left: 1px solid rgba(201, 178, 106, 0.25);
+    box-shadow: inset 1px 0 0 0 rgba(201, 178, 106, 0.18);
     color: #F4EFE2;
     font-family: 'Source Serif 4', Georgia, serif;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 0.7rem;
+    gap: 0.75rem;
     scrollbar-width: thin;
     scrollbar-color: rgba(201, 178, 106, 0.25) transparent;
   }
@@ -407,11 +409,17 @@
     gap: 0.4rem;
   }
   .actor-tile {
-    padding: 0.4rem 0.5rem;
-    background: rgba(13, 11, 8, 0.45);
-    border: 1px solid rgba(201, 178, 106, 0.18);
-    border-left: 2px solid rgba(201, 178, 106, 0.45);
-    border-radius: 0.32rem;
+    padding: 0.45rem 0.55rem;
+    background: linear-gradient(180deg, rgba(28, 22, 17, 0.55) 0%, rgba(17, 13, 10, 0.55) 100%);
+    border: 1px solid rgba(201, 178, 106, 0.16);
+    border-left: 3px solid rgba(201, 178, 106, 0.45);
+    border-radius: 0.4rem;
+    transition: background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+  }
+  .actor-tile:hover {
+    background: linear-gradient(180deg, rgba(40, 30, 22, 0.65) 0%, rgba(28, 22, 17, 0.6) 100%);
+    border-color: rgba(201, 178, 106, 0.32);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
   }
   .actor-tile[data-stance='dur']         { border-left-color: rgba(176, 24, 30, 0.7); }
   .actor-tile[data-stance='instable']    { border-left-color: rgba(217, 130, 28, 0.7); }
@@ -455,10 +463,11 @@
   .tile-sentiment {
     margin: 0;
     font-family: 'Source Serif 4', Georgia, serif;
-    font-size: 0.7rem;
-    line-height: 1.3;
-    color: rgba(244, 239, 226, 0.85);
+    font-size: 0.74rem;
+    line-height: 1.35;
+    color: rgba(244, 239, 226, 0.95);
     font-style: italic;
+    /* Contraste WCAG AA garanti — 0.95 sur fond #1F1813. */
   }
   .tile-flags {
     display: flex;

@@ -48,9 +48,8 @@
   import PersonalityPanel from '../PersonalityPanel.svelte';
   import MyLegacyPanel from '../MyLegacyPanel.svelte';
   import StrategicRadar from '../StrategicRadar.svelte';
-  import Glossary from '../Glossary.svelte';
+  import { GLOSSARY } from '../../game/content/glossary';
   import type { ActorId } from '../../game/types';
-  import { ALL_RESOURCES } from '../../game/types';
   import CockpitTableLauncher from './CockpitTableLauncher.svelte';
   import StatutJuridique from './StatutJuridique.svelte';
 
@@ -170,7 +169,14 @@
   function subtitleFor(id: ActorId): string | undefined {
     if (!gameState) return undefined;
     if (id === 'adversaire') return gameState.worldAI.opponent.factionName;
-    if (id === 'etat') return gameState.worldAI.state.faction;
+    if (id === 'etat') {
+      const f = gameState.worldAI.state.faction;
+      if (f === 'unitaire') return undefined;
+      if (f === 'bercy') return 'Bercy';
+      if (f === 'travail') return 'Ministère du Travail';
+      if (f === 'elysee') return 'Élysée';
+    }
+    if (id === 'base') return gameState.organization.name;
     return undefined;
   }
 
@@ -376,7 +382,23 @@
           {:else if cockpit.openTab === 'rail-trajectoire'}
             <StrategicRadar resources={gameState.resources} />
           {:else if cockpit.openTab === 'rail-lexique'}
-            <Glossary open={true} onClose={() => cockpit.close()} />
+            <div class="lexique-inline">
+              <p class="lex-intro">
+                {GLOSSARY.length} termes du paritarisme et du syndicalisme français.
+                Survole un terme italique dans le scénario pour sa définition rapide.
+              </p>
+              <ul class="lex-list">
+                {#each GLOSSARY as g}
+                  <li class="lex-entry">
+                    <strong class="lex-term">{g.term}</strong>
+                    {#if g.marker}
+                      <span class="lex-marker">· {g.marker}</span>
+                    {/if}
+                    <p class="lex-def">{g.definition}</p>
+                  </li>
+                {/each}
+              </ul>
+            </div>
           {/if}
         </div>
       </aside>
@@ -644,6 +666,61 @@
 
   .primary-btn:hover {
     filter: brightness(1.08);
+  }
+
+  /* ===== Lexique inline (drawer rail-lexique) ===== */
+  .lexique-inline {
+    color: rgba(244, 239, 226, 0.92);
+    font-family: 'Source Serif 4', Georgia, serif;
+  }
+
+  .lex-intro {
+    margin: 0 0 1rem;
+    padding: 0.6rem 0.8rem;
+    background: rgba(244, 213, 140, 0.06);
+    border-left: 2px solid #C9B26A;
+    border-radius: 0.3rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    font-style: italic;
+    color: rgba(244, 239, 226, 0.8);
+  }
+
+  .lex-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .lex-entry {
+    padding: 0.55rem 0.75rem;
+    background: rgba(13, 11, 8, 0.4);
+    border: 1px solid rgba(201, 178, 106, 0.18);
+    border-radius: 0.35rem;
+  }
+
+  .lex-term {
+    color: #F4D58C;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+  }
+
+  .lex-marker {
+    color: rgba(201, 178, 106, 0.65);
+    font-size: 0.75rem;
+    font-style: italic;
+    margin-left: 0.3rem;
+  }
+
+  .lex-def {
+    margin: 0.3rem 0 0;
+    font-size: 0.86rem;
+    line-height: 1.5;
+    color: rgba(244, 239, 226, 0.85);
   }
 
   /* ===== Mobile menu burger ===== */

@@ -80,9 +80,14 @@
         legitimite: clamp(s.resources.legitimite + e.legitimite)
       }
     };
-    rebirth.log.push(
-      `Table des Négociations · ${outcome.result === 'signe' ? 'Accord signé' : outcome.result === 'force-minoritaire' ? 'Accord forcé' : 'Impasse'} : ${outcome.epilogue.slice(0, 80)}…`
-    );
+    /* Append immutable au log (cohérent avec le pattern rebirth) */
+    const result = outcome.result === 'signe' ? 'Accord signé'
+      : outcome.result === 'force-minoritaire' ? 'Accord forcé'
+      : 'Impasse';
+    rebirth.log = [
+      ...rebirth.log,
+      `T${s.turn} — Table des Négociations · ${result} : ${outcome.epilogue.slice(0, 80)}…`
+    ].slice(-50);
   }
 
   function clamp(n: number): number { return Math.max(0, Math.min(100, n)); }

@@ -1,7 +1,10 @@
 <script lang="ts">
   /* Era timeline compacte du cockpit — 36px de hauteur fixe.
-     Affiche les 15 ères + curseur "tour actuel" sur l'axe. */
-  import { eraForTurn } from '../../game/content/eras';
+     Affiche les 15 ères + curseur "tour actuel" sur l'axe.
+
+     ⚠ Source de vérité : ERAS de game/content/eras.ts. Ne jamais
+     hardcoder les fromTurn ici (cause de désalignement curseur). */
+  import { ERAS as GAME_ERAS } from '../../game/content/eras';
 
   interface Props {
     turn: number;
@@ -9,25 +12,12 @@
   }
   let { turn, totalTurns = 100 }: Props = $props();
 
-  /* 15 ères avec leur tour de début (approximatif, doit matcher
-     game/content/eras.ts). */
-  const ERAS = [
-    { label: 'Révolution',    short: '1789', startTurn: 1 },
-    { label: 'XIXe',          short: '1800', startTurn: 4 },
-    { label: 'Belle Époque',  short: '1900', startTurn: 12 },
-    { label: 'Entre-deux-G',  short: '1919', startTurn: 22 },
-    { label: 'Reconstruction',short: '1944', startTurn: 32 },
-    { label: 'Sécu',          short: '1947', startTurn: 38 },
-    { label: 'Trente Glo.',   short: '1958', startTurn: 44 },
-    { label: 'Crise',         short: '1973', startTurn: 56 },
-    { label: 'Mitterrand',    short: '1981', startTurn: 64 },
-    { label: 'Cohab.',        short: '1995', startTurn: 72 },
-    { label: 'Sarkozy',       short: '2007', startTurn: 80 },
-    { label: 'Hollande',      short: '2012', startTurn: 86 },
-    { label: 'Macron I',      short: '2017', startTurn: 90 },
-    { label: 'Macron II',     short: '2022', startTurn: 95 },
-    { label: 'Présent',       short: '2026', startTurn: 99 }
-  ];
+  /* Adapter pour la timeline — short label année + position absolue */
+  const ERAS = GAME_ERAS.map(e => ({
+    label: e.name,
+    short: String(e.firstYear ?? ''),
+    startTurn: e.fromTurn
+  }));
 
   let cursorPct = $derived((Math.min(turn, totalTurns) / totalTurns) * 100);
   let currentEraIdx = $derived(

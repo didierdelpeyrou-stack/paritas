@@ -137,6 +137,13 @@
     color: rgba(122, 80, 40, 0.80);
   }
 
+  /* Mobile / tactile : désactiver l'overlay (l'effet hover Safari iOS
+     reste collé après un tap et superpose le mot CINZEL géant au-dessus
+     du texte du choix → illisible). Capture user 2026-05-04. */
+  @media (max-width: 768px), (hover: none) and (pointer: coarse) {
+    .preview-overlay { display: none; }
+  }
+
   .silhouette {
     position: absolute;
     width: min(78%, 580px);

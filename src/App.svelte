@@ -13,7 +13,6 @@
   import SlotPicker from './components/intro/SlotPicker.svelte';
   import GameShell from './components/layout/GameShell.svelte';
   import CockpitShell from './components/cockpit/CockpitShell.svelte';
-  import LayoutSwitcher from './components/cockpit/LayoutSwitcher.svelte';
   import TableWindow from './components/table/TableWindow.svelte';
   import { cockpit, resolveLayout } from '$lib/stores/cockpit.svelte';
   import ToastStack from './components/feedback/ToastStack.svelte';
@@ -137,12 +136,11 @@
 {:else}
 <ToastStack />
 
-<!-- Sélecteur de layout (Théâtre / Atelier / Carnet) — toujours
-     visible en partie. Le badge expose le layout effectif courant
-     et permet d'en forcer un autre. -->
-{#if phase === 'game'}
-  <LayoutSwitcher {effectiveLayout} />
-{/if}
+<!-- Le sélecteur de layout (Théâtre / Atelier / Carnet) n'est plus
+     un badge flottant top-right (encombrait la status bar mobile).
+     Il est désormais accessible :
+     - Mobile : menu burger (CockpitShell mobileMenuOpen)
+     - Partout : Paramètres → Affichage → Mode d'affichage. -->
 
 {#if phase === 'game' && useCockpit}
   <!-- Cockpit en fullscreen au top level — pas dans <main max-w-7xl>

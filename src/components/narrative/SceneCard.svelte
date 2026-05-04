@@ -283,11 +283,11 @@
   in:fade={{ duration: 240 }}
 >
   <header class="space-y-1">
-    <div class="flex items-center justify-between text-xs uppercase tracking-wider text-parchment-dim/85">
+    <div class="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 text-xs uppercase tracking-wider text-parchment-dim/85">
       <span>{scenario.date}</span>
       <span class="italic">{scenario.subtitle ?? ''}</span>
     </div>
-    <h2 class="font-display text-2xl text-gold">{scenario.title}</h2>
+    <h2 class="font-display text-xl sm:text-2xl text-gold leading-tight">{scenario.title}</h2>
 
     <!-- Badge POV (audit asymétrie patron, retour live test) :
          signale honnêtement quand un scénario est filtré pour un

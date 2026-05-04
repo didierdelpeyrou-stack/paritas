@@ -18,7 +18,7 @@
   import { fade, fly } from 'svelte/transition';
   import { cubicOut } from 'svelte/easing';
   import { rebirth } from '../../game/engine/gameState.svelte';
-  import { cockpit } from '$lib/stores/cockpit.svelte';
+  import { cockpit, LAYOUT_LABEL, LAYOUT_DESC, type LayoutPref } from '$lib/stores/cockpit.svelte';
   import { sfx } from '../../game/audio/sfx';
   import type { Choice } from '../../game/types';
   import { eraForTurn } from '../../game/content/eras';
@@ -85,6 +85,20 @@
   const era = $derived(gameState ? eraForTurn(gameState.turn) : null);
   /* Époque slot pour le theming visuel (5 slots vs 15 ères narratives). */
   const epoque = $derived(epoqueForEra(era?.id ?? null));
+
+  /* Sélecteur de mode dans le menu burger mobile (remplace l'ancien
+     badge flottant top-right qui encombrait la status bar). */
+  const LAYOUT_PREFS: LayoutPref[] = ['auto', 'theatre', 'atelier', 'carnet'];
+  const LAYOUT_GLYPH: Record<LayoutPref, string> = {
+    auto:    '◎',
+    theatre: '▣',
+    atelier: '▤',
+    carnet:  '▥'
+  };
+  function pickLayout(p: LayoutPref) {
+    cockpit.setPreference(p);
+    mobileMenuOpen = false;
+  }
 
   let settingsOpen = $state(false);
   let mobileMenuOpen = $state(false);
@@ -556,6 +570,31 @@
             <span class="mobile-tile-label">Réglages</span>
           </button>
         </nav>
+
+        <!-- Sélecteur de mode (remplace l'ancien badge flottant). -->
+        <section class="mobile-layout-section" aria-labelledby="mobile-layout-title">
+          <h3 id="mobile-layout-title">Mode d'affichage</h3>
+          <div class="mobile-layout-grid">
+            {#each LAYOUT_PREFS as p (p)}
+              <button
+                type="button"
+                class="mobile-layout-row"
+                class:active={cockpit.preference === p}
+                onclick={() => pickLayout(p)}
+                aria-pressed={cockpit.preference === p}
+              >
+                <span class="mlr-glyph">{LAYOUT_GLYPH[p]}</span>
+                <span class="mlr-body">
+                  <span class="mlr-name">{LAYOUT_LABEL[p]}</span>
+                  <span class="mlr-desc">{LAYOUT_DESC[p]}</span>
+                </span>
+                {#if cockpit.preference === p}
+                  <span class="mlr-tick" aria-hidden="true">✓</span>
+                {/if}
+              </button>
+            {/each}
+          </div>
+        </section>
       </aside>
     {/if}
 
@@ -1002,14 +1041,19 @@
     /* Pleine largeur — le texte du scénario s'étend sur toute la zone
        Le Ciel entre les panneaux, sans cartouche centré. Padding
        généreux pour respiration du texte. Texte clair par défaut
-       (hérite de .sky color: #F4EFE2). */
-    padding: 2.2rem clamp(1.5rem, 4vw, 3rem);
+       (hérite de .sky color: #F4EFE2). Sur mobile, padding latéral
+       réduit pour ne pas tronquer les titres longs (capture user
+       2026-05-04 — « RUPTURE • TRANCHER LE NŒUD CORPORATIF »). */
+    padding: 2.2rem clamp(0.75rem, 4vw, 3rem);
     max-width: none;
     width: 100%;
     margin: 0;
     /* Reste devant l'overlay de préfiguration sépia (z-index:0). */
     position: relative;
     z-index: 1;
+  }
+  @media (max-width: 768px) {
+    .sky-content { padding: 1.2rem 0.85rem; }
   }
 
   /* Le sky est maintenant DARK (cf. .sky) — on aplatit la
@@ -1359,5 +1403,74 @@
     font-size: 0.6rem;
     color: rgba(244, 213, 140, 0.5);
     font-weight: 700;
+  }
+
+  /* Sélecteur de mode dans le menu burger (remplace l'ancien
+     LayoutSwitcher flottant top-right). */
+  .mobile-layout-section {
+    margin-top: 1rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(201, 178, 106, 0.2);
+  }
+  .mobile-layout-section h3 {
+    margin: 0 0 0.5rem 0;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(244, 213, 140, 0.7);
+  }
+  .mobile-layout-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .mobile-layout-row {
+    display: grid;
+    grid-template-columns: 1.5rem 1fr auto;
+    align-items: flex-start;
+    gap: 0.55rem;
+    padding: 0.55rem 0.7rem;
+    background: rgba(13, 11, 8, 0.4);
+    border: 1px solid rgba(201, 178, 106, 0.18);
+    border-radius: 0.4rem;
+    color: #F4EFE2;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    font-family: 'Source Serif 4', Georgia, serif;
+  }
+  .mobile-layout-row:hover,
+  .mobile-layout-row:active {
+    background: rgba(201, 178, 106, 0.10);
+    border-color: rgba(201, 178, 106, 0.35);
+  }
+  .mobile-layout-row.active {
+    background: rgba(201, 178, 106, 0.16);
+    border-color: rgba(201, 178, 106, 0.55);
+  }
+  .mlr-glyph {
+    color: #C9B26A;
+    font-size: 1.05rem;
+    line-height: 1.1;
+  }
+  .mlr-body { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+  .mlr-name {
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #F4D58C;
+  }
+  .mlr-desc {
+    font-size: 0.74rem;
+    line-height: 1.35;
+    color: rgba(244, 239, 226, 0.7);
+    font-style: italic;
+  }
+  .mlr-tick {
+    color: #C9B26A;
+    font-weight: 700;
+    align-self: center;
   }
 </style>

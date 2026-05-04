@@ -25,7 +25,11 @@
     joueur: FactionRoster;
     adversaire: FactionRoster;
     outcome: BrawlOutcome;
-    onClose: () => void;
+    /** Reçoit le nombre de rallies effectivement déclenchés par le joueur,
+     *  pour que ManifSimulator applique les bonus narratifs correspondants
+     *  (cohésion, rapport de force). Le rally accélère le combat ET marque
+     *  la rue : effet réel, pas cosmétique. */
+    onClose: (rallyCount: number) => void;
   }
   let { joueur, adversaire, outcome, onClose }: Props = $props();
 
@@ -60,6 +64,7 @@
   let phase = $state<'fight' | 'resolved'>('fight');
   let rallyCooldown = $state(0);      // ms avant prochain rally
   let rallyActive = $state(0);        // ms restants de boost
+  let rallyCount = $state(0);         // nb de rallies effectivement déclenchés (pour bonus narratif)
   let lastTimestamp = 0;
   let rafId = 0;
 
@@ -269,6 +274,7 @@
     if (rallyCooldown > 0 || phase !== 'fight') return;
     rallyCooldown = RALLY_COOLDOWN_MS;
     rallyActive = RALLY_DURATION_MS;
+    rallyCount += 1;
     /* Burst doré sur tous les packs joueur */
     for (const pack of packs.filter(p => p.side === 'left')) {
       for (let i = 0; i < 6; i++) {
@@ -288,8 +294,21 @@
   function draw(cv: HTMLCanvasElement) {
     const ctx = cv.getContext('2d');
     if (!ctx) return;
-    const W = cv.width;
-    const H = cv.height;
+    /* Resync buffer avec la taille CSS réelle (responsive + dpr).
+       La sim travaille en coords logiques ARENA_W × ARENA_H ; on
+       applique une transformation pour que le draw remplisse le
+       buffer quelle que soit sa taille. Évite l'étirement flou et
+       les packs hors champ sur mobile (audit Argus 2026-05-04). */
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = Math.max(1, cv.clientWidth);
+    const cssH = Math.max(1, cv.clientHeight);
+    const targetW = Math.round(cssW * dpr);
+    const targetH = Math.round(cssH * dpr);
+    if (cv.width !== targetW) cv.width = targetW;
+    if (cv.height !== targetH) cv.height = targetH;
+    ctx.setTransform(cv.width / ARENA_W, 0, 0, cv.height / ARENA_H, 0, 0);
+    const W = ARENA_W;
+    const H = ARENA_H;
 
     /* Background nuit + halo */
     const bg = ctx.createLinearGradient(0, 0, 0, H);
@@ -595,12 +614,23 @@
                 </li>
               {/if}
             {/each}
+            {#if rallyCount > 0}
+              <li class="pos rally-bonus">
+                Rallies × {rallyCount} → +{rallyCount * 3} rapport de force, +{rallyCount * 2} cohésion
+              </li>
+            {/if}
           </ul>
         </div>
       {:else}
         <p class="hint-line">
-          Clique <strong>« Rallier »</strong> au bon moment : tes troupes
-          gagnent +25% vitesse et infligent +40% de dégâts pendant 3 secondes.
+          Le sort de la mêlée est déjà joué — tes forces et celles d'en face
+          étaient comptées avant le premier coup. Mais <strong>« Rallier »</strong>
+          marque la rue : chaque appel rythme l'avancée
+          (+25% vitesse, +40% dégâts pendant 3 s) et,
+          surtout, soude la cohésion du cortège.
+          {#if rallyCount > 0}
+            <em class="rally-tally">Rallies déjà lancés : {rallyCount}</em>
+          {/if}
         </p>
       {/if}
     </div>
@@ -608,7 +638,7 @@
 
   <footer class="arena-foot">
     <button type="button" class="close-btn"
-      onclick={onClose}
+      onclick={() => onClose(rallyCount)}
       disabled={phase !== 'resolved'}
       title={phase !== 'resolved' ? 'Attends la fin du combat' : 'Refermer l\'arène'}>
       {phase !== 'resolved' ? 'Combat en cours…' : 'Refermer l\'arène'}
@@ -699,14 +729,16 @@
   .canvas-wrap {
     position: relative;
     width: 360px;
+    max-width: 100%;
   }
 
   .arena-canvas {
     border: 1px solid rgba(201, 178, 106, 0.35);
     border-radius: 0.4rem;
     background: #1F1813;
-    width: 360px;
-    height: 220px;
+    width: 100%;
+    aspect-ratio: 360 / 220;
+    height: auto;
     display: block;
   }
 
@@ -813,6 +845,18 @@
     color: rgba(244, 239, 226, 0.85);
   }
   .hint-line strong { color: #F4D58C; }
+  .rally-tally {
+    display: block;
+    margin-top: 0.3rem;
+    color: #F4D58C;
+    font-style: italic;
+    font-size: 0.74rem;
+  }
+  .effects-list li.rally-bonus {
+    background: rgba(201, 154, 64, 0.18);
+    color: #F4D58C;
+    border-color: rgba(201, 154, 64, 0.55);
+  }
 
   .final-line {
     margin: 0.55rem 0;
@@ -897,7 +941,7 @@
     .arena-body {
       grid-template-columns: 1fr;
     }
-    .canvas-wrap, .arena-canvas {
+    .canvas-wrap {
       width: 100%;
     }
   }

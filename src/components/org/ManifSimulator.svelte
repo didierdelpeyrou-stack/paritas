@@ -255,6 +255,9 @@
        - Paris est dans les villes ciblées
        - Score ≥ 50 (manif significative)
        - Soit adversaire stance dur, soit score >= 75 (rue tendue)
+       - Camp salarié uniquement : historiquement, le patronat du XXᵉ
+         a déplacé ses conflits de la rue vers le droit. Lui rendre
+         des nervis serait régressif (cf. audit Argus 2026-05-04).
        Le déclenchement reste à la main du joueur via le bouton
        « Place de la République ». Force du joueur : foule effective
        à Paris (proportionnelle à la part de Paris dans le multi-ville). */
@@ -263,7 +266,7 @@
     const includesParis = cities.includes('paris');
     const advStance = gs.actors.adversaire?.stance;
     const tensionForte = advStance === 'dur' || r.score >= 75;
-    if (includesParis && r.score >= 50 && tensionForte) {
+    if (gs.camp === 'salarie' && includesParis && r.score >= 50 && tensionForte) {
       const parisCity = MANIF_CITIES.find(c => c.id === 'paris');
       const parisWeight = parisCity?.cost ?? 1;
       const totalCityCost = selectedCities.reduce((s, c) => s + c.cost, 0);
@@ -300,20 +303,37 @@
   }
 
   /* Quand le joueur referme l'arène : applique les effets du brawl
-     en plus des effets de la manif. */
-  function closeBrawl() {
+     en plus des effets de la manif. Reçoit le nombre de rallies pour
+     un bonus narratif honnête (le sort de la mêlée est figé, mais
+     rallier soude la cohésion et marque la rue). */
+  function closeBrawl(rallyCount: number = 0) {
     if (pendingBrawlEffects) {
       const out = pendingBrawlEffects.outcome;
+      /* Bonus rallies : +3 rapportDeForce et +2 cohesion par appel.
+         Affichés dans BrawlArena avant fermeture, donc le joueur sait
+         que sa décision compte. */
+      const rallyBonus: Partial<Resources> = {
+        rapportDeForce: rallyCount * 3,
+        cohesionInterne: rallyCount * 2
+      };
+      const mergedEffects: Partial<Resources> = {
+        ...out.effects,
+        rapportDeForce: (out.effects.rapportDeForce ?? 0) + (rallyBonus.rapportDeForce ?? 0),
+        cohesionInterne: (out.effects.cohesionInterne ?? 0) + (rallyBonus.cohesionInterne ?? 0)
+      };
+      const rallySuffix = rallyCount > 0 ? ` · ${rallyCount} ralliement${rallyCount > 1 ? 's' : ''} dans la mêlée` : '';
       rebirth.applyOperation({
-        label: `Affrontement Place de la République : ${out.result === 'victoire' ? 'victoire' : out.result === 'defaite' ? 'défaite' : 'nul'} (${out.totalJoueurLosses} blessés des nôtres, ${out.totalAdversaireLosses} en face)`,
-        resourceDelta: out.effects,
+        label: `Affrontement Place de la République : ${out.result === 'victoire' ? 'victoire' : out.result === 'defaite' ? 'défaite' : 'nul'} (${out.totalJoueurLosses} blessés des nôtres, ${out.totalAdversaireLosses} en face)${rallySuffix}`,
+        resourceDelta: mergedEffects,
         actorDelta: {
           /* Pression État monte fortement en cas d'affrontement direct. */
           etat: { pressure: out.result === 'defaite' ? +12 : +6, patience: -8 }
         },
         organizationDelta: {
           mobilisationFatigue: 12,
-          militants: -Math.min(20, Math.round(out.totalJoueurLosses / 30))
+          militants: -Math.min(20, Math.round(out.totalJoueurLosses / 30)),
+          /* Cohésion organisationnelle : +1 par rally (effet de souder la troupe). */
+          cohesion: rallyCount
         }
       });
       void sfx.play(out.result === 'victoire' ? 'fanfare' : out.result === 'defaite' ? 'fail' : 'impact');

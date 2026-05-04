@@ -433,9 +433,11 @@
     text-align: center;
   }
 
-  @media (min-width: 1280px) {
-    /* En Théâtre, atelier-panel ne devrait pas être rendu (gate par
-       isAtelier dans CockpitShell) — fallback safety. */
+  /* Mobile/tablette : le panneau d'allocation Tycoon (280px fixes)
+     déborde le viewport et casse le layout. On le masque sous 1024px
+     ; le joueur accède aux infos via le dashboard footer + le menu
+     burger. (À terme : drawer mobile dédié.) */
+  @media (max-width: 1024px) {
     .atelier-panel { display: none; }
   }
 </style>

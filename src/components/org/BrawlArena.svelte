@@ -733,8 +733,10 @@
     border-radius: 0.4rem;
     background: #1F1813;
     width: 100%;
-    aspect-ratio: 360 / 220;
     height: auto;
+    /* Pas d'aspect-ratio CSS : on s'appuie sur les attributs HTML
+       width="360" height="220" du canvas (cf. <canvas> + <img>),
+       comportement universel sans risque de quirk Safari iOS. */
     display: block;
   }
 

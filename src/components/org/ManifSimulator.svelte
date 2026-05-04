@@ -309,19 +309,21 @@
   function closeBrawl(rallyCount: number = 0) {
     if (pendingBrawlEffects) {
       const out = pendingBrawlEffects.outcome;
-      /* Bonus rallies : +3 rapportDeForce et +2 cohesion par appel.
-         Affichés dans BrawlArena avant fermeture, donc le joueur sait
-         que sa décision compte. */
+      /* Bonus rallies : +3 rapportDeForce et +2 cohesion par appel,
+         capé à 3 rallies effectifs (Argus P1.c — borne défensive si
+         un futur dev rétrécit le cooldown). Affichés dans BrawlArena
+         avant fermeture, donc le joueur sait que sa décision compte. */
+      const cappedRallies = Math.max(0, Math.min(3, rallyCount));
       const rallyBonus: Partial<Resources> = {
-        rapportDeForce: rallyCount * 3,
-        cohesionInterne: rallyCount * 2
+        rapportDeForce: cappedRallies * 3,
+        cohesionInterne: cappedRallies * 2
       };
       const mergedEffects: Partial<Resources> = {
         ...out.effects,
         rapportDeForce: (out.effects.rapportDeForce ?? 0) + (rallyBonus.rapportDeForce ?? 0),
         cohesionInterne: (out.effects.cohesionInterne ?? 0) + (rallyBonus.cohesionInterne ?? 0)
       };
-      const rallySuffix = rallyCount > 0 ? ` · ${rallyCount} ralliement${rallyCount > 1 ? 's' : ''} dans la mêlée` : '';
+      const rallySuffix = cappedRallies > 0 ? ` · ${cappedRallies} ralliement${cappedRallies > 1 ? 's' : ''} dans la mêlée` : '';
       rebirth.applyOperation({
         label: `Affrontement Place de la République : ${out.result === 'victoire' ? 'victoire' : out.result === 'defaite' ? 'défaite' : 'nul'} (${out.totalJoueurLosses} blessés des nôtres, ${out.totalAdversaireLosses} en face)${rallySuffix}`,
         resourceDelta: mergedEffects,
@@ -332,8 +334,8 @@
         organizationDelta: {
           mobilisationFatigue: 12,
           militants: -Math.min(20, Math.round(out.totalJoueurLosses / 30)),
-          /* Cohésion organisationnelle : +1 par rally (effet de souder la troupe). */
-          cohesion: rallyCount
+          /* Cohésion organisationnelle : +1 par rally capé. */
+          cohesion: cappedRallies
         }
       });
       void sfx.play(out.result === 'victoire' ? 'fanfare' : out.result === 'defaite' ? 'fail' : 'impact');

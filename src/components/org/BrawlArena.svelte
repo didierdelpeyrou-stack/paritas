@@ -70,9 +70,15 @@
 
   const ARENA_W = 360;
   const ARENA_H = 220;
-  const TOTAL_DURATION = 11000;       // 11s de combat puis resolved
-  const RALLY_COOLDOWN_MS = 9000;
+  /* Durée + cooldown calibrés pour permettre 3 rallies effectifs
+     (t=0, t=6.5, t=13). Argus P1.b 2026-05-04 — sinon l'agency est
+     plafonnée à 2 clics et le rally reste cosmétique-plus. */
+  const TOTAL_DURATION = 14000;
+  const RALLY_COOLDOWN_MS = 6500;
   const RALLY_DURATION_MS = 3000;
+  /* Cap visuel + cap effets pour éviter le spam si un futur dev
+     baisse le cooldown. Argus P1.c. */
+  const RALLY_BONUS_CAP = 3;
 
   /* ====== Initialisation ====== */
   function initPacks() {
@@ -357,7 +363,7 @@
 
     /* Indicateurs */
     drawTimer(ctx, W);
-    if (phase === 'resolved') drawResultBanner(ctx, W, H);
+    /* Bannière résultat = overlay HTML sur le canvas (Argus P1.a). */
   }
 
   function drawStatue(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
@@ -443,7 +449,7 @@
 
     /* Compteur */
     ctx.fillStyle = 'rgba(244, 239, 226, 0.85)';
-    ctx.font = '9px "Courier Prime", monospace';
+    ctx.font = 'bold 11px "Courier Prime", monospace';
     ctx.textBaseline = 'top';
     ctx.fillText(String(Math.round(pack.count)), pack.x, pack.y + r + 3);
   }
@@ -480,14 +486,7 @@
     const totalHp = sidePacks.reduce((s, p) => s + p.hp, 0);
     const initialHp = sidePacks.reduce((s, p) => s + p.initialHp, 0);
     const ratio = initialHp > 0 ? totalHp / initialHp : 0;
-    const label = side === 'left' ? joueur.label : adversaire.label;
-    const colorLine = side === 'left' ? '#E08F92' : '#7DB1D8';
-
-    ctx.fillStyle = colorLine;
-    ctx.font = 'bold 10px "Cinzel", serif';
-    ctx.textBaseline = 'top';
-    ctx.textAlign = side === 'left' ? 'left' : 'right';
-    ctx.fillText(label.toUpperCase(), side === 'left' ? 8 : W - 8, H - 28);
+    /* Label faction sorti du canvas → overlay HTML (Argus P1.a). */
 
     /* Bar */
     const barX = side === 'left' ? 8 : W - 100 - 8;
@@ -511,24 +510,8 @@
     ctx.fillRect(W/2 - 50, 38, 100 * ratio, 3);
   }
 
-  function drawResultBanner(ctx: CanvasRenderingContext2D, W: number, H: number) {
-    const text = outcome.result === 'victoire' ? '✓ VICTOIRE'
-               : outcome.result === 'defaite' ? '✗ DÉFAITE'
-               : '— NUL —';
-    const color = outcome.result === 'victoire' ? '#7BCBA1'
-                : outcome.result === 'defaite' ? '#E08F92'
-                : '#C9B26A';
-    ctx.fillStyle = 'rgba(13, 11, 8, 0.85)';
-    ctx.fillRect(W/2 - 80, H/2 - 14, 160, 28);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 1.5;
-    ctx.strokeRect(W/2 - 80, H/2 - 14, 160, 28);
-    ctx.fillStyle = color;
-    ctx.font = 'bold 16px "Cinzel", serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(text, W/2, H/2 + 1);
-  }
+  /* drawResultBanner supprimé — bannière résultat affichée en HTML
+     overlay sur le canvas (Argus P1.a, lisibilité mobile). */
 
   /* ====== Lifecycle ====== */
   onMount(() => {
@@ -566,6 +549,18 @@
         class="arena-canvas"
         aria-label="Combat à Place de la République en temps réel"
       ></canvas>
+
+      <!-- Overlays HTML : labels factions + bannière résultat
+           (Argus P1.a — sortis du canvas pour rester lisibles
+            quand le canvas se rétrécit sur Carnet). -->
+      <div class="faction-label faction-label-left">{joueur.label}</div>
+      <div class="faction-label faction-label-right">{adversaire.label}</div>
+      {#if phase === 'resolved'}
+        <div class="result-banner result-banner-{outcome.result}" in:fade={{ duration: 280 }}>
+          {outcome.result === 'victoire' ? '✓ VICTOIRE' : outcome.result === 'defaite' ? '✗ DÉFAITE' : '— NUL —'}
+        </div>
+      {/if}
+
       <!-- Bouton Rallier (interaction joueur) -->
       <button type="button"
         class="rally-btn"
@@ -615,8 +610,9 @@
               {/if}
             {/each}
             {#if rallyCount > 0}
+              {@const cappedRallies = Math.min(RALLY_BONUS_CAP, rallyCount)}
               <li class="pos rally-bonus">
-                Rallies × {rallyCount} → +{rallyCount * 3} rapport de force, +{rallyCount * 2} cohésion
+                Rallies × {rallyCount} → +{cappedRallies * 3} rapport de force, +{cappedRallies * 2} cohésion
               </li>
             {/if}
           </ul>
@@ -740,6 +736,58 @@
     aspect-ratio: 360 / 220;
     height: auto;
     display: block;
+  }
+
+  /* Labels faction (HTML overlay sur le canvas — Argus P1.a). */
+  .faction-label {
+    position: absolute;
+    bottom: calc(14 / 220 * 100% + 0.45rem);
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    pointer-events: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+  }
+  .faction-label-left {
+    left: 0.5rem;
+    color: #E08F92;
+  }
+  .faction-label-right {
+    right: 0.5rem;
+    color: #7DB1D8;
+  }
+
+  /* Bannière résultat (HTML overlay — Argus P1.a). */
+  .result-banner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 0.45rem 1.1rem;
+    background: rgba(13, 11, 8, 0.88);
+    border: 1.5px solid;
+    border-radius: 0.4rem;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .result-banner-victoire {
+    color: #7BCBA1;
+    border-color: #7BCBA1;
+  }
+  .result-banner-defaite {
+    color: #E08F92;
+    border-color: #E08F92;
+  }
+  .result-banner-nul {
+    color: #C9B26A;
+    border-color: #C9B26A;
   }
 
   .rally-btn {

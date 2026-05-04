@@ -204,20 +204,32 @@ export function buildPlayerFaction(opts: {
     });
   }
 
-  /* Camp patron : la foule République est défavorable. Le joueur
-     mobilise sécurité privée + bande à Palis + infiltrés selon ses
-     moyens. Pas de manifestants. */
-  const securite = Math.max(5, Math.round(militants * 0.05));
-  const bande = Math.round(cadres * 0.4);
-  const infiltres = Math.round(cadres * 0.2);
+  /* DEAD CODE — branche patron désactivée 2026-05-04 (audit Argus,
+     P0 paritaire). Les conflits patronaux du XXᵉ se sont déplacés
+     hors de la rue vers le droit ; rendre des nervis au patronat
+     serait historiquement régressif (Castel, Rosanvallon). Le bouton
+     « Place de la République » dans ManifSimulator est conditionné
+     à `gs.camp === 'salarie'` : cette branche n'est jamais appelée.
+     Conservée commentée comme repère d'historique de design.
+
+     const securite = Math.max(5, Math.round(militants * 0.05));
+     const bande = Math.round(cadres * 0.4);
+     const infiltres = Math.round(cadres * 0.2);
+     return finalizeFaction({
+       side: 'joueur',
+       brawlers: {
+         'securite-privee': securite,
+         'bande-palis': bande,
+         infiltre: infiltres
+       },
+       label: 'Forces patronales'
+     });
+  */
+  void militants; void cadres;
   return finalizeFaction({
     side: 'joueur',
-    brawlers: {
-      'securite-privee': securite,
-      'bande-palis': bande,
-      infiltre: infiltres
-    },
-    label: 'Forces patronales'
+    brawlers: {},
+    label: 'Forces patronales (désactivé)'
   });
 }
 

@@ -199,6 +199,23 @@
 
   /* ── Cleanup au démontage ─────────────────────────────── */
   $effect(() => () => clearRevealTimers());
+
+  /* ── Tutoriel diégétique (Argus ORDA-001) ───────────────────
+     Trois phrases au tour 1 pour expliquer enveloppe / seuil /
+     poids syndical. Dismissable, persistance localStorage pour
+     ne pas réimposer au joueur qui a déjà vu. */
+  let tutorialDismissed = $state(false);
+  if (typeof window !== 'undefined') {
+    try { tutorialDismissed = localStorage.getItem('paritas_nao_tuto_seen') === '1'; }
+    catch { /* ignore */ }
+  }
+  function dismissTutorial() {
+    tutorialDismissed = true;
+    try { localStorage.setItem('paritas_nao_tuto_seen', '1'); } catch { /* ignore */ }
+  }
+  const showTutorial = $derived(
+    gameState.phase === 'proposing' && gameState.seance === 1 && !tutorialDismissed
+  );
 </script>
 
 <!-- ═══════════════════════════════════════════════════════════
@@ -238,6 +255,22 @@
       {/if}
     </div>
   </header>
+
+  <!-- ── TUTORIEL DIÉGÉTIQUE (1er tour) ── -->
+  {#if showTutorial}
+    <aside class="nao-tuto" role="note" aria-label="Comment ça marche">
+      <div class="nao-tuto-head">
+        <span class="nao-tuto-icon" aria-hidden="true">📋</span>
+        <h2 class="nao-tuto-title">Comment ça marche — première séance</h2>
+        <button type="button" class="nao-tuto-close" onclick={dismissTutorial} aria-label="Fermer le tutoriel">×</button>
+      </div>
+      <ol class="nao-tuto-list">
+        <li><strong>Côté employeur</strong> : tu disposes d'une <em>enveloppe totale</em> de {gameState.enveloppeMax} pts à répartir sur 5 séances. Chaque thème touché monte d'un cran.</li>
+        <li><strong>Côté syndical</strong> : chaque syndicat (CGT, CFDT, FO) a son <em>seuil d'accord</em> et son <em>poids électoral</em>. Tu choisis sa posture (pression, attente, compromis) à chaque séance.</li>
+        <li><strong>Pour signer un accord valide</strong> : il faut convaincre des syndicats représentant ≥ 50 % des suffrages. CFDT (35 %) + FO (20 %) suffit. Sans CGT, mais avec elle l'accord pèse plus.</li>
+      </ol>
+    </aside>
+  {/if}
 
   <!-- ── BARRES THÈMES ── -->
   <section class="themes-section">
@@ -696,6 +729,46 @@
   }
   .majority-badge.ok { border-color: #10b981; color: #34d399; }
   .majority-badge.hidden { color: #64748b; border-style: dashed; }
+
+  /* ── Tutoriel diégétique ── */
+  .nao-tuto {
+    background: linear-gradient(135deg, rgba(201,162,91,0.08), rgba(52,211,153,0.04));
+    border: 1px solid #475569;
+    border-left: 3px solid #c9a25b;
+    border-radius: 0.5rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .nao-tuto-head {
+    display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem;
+  }
+  .nao-tuto-icon { font-size: 1.2rem; }
+  .nao-tuto-title {
+    flex: 1;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #c9a25b;
+    margin: 0;
+  }
+  .nao-tuto-close {
+    background: transparent;
+    border: 1px solid #475569;
+    color: #94a3b8;
+    width: 28px; height: 28px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+  }
+  .nao-tuto-close:hover { border-color: #c9a25b; color: #c9a25b; }
+  .nao-tuto-list {
+    margin: 0; padding-left: 1.25rem;
+    font-size: 0.85rem; color: #cbd5e1; line-height: 1.55;
+  }
+  .nao-tuto-list li { margin-bottom: 0.4rem; }
+  .nao-tuto-list li:last-child { margin-bottom: 0; }
+  .nao-tuto-list strong { color: #f1f5f9; }
+  .nao-tuto-list em { color: #c9a25b; font-style: normal; }
 
   /* ── Themes section ── */
   .themes-section {

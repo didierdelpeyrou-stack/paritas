@@ -231,10 +231,17 @@ function composeScrutinNarrative(channels: ChannelResult[], sSeats: number, pSea
    ============================================================ */
 
 /**
- * Allocation IA selon le score courant.
- * Stratégie : si en retard → surpuissance sur terrain.
- * Si en avance → défense des canaux à faible valeur.
- * Toujours un peu de bruit pour éviter la prédictibilité.
+ * Allocation IA — Argus ORDA-001 calibrage.
+ *
+ * Stratégie : si en retard → surpuissance terrain. Si en avance → défense
+ * des canaux à faible valeur (feinte terrain). Sinon variance haute pour
+ * éviter les égalités systématiques avec un adversaire du même algorithme.
+ *
+ * Bug B-MC3 (10⁴ parties → 100 % parité) : la version précédente était
+ * trop déterministe. Le bruit ±1 sur terrain/reunions n'évitait pas les
+ * égalités sur affiches (1) et tractage (1) qui sont fixes. Fix : tirer
+ * plusieurs profils stratégiques au hasard, et asymétriser les bases
+ * salarié/patron pour différencier les comportements moyens.
  */
 export function aiElectionAlloc(
   state: ElectionState,
@@ -244,35 +251,58 @@ export function aiElectionAlloc(
   const oppScore = side === 'salarie' ? state.patronTotal : state.salarieTotal;
   const lead = myScore - oppScore;
 
-  /* Base : répartition sur terrain et réunions */
-  let terrain = 4;
-  let reunions = 2;
-  let affiches = 1;
-  let tractage = 1;
+  /* Profils stratégiques tirés au hasard (variance haute). 7 profils : */
+  const PROFILES = [
+    /* "all-in terrain"      */ { terrain: 6, reunions: 1, affiches: 1, tractage: 0 },
+    /* "all-in réunions"     */ { terrain: 1, reunions: 5, affiches: 1, tractage: 1 },
+    /* "réunions focus"      */ { terrain: 2, reunions: 4, affiches: 1, tractage: 1 },
+    /* "balanced"            */ { terrain: 3, reunions: 2, affiches: 2, tractage: 1 },
+    /* "petits canaux"       */ { terrain: 2, reunions: 2, affiches: 2, tractage: 2 },
+    /* "terrain + réunions"  */ { terrain: 4, reunions: 3, affiches: 1, tractage: 0 },
+    /* "tout-petits"         */ { terrain: 0, reunions: 0, affiches: 4, tractage: 4 }
+  ];
 
+  let p = PROFILES[Math.floor(Math.random() * PROFILES.length)];
+
+  /* Biais selon score courant */
   if (lead < -3) {
-    /* En retard → tout sur terrain */
-    terrain = 6;
-    reunions = 2;
-    affiches = 0;
-    tractage = 0;
+    /* En retard : on force surpuissance terrain (3 chances sur 4) */
+    if (Math.random() > 0.25) p = { terrain: 6, reunions: 2, affiches: 0, tractage: 0 };
   } else if (lead > 3) {
-    /* En avance → défendre les petits canaux, feinter terrain */
-    terrain = 2;
-    reunions = 2;
-    affiches = 2;
-    tractage = 2;
-  } else {
-    /* Équilibré → légère variation aléatoire */
-    const noise = Math.floor(Math.random() * 3) - 1; // -1, 0, +1
-    terrain = Math.max(1, Math.min(6, terrain + noise));
-    reunions = Math.max(0, Math.min(4, reunions - noise));
+    /* En avance : défense des petits (2 chances sur 3) */
+    if (Math.random() > 0.33) p = { terrain: 2, reunions: 2, affiches: 2, tractage: 2 };
   }
+
+  /* Asymétrie salarié/patron — bloc atténué (1/3 du temps) :
+     le salarié pèse un peu plus terrain (contact direct), le patron
+     un peu plus réunions (canal officiel). Argus B-MC4 : à 100 %
+     l'asymétrie produisait 72 %/81 % de victoires unilatérales par
+     canal — atténué à 33 % de tirages pour rester variable. */
+  let { terrain, reunions, affiches, tractage } = p;
+  const asymRoll = Math.random();
+  if (asymRoll < 0.33) {
+    if (side === 'salarie' && terrain < 6 && reunions > 0) { terrain++; reunions--; }
+    else if (side === 'patron' && reunions < 4 && terrain > 0) { reunions++; terrain--; }
+  }
+
+  /* Petit bruit final ±1 sur le canal le plus chargé pour casser
+     les dernières symétries résiduelles */
+  if (Math.random() < 0.5 && terrain > 0 && tractage < 4) { terrain--; tractage++; }
+  else if (Math.random() < 0.5 && reunions > 0 && affiches < 4) { reunions--; affiches++; }
 
   /* Normaliser au budget */
   const total = terrain + reunions + affiches + tractage;
   if (total > BUDGET_PER_ROUND) {
-    terrain = Math.max(0, terrain - (total - BUDGET_PER_ROUND));
+    /* Trim sur le canal le plus chargé jusqu'à ≤ BUDGET */
+    let over = total - BUDGET_PER_ROUND;
+    while (over > 0) {
+      const max = Math.max(terrain, reunions, affiches, tractage);
+      if (terrain === max) terrain--;
+      else if (reunions === max) reunions--;
+      else if (affiches === max) affiches--;
+      else if (tractage === max) tractage--;
+      over--;
+    }
   }
 
   return { terrain, reunions, affiches, tractage };

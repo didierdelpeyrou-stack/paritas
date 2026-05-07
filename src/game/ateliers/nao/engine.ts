@@ -54,8 +54,13 @@ export type NaoOutcome =
 export const ALL_THEMES: NaoTheme[] = ['salaires', 'primes', 'teletravail', 'egalite_pro'];
 export const ALL_UNIONS: NaoUnion[] = ['cgt', 'cfdt', 'fo'];
 export const MAX_SEANCES          = 5;
-export const TOTAL_ENVELOPPE      = 48;   // budget total employeur en points
-export const SEANCE_BUDGET        = 12;   // pts disponibles par séance (base)
+/* Argus ORDA-001 calibrage final après 2 swings extrêmes :
+   - 48 pts → 100 % pv_desaccord (impossible)
+   - 72 pts → 100 % accord_majoritaire (trivial)
+   - 60 pts → variabilité (l'employeur DOIT focaliser sur salaires
+     pour convaincre CFDT+FO ; étaler son budget = pv_desaccord). */
+export const TOTAL_ENVELOPPE      = 60;
+export const SEANCE_BUDGET        = 13;
 export const SIGNING_MAJORITY     = 50;   // % de suffrages requis pour accord valide
 
 export const THEME_META: Record<NaoTheme, {
@@ -74,10 +79,13 @@ export const UNION_META: Record<NaoUnion, {
   weights: Record<NaoTheme, number>;
   profile: string; description: string;
 }> = {
+  /* Argus ORDA-001 : seuils abaissés (-0.10) pour permettre des accords
+     atteignables avec un budget réaliste. Reste hiérarchique :
+     CGT > FO > CFDT (CFDT la plus pragmatique). */
   cgt: {
     label: 'CGT', icon: '✊', color: '#dc2626',
     electoralWeight: 38,
-    seuilAccord: 0.72,
+    seuilAccord: 0.62,
     weights: { salaires: 0.50, primes: 0.28, teletravail: 0.12, egalite_pro: 0.10 },
     profile: 'Revendicative',
     description: "Exige des hausses substantielles. Difficile à convaincre sans concession forte sur les salaires."
@@ -85,7 +93,7 @@ export const UNION_META: Record<NaoUnion, {
   cfdt: {
     label: 'CFDT', icon: '🤝', color: '#2563eb',
     electoralWeight: 35,
-    seuilAccord: 0.60,
+    seuilAccord: 0.55,
     weights: { salaires: 0.35, primes: 0.20, teletravail: 0.25, egalite_pro: 0.20 },
     profile: 'Réformiste',
     description: "Pragmatique — sensible au télétravail et à l'égalité pro. Prête à signer si avancées concrètes."
@@ -93,7 +101,7 @@ export const UNION_META: Record<NaoUnion, {
   fo: {
     label: 'FO', icon: '⚙️', color: '#d97706',
     electoralWeight: 20,
-    seuilAccord: 0.65,
+    seuilAccord: 0.55,
     weights: { salaires: 0.60, primes: 0.30, teletravail: 0.06, egalite_pro: 0.04 },
     profile: 'Autonome',
     description: "Centrée pouvoir d'achat. Salaires + primes = 90 % de sa grille de lecture."
@@ -114,10 +122,12 @@ export const SYNDICAT_TACTIC_META: Record<SyndicatTactic, { label: string; icon:
   accord_partiel:{ label: 'Accord partiel',        icon: '📝', description: "Possibilité de signer sur les 2 thèmes les plus avancés seulement." }
 };
 
+/* Argus ORDA-001 : modifiers réduits de ±0.08 → ±0.06 pour amortir
+   l'effet des postures (plus jouable, moins binaire). */
 export const POSTURE_META: Record<UnionPosture, { label: string; icon: string; seuilMod: number; description: string }> = {
-  pression:  { label: 'Pression',   icon: '🔥', seuilMod: +0.08, description: 'Exige plus. Seuil relevé de 8 pts.' },
+  pression:  { label: 'Pression',   icon: '🔥', seuilMod: +0.06, description: 'Exige plus. Seuil relevé de 6 pts.' },
   patience:  { label: 'Attente',    icon: '⏳', seuilMod:  0,    description: 'Posture neutre. Seuil inchangé.' },
-  compromis: { label: 'Compromis',  icon: '🤝', seuilMod: -0.08, description: "Prêt à transiger. Seuil abaissé de 8 pts." },
+  compromis: { label: 'Compromis',  icon: '🤝', seuilMod: -0.06, description: "Prêt à transiger. Seuil abaissé de 6 pts." },
   retrait:   { label: 'Retrait',    icon: '🚪', seuilMod:  0,    description: "Ne signera pas ce tour." }
 };
 
@@ -696,17 +706,34 @@ export function aiSyndicatMove(state: NaoState): SyndicatMove {
   const accordPartiel = state.modifiers.accordPartielActive;
   const postures: PostureMap = { cgt: 'pression', cfdt: 'patience', fo: 'patience' };
 
-  // CGT — revendicative jusqu'à la fin
-  postures.cgt = state.seance <= 3 ? 'pression' : 'patience';
+  /* Argus ORDA-001 — IA syndicat plus rationnelle :
+     chaque syndicat assouplit sa posture quand il APPROCHE de son seuil
+     (rationnel : on accepte de signer si l'offre s'approche du raisonnable). */
 
-  // CFDT — pragmatique
+  // CGT — revendicative tour 1, devient pragmatique à mesure qu'elle s'approche
+  const cgtSat = computeSatisfaction(state.themes, 'cgt', accordPartiel);
+  const cgtGap = UNION_META.cgt.seuilAccord - cgtSat;
+  if (state.seance === 1)            postures.cgt = 'pression';
+  else if (cgtGap < 0.05)             postures.cgt = 'compromis';   // très proche → bascule
+  else if (cgtGap < 0.15)             postures.cgt = 'patience';    // proche → s'assouplit
+  else if (state.seance >= 4)         postures.cgt = 'patience';    // fin de jeu, lâche
+  else                                postures.cgt = 'pression';    // sinon, tient
+
+  // CFDT — pragmatique : accepte tôt si le gap est faible
   const cfdtSat = computeSatisfaction(state.themes, 'cfdt', accordPartiel);
   const cfdtGap = UNION_META.cfdt.seuilAccord - cfdtSat;
-  postures.cfdt = cfdtGap < 0.08 ? 'compromis' : 'patience';
+  if (cfdtGap < 0.05)        postures.cfdt = 'compromis';
+  else if (cfdtGap < 0.12)   postures.cfdt = 'patience';
+  else if (state.seance >= 3) postures.cfdt = 'patience';
+  else                        postures.cfdt = 'patience';
 
-  // FO — centrée salaires
+  // FO — centrée salaires, mêmes règles
   const foSat = computeSatisfaction(state.themes, 'fo', accordPartiel);
-  postures.fo = foSat > 0.62 ? 'compromis' : 'patience';
+  const foGap = UNION_META.fo.seuilAccord - foSat;
+  if (foGap < 0.05)         postures.fo = 'compromis';
+  else if (foGap < 0.12)    postures.fo = 'patience';
+  else if (state.seance >= 4) postures.fo = 'patience';
+  else                       postures.fo = 'patience';
 
   // Tactique
   const available = (['expertise', 'coordination', 'mobilisation', 'accord_partiel'] as SyndicatTactic[])
@@ -717,9 +744,16 @@ export function aiSyndicatMove(state: NaoState): SyndicatMove {
     tactic = 'mobilisation';
   } else if (state.seance === 2 && available.includes('expertise')) {
     tactic = 'expertise';
-  } else if (state.seance >= 4 && available.includes('accord_partiel')) {
+  } else if (state.seance === MAX_SEANCES && available.includes('accord_partiel')) {
+    /* Argus B-MC1 + B-MC2 :
+       (B-MC1) condition inversée — accord_partiel ne se joue que si
+              l'accord majoritaire est hors de portée.
+       (B-MC2) ne plus jouer cette tactique à séance >=4 (trop tôt) :
+              elle persiste via nextModifiers.accordPartielActive et
+              force tous les outcomes en accord_partiel. UNIQUEMENT
+              à la DERNIÈRE séance, en dernier recours. */
     const { weight } = computeSigningWeight(state.themes, postures, false);
-    if (weight >= SIGNING_MAJORITY) tactic = 'accord_partiel';
+    if (weight < SIGNING_MAJORITY) tactic = 'accord_partiel';
   }
 
   return { postures, tactic };

@@ -170,7 +170,9 @@ export const PATRON_GREVE_MOVES: GreveActionDef<PatronGreveMove>[] = [
     intent: 'Fermer l\'usine — affamer les grévistes.',
     dSolidarite: -16,
     dProduction: -5,
-    dZone: -8,
+    /* Argus B-MC13 : dZone -8 → -10. Le lock-out doit peser plus
+       lourdement en zone (cadrage du conflit côté patron). */
+    dZone: -10,
     beats: ['greve_totale', 'occuper'],
     winBonus: +10,
     winText: 'L\'usine est verrouillée. Les grévistes restent dehors sans salaire. La solidarité fond.',
@@ -182,7 +184,11 @@ export const PATRON_GREVE_MOVES: GreveActionDef<PatronGreveMove>[] = [
     icon: '👷',
     intent: 'Embaucher des intérimaires — briser le rapport de force.',
     dSolidarite: -8,
-    dProduction: +10,
+    /* Argus ORDA-002 B-MC9 : dProd +10 → +15 → +18 (itération 2).
+       Le déséquilibre venait du fait que les remplaçants ne
+       compensaient pas suffisamment la chute de production induite
+       par les grèves. Patron_impose restait à 3% (sous cible 5%). */
+    dProduction: +18,
     dZone: -6,
     beats: ['negocier', 'caisse'],
     winBonus: +8,
@@ -196,7 +202,10 @@ export const PATRON_GREVE_MOVES: GreveActionDef<PatronGreveMove>[] = [
     intent: 'Saisir la justice — attaquer la légalité de la grève.',
     dSolidarite: -12,
     dProduction: +0,
-    dZone: -6,
+    /* Argus ORDA-002 B-MC10 : dZone -6 → -10. L'injonction judiciaire
+       est un levier de cadrage du conflit, pas seulement un bruit
+       légal — son poids en zone doit refléter cette autorité. */
+    dZone: -10,
     beats: ['occuper', 'caisse'],
     winBonus: +10,
     winText: 'L\'injonction d\'expulsion est prononcée. La caisse syndicale est saisie provisoirement.',
@@ -209,7 +218,11 @@ export const PATRON_GREVE_MOVES: GreveActionDef<PatronGreveMove>[] = [
     intent: 'Accepter la table — si le syndicat accepte aussi, accord immédiat.',
     dSolidarite: 0,
     dProduction: -3,
-    dZone: +2,
+    /* Argus B-MC11 : dZone +2 → -2. Si le patron veut négocier seul
+       (le syndicat ayant choisi autre chose), c'est un signe de
+       faiblesse côté patron qu'il aurait pu exploiter — la zone
+       n'avance pas pour autant côté salarié. */
+    dZone: -2,
     beats: [],
     winBonus: 0,
     winText: 'Les deux camps s\'assoient. Un accord est possible.',
@@ -221,7 +234,10 @@ export const PATRON_GREVE_MOVES: GreveActionDef<PatronGreveMove>[] = [
     icon: '↘️',
     intent: 'Concession partielle — limiter les dégâts, avancer la zone.',
     dSolidarite: 0,
-    dProduction: -8,
+    /* Argus B-MC12 : dProd -8 → -3. Une concession patronale ne devrait
+       pas ravager sa propre production — elle équivaut à signer un
+       avenant local, pas à fermer l'usine. */
+    dProduction: -3,
     dZone: +8,
     beats: ['negocier'],
     winBonus: +0,

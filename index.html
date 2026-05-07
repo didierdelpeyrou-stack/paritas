@@ -1,7 +1,23 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" data-a11y-contrast="standard">
   <head>
     <meta charset="UTF-8" />
+    <!-- Bootstrap a11y · applique les préférences AVANT le rendu -->
+    <script>
+      (function() {
+        try {
+          var p = JSON.parse(localStorage.getItem('paritas-a11y-prefs') || '{}');
+          var r = document.documentElement;
+          if (p.contrast) r.dataset.a11yContrast = p.contrast;
+          if (p.fontFamily && p.fontFamily !== 'standard') r.dataset.a11yFontFamily = p.fontFamily;
+          if (p.colorBlind && p.colorBlind !== 'none') r.dataset.a11yColorBlind = p.colorBlind;
+          if (p.reducedMotion) r.dataset.a11yReducedMotion = 'true';
+          if (p.focus === 'enhanced') r.dataset.a11yFocus = 'enhanced';
+          if (p.falc) r.dataset.a11yFalc = 'true';
+          if (p.fontSize) r.style.setProperty('--a11y-font-scale', String(p.fontSize));
+        } catch(e) {}
+      })();
+    </script>
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <meta name="theme-color" content="#0d1014" />
     <!-- Cache-control : index.html ne doit JAMAIS être servi depuis

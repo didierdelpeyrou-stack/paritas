@@ -1,11 +1,28 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" data-a11y-contrast="standard">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#0d1014" />
   <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
   <title>PARITAS — Portail</title>
+
+  <!-- Bootstrap a11y · applique les préférences AVANT le rendu (anti-FOUC) -->
+  <script>
+    (function() {
+      try {
+        var p = JSON.parse(localStorage.getItem('paritas-a11y-prefs') || '{}');
+        var r = document.documentElement;
+        if (p.contrast)      r.dataset.a11yContrast      = p.contrast;
+        if (p.fontFamily && p.fontFamily !== 'standard') r.dataset.a11yFontFamily = p.fontFamily;
+        if (p.colorBlind && p.colorBlind !== 'none')     r.dataset.a11yColorBlind = p.colorBlind;
+        if (p.reducedMotion) r.dataset.a11yReducedMotion = 'true';
+        if (p.focus === 'enhanced') r.dataset.a11yFocus  = 'enhanced';
+        if (p.falc)          r.dataset.a11yFalc          = 'true';
+        if (p.fontSize)      r.style.setProperty('--a11y-font-scale', String(p.fontSize));
+      } catch(e) {}
+    })();
+  </script>
   <meta name="description" content="PARITAS — simulation politique narrative sur le paritarisme français, de 1789 à 2026. Jeu principal + 10 ateliers de négociation jouables en standalone." />
   <meta property="og:title" content="PARITAS — Portail" />
   <meta property="og:description" content="Le jeu principal, 10 ateliers de négociation, et la doctrine Argus." />
@@ -14,7 +31,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Cinzel:wght@400;600;700;900&family=Inter:wght@400;500;600;700&family=Lexend:wght@400;500;600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
 
   <style>
     :root {
@@ -38,6 +55,7 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html { font-size: calc(16px * var(--a11y-font-scale, 1)); }
     html, body {
       background: var(--bg-deep);
       color: var(--text);
@@ -45,6 +63,58 @@
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
       min-height: 100vh;
+    }
+
+    /* ─── A11y overrides ────────────────────────────── */
+    :root[data-a11y-contrast="eleve"] {
+      --bg-deep: #000; --bg: #0a0a0a; --bg-2: #141414; --bg-3: #1f1f1f;
+      --line: #4a4a4a; --text: #ffffff; --text-soft: #e6e6e6; --text-mute: #c6c6c6;
+      --accent: #ffd166;
+    }
+    :root[data-a11y-contrast="max"] {
+      --bg-deep: #000; --bg: #000; --bg-2: #000; --bg-3: #0a0a0a;
+      --line: #fff; --text: #fff; --text-soft: #fff; --text-mute: #fff;
+      --accent: #ffff00;
+    }
+    :root[data-a11y-color-blind="deutera"] { --salarie: #4ea2ff; --patron: #ffd166; --argus: #ff8c00; }
+    :root[data-a11y-color-blind="prota"]   { --salarie: #4ea2ff; --patron: #ffd166; --argus: #ffaa00; }
+    :root[data-a11y-color-blind="trita"]   { --salarie: #ff6db6; --patron: #ffb14e; --argus: #c5b9cd; }
+    :root[data-a11y-color-blind="achroma"] { --salarie: #fff; --patron: #ddd; --argus: #aaa; --accent: #fff; }
+    :root[data-a11y-font-family="atkinson"] body { font-family: 'Atkinson Hyperlegible', system-ui, sans-serif; }
+    :root[data-a11y-font-family="lexend"]   body { font-family: 'Lexend', system-ui, sans-serif; letter-spacing: 0.02em; }
+    :root[data-a11y-reduced-motion="true"] *,
+    :root[data-a11y-reduced-motion="true"] *::before,
+    :root[data-a11y-reduced-motion="true"] *::after {
+      animation-duration: 0.001s !important;
+      transition-duration: 0.001s !important;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
+    }
+    :root[data-a11y-focus="enhanced"] *:focus-visible {
+      outline: 4px solid #ffd166 !important;
+      outline-offset: 3px !important;
+      box-shadow: 0 0 0 6px rgba(255, 209, 102, 0.35) !important;
+    }
+    *:focus-visible {
+      outline: 3px solid #ffd166;
+      outline-offset: 2px;
+      border-radius: 3px;
+    }
+
+    /* SKIP LINK */
+    .skip-link {
+      position: absolute; top: -100px; left: 1rem;
+      background: #ffd166; color: #000; padding: 0.7rem 1.25rem;
+      font-weight: 700; border-radius: 4px; text-decoration: none;
+      z-index: 1000; transition: top 0.15s ease;
+    }
+    .skip-link:focus { top: 1rem; }
+
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); white-space: nowrap; border: 0;
     }
 
     a { color: inherit; text-decoration: none; }
@@ -438,23 +508,30 @@
 </head>
 <body>
 
+<!-- SKIP LINK · première cible clavier -->
+<a href="#contenu-principal" class="skip-link">Aller au contenu</a>
+
 <!-- ═══════════════════════════════════════════════════════════
      NAV
 ═══════════════════════════════════════════════════════════ -->
-<nav class="top">
+<nav class="top" role="navigation" aria-label="Navigation principale">
   <div class="container nav-row">
-    <a class="brand" href="./">
-      <div class="brand-mark">P</div>
+    <a class="brand" href="./" aria-label="PARITAS · accueil portail">
+      <div class="brand-mark" aria-hidden="true">P</div>
       <div class="brand-text">PARITAS <span>· portail</span></div>
     </a>
     <div class="nav-links">
       <a href="#jeu">Jeu principal</a>
       <a href="#ateliers">Ateliers</a>
       <a href="#integrite">Intégrité</a>
+      <a href="#a11y">Accessibilité</a>
       <a href="#argus">Argus</a>
+      <a href="../reglages/" style="border: 1px solid var(--accent); padding: 0.3rem 0.7rem; border-radius: 3px;">⚙ Réglages</a>
     </div>
   </div>
 </nav>
+
+<main id="contenu-principal" role="main">
 
 <!-- ═══════════════════════════════════════════════════════════
      HERO
@@ -493,6 +570,179 @@
     </div>
   </div>
 </section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCORING HANDICAP · BADGE A11Y
+═══════════════════════════════════════════════════════════ -->
+<section class="block a11y-scoring" id="a11y" aria-labelledby="a11y-title">
+  <div class="container">
+    <div class="section-eyebrow">Accessibilité · audit transparent</div>
+    <h2 class="section-title" id="a11y-title">Score handicap — visibilité publique</h2>
+    <p class="section-sub">
+      PARITAS audite et publie son niveau d'accessibilité. Aucune cosmétique :
+      les chiffres sont mesurés selon 10 critères WCAG 2.2 pondérés.
+      Cycle ORDA-006 dédié à atteindre <strong>95/100</strong>.
+    </p>
+
+    <div class="a11y-grid">
+
+      <!-- BADGE GROS -->
+      <div class="a11y-badge">
+        <div class="a11y-badge-label">Score actuel</div>
+        <div class="a11y-badge-num">
+          <span id="portail-score">32</span><span class="badge-slash">/100</span>
+        </div>
+        <div class="a11y-badge-status">
+          <span class="dot" aria-hidden="true"></span>
+          Conformité partielle WCAG 2.2 AA
+        </div>
+        <div class="a11y-badge-target">Cible J+70 : <strong>95/100</strong></div>
+        <a href="../reglages/" class="a11y-badge-cta">⚙ Personnaliser mes réglages →</a>
+      </div>
+
+      <!-- DÉTAIL CRITÈRES -->
+      <div class="a11y-criteria">
+        <h3 class="criteria-title">Détail des 10 critères pondérés</h3>
+        <ul class="criteria-list" role="list">
+          <li><span class="crit-name">Contraste WCAG AAA</span><span class="crit-bar"><span class="crit-fill" style="width:53%"></span></span><span class="crit-pts">8/15</span></li>
+          <li><span class="crit-name">Navigation clavier 100 %</span><span class="crit-bar"><span class="crit-fill" style="width:47%"></span></span><span class="crit-pts">7/15</span></li>
+          <li><span class="crit-name">ARIA labels &amp; landmarks</span><span class="crit-bar"><span class="crit-fill" style="width:30%"></span></span><span class="crit-pts">3/10</span></li>
+          <li><span class="crit-name">Indicateur de focus</span><span class="crit-bar"><span class="crit-fill" style="width:40%"></span></span><span class="crit-pts">4/10</span></li>
+          <li><span class="crit-name">Reduced motion respecté</span><span class="crit-bar"><span class="crit-fill" style="width:0%"></span></span><span class="crit-pts no">0/10</span></li>
+          <li><span class="crit-name">Lecture d'écran testée</span><span class="crit-bar"><span class="crit-fill" style="width:0%"></span></span><span class="crit-pts no">0/10</span></li>
+          <li><span class="crit-name">Texte ajustable 200 %</span><span class="crit-bar"><span class="crit-fill ok" style="width:100%"></span></span><span class="crit-pts ok">10/10</span></li>
+          <li><span class="crit-name">Palettes daltonisme</span><span class="crit-bar"><span class="crit-fill" style="width:0%"></span></span><span class="crit-pts no">0/10</span></li>
+          <li><span class="crit-name">Sous-titres / signal visuel</span><span class="crit-bar"><span class="crit-fill" style="width:0%"></span></span><span class="crit-pts no">0/5</span></li>
+          <li><span class="crit-name">FALC (Facile à Lire)</span><span class="crit-bar"><span class="crit-fill" style="width:0%"></span></span><span class="crit-pts no">0/5</span></li>
+        </ul>
+        <p class="criteria-meta">
+          Audit du 2026-05-07 · méthode publique · prochaine révision après ORDA-006
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .a11y-scoring { background: linear-gradient(180deg, transparent 0%, rgba(52,211,153,0.03) 100%); }
+  .a11y-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+  @media (max-width: 760px) { .a11y-grid { grid-template-columns: 1fr; } }
+
+  .a11y-badge {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-left: 4px solid #34d399;
+    padding: 1.75rem 1.5rem;
+    border-radius: 6px;
+    text-align: center;
+    position: sticky; top: 5rem;
+  }
+  .a11y-badge-label {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin-bottom: 0.5rem;
+  }
+  .a11y-badge-num {
+    font-family: var(--serif);
+    font-size: 4.5rem;
+    font-weight: 700;
+    color: #34d399;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+  .badge-slash { font-size: 2rem; color: var(--text-mute); }
+  .a11y-badge-status {
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    margin-bottom: 1rem;
+  }
+  .a11y-badge-status .dot {
+    width: 8px; height: 8px;
+    background: #f59e0b; border-radius: 50%;
+    animation: pulse 2s ease infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .a11y-badge-target {
+    font-size: 0.82rem;
+    color: var(--text-mute);
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--line);
+    margin-bottom: 1rem;
+  }
+  .a11y-badge-target strong { color: var(--accent); }
+  .a11y-badge-cta {
+    display: inline-block;
+    padding: 0.65rem 1rem;
+    background: var(--accent);
+    color: var(--bg-deep) !important;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: background 0.15s;
+  }
+  .a11y-badge-cta:hover { background: var(--accent-2); }
+
+  .a11y-criteria { padding-top: 0.5rem; }
+  .criteria-title {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  .criteria-list { list-style: none; padding: 0; margin: 0; }
+  .criteria-list li {
+    display: grid;
+    grid-template-columns: 1fr 100px 60px;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.88rem;
+  }
+  .criteria-list li:last-child { border-bottom: none; }
+  .crit-name { color: var(--text-soft); }
+  .crit-bar {
+    height: 8px;
+    background: var(--bg-3);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .crit-fill {
+    display: block;
+    height: 100%;
+    background: #f59e0b;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+  .crit-fill.ok { background: #34d399; }
+  .crit-pts {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    text-align: right;
+    color: var(--text-mute);
+  }
+  .crit-pts.ok { color: #34d399; }
+  .crit-pts.no { color: var(--text-mute); opacity: 0.5; }
+  .criteria-meta {
+    margin-top: 1rem;
+    font-size: 0.78rem;
+    color: var(--text-mute);
+    font-family: var(--mono);
+  }
+</style>
 
 <!-- ═══════════════════════════════════════════════════════════
      BOUSSOLE PRODUIT
@@ -865,10 +1115,12 @@
   </div>
 </section>
 
+</main>
+
 <!-- ═══════════════════════════════════════════════════════════
      FOOTER
 ═══════════════════════════════════════════════════════════ -->
-<footer>
+<footer role="contentinfo">
   <div class="container footer-row">
     <div>
       <div style="font-family: var(--serif); font-weight: 700; margin-bottom: 0.3rem;">PARITAS</div>
@@ -877,6 +1129,7 @@
     <div>
       <a href="../index.html">Lancer le jeu</a> ·
       <a href="#ateliers">Ateliers</a> ·
+      <a href="../reglages/">Réglages &amp; accessibilité</a> ·
       <a href="#argus">Argus</a>
     </div>
     <div class="footer-credits">

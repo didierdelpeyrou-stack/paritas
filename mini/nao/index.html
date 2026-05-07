@@ -7,6 +7,21 @@
     <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
     <title>La NAO — Atelier PARITAS</title>
     <meta name="description" content="PARITAS · Atelier NAO — Négociation Annuelle Obligatoire. Simulation adversariale Employeur vs Délégué Syndical. 4 thèmes, 3 syndicats, 5 séances." />
+      <script>
+      (function() {
+        try {
+          var p = JSON.parse(localStorage.getItem('paritas-a11y-prefs') || '{}');
+          var r = document.documentElement;
+          if (p.contrast) r.dataset.a11yContrast = p.contrast;
+          if (p.fontFamily && p.fontFamily !== 'standard') r.dataset.a11yFontFamily = p.fontFamily;
+          if (p.colorBlind && p.colorBlind !== 'none') r.dataset.a11yColorBlind = p.colorBlind;
+          if (p.reducedMotion) r.dataset.a11yReducedMotion = 'true';
+          if (p.focus === 'enhanced') r.dataset.a11yFocus = 'enhanced';
+          if (p.falc) r.dataset.a11yFalc = 'true';
+          if (p.fontSize) r.style.setProperty('--a11y-font-scale', String(p.fontSize));
+        } catch(e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="atelier-root"></div>

@@ -9,8 +9,39 @@
     applyMatignonMove,
     availableMatignonMoves,
     buildMatignonReplay,
-    type MatignonMoveId
+    evaluateMatignonLearning,
+    auditMatignonSession,
+    type MatignonMoveId,
+    type MatignonSkillKey
   } from '../../game/negotiation/matignon';
+
+  /* Argus ORDA-003 — Affichage du profil pédagogique (B-DT1) :
+     evaluateMatignonLearning calcule un profil 9 compétences mais
+     n'était pas affiché. Idem auditMatignonSession et ses warnings.
+     Cette section comble la dette technique #1 du Tier 2.
+     Ref : V3_ARGUS_PLAN_DE_CHARGE_10_ATELIERS.md § Atelier 5. */
+  const SKILL_LABELS: Record<MatignonSkillKey, string> = {
+    mandateCraft:        'Conduite du mandat',
+    tableReading:        'Lecture de la table',
+    concessionDesign:    'Architecture des concessions',
+    coalitionBuilding:   'Construction de coalition',
+    legalStrategy:       'Stratégie juridique',
+    publicNarrative:     'Récit public',
+    conflictTiming:      'Tempo du conflit',
+    institutionalMemory: 'Mémoire institutionnelle',
+    ethicalClarity:      'Clarté éthique'
+  };
+  const SKILL_DESC: Record<MatignonSkillKey, string> = {
+    mandateCraft:        "Tenir le mandat reçu de la base sans le dévoyer.",
+    tableReading:        "Lire les positions, postures, et silences à la table.",
+    concessionDesign:    "Calibrer les concessions pour qu'elles débloquent sans trahir.",
+    coalitionBuilding:   "Construire et maintenir une majorité de signataires.",
+    legalStrategy:       "Sécuriser le texte juridique au-delà du rapport de force.",
+    publicNarrative:     "Maîtriser le récit médiatique et la légitimité publique.",
+    conflictTiming:      "Choisir le bon moment pour escalader, suspendre, signer.",
+    institutionalMemory: "Inscrire l'accord dans le temps long de l'institution.",
+    ethicalClarity:      "Refuser les compromissions qui détruisent l'autorité morale."
+  };
 
   interface Props {
     onresolve: (result: { agreementId: string | null; quality: Record<string, number> }) => void;
@@ -105,6 +136,11 @@
       <!-- Fin de négociation -->
       <div class="result-panel">
         {#if session.result}
+          {@const learning = evaluateMatignonLearning(session)}
+          {@const audit = auditMatignonSession(session)}
+          {@const sortedSkills = (Object.entries(learning.scores) as Array<[MatignonSkillKey, number]>)
+            .sort((a, b) => b[1] - a[1])}
+
           <div class="result-outcome" class:accord={session.result.outcome.agreementId} class:rupture={!session.result.outcome.agreementId}>
             <h3>{session.result.outcome.agreementId ? '🤝 Accord signé' : '💥 Table rompue'}</h3>
             {#if session.result.outcome.ruptureReason}
@@ -122,6 +158,61 @@
               </div>
             {/if}
           </div>
+
+          <!-- ╔═══ Profil pédagogique 9 compétences (Argus ORDA-003 / B-DT1) ═══╗ -->
+          <section class="learning-panel" aria-labelledby="learning-title">
+            <h4 id="learning-title">📚 Ton profil de négociateur·trice</h4>
+            <p class="learning-recommendation">
+              <strong>Compétence dominante :</strong> {SKILL_LABELS[learning.primarySkill]}.
+              <em>{learning.recommendation}</em>
+            </p>
+            <ul class="skill-list">
+              {#each sortedSkills as [skill, score]}
+                <li class="skill-row">
+                  <div class="skill-head">
+                    <span class="skill-name">{SKILL_LABELS[skill]}</span>
+                    <span class="skill-score" class:high={score >= 65} class:low={score <= 35}>{score}/100</span>
+                  </div>
+                  <div class="skill-bar">
+                    <div class="skill-fill" class:fill-high={score >= 65} class:fill-low={score <= 35} style="width:{score}%"></div>
+                  </div>
+                  <p class="skill-desc">{SKILL_DESC[skill]}</p>
+                </li>
+              {/each}
+            </ul>
+
+            {#if learning.signals.length > 0}
+              <details class="signals-fold">
+                <summary>Détail des moments-clés ({learning.signals.length})</summary>
+                <ul class="signals-list">
+                  {#each learning.signals as signal}
+                    <li class="signal-item">
+                      <span class="signal-skill">{SKILL_LABELS[signal.skill]}</span>
+                      <span class="signal-delta" class:pos={signal.delta > 0} class:neg={signal.delta < 0}>
+                        {signal.delta > 0 ? '+' : ''}{signal.delta}
+                      </span>
+                      <em class="signal-reason">{signal.reason}</em>
+                    </li>
+                  {/each}
+                </ul>
+              </details>
+            {/if}
+          </section>
+
+          <!-- ╔═══ Warnings d'audit (Argus B-DT2) ═══╗ -->
+          {#if audit.warnings.length > 0 || !audit.ok}
+            <section class="audit-panel" aria-labelledby="audit-title">
+              <h4 id="audit-title">⚠️ Avertissements d'audit</h4>
+              <ul class="audit-list">
+                {#each audit.warnings as warning}
+                  <li class="audit-warning">{warning}</li>
+                {/each}
+                {#each audit.invariantChecks.filter(c => !c.ok) as failed}
+                  <li class="audit-fail">Invariant cassé : <code>{failed.id}</code> — {failed.detail}</li>
+                {/each}
+              </ul>
+            </section>
+          {/if}
         {/if}
         <button class="finish-btn" onclick={finish}>
           Retourner au jeu →
@@ -415,6 +506,128 @@
 
   .finish-btn:hover {
     background: #d4a020;
+  }
+
+  /* ── Profil pédagogique (ORDA-003 / B-DT1) ────────────────── */
+  .learning-panel {
+    margin-top: 1rem;
+    padding: 1rem 1.25rem;
+    background: rgba(184, 134, 11, 0.04);
+    border: 1px solid rgba(184, 134, 11, 0.25);
+    border-radius: 8px;
+  }
+  .learning-panel h4 {
+    margin: 0 0 0.5rem;
+    color: #c4a46a;
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+  }
+  .learning-recommendation {
+    margin: 0 0 0.75rem;
+    padding: 0.6rem 0.8rem;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: #d8c896;
+    line-height: 1.5;
+  }
+  .learning-recommendation strong { color: #f4d58b; }
+  .learning-recommendation em { color: #b8b0a0; font-style: italic; }
+
+  .skill-list {
+    list-style: none; padding: 0; margin: 0;
+    display: flex; flex-direction: column; gap: 0.6rem;
+  }
+  .skill-row { padding: 0.4rem 0; }
+  .skill-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 0.3rem;
+    font-size: 0.85rem;
+  }
+  .skill-name { color: #ede4c9; font-weight: 600; }
+  .skill-score {
+    font-family: 'Courier New', monospace;
+    color: #94a3b8; font-size: 0.78rem;
+  }
+  .skill-score.high { color: #34d399; }
+  .skill-score.low { color: #fca5a5; }
+  .skill-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+  }
+  .skill-fill {
+    height: 100%;
+    background: #b8860b;
+    transition: width 0.5s ease;
+    border-radius: 3px;
+  }
+  .skill-fill.fill-high { background: #34d399; }
+  .skill-fill.fill-low { background: #f59e0b; }
+  .skill-desc {
+    margin: 0; padding: 0.2rem 0;
+    font-size: 0.75rem; color: #94a3b8; line-height: 1.45;
+    font-style: italic;
+  }
+
+  .signals-fold { margin-top: 0.75rem; }
+  .signals-fold > summary {
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: #c4a46a;
+    padding: 0.4rem 0;
+    user-select: none;
+  }
+  .signals-fold > summary:hover { color: #d4a020; }
+  .signals-list {
+    list-style: none; padding: 0.5rem 0 0; margin: 0;
+    display: flex; flex-direction: column; gap: 0.35rem;
+    font-size: 0.8rem;
+  }
+  .signal-item {
+    display: flex; gap: 0.6rem;
+    padding: 0.4rem 0.6rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+  .signal-skill { color: #c4a46a; font-weight: 600; min-width: 11rem; }
+  .signal-delta {
+    font-family: 'Courier New', monospace;
+    min-width: 2.5rem; text-align: right;
+  }
+  .signal-delta.pos { color: #34d399; }
+  .signal-delta.neg { color: #fca5a5; }
+  .signal-reason { color: #94a3b8; font-style: italic; flex: 1; }
+
+  /* ── Audit warnings (B-DT2) ────────────────────────────────── */
+  .audit-panel {
+    margin-top: 1rem;
+    padding: 0.85rem 1.1rem;
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    border-left: 3px solid #f59e0b;
+    border-radius: 4px;
+  }
+  .audit-panel h4 {
+    margin: 0 0 0.5rem;
+    color: #f59e0b;
+    font-size: 0.9rem;
+  }
+  .audit-list {
+    list-style: none; padding: 0; margin: 0;
+    display: flex; flex-direction: column; gap: 0.3rem;
+    font-size: 0.82rem; color: #d8c896;
+  }
+  .audit-warning::before { content: '⚠ '; color: #f59e0b; }
+  .audit-fail { color: #fca5a5; }
+  .audit-fail::before { content: '✗ '; }
+  .audit-fail code {
+    font-family: 'Courier New', monospace;
+    background: rgba(0,0,0,0.3);
+    padding: 0.05rem 0.3rem;
+    border-radius: 2px;
   }
 
   .history {

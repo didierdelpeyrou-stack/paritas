@@ -186,11 +186,16 @@ export function buildPlayerFaction(opts: {
     /* La foule République = manifestants. Plus elle est grande, plus
        le joueur est fort. Service d'ordre = un cadre pour 200 manifs.
        Pigeons = 1 pour 800 manifs (jeunes mobiles). Coup de force =
-       seulement si cohésion < 40 (mouvement en colère, plus radical). */
-    const manifestants = Math.max(50, Math.round(fouleParis));
+       seulement si cohésion < 40 (mouvement en colère, plus radical).
+       Argus B-DT4 : la foule en effectif COMBATTANT n'égale pas
+       le nombre de présents (une manif de 50k a peut-être 200
+       personnes au front). Cap effectif à fouleParis/30, plafonné
+       à 600. Sans ce cap, le power foule écrasait toujours les CRS
+       (test MC : 100 % victoire systématique). */
+    const manifestants = Math.min(600, Math.max(50, Math.round(fouleParis / 30)));
     const so = Math.max(2, Math.round(cadres * 0.6));
-    const pigeons = Math.round(fouleParis / 800);
-    const coupDeForce = cohesion < 40 ? Math.round(fouleParis / 2000) : 0;
+    const pigeons = Math.min(40, Math.round(fouleParis / 800));
+    const coupDeForce = cohesion < 40 ? Math.min(20, Math.round(fouleParis / 2000)) : 0;
     const brawlers = {
       manifestant: manifestants,
       'service-ordre': so,
@@ -204,33 +209,34 @@ export function buildPlayerFaction(opts: {
     });
   }
 
-  /* DEAD CODE — branche patron désactivée 2026-05-04 (audit Argus,
-     P0 paritaire). Les conflits patronaux du XXᵉ se sont déplacés
-     hors de la rue vers le droit ; rendre des nervis au patronat
-     serait historiquement régressif (Castel, Rosanvallon). Le bouton
-     « Place de la République » dans ManifSimulator est conditionné
-     à `gs.camp === 'salarie'` : cette branche n'est jamais appelée.
-     Conservée commentée comme repère d'historique de design.
+  /* Argus ORDA-003 / Conseil 2026-05-08 — Décision Option B :
+     suppression définitive de la branche patron.
+     Justification (cf. doctrine Argus, RE-5 « devoir de retraite
+     tactique » + V3_ARGUS_PLAN_DE_CHARGE_10_ATELIERS § Atelier 6) :
+     1. Les conflits patronaux du XXᵉ siècle se sont déplacés hors de
+        la rue vers le droit (Castel, Rosanvallon) — rendre des nervis
+        au patronat serait historiquement régressif.
+     2. La symétrie paritariste de PARITAS s'applique aux mécaniques
+        de DIALOGUE (NAO, Table, Élections), pas au conflit physique.
+     3. Le bouton "Place de la République" dans ManifSimulator est
+        conditionné à `gs.camp === 'salarie'` : la branche n'a jamais
+        été activée en production.
+     L'atelier Brawl Arena est désormais ASSUMÉ comme côté
+     manifestant uniquement. La doctrine est inscrite : pas de
+     dette technique cachée, pas de code mort.
 
-     const securite = Math.max(5, Math.round(militants * 0.05));
-     const bande = Math.round(cadres * 0.4);
-     const infiltres = Math.round(cadres * 0.2);
-     return finalizeFaction({
-       side: 'joueur',
-       brawlers: {
-         'securite-privee': securite,
-         'bande-palis': bande,
-         infiltre: infiltres
-       },
-       label: 'Forces patronales'
-     });
-  */
+     L'historique de design (avec les types securite-privee /
+     bande-palis / infiltre côté joueur) reste consultable via
+     l'historique git (commit beb8dc0 et antérieurs). */
+  if ((camp as string) === 'patron') {
+    throw new Error(
+      "Brawl Arena : la branche patron a été retirée (Conseil ORDA-003). " +
+      "Cet atelier est désormais côté manifestant uniquement."
+    );
+  }
   void militants; void cadres;
-  return finalizeFaction({
-    side: 'joueur',
-    brawlers: {},
-    label: 'Forces patronales (désactivé)'
-  });
+  /* Code unreachable — TS exige un return. */
+  return finalizeFaction({ side: 'joueur', brawlers: {}, label: 'invalide' });
 }
 
 /** Compose la faction adverse selon l'ère et la pression policière.
@@ -320,17 +326,40 @@ export interface BrawlOutcome {
   finalNarrative: string;
 }
 
+/* Argus ORDA-003 / B-DT3 — RNG seedable pour replay reproductible.
+   Avant : Math.random() direct → 2 brawls "identiques" (mêmes factions
+   et momentum) donnaient des résultats différents → impossible de
+   rejouer une session pour analyse pédagogique.
+   Après : générateur xorshift32 seedable. Si seed est fourni, le
+   résultat est déterministe ; sinon Math.random() de fallback. */
+function makeRng(seed?: number): () => number {
+  if (seed === undefined) return Math.random;
+  let state = seed | 0;
+  if (state === 0) state = 0xdeadbeef | 0;
+  return function rng() {
+    state ^= state << 13; state |= 0;
+    state ^= state >>> 17; state |= 0;
+    state ^= state << 5;   state |= 0;
+    return ((state >>> 0) % 1_000_000) / 1_000_000;
+  };
+}
+
 /** Résolution stochastique en 3 rounds.
  *  Chaque round : chaque side inflige des pertes ∝ pouvoir,
- *  modulé par la différence de pouvoir (rapport de force) et un dé. */
+ *  modulé par la différence de pouvoir (rapport de force) et un dé.
+ *
+ *  Si `seed` est fourni, le résultat est reproductible (replay). */
 export function resolveBrawl(opts: {
   joueur: FactionRoster;
   adversaire: FactionRoster;
   /** Rapport de force initial (-50..50, du joueur). */
   initialMomentum?: number;
+  /** Seed RNG pour reproductibilité (Argus B-DT3) */
+  seed?: number;
 }): BrawlOutcome {
   const { joueur, adversaire } = opts;
   const initialMomentum = opts.initialMomentum ?? 0;
+  const rng = makeRng(opts.seed);
 
   let jPower = joueur.power;
   let aPower = adversaire.power;
@@ -345,9 +374,10 @@ export function resolveBrawl(opts: {
     const jEffective = Math.max(0, jPower * (1 + momentum / 200));
     const aEffective = Math.max(0, aPower * (1 - momentum / 200));
 
-    /* Pertes ∝ force adverse × random factor (0.10 à 0.20). */
-    const jLossRatio = 0.10 + Math.random() * 0.10;
-    const aLossRatio = 0.10 + Math.random() * 0.10;
+    /* Pertes ∝ force adverse × random factor (0.10 à 0.20).
+       RNG seedable (B-DT3) pour replays reproductibles. */
+    const jLossRatio = 0.10 + rng() * 0.10;
+    const aLossRatio = 0.10 + rng() * 0.10;
 
     const jLossPower = Math.min(jPower, aEffective * jLossRatio);
     const aLossPower = Math.min(aPower, jEffective * aLossRatio);

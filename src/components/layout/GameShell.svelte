@@ -15,6 +15,8 @@
   import { ALL_RESOURCES } from '../../game/types';
   import SceneCard from '../narrative/SceneCard.svelte';
   import ConsequenceScene from '../narrative/ConsequenceScene.svelte';
+  import MatignonModal from '../narrative/MatignonModal.svelte';
+  import LaPlace from '../ateliers/LaPlace.svelte';
   import PipelinePanel from '../narrative/PipelinePanel.svelte';
   import ResourceGauge from '../simulation/ResourceGauge.svelte';
   import ActorPanel from '../simulation/ActorPanel.svelte';
@@ -529,9 +531,17 @@
   });
 </script>
 
+<!-- ╔══════════════════════════════════════════════════════════
+     RENDU EXCLUSIF DES PHASES — Bug Argus B-MR1
+     ══════════════════════════════════════════════════════════
+     Les overlays MatignonModal et LaPlace sont désormais
+     rendus AU NIVEAU APP.SVELTE (top-level), pour qu'ils
+     fonctionnent quelle que soit la coque (GameShell ou
+     CockpitShell). Voir App.svelte. Ici on ne gère que la
+     game grid + ending. -->
 {#if gameState && gameState.phase === 'ended' && ending}
   <EndingReport {ending} {onReplay} />
-{:else if gameState && era}
+{:else if gameState && era && gameState.phase !== 'matignon' && gameState.phase !== 'laplace'}
   {@const s = gameState}
   {@const e = era}
   {@const year = yearForTurn(s.turn)}
@@ -829,10 +839,20 @@
   /* === Grille principale (UX-1) ===
      En mode focus, la sidebar est repliée et la colonne principale
      prend toute la largeur — le récit et les choix respirent.
-     Auto-déclenché en phase consequence (DMN priority). */
+     Auto-déclenché en phase consequence (DMN priority).
+
+     Argus B-MR3 (mobile patch) :
+     - min-width: 0 sur les enfants pour autoriser le shrink
+     - gap réduit en mobile pour gain de hauteur
+     - bordered-card sans débordement horizontal */
   .game-grid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+  .game-grid > * { min-width: 0; }
+  @media (min-width: 480px) {
+    .game-grid { gap: 1rem; }
   }
 
   @media (min-width: 1024px) {

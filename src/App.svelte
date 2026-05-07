@@ -16,6 +16,14 @@
   import TableWindow from './components/table/TableWindow.svelte';
   import { cockpit, resolveLayout } from '$lib/stores/cockpit.svelte';
   import ToastStack from './components/feedback/ToastStack.svelte';
+  /* Overlays d'ateliers — Argus B-MR1 / B-MR2 :
+     rendus AU TOP-LEVEL pour fonctionner quelle que soit la
+     coque (GameShell carnet, CockpitShell théâtre/atelier).
+     Sans cette remontée, MatignonModal/LaPlace étaient soit
+     dupliqués dans le DOM (GameShell), soit invisibles
+     (CockpitShell, qui ne les rendait pas du tout). */
+  import MatignonModal from './components/narrative/MatignonModal.svelte';
+  import LaPlace from './components/ateliers/LaPlace.svelte';
 
   /* Routing minimal : si l'URL contient ?session=…, on est dans la
    * fenêtre popup de La Table des Négociations. Aucun moteur de
@@ -136,6 +144,25 @@
 {:else}
 <ToastStack />
 
+<!-- ╔══════════════════════════════════════════════════════════
+     Overlays d'ateliers (Argus B-MR1 / B-MR2)
+     ══════════════════════════════════════════════════════════
+     Rendus en top-level pour fonctionner sous Cockpit OU
+     GameShell. Position fixed + z-index élevé dans leurs CSS.
+     ══════════════════════════════════════════════════════════ -->
+{#if phase === 'game' && rebirth.state?.phase === 'matignon'}
+  <MatignonModal
+    onresolve={(result) => rebirth.resolveMatignon(result)}
+    onskip={() => rebirth.resolveMatignon({ agreementId: null, quality: {} })}
+  />
+{:else if phase === 'game' && rebirth.state?.phase === 'laplace'}
+  <LaPlace
+    embedded={true}
+    onresolve={(effects) => rebirth.resolveLaPlace(effects)}
+    onskip={() => rebirth.resolveLaPlace({ confiance: 0, rapportDeForce: 0, santeSociale: 0, legitimite: 0, caisse: 0, cohesionInterne: 0 })}
+  />
+{/if}
+
 <!-- Le sélecteur de layout (Théâtre / Atelier / Carnet) n'est plus
      un badge flottant top-right (encombrait la status bar mobile).
      Il est désormais accessible :
@@ -149,7 +176,7 @@
        layout passé pour adapter l'identité (CK3 vs Tycoon). -->
   <CockpitShell onReplay={handleReplay} layout={effectiveLayout} />
 {:else}
-<main class="min-h-dvh px-4 py-6 max-w-7xl mx-auto">
+<main class="paritas-main">
   {#if phase === 'landing'}
     <div in:fade={{ duration: 300 }}>
       <Landing onEnter={handleLandingDone} />
@@ -174,3 +201,40 @@
 </main>
 {/if}
 {/if}
+
+<style>
+  /* ╔══════════════════════════════════════════════════════════
+       Wrapper principal — Argus B-MR3 (mobile catastrophe)
+       ══════════════════════════════════════════════════════════
+       Avant : <main class="min-h-dvh px-4 py-6 max-w-7xl mx-auto">
+       — px-4 (16px) sur iPhone SE (375px) laisse 343px utiles, et
+         les <bordered-card> avec leur padding interne 16px font
+         311px de contenu, ce qui ne suffit pas pour les barres
+         de ressources étendues.
+       — overflow horizontal apparaît avec certains éléments
+         enfants (NewsTicker, EraTimeline) qui forcent des largeurs.
+
+       Après :
+       — clamp horizontal padding 8 → 16 → 24px selon viewport
+       — overflow-x: hidden de défense au top-level
+       — max-width inchangé (80rem)
+       ══════════════════════════════════════════════════════════ */
+  .paritas-main {
+    min-height: 100dvh;
+    padding: 1.25rem 0.75rem;
+    max-width: 80rem;
+    margin-left: auto;
+    margin-right: auto;
+    overflow-x: hidden;
+  }
+  @media (min-width: 480px) {
+    .paritas-main { padding: 1.5rem 1rem; }
+  }
+  @media (min-width: 768px) {
+    .paritas-main { padding: 1.5rem 1.5rem; }
+  }
+  /* Defense globale anti overflow horizontal mobile */
+  :global(html), :global(body) {
+    overflow-x: hidden;
+  }
+</style>

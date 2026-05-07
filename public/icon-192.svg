@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="24" fill="#0d1014"/>
+  <rect x="8" y="8" width="176" height="176" rx="20" fill="none" stroke="#c9a25b" stroke-width="2" opacity="0.4"/>
+  <text x="96" y="138" text-anchor="middle"
+        font-family="Cinzel, Georgia, serif" font-weight="900" font-size="120"
+        fill="#c9a25b">P</text>
+  <text x="96" y="166" text-anchor="middle"
+        font-family="Cinzel, Georgia, serif" font-weight="600" font-size="14"
+        letter-spacing="3" fill="#94a3b8">PARITAS</text>
+</svg>

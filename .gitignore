@@ -1,5 +1,6 @@
 node_modules/
 dist/
+paritas-*.tar.gz
 .wrangler/
 .DS_Store
 *.log

@@ -31,6 +31,12 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <!-- PWA — installable, offline 100 % (Argus IT B-EXEC1) -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icon-192.svg" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="PARITAS" />
     <title>Paritas : la table des Ateliers</title>
     <meta name="description" content="Paritas : la table des Ateliers. Une simulation politique narrative sur le paritarisme français, de 1789 à 2026. 100 décisions, deux camps, des fins multiples." />
     <meta property="og:title" content="Paritas : la table des Ateliers" />
@@ -47,5 +53,13 @@
   <body>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
+    <!-- Service Worker registration (PWA offline) -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>

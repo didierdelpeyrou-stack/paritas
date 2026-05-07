@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Safe area maskable : 80% inner zone -->
+  <rect width="512" height="512" rx="64" fill="#0d1014"/>
+  <rect x="24" y="24" width="464" height="464" rx="56" fill="none" stroke="#c9a25b" stroke-width="3" opacity="0.4"/>
+
+  <!-- "P" majuscule comme marque -->
+  <text x="256" y="370" text-anchor="middle"
+        font-family="Cinzel, Georgia, serif" font-weight="900" font-size="320"
+        fill="#c9a25b">P</text>
+
+  <!-- Sous-titre -->
+  <text x="256" y="445" text-anchor="middle"
+        font-family="Cinzel, Georgia, serif" font-weight="600" font-size="36"
+        letter-spacing="8" fill="#94a3b8">PARITAS</text>
+
+  <!-- Cadre ornemental discret -->
+  <line x1="120" y1="468" x2="200" y2="468" stroke="#c9a25b" stroke-width="1.5" opacity="0.5"/>
+  <line x1="312" y1="468" x2="392" y2="468" stroke="#c9a25b" stroke-width="1.5" opacity="0.5"/>
+  <circle cx="256" cy="468" r="3" fill="#c9a25b" opacity="0.6"/>
+</svg>

@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#0d1014" />
   <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/icon-192.svg" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PARITAS" />
   <title>PARITAS — Portail</title>
 
   <!-- Bootstrap a11y · applique les préférences AVANT le rendu (anti-FOUC) -->
@@ -1142,5 +1148,13 @@
   </div>
 </footer>
 
+<script>
+  /* Service Worker — PWA offline */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+  }
+</script>
 </body>
 </html>

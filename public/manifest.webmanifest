@@ -1,0 +1,49 @@
+{
+  "name": "PARITAS — La table des Ateliers",
+  "short_name": "PARITAS",
+  "description": "Simulation politique narrative sur le paritarisme français, de 1789 à 2026. Deviens meilleur négociateur social, côté salarié ou côté employeur.",
+  "start_url": "/portail/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0d1014",
+  "theme_color": "#0d1014",
+  "lang": "fr-FR",
+  "categories": ["games", "education", "politics", "simulation"],
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Lancer le jeu",
+      "url": "/",
+      "description": "Démarrer une nouvelle partie"
+    },
+    {
+      "name": "Atelier NAO",
+      "url": "/mini/nao/",
+      "description": "Négociation Annuelle Obligatoire"
+    },
+    {
+      "name": "Atelier Élections",
+      "url": "/mini/elections/",
+      "description": "Élections professionnelles CSE"
+    },
+    {
+      "name": "Réglages",
+      "url": "/reglages/",
+      "description": "Accessibilité et préférences"
+    }
+  ]
+}

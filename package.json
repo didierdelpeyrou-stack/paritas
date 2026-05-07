@@ -9,6 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
+    "dist": "npm run build && node scripts/dist-package.mjs",
+    "serve": "npx serve -l 4321 dist",
     "simulate:events": "node scripts/simulate-events.mjs"
   },
   "devDependencies": {

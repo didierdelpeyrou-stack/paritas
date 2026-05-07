@@ -236,8 +236,15 @@ export function resolveTableRound(state: TableState): TableState {
   const { salariePick, patronPick } = state;
   if (!salariePick || !patronPick) return state;
 
-  const salarieDef = SALARIE_MOVES.find(a => a.id === salariePick)!;
-  const patronDef = PATRON_MOVES.find(a => a.id === patronPick)!;
+  /* Argus IT B-IT7 : non-null assertions remplacées par garde
+     défensive (fail-fast). Si un ID invalide arrive (corruption
+     de state, save legacy), on throw explicitement plutôt que
+     de masquer un undefined behavior. */
+  const salarieDef = SALARIE_MOVES.find(a => a.id === salariePick);
+  const patronDef = PATRON_MOVES.find(a => a.id === patronPick);
+  if (!salarieDef || !patronDef) {
+    throw new Error(`Table: invalid move (salarie=${salariePick}, patron=${patronPick})`);
+  }
 
   let delta = salarieDef.basePush + patronDef.basePush;
 

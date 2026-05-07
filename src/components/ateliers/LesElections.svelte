@@ -28,23 +28,23 @@
   /* ============================================================
      State
      ============================================================ */
-  let state = $state<ElectionState>(startElectionSession());
-  let salarieAlloc = $state<Allocation>(emptyAllocation());
-  let patronAlloc  = $state<Allocation>(emptyAllocation());
+  let gameState: ElectionState = $state(startElectionSession());
+  let salarieAlloc: Allocation = $state(emptyAllocation());
+  let patronAlloc: Allocation = $state(emptyAllocation());
   let salarieReady = $state(false);
   let patronReady  = $state(false);
   let revealing = $state(false);
   let showResult = $state(false);
 
-  const phase = $derived(state.phase);
-  const lastScrutin = $derived(state.history.at(-1) ?? null);
+  const phase = $derived(gameState.phase);
+  const lastScrutin = $derived(gameState.history.at(-1) ?? null);
   const sBudgetLeft = $derived(BUDGET_PER_ROUND - totalAllocation(salarieAlloc));
   const pBudgetLeft = $derived(BUDGET_PER_ROUND - totalAllocation(patronAlloc));
 
   /* 21 sièges total dispo, majorité = 11 */
   const seatsPct = $derived({
-    s: Math.round((state.salarieTotal / 21) * 100),
-    p: Math.round((state.patronTotal  / 21) * 100)
+    s: Math.round((gameState.salarieTotal / 21) * 100),
+    p: Math.round((gameState.patronTotal  / 21) * 100)
   });
 
   /* ============================================================
@@ -53,12 +53,12 @@
   function confirmSalarie() {
     if (salarieReady || totalAllocation(salarieAlloc) > BUDGET_PER_ROUND) return;
     salarieReady = true;
-    state = setElectionAlloc(state, 'salarie', { ...salarieAlloc });
+    gameState = setElectionAlloc(gameState, 'salarie', { ...salarieAlloc });
     if (startSide === 'salarie') {
       /* IA patron confirme aussi */
-      const ai = aiElectionAlloc(state, 'patron');
+      const ai = aiElectionAlloc(gameState, 'patron');
       patronAlloc = { ...ai };
-      state = setElectionAlloc(state, 'patron', ai);
+      gameState = setElectionAlloc(gameState, 'patron', ai);
       patronReady = true;
     }
     if (salarieReady && patronReady) triggerReveal();
@@ -67,11 +67,11 @@
   function confirmPatron() {
     if (patronReady || totalAllocation(patronAlloc) > BUDGET_PER_ROUND) return;
     patronReady = true;
-    state = setElectionAlloc(state, 'patron', { ...patronAlloc });
+    gameState = setElectionAlloc(gameState, 'patron', { ...patronAlloc });
     if (startSide === 'patron') {
-      const ai = aiElectionAlloc(state, 'salarie');
+      const ai = aiElectionAlloc(gameState, 'salarie');
       salarieAlloc = { ...ai };
-      state = setElectionAlloc(state, 'salarie', ai);
+      gameState = setElectionAlloc(gameState, 'salarie', ai);
       salarieReady = true;
     }
     if (salarieReady && patronReady) triggerReveal();
@@ -81,7 +81,7 @@
     revealing = true;
     showResult = false;
     setTimeout(() => {
-      state = resolveScrutin(state);
+      gameState = resolveScrutin(gameState);
       revealing = false;
       showResult = true;
     }, 800);
@@ -93,16 +93,16 @@
     patronAlloc  = emptyAllocation();
     salarieReady = false;
     patronReady  = false;
-    if (state.phase === 'result') state = nextScrutin(state);
-    else if (state.phase === 'ended') handleEnd();
+    if (gameState.phase === 'result') gameState = nextScrutin(gameState);
+    else if (gameState.phase === 'ended') handleEnd();
   }
 
   function handleEnd() {
-    if (onresolve && state.matchOutcome) onresolve(electionOutcomeToV2Effects(state.matchOutcome));
+    if (onresolve && gameState.matchOutcome) onresolve(electionOutcomeToV2Effects(gameState.matchOutcome));
   }
 
   function restart() {
-    state = startElectionSession();
+    gameState = startElectionSession();
     salarieAlloc = emptyAllocation();
     patronAlloc  = emptyAllocation();
     salarieReady = false;
@@ -149,7 +149,7 @@
         <span class="e-tag">Atelier PARITAS</span>
         <h1 class="e-title">🗳️ Les Élections Professionnelles</h1>
       </div>
-      <div class="e-scrutin">Scrutin {state.round}/3</div>
+      <div class="e-scrutin">Scrutin {gameState.round}/3</div>
       {#if onskip}
         <button class="e-skip" onclick={onskip}>Passer →</button>
       {/if}
@@ -160,9 +160,9 @@
   <div class="seats-row">
     <div class="seats-side salarie-seats">
       <span class="seats-label">✊ Syndicat</span>
-      <span class="seats-count">{state.salarieTotal}</span>
+      <span class="seats-count">{gameState.salarieTotal}</span>
       <span class="seats-total">/ 21 sièges</span>
-      {#if state.salarieTotal >= 11}
+      {#if gameState.salarieTotal >= 11}
         <span class="seats-majority">MAJORITÉ</span>
       {/if}
     </div>
@@ -173,11 +173,11 @@
       <div class="seats-threshold"></div>
     </div>
     <div class="seats-side patron-seats">
-      {#if state.patronTotal >= 11}
+      {#if gameState.patronTotal >= 11}
         <span class="seats-majority patron-maj">MAJORITÉ</span>
       {/if}
       <span class="seats-total">/ 21 sièges</span>
-      <span class="seats-count">{state.patronTotal}</span>
+      <span class="seats-count">{gameState.patronTotal}</span>
       <span class="seats-label">🏛️ Direction</span>
     </div>
   </div>
@@ -214,7 +214,7 @@
             <span class="p-delta">Direction : +{lastScrutin.patronSeats} siège{lastScrutin.patronSeats > 1 ? 's' : ''}</span>
           </div>
           <button class="e-continue" onclick={continueScrutin}>
-            {phase === 'result' ? `Scrutin ${state.round} →` : 'Voir le résultat final'}
+            {phase === 'result' ? `Scrutin ${gameState.round} →` : 'Voir le résultat final'}
           </button>
         </div>
 
@@ -370,8 +370,8 @@
 
   {:else}
     <!-- RÉSULTAT FINAL -->
-    {#if state.matchOutcome}
-      {@const ol = outcomeLabel(state.matchOutcome)}
+    {#if gameState.matchOutcome}
+      {@const ol = outcomeLabel(gameState.matchOutcome)}
       <div class="e-outcome" in:fade={{ duration: 300 }}>
         <div class="e-o-emoji">{ol?.emoji}</div>
         <h2 class="e-o-title">{ol?.title}</h2>
@@ -380,12 +380,12 @@
         <!-- Score final -->
         <div class="final-score">
           <div class="fs-side fs-salarie">
-            <div class="fs-count">{state.salarieTotal}</div>
+            <div class="fs-count">{gameState.salarieTotal}</div>
             <div class="fs-label">sièges Syndicat</div>
           </div>
           <div class="fs-sep">—</div>
           <div class="fs-side fs-patron">
-            <div class="fs-count">{state.patronTotal}</div>
+            <div class="fs-count">{gameState.patronTotal}</div>
             <div class="fs-label">sièges Direction</div>
           </div>
         </div>
@@ -397,7 +397,7 @@
 
         <!-- Historique par scrutin -->
         <div class="e-o-history">
-          {#each state.history as s}
+          {#each gameState.history as s}
             <div class="eoh-scrutin">
               <div class="eoh-title">Scrutin {s.round}</div>
               <div class="eoh-seats">

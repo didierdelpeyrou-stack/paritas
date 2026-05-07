@@ -59,14 +59,17 @@ export const MOCK_GAME_STATE: RebirthGameState = {
     actionHistory: []
   },
   activeStrategies: [],
-  /* worldAI minimal — les simulateurs ne l'utilisent pas directement. */
+  /* worldAI minimal — les simulateurs ne l'utilisent pas directement.
+     Argus IT B-IT3 : cast `as unknown as ...` pour éviter le check
+     d'overlap TS strict (les standalone testent les minijeux sans
+     toucher worldAI). */
   worldAI: {
     adversaireStance: 'dur',
     etatMood: 'attentiste',
     opinionTrend: 'stable',
     externalPressure: 30,
     crisisLevel: 0
-  } as RebirthGameState['worldAI'],
+  } as unknown as RebirthGameState['worldAI'],
   activePipelines: [],
   memory: {
     refusedCompromise: 0,

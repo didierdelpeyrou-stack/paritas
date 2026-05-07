@@ -256,8 +256,12 @@ export function resolveRound(state: ConfrState): ConfrState {
   const { manifPick, policePick } = state;
   if (!manifPick || !policePick) return state;
 
-  const manifDef = MANIF_ACTIONS.find(a => a.id === manifPick)!;
-  const policeDef = POLICE_ACTIONS.find(a => a.id === policePick)!;
+  /* Argus IT B-IT7 : garde défensive (fail-fast). */
+  const manifDef = MANIF_ACTIONS.find(a => a.id === manifPick);
+  const policeDef = POLICE_ACTIONS.find(a => a.id === policePick);
+  if (!manifDef || !policeDef) {
+    throw new Error(`Confrontation: invalid move (manif=${manifPick}, police=${policePick})`);
+  }
 
   /* Calcul delta zone */
   let delta = manifDef.basePush + policeDef.basePush;

@@ -20,11 +20,11 @@
   let policePressure = $state(55);  // pression policière 0-100
 
   /* État de la simulation */
-  let arena = $state<{
+  let arena: {
     joueur: FactionRoster;
     adversaire: FactionRoster;
     outcome: BrawlOutcome;
-  } | null>(null);
+  } | null = $state(null);
 
   function launch() {
     const joueur = buildPlayerFaction({

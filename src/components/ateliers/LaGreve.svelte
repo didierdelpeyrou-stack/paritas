@@ -23,23 +23,23 @@
   }
   let { embedded = false, startSide = null, onresolve, onskip }: Props = $props();
 
-  let state  = $state<GreveState>(startGreveSession());
+  let gameState: GreveState = $state(startGreveSession());
   let resolving = $state(false);
   let showResult = $state(false);
   let revealSalarieIcon = $state('');
   let revealPatronIcon  = $state('');
 
-  const phase = $derived(state.phase);
-  const lastRound = $derived(state.history.at(-1) ?? null);
+  const phase = $derived(gameState.phase);
+  const lastRound = $derived(gameState.history.at(-1) ?? null);
 
   /* Couleurs barres */
-  const solColor  = $derived(state.solidarite > 40 ? '#ef4444' : '#7f1d1d');
-  const prodColor = $derived(state.production  > 40 ? '#3b82f6' : '#1e3a5f');
-  const zoneColor = $derived(state.zone >= 65 ? '#C9A84C' : state.zone <= 34 ? '#7f1d1d' : '#78716c');
+  const solColor  = $derived(gameState.solidarite > 40 ? '#ef4444' : '#7f1d1d');
+  const prodColor = $derived(gameState.production  > 40 ? '#3b82f6' : '#1e3a5f');
+  const zoneColor = $derived(gameState.zone >= 65 ? '#C9A84C' : gameState.zone <= 34 ? '#7f1d1d' : '#78716c');
 
   /* IA */
   function aiPatron(): PatronGreveMove {
-    const z = state.zone; const sol = state.solidarite;
+    const z = gameState.zone; const sol = gameState.solidarite;
     if (sol < 25) return 'lockout';
     if (z > 60) return 'juridique';
     const w: Record<PatronGreveMove, number> = {
@@ -53,7 +53,7 @@
   }
 
   function aiSalarie(): SalarieGreveMove {
-    const z = state.zone; const sol = state.solidarite;
+    const z = gameState.zone; const sol = gameState.solidarite;
     const w: Record<SalarieGreveMove, number> = {
       greve_totale: 2,
       greve_tournante: 2,
@@ -73,26 +73,26 @@
   }
 
   function chooseSalarie(move: SalarieGreveMove) {
-    if (phase !== 'picking' || state.salariePick) return;
-    state = pickGreveMove(state, 'salarie', move);
-    if (startSide === 'salarie' && !state.patronPick) state = pickGreveMove(state, 'patron', aiPatron());
+    if (phase !== 'picking' || gameState.salariePick) return;
+    gameState = pickGreveMove(gameState, 'salarie', move);
+    if (startSide === 'salarie' && !gameState.patronPick) gameState = pickGreveMove(gameState, 'patron', aiPatron());
     tryResolve();
   }
 
   function choosePatron(move: PatronGreveMove) {
-    if (phase !== 'picking' || state.patronPick) return;
-    state = pickGreveMove(state, 'patron', move);
-    if (startSide === 'patron' && !state.salariePick) state = pickGreveMove(state, 'salarie', aiSalarie());
+    if (phase !== 'picking' || gameState.patronPick) return;
+    gameState = pickGreveMove(gameState, 'patron', move);
+    if (startSide === 'patron' && !gameState.salariePick) gameState = pickGreveMove(gameState, 'salarie', aiSalarie());
     tryResolve();
   }
 
   function tryResolve() {
-    if (!state.salariePick || !state.patronPick) return;
+    if (!gameState.salariePick || !gameState.patronPick) return;
     resolving = true;
-    revealSalarieIcon = SALARIE_GREVE_MOVES.find(m => m.id === state.salariePick)?.icon ?? '';
-    revealPatronIcon  = PATRON_GREVE_MOVES.find(m => m.id === state.patronPick)?.icon  ?? '';
+    revealSalarieIcon = SALARIE_GREVE_MOVES.find(m => m.id === gameState.salariePick)?.icon ?? '';
+    revealPatronIcon  = PATRON_GREVE_MOVES.find(m => m.id === gameState.patronPick)?.icon  ?? '';
     setTimeout(() => {
-      state = resolveGreveRound(state);
+      gameState = resolveGreveRound(gameState);
       resolving = false;
       showResult = true;
     }, 700);
@@ -100,15 +100,15 @@
 
   function continueRound() {
     showResult = false;
-    if (state.phase === 'result') state = nextGreveRound(state);
-    else if (state.phase === 'ended') handleEnd();
+    if (gameState.phase === 'result') gameState = nextGreveRound(gameState);
+    else if (gameState.phase === 'ended') handleEnd();
   }
 
   function handleEnd() {
-    if (onresolve && state.matchOutcome) onresolve(greveOutcomeToV2Effects(state.matchOutcome));
+    if (onresolve && gameState.matchOutcome) onresolve(greveOutcomeToV2Effects(gameState.matchOutcome));
   }
 
-  function restart() { state = startGreveSession(); showResult = false; resolving = false; }
+  function restart() { gameState = startGreveSession(); showResult = false; resolving = false; }
 
   function outcomeLabel(o: string | null) {
     if (!o) return null;
@@ -125,7 +125,7 @@
         <span class="g-tag">Atelier PARITAS</span>
         <h1 class="g-title">⏱️ La Grève</h1>
       </div>
-      <div class="g-round">Round {state.round}/5</div>
+      <div class="g-round">Round {gameState.round}/5</div>
       {#if onskip}
         <button class="g-skip" onclick={onskip}>Passer →</button>
       {/if}
@@ -138,23 +138,23 @@
     <div class="resource-block">
       <div class="res-label">
         <span>✊ Solidarité</span>
-        <span style="color: {solColor}; font-weight: 700">{state.solidarite}</span>
+        <span style="color: {solColor}; font-weight: 700">{gameState.solidarite}</span>
       </div>
       <div class="res-track">
-        <div class="res-fill" style="width: {state.solidarite}%; background: {solColor}; transition: width 0.6s"></div>
+        <div class="res-fill" style="width: {gameState.solidarite}%; background: {solColor}; transition: width 0.6s"></div>
       </div>
-      {#if state.caisseBonus > 0}
-        <div class="res-bonus">💰 Caisse active +{state.caisseBonus} prochain round</div>
+      {#if gameState.caisseBonus > 0}
+        <div class="res-bonus">💰 Caisse active +{gameState.caisseBonus} prochain round</div>
       {/if}
     </div>
 
     <!-- Zone pression -->
     <div class="pressure-block">
       <div class="pres-label" style="color: {zoneColor}">
-        Pression {state.zone}
+        Pression {gameState.zone}
       </div>
       <div class="pres-track">
-        <div class="pres-fill" style="width: {state.zone}%; background: {zoneColor}; transition: width 0.6s"></div>
+        <div class="pres-fill" style="width: {gameState.zone}%; background: {zoneColor}; transition: width 0.6s"></div>
         <div class="pres-threshold" style="left: 34%"></div>
         <div class="pres-threshold" style="left: 65%"></div>
       </div>
@@ -163,11 +163,11 @@
     <!-- Production -->
     <div class="resource-block resource-right">
       <div class="res-label">
-        <span style="color: {prodColor}; font-weight: 700">{state.production}</span>
+        <span style="color: {prodColor}; font-weight: 700">{gameState.production}</span>
         <span>Production 🏭</span>
       </div>
       <div class="res-track">
-        <div class="res-fill" style="width: {state.production}%; background: {prodColor}; transition: width 0.6s; float: right"></div>
+        <div class="res-fill" style="width: {gameState.production}%; background: {prodColor}; transition: width 0.6s; float: right"></div>
       </div>
     </div>
   </div>
@@ -201,11 +201,11 @@
             {SALARIE_GREVE_MOVES.find(m=>m.id===lastRound.salarieMove)?.icon}
             {SALARIE_GREVE_MOVES.find(m=>m.id===lastRound.salarieMove)?.label}
           </div>
-        {:else if state.salariePick}
+        {:else if gameState.salariePick}
           <div class="g-pick-badge g-badge-salarie locked">✓ Posture choisie</div>
         {/if}
 
-        {#if phase === 'picking' && !state.salariePick && startSide !== 'patron'}
+        {#if phase === 'picking' && !gameState.salariePick && startSide !== 'patron'}
           <div class="g-actions">
             {#each SALARIE_GREVE_MOVES as move}
               <button type="button" class="g-btn g-btn-salarie" onclick={() => chooseSalarie(move.id)} title={move.intent}>
@@ -263,7 +263,7 @@
               <span class={lastRound.dZone > 0 ? 'dpos' : 'dneg'}>P {lastRound.dZone > 0 ? '+' : ''}{lastRound.dZone}</span>
             </div>
             <button class="g-continue" onclick={continueRound}>
-              {phase === 'result' ? `Round ${state.round} →` : 'Voir le résultat'}
+              {phase === 'result' ? `Round ${gameState.round} →` : 'Voir le résultat'}
             </button>
           </div>
         {:else}
@@ -313,11 +313,11 @@
             {PATRON_GREVE_MOVES.find(m=>m.id===lastRound.patronMove)?.icon}
             {PATRON_GREVE_MOVES.find(m=>m.id===lastRound.patronMove)?.label}
           </div>
-        {:else if state.patronPick}
+        {:else if gameState.patronPick}
           <div class="g-pick-badge g-badge-patron locked">✓ Posture choisie</div>
         {/if}
 
-        {#if phase === 'picking' && !state.patronPick && startSide !== 'salarie'}
+        {#if phase === 'picking' && !gameState.patronPick && startSide !== 'salarie'}
           <div class="g-actions">
             {#each PATRON_GREVE_MOVES as move}
               <button type="button" class="g-btn g-btn-patron" onclick={() => choosePatron(move.id)} title={move.intent}>
@@ -349,8 +349,8 @@
 
   {:else}
     <!-- OUTCOME FINAL -->
-    {#if state.matchOutcome}
-      {@const ol = outcomeLabel(state.matchOutcome)}
+    {#if gameState.matchOutcome}
+      {@const ol = outcomeLabel(gameState.matchOutcome)}
       <div class="g-outcome" in:fade={{ duration: 300 }}>
         <div class="g-o-emoji">{ol?.emoji}</div>
         <h2 class="g-o-title">{ol?.title}</h2>
@@ -358,13 +358,13 @@
         <div class="g-o-bars">
           <div class="g-o-bar">
             <span class="label-s">✊ Solidarité finale</span>
-            <div class="mini-track"><div style="width:{state.solidarite}%; background: {solColor}" class="mini-fill"></div></div>
-            <span class="val">{state.solidarite}</span>
+            <div class="mini-track"><div style="width:{gameState.solidarite}%; background: {solColor}" class="mini-fill"></div></div>
+            <span class="val">{gameState.solidarite}</span>
           </div>
           <div class="g-o-bar">
             <span class="label-p">🏭 Production finale</span>
-            <div class="mini-track"><div style="width:{state.production}%; background: {prodColor}" class="mini-fill"></div></div>
-            <span class="val">{state.production}</span>
+            <div class="mini-track"><div style="width:{gameState.production}%; background: {prodColor}" class="mini-fill"></div></div>
+            <span class="val">{gameState.production}</span>
           </div>
         </div>
         <div class="g-o-sides">
@@ -373,7 +373,7 @@
         </div>
         <!-- Historique rounds -->
         <div class="g-o-history">
-          {#each state.history as r, i}
+          {#each gameState.history as r, i}
             <div class="g-o-hist-item">
               <span class="hist-rnd">R{i+1}</span>
               <span>{SALARIE_GREVE_MOVES.find(m=>m.id===r.salarieMove)?.icon}</span>
@@ -501,5 +501,5 @@
 
   .text-right { text-align:right; }
 
-  :global(.g-outcome) {}
+  /* Argus IT B-IT5 : empty ruleset retiré. */
 </style>

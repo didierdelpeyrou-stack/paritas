@@ -10,7 +10,7 @@
 
   /* Le mock peut être rendu réactif si on veut
      permettre à l'utilisateur d'ajuster les paramètres de base. */
-  let mockState = $state<RebirthGameState>({ ...MOCK_GAME_STATE });
+  let mockState: RebirthGameState = $state({ ...MOCK_GAME_STATE });
 </script>
 
 <div class="min-h-screen bg-stone-950 text-parchment font-body">

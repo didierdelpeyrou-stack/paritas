@@ -9,7 +9,11 @@
   import type { RebirthGameState } from '../../game/types';
   import type { Camp } from '$lib/types';
 
-  let campChoice = $state<Camp>('salarie');
+  /* Argus IT B-IT4 : cast initial pour éviter le narrowing TS sur
+     literal 'salarie' (sans cast, campChoice est typé comme la
+     literal 'salarie' et la comparaison `=== 'patron'` est marquée
+     "no overlap"). */
+  let campChoice = $state('salarie' as Camp);
   const mockState = $derived<RebirthGameState>(
     campChoice === 'patron' ? MOCK_PATRON_GAME_STATE : MOCK_GAME_STATE
   );

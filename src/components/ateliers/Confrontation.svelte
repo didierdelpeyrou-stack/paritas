@@ -37,12 +37,12 @@
 
   const { onresolve, onskip, embedded = false, startSide = null }: Props = $props();
 
-  let state = $state<ConfrState>(startConfrSession());
+  let gameState: ConfrState = $state(startConfrSession());
   let resolving = $state(false);
   let showResult = $state(false);
   /* Snapshot des picks au moment du reveal (avant que resolveRound les efface) */
-  let revealManifIcon = $state<string | null>(null);
-  let revealPoliceIcon = $state<string | null>(null);
+  let revealManifIcon: string | null = $state(null);
+  let revealPoliceIcon: string | null = $state(null);
 
   /* En mode 1-joueur (V2), on incarne un camp et l'IA joue l'autre */
   const soloMode = $derived(startSide !== null);
@@ -52,19 +52,19 @@
   const policeActions = $derived(POLICE_ACTIONS);
 
   /* Lecture de la jauge */
-  const zonePercent = $derived(state.zone);
-  const zoneLbl = $derived(zoneLabel(state.zone));
+  const zonePercent = $derived(gameState.zone);
+  const zoneLbl = $derived(zoneLabel(gameState.zone));
 
   /* Couleur de la zone */
   const zoneColor = $derived(
-    state.zone >= 65 ? '#c44a1a'
-    : state.zone <= 35 ? '#334466'
+    gameState.zone >= 65 ? '#c44a1a'
+    : gameState.zone <= 35 ? '#334466'
     : '#666'
   );
 
-  const lastRound = $derived(state.history.at(-1));
+  const lastRound = $derived(gameState.history.at(-1));
   const outcomeData = $derived(
-    state.matchOutcome ? MATCH_OUTCOME_LABELS[state.matchOutcome] : null
+    gameState.matchOutcome ? MATCH_OUTCOME_LABELS[gameState.matchOutcome] : null
   );
 
   /* ======================================================
@@ -72,49 +72,49 @@
      ====================================================== */
 
   function pickManif(id: ManifAction) {
-    if (state.phase !== 'picking' || state.manifPick) return;
-    state = pickAction(state, 'manif', id);
+    if (gameState.phase !== 'picking' || gameState.manifPick) return;
+    gameState = pickAction(gameState, 'manif', id);
     maybeTriggerResolve();
   }
 
   function pickPolice(id: PoliceAction) {
-    if (state.phase !== 'picking' || state.policePick) return;
+    if (gameState.phase !== 'picking' || gameState.policePick) return;
     // En mode solo côté manif, l'IA joue police
     if (soloMode && startSide === 'manif') return;
-    state = pickAction(state, 'police', id);
+    gameState = pickAction(gameState, 'police', id);
     maybeTriggerResolve();
   }
 
   function maybeTriggerResolve() {
     // Si les deux ont choisi (ou si IA joue l'autre côté) → résoudre
-    const cur = state;
+    const cur = gameState;
 
     /* IA police (si solo manif) */
     if (soloMode && startSide === 'manif' && cur.manifPick && !cur.policePick) {
       const aiPick = aiPolice(cur);
-      state = pickAction(state, 'police', aiPick);
+      gameState = pickAction(gameState, 'police', aiPick);
     }
 
     /* IA manif (si solo police) */
     if (soloMode && startSide === 'police' && cur.policePick && !cur.manifPick) {
       const aiPick = aiManif(cur);
-      state = pickAction(state, 'manif', aiPick);
+      gameState = pickAction(gameState, 'manif', aiPick);
     }
 
     /* Les deux ont choisi → résolution */
-    if (state.manifPick && state.policePick) {
+    if (gameState.manifPick && gameState.policePick) {
       triggerResolve();
     }
   }
 
   function triggerResolve() {
     // Snapshot des icônes AVANT le resolve (les picks seront clearés après)
-    revealManifIcon = MANIF_ACTIONS.find(a => a.id === state.manifPick)?.icon ?? '?';
-    revealPoliceIcon = POLICE_ACTIONS.find(a => a.id === state.policePick)?.icon ?? '?';
+    revealManifIcon = MANIF_ACTIONS.find(a => a.id === gameState.manifPick)?.icon ?? '?';
+    revealPoliceIcon = POLICE_ACTIONS.find(a => a.id === gameState.policePick)?.icon ?? '?';
     resolving = true;
 
     setTimeout(() => {
-      state = resolveRound(state);
+      gameState = resolveRound(gameState);
       resolving = false;
 
       // FIX B2 : toujours montrer la narrative — même au dernier round
@@ -127,19 +127,19 @@
   }
 
   function advanceRound() {
-    if (state.phase === 'result') {
-      state = nextRound(state);
+    if (gameState.phase === 'result') {
+      gameState = nextRound(gameState);
     }
   }
 
   function finish() {
-    if (state.matchOutcome && onresolve) {
-      onresolve(state.matchOutcome);
+    if (gameState.matchOutcome && onresolve) {
+      onresolve(gameState.matchOutcome);
     }
   }
 
   function restart() {
-    state = startConfrSession();
+    gameState = startConfrSession();
   }
 
   /* ======================================================
@@ -174,7 +174,7 @@
         <h1>Police <span class="vs">VS</span> Manifestants</h1>
       </div>
       <div class="header-right">
-        <span class="round-badge">ROUND {state.round}/3</span>
+        <span class="round-badge">ROUND {gameState.round}/3</span>
         {#if onskip}
           <button class="skip-btn" onclick={onskip}>Passer →</button>
         {/if}
@@ -196,10 +196,10 @@
     <div class="zone-status" style="color: {zoneColor}">{zoneLbl}</div>
 
     <!-- Terrain visuel (silhouettes SVG) -->
-    <div class="terrain" class:tense={state.zone > 65 || state.zone < 35} class:resolving>
+    <div class="terrain" class:tense={gameState.zone > 65 || gameState.zone < 35} class:resolving>
       <!-- Foule manifestants (gauche) -->
       <div class="crowd crowd-manif">
-        {#each Array(Math.max(2, Math.round(state.zone / 12))) as _, i}
+        {#each Array(Math.max(2, Math.round(gameState.zone / 12))) as _, i}
           <div class="figure manif-figure" style="animation-delay: {i * 0.12}s">
             <svg width="18" height="36" viewBox="0 0 18 36" fill="none">
               <circle cx="9" cy="6" r="5" fill="#c44a1a"/>
@@ -213,12 +213,12 @@
         {/each}
         <!-- FIX B1 : pick visible SEULEMENT pendant la résolution ou après le round
              (jamais pendant la phase 'picking' → anti-peek multiplayer) -->
-        {#if (resolving || showResult || state.phase === 'result' || state.phase === 'ended') && lastRound}
+        {#if (resolving || showResult || gameState.phase === 'result' || gameState.phase === 'ended') && lastRound}
           <span class="pick-badge manif-badge">{MANIF_ACTIONS.find(a => a.id === lastRound.manifAction)?.icon}</span>
         {/if}
         <!-- Indicateur bonus moral actif -->
-        {#if state.manifMoralBonus > 0 && state.phase === 'picking'}
-          <span class="bonus-badge moral-badge" title="+{state.manifMoralBonus} au prochain win">🎵+{state.manifMoralBonus}</span>
+        {#if gameState.manifMoralBonus > 0 && gameState.phase === 'picking'}
+          <span class="bonus-badge moral-badge" title="+{gameState.manifMoralBonus} au prochain win">🎵+{gameState.manifMoralBonus}</span>
         {/if}
       </div>
 
@@ -230,14 +230,14 @@
       <!-- CRS (droite) -->
       <div class="crowd crowd-police">
         <!-- FIX B1 : même logique — pick caché pendant 'picking' -->
-        {#if (resolving || showResult || state.phase === 'result' || state.phase === 'ended') && lastRound}
+        {#if (resolving || showResult || gameState.phase === 'result' || gameState.phase === 'ended') && lastRound}
           <span class="pick-badge police-badge">{POLICE_ACTIONS.find(a => a.id === lastRound.policeAction)?.icon}</span>
         {/if}
         <!-- Indicateur nasse bonus actif -->
-        {#if state.policeNasseBonus > 0 && state.phase === 'picking'}
-          <span class="bonus-badge nasse-badge" title="+{state.policeNasseBonus} bonus nasse">⬛+{state.policeNasseBonus}</span>
+        {#if gameState.policeNasseBonus > 0 && gameState.phase === 'picking'}
+          <span class="bonus-badge nasse-badge" title="+{gameState.policeNasseBonus} bonus nasse">⬛+{gameState.policeNasseBonus}</span>
         {/if}
-        {#each Array(Math.max(2, Math.round((100 - state.zone) / 12))) as _, i}
+        {#each Array(Math.max(2, Math.round((100 - gameState.zone) / 12))) as _, i}
           <div class="figure police-figure" style="animation-delay: {i * 0.15}s">
             <svg width="20" height="36" viewBox="0 0 20 36" fill="none">
               <!-- casque -->
@@ -257,26 +257,26 @@
     </div>
 
     <!-- Narrative flash de round -->
-    {#if (state.phase === 'result' || showResult) && lastRound}
+    {#if (gameState.phase === 'result' || showResult) && lastRound}
       <div class="round-story" class:manif-story={lastRound.outcome === 'manif_wins'} class:police-story={lastRound.outcome === 'police_wins'}>
         <span class="story-outcome">
           {lastRound.outcome === 'manif_wins' ? '✊ Manifestants' : lastRound.outcome === 'police_wins' ? '🛡️ Police' : '⚖️ Égalité'}
         </span>
         <p>{lastRound.story}</p>
-        {#if state.phase === 'result'}
+        {#if gameState.phase === 'result'}
           <button class="next-round-btn" onclick={advanceRound}>
-            {state.round < 3 ? `Round ${state.round} →` : 'Voir le résultat →'}
+            {gameState.round < 3 ? `Round ${gameState.round} →` : 'Voir le résultat →'}
           </button>
         {/if}
       </div>
     {/if}
 
     <!-- Picking phase — deux côtés -->
-    {#if state.phase === 'picking' && !resolving}
+    {#if gameState.phase === 'picking' && !resolving}
       <div class="picking-arena">
 
         <!-- Côté Manifestants -->
-        <div class="side side-manif" class:picked={!!state.manifPick}>
+        <div class="side side-manif" class:picked={!!gameState.manifPick}>
           <div class="side-title">
             {#if soloMode && startSide === 'police'}
               <span class="ia-badge">IA</span>
@@ -287,10 +287,10 @@
             {#each manifActions as action}
               <button
                 class="action-btn manif-btn"
-                class:selected={state.manifPick === action.id}
-                class:disabled-btn={!!state.manifPick || (soloMode && startSide === 'police')}
+                class:selected={gameState.manifPick === action.id}
+                class:disabled-btn={!!gameState.manifPick || (soloMode && startSide === 'police')}
                 onclick={() => pickManif(action.id)}
-                disabled={!!state.manifPick || (soloMode && startSide === 'police')}
+                disabled={!!gameState.manifPick || (soloMode && startSide === 'police')}
               >
                 <span class="action-icon">{action.icon}</span>
                 <span class="action-label">{action.label}</span>
@@ -306,7 +306,7 @@
         </div>
 
         <!-- Côté Police -->
-        <div class="side side-police" class:picked={!!state.policePick}>
+        <div class="side side-police" class:picked={!!gameState.policePick}>
           <div class="side-title">
             🛡️ POLICE
             {#if soloMode && startSide === 'manif'}
@@ -317,10 +317,10 @@
             {#each policeActions as action}
               <button
                 class="action-btn police-btn"
-                class:selected={state.policePick === action.id}
-                class:disabled-btn={!!state.policePick || (soloMode && startSide === 'manif')}
+                class:selected={gameState.policePick === action.id}
+                class:disabled-btn={!!gameState.policePick || (soloMode && startSide === 'manif')}
                 onclick={() => pickPolice(action.id)}
-                disabled={!!state.policePick || (soloMode && startSide === 'manif')}
+                disabled={!!gameState.policePick || (soloMode && startSide === 'manif')}
               >
                 <span class="action-icon">{action.icon}</span>
                 <span class="action-label">{action.label}</span>
@@ -345,8 +345,8 @@
     {/if}
 
     <!-- Résultat final -->
-    {#if state.phase === 'ended' && outcomeData}
-      <div class="match-result outcome-{state.matchOutcome}">
+    {#if gameState.phase === 'ended' && outcomeData}
+      <div class="match-result outcome-{gameState.matchOutcome}">
         <div class="outcome-emoji">{outcomeData.emoji}</div>
         <h2>{outcomeData.title}</h2>
         <p class="outcome-sub">{outcomeData.subtitle}</p>
@@ -370,9 +370,9 @@
     {/if}
 
     <!-- Historique compact des rounds -->
-    {#if state.history.length > 0 && state.phase !== 'ended'}
+    {#if gameState.history.length > 0 && gameState.phase !== 'ended'}
       <div class="rounds-recap">
-        {#each state.history as r, i}
+        {#each gameState.history as r, i}
           <div class="recap-round">
             <span class="recap-num">R{i + 1}</span>
             <span class="recap-manif">{MANIF_ACTIONS.find(a => a.id === r.manifAction)?.icon}</span>

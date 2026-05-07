@@ -127,8 +127,11 @@
       etat += a.etat;
     }
 
-    /* Bonus posture si elle correspond au trait dominant. */
-    const postureDef = POSTURES.find(p => p.id === posture)!;
+    /* Bonus posture si elle correspond au trait dominant.
+       Argus IT B-IT7 : garde défensive — POSTURES[0] en fallback
+       si l'ID `posture` n'est pas reconnu (ne devrait pas arriver,
+       mais on évite le crash silencieux). */
+    const postureDef = POSTURES.find(p => p.id === posture) ?? POSTURES[0];
     const traitMatch = gs.dominantTrait === postureDef.trait;
     const postureBonus = traitMatch ? 5 : 0;
     militants += postureBonus;

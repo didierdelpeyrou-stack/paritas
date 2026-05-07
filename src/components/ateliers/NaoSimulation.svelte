@@ -31,13 +31,13 @@
   }: Props = $props();
 
   /* ── State ─────────────────────────────────────────────── */
-  let gameState = $state<NaoState>(startNaoSession());
+  let gameState: NaoState = $state(startNaoSession());
 
   // Mouvements locaux avant confirmation
-  let empAdj     = $state<ThemeAdjustments>(emptyAdjustments());
-  let empTactic  = $state<EmployeurTactic | null>(null);
-  let synPostures = $state<PostureMap>(defaultPostures());
-  let synTactic   = $state<SyndicatTactic | null>(null);
+  let empAdj: ThemeAdjustments = $state(emptyAdjustments());
+  let empTactic: EmployeurTactic | null = $state(null);
+  let synPostures: PostureMap = $state(defaultPostures());
+  let synTactic: SyndicatTactic | null = $state(null);
 
   // Hot-seat : qui a confirmé ?
   let empConfirmed = $state(false);

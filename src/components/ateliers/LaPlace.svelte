@@ -31,28 +31,28 @@
 
   const { onresolve, onskip, embedded = false }: Props = $props();
 
-  let state = $state<PlaceState>(startPlaceSession());
-  let lastNarrative = $state<string | null>(null);
+  let gameState: PlaceState = $state(startPlaceSession());
+  let lastNarrative: string | null = $state(null);
   let showNarrative = $state(false);
   let narrativeTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  const currentAct = $derived(getCurrentAct(state));
+  const currentAct = $derived(getCurrentAct(gameState));
   const outcomeData = $derived(
-    state.outcome ? OUTCOME_LABELS[state.outcome] : null
+    gameState.outcome ? OUTCOME_LABELS[gameState.outcome] : null
   );
   const effects = $derived(
-    state.outcome ? outcomeToV2Effects(state.outcome, state.history) : null
+    gameState.outcome ? outcomeToV2Effects(gameState.outcome, gameState.history) : null
   );
 
   // Pourcentage rempli de la jauge escalade
   const escaladeColor = $derived(
-    state.escalade < 40 ? '#b8860b'
-    : state.escalade < 70 ? '#c44a1a'
+    gameState.escalade < 40 ? '#b8860b'
+    : gameState.escalade < 70 ? '#c44a1a'
     : '#8b0000'
   );
 
   function choose(id: ActionId) {
-    if (state.phase === 'ended') return;
+    if (gameState.phase === 'ended') return;
 
     const action = currentAct.actions.find(a => a.id === id);
     if (!action) return;
@@ -63,11 +63,11 @@
 
     if (narrativeTimeout) clearTimeout(narrativeTimeout);
 
-    const nextState = applyAction(state, id);
+    const nextState = applyAction(gameState, id);
 
     // Délai court pour lire la narrative
     narrativeTimeout = setTimeout(() => {
-      state = nextState;
+      gameState = nextState;
       showNarrative = false;
       lastNarrative = null;
     }, 1800);
@@ -101,24 +101,24 @@
         <div class="gauge-track">
           <div
             class="gauge-fill escalade-fill"
-            style="width: {state.escalade}%; background: {escaladeColor}"
+            style="width: {gameState.escalade}%; background: {escaladeColor}"
           ></div>
         </div>
-        <span class="gauge-val">{state.escalade}</span>
+        <span class="gauge-val">{gameState.escalade}</span>
       </div>
       <div class="gauge-item">
         <span class="gauge-label">FOULE</span>
         <div class="gauge-track">
-          <div class="gauge-fill foule-fill" style="width: {state.foule}%"></div>
+          <div class="gauge-fill foule-fill" style="width: {gameState.foule}%"></div>
         </div>
-        <span class="gauge-val">{state.foule}</span>
+        <span class="gauge-val">{gameState.foule}</span>
       </div>
     </div>
 
     <!-- Silhouette scène -->
-    <div class="scene" class:police={currentAct.policePresent} class:high-tension={state.escalade >= 70}>
+    <div class="scene" class:police={currentAct.policePresent} class:high-tension={gameState.escalade >= 70}>
       <div class="crowd-silhouette">
-        {#each Array(Math.max(3, Math.round(state.foule / 10))) as _}
+        {#each Array(Math.max(3, Math.round(gameState.foule / 10))) as _}
           <span class="person">▮</span>
         {/each}
       </div>
@@ -130,9 +130,9 @@
     </div>
 
     <!-- Acte en cours -->
-    {#if state.phase === 'playing'}
+    {#if gameState.phase === 'playing'}
       <div class="act-block">
-        <div class="act-num">ACTE {state.act === 1 ? 'I' : state.act === 2 ? 'II' : 'III'}</div>
+        <div class="act-num">ACTE {gameState.act === 1 ? 'I' : gameState.act === 2 ? 'II' : 'III'}</div>
         <h2 class="act-title">{currentAct.title}</h2>
         <p class="act-setup">{currentAct.setup}</p>
       </div>
@@ -165,8 +165,8 @@
     {/if}
 
     <!-- Résultat final -->
-    {#if state.phase === 'ended' && outcomeData && effects}
-      <div class="result outcome-{state.outcome}">
+    {#if gameState.phase === 'ended' && outcomeData && effects}
+      <div class="result outcome-{gameState.outcome}">
         <div class="outcome-emoji">{outcomeData.emoji}</div>
         <h2 class="outcome-title">{outcomeData.title}</h2>
         <p class="outcome-body">{outcomeData.body}</p>
@@ -184,7 +184,7 @@
             Retourner au jeu →
           </button>
         {:else}
-          <button class="finish-btn" onclick={() => { state = startPlaceSession(); }}>
+          <button class="finish-btn" onclick={() => { gameState = startPlaceSession(); }}>
             Rejouer
           </button>
         {/if}
@@ -192,9 +192,9 @@
     {/if}
 
     <!-- Historique compact -->
-    {#if state.history.length > 0 && state.phase === 'playing'}
+    {#if gameState.history.length > 0 && gameState.phase === 'playing'}
       <div class="history-strip">
-        {#each state.history as entry}
+        {#each gameState.history as entry}
           <div class="history-dot" title="Acte {entry.act} — {entry.action}">
             {entry.action === 'tenir' ? '🪧' : entry.action === 'pousser' ? '✊' : entry.action === 'forcer' ? '⚡' : '↩'}
           </div>

@@ -25,8 +25,8 @@
     text: 'La table s\'ouvre. Chaque camp cherche encore ce qu\'il peut obtenir sans se perdre.'
   });
 
-  let finalReplay = $state<ReturnType<typeof buildMatignonReplay> | null>(null);
-  let learning = $state<MatignonLearningProfile | null>(null);
+  let finalReplay: ReturnType<typeof buildMatignonReplay> | null = $state(null);
+  let learning: MatignonLearningProfile | null = $state(null);
 
   function choose(id: MatignonMoveId) {
     session = applyMatignonMove(session, id);

@@ -26,15 +26,15 @@
   /* ============================================================
      State
      ============================================================ */
-  let state = $state<TableState>(startTableSession());
+  let gameState: TableState = $state(startTableSession());
   let resolving = $state(false);
   let showResult = $state(false);
-  let revealSalarieIcon = $state<string>('');
-  let revealPatronIcon  = $state<string>('');
+  let revealSalarieIcon: string = $state('');
+  let revealPatronIcon: string = $state('');
 
-  const phase = $derived(state.phase);
-  const zone  = $derived(state.zone);
-  const lastRound = $derived(state.history.at(-1) ?? null);
+  const phase = $derived(gameState.phase);
+  const zone  = $derived(gameState.zone);
+  const lastRound = $derived(gameState.history.at(-1) ?? null);
 
   /* IA : camp adverse simple */
   function aiPickSalarie(): SalarieMove {
@@ -42,7 +42,7 @@
       ancrer: zone < 45 ? 3 : 2,
       conceder: 1,
       mediatiser: zone < 50 ? 2 : 1,
-      consulter: state.salarieMoralBonus === 0 ? 2 : 1,
+      consulter: gameState.salarieMoralBonus === 0 ? 2 : 1,
       rompre: zone < 40 ? 3 : 1
     };
     return weightedRandom(weights) as SalarieMove;
@@ -53,7 +53,7 @@
       maintenir: zone > 55 ? 3 : 1,
       symbolique: 2,
       juridique: zone > 60 ? 2 : 1,
-      diviser: state.salarieMoralBonus > 0 ? 3 : 1,
+      diviser: gameState.salarieMoralBonus > 0 ? 3 : 1,
       suspendre: zone > 65 ? 3 : 1
     };
     return weightedRandom(weights) as PatronMove;
@@ -72,58 +72,58 @@
      ============================================================ */
   function chooseSalarie(move: SalarieMove) {
     if (phase !== 'picking') return;
-    if (state.salariePick) return;
-    state = pickTableMove(state, 'salarie', move);
+    if (gameState.salariePick) return;
+    gameState = pickTableMove(gameState, 'salarie', move);
     /* Mode solo IA patron */
-    if (startSide === 'salarie' && !state.patronPick) {
-      state = pickTableMove(state, 'patron', aiPickPatron());
+    if (startSide === 'salarie' && !gameState.patronPick) {
+      gameState = pickTableMove(gameState, 'patron', aiPickPatron());
     }
     tryResolve();
   }
 
   function choosePatron(move: PatronMove) {
     if (phase !== 'picking') return;
-    if (state.patronPick) return;
-    state = pickTableMove(state, 'patron', move);
+    if (gameState.patronPick) return;
+    gameState = pickTableMove(gameState, 'patron', move);
     /* Mode solo IA salarié */
-    if (startSide === 'patron' && !state.salariePick) {
-      state = pickTableMove(state, 'salarie', aiPickSalarie());
+    if (startSide === 'patron' && !gameState.salariePick) {
+      gameState = pickTableMove(gameState, 'salarie', aiPickSalarie());
     }
     tryResolve();
   }
 
   function tryResolve() {
-    if (!state.salariePick || !state.patronPick) return;
+    if (!gameState.salariePick || !gameState.patronPick) return;
     resolving = true;
     showResult = false;
 
     /* Capturer les icônes AVANT la résolution (qui efface les picks) */
-    revealSalarieIcon = SALARIE_MOVES.find(m => m.id === state.salariePick)?.icon ?? '';
-    revealPatronIcon  = PATRON_MOVES.find(m => m.id === state.patronPick)?.icon  ?? '';
+    revealSalarieIcon = SALARIE_MOVES.find(m => m.id === gameState.salariePick)?.icon ?? '';
+    revealPatronIcon  = PATRON_MOVES.find(m => m.id === gameState.patronPick)?.icon  ?? '';
 
     setTimeout(() => {
-      state = resolveTableRound(state);
+      gameState = resolveTableRound(gameState);
       resolving = false;
       showResult = true;
     }, 700);
   }
 
   function continueRound() {
-    if (state.phase === 'result') {
+    if (gameState.phase === 'result') {
       showResult = false;
-      state = nextTableRound(state);
-    } else if (state.phase === 'ended') {
+      gameState = nextTableRound(gameState);
+    } else if (gameState.phase === 'ended') {
       handleEnd();
     }
   }
 
   function handleEnd() {
-    if (onresolve && state.matchOutcome) {
-      onresolve(tableOutcomeToV2Effects(state.matchOutcome));
+    if (onresolve && gameState.matchOutcome) {
+      onresolve(tableOutcomeToV2Effects(gameState.matchOutcome));
     }
   }
 
-  function restart() { state = startTableSession(); showResult = false; resolving = false; }
+  function restart() { gameState = startTableSession(); showResult = false; resolving = false; }
 
   /* Zone labels */
   const zoneColor = $derived(zone >= 65 ? '#C9A84C' : zone <= 34 ? '#EF4444' : '#9ca3af');
@@ -151,7 +151,7 @@
         <span class="atelier-tag">Atelier PARITAS</span>
         <h1 class="atelier-title">⚖️ La Table</h1>
       </div>
-      <div class="round-badge">Round {state.round}/3</div>
+      <div class="round-badge">Round {gameState.round}/3</div>
       {#if onskip}
         <button class="skip-btn" onclick={onskip}>Passer →</button>
       {/if}
@@ -171,11 +171,11 @@
   </div>
   <div class="zone-center-label" style="color: {zoneColor}">
     {tableZoneLabel(zone)} — {zone}
-    {#if state.salarieMoralBonus > 0}
-      <span class="bonus-badge">🗣️+{state.salarieMoralBonus}</span>
+    {#if gameState.salarieMoralBonus > 0}
+      <span class="bonus-badge">🗣️+{gameState.salarieMoralBonus}</span>
     {/if}
-    {#if state.patronJuridiqueBonus > 0}
-      <span class="bonus-badge patron">⚖️+{state.patronJuridiqueBonus}</span>
+    {#if gameState.patronJuridiqueBonus > 0}
+      <span class="bonus-badge patron">⚖️+{gameState.patronJuridiqueBonus}</span>
     {/if}
   </div>
 
@@ -208,12 +208,12 @@
             {SALARIE_MOVES.find(m => m.id === lastRound.salarieMove)?.icon}
             {SALARIE_MOVES.find(m => m.id === lastRound.salarieMove)?.label}
           </div>
-        {:else if state.salariePick}
+        {:else if gameState.salariePick}
           <div class="pick-badge badge-salarie locked" in:fade={{ duration: 150 }}>✓ Choix verrouillé</div>
         {/if}
 
         <!-- Actions -->
-        {#if phase === 'picking' && !state.salariePick && startSide !== 'patron'}
+        {#if phase === 'picking' && !gameState.salariePick && startSide !== 'patron'}
           <div class="action-grid" in:fade={{ duration: 150 }}>
             {#each SALARIE_MOVES as move}
               <button
@@ -249,7 +249,7 @@
             </div>
             {#if phase === 'result'}
               <button class="continue-btn" onclick={continueRound}>
-                Round {state.round} → Continuer
+                Round {gameState.round} → Continuer
               </button>
             {/if}
           </div>
@@ -298,11 +298,11 @@
             {PATRON_MOVES.find(m => m.id === lastRound.patronMove)?.icon}
             {PATRON_MOVES.find(m => m.id === lastRound.patronMove)?.label}
           </div>
-        {:else if state.patronPick}
+        {:else if gameState.patronPick}
           <div class="pick-badge badge-patron locked" in:fade={{ duration: 150 }}>✓ Choix verrouillé</div>
         {/if}
 
-        {#if phase === 'picking' && !state.patronPick && startSide !== 'salarie'}
+        {#if phase === 'picking' && !gameState.patronPick && startSide !== 'salarie'}
           <div class="action-grid" in:fade={{ duration: 150 }}>
             {#each PATRON_MOVES as move}
               <button
@@ -322,8 +322,8 @@
 
   {:else}
     <!-- FIN DE MATCH -->
-    {#if state.matchOutcome}
-      {@const ol = outcomeLabel(state.matchOutcome)}
+    {#if gameState.matchOutcome}
+      {@const ol = outcomeLabel(gameState.matchOutcome)}
       <div class="outcome-screen" in:fade={{ duration: 400 }}>
         <div class="outcome-emoji">{ol?.emoji}</div>
         <h2 class="outcome-title">{ol?.title}</h2>
@@ -340,7 +340,7 @@
         </div>
         <!-- Historique -->
         <div class="history-strip">
-          {#each state.history as r}
+          {#each gameState.history as r}
             <div class="history-item">
               <span class="h-icon">{SALARIE_MOVES.find(m=>m.id===r.salarieMove)?.icon}</span>
               <span class="h-vs">vs</span>
@@ -352,7 +352,7 @@
           {/each}
         </div>
         <div class="outcome-actions">
-          {#if embedded && onresolve && state.matchOutcome}
+          {#if embedded && onresolve && gameState.matchOutcome}
             <button class="outcome-btn primary" onclick={handleEnd}>Appliquer les effets →</button>
           {/if}
           <button class="outcome-btn secondary" onclick={restart}>Rejouer</button>

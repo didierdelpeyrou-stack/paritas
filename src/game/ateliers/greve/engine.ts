@@ -308,8 +308,12 @@ export function resolveGreveRound(state: GreveState): GreveState {
     };
   }
 
-  const salarieDef = SALARIE_GREVE_MOVES.find(a => a.id === salariePick)!;
-  const patronDef = PATRON_GREVE_MOVES.find(a => a.id === patronPick)!;
+  /* Argus IT B-IT7 : garde défensive (fail-fast). */
+  const salarieDef = SALARIE_GREVE_MOVES.find(a => a.id === salariePick);
+  const patronDef = PATRON_GREVE_MOVES.find(a => a.id === patronPick);
+  if (!salarieDef || !patronDef) {
+    throw new Error(`Grève: invalid move (salarie=${salariePick}, patron=${patronPick})`);
+  }
 
   /* Calcul brut */
   let dSol = salarieDef.dSolidarite + patronDef.dSolidarite;

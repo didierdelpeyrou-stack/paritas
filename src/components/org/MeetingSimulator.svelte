@@ -146,7 +146,11 @@
 
     /* Le sloganBonus et le postureBonus sont déjà inclus dans `militants`
        et `opinion` ci-dessus — on ne les ré-ajoute pas. */
-    const baseScore = 35 + (militants + opinion) * 1.4;
+    /* B4 fix (audit Argus) : plancher à 35 rendait l'échec (score<30) quasi-
+       impossible même avec de mauvais arguments. Abaissé à 8 pour que les
+       mauvais choix produisent de vrais résultats négatifs. Le plafond reste
+       calculé dynamiquement — un meeting excellent peut dépasser 80. */
+    const baseScore = 8 + (militants + opinion) * 1.4;
 
     /* Modulation par les ressources globales : Confiance, Légitimité,
        Caisse alimentent le meeting (cf. resourceUtility). Centré 1.0,
@@ -207,9 +211,13 @@
   }
 
   function reset() {
+    /* B5 fix (audit Argus) : reset() ne réinitialisait pas theme ni posture,
+       qui restaient de la session précédente, biaisant subtilement les reprises. */
     result = null;
     slogan = '';
     selectedArgs = [];
+    theme = 'salaires';
+    posture = 'mesuree';
   }
 </script>
 

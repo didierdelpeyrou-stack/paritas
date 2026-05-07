@@ -197,7 +197,14 @@
   }
 
   function formatFoule(n: number): string {
-    if (n >= 100_000) return `${Math.round(n / 1000)} 000`;
+    /* B3 fix (audit Argus) : branche 100k était identique à la branche 10k.
+       Désormais : 100k+ → "X00 000" avec centaines de milliers arrondi.
+       10k-99k  → "XX 000"
+       1k-9k    → "X,Y 000" ou "X 000" */
+    if (n >= 100_000) {
+      const cent = Math.round(n / 10_000);
+      return `${cent * 10} 000`;
+    }
     if (n >= 10_000) return `${Math.round(n / 1000)} 000`;
     if (n >= 1000) {
       const milliers = Math.floor(n / 1000);

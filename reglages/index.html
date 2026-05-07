@@ -15,15 +15,19 @@
   <script>
     (function() {
       try {
-        var p = JSON.parse(localStorage.getItem('paritas-a11y-prefs') || '{}');
         var r = document.documentElement;
-        if (p.contrast)      r.dataset.a11yContrast     = p.contrast;
-        if (p.fontFamily)    r.dataset.a11yFontFamily   = p.fontFamily;
-        if (p.colorBlind)    r.dataset.a11yColorBlind   = p.colorBlind;
+        var p = JSON.parse(localStorage.getItem('paritas-a11y-prefs') || '{}');
+        if (p.contrast)      r.dataset.a11yContrast      = p.contrast;
+        if (p.fontFamily && p.fontFamily !== 'standard') r.dataset.a11yFontFamily = p.fontFamily;
+        if (p.colorBlind && p.colorBlind !== 'none')     r.dataset.a11yColorBlind = p.colorBlind;
         if (p.reducedMotion) r.dataset.a11yReducedMotion = 'true';
         if (p.focus === 'enhanced') r.dataset.a11yFocus  = 'enhanced';
         if (p.falc)          r.dataset.a11yFalc          = 'true';
         if (p.fontSize)      r.style.setProperty('--a11y-font-scale', String(p.fontSize));
+        var g = JSON.parse(localStorage.getItem('paritas-game-prefs') || '{}');
+        if (g.mode === 'jour')  r.dataset.gameMode      = 'jour';
+        if (g.density && g.density !== 'standard') r.dataset.gameDensity = g.density;
+        if (g.panelSide === 'gauche') r.dataset.gamePanelSide = 'gauche';
       } catch(e) {}
     })();
   </script>
@@ -402,6 +406,118 @@
     }
     footer a { color: var(--text-soft); }
 
+    /* SUB-TITLE pour groupes intra-section */
+    .sub-title {
+      font-family: var(--body);
+      font-weight: 600;
+      font-size: 0.85rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-mute);
+      margin: 1.5rem 0 0.6rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .sub-title:first-of-type { margin-top: 0.5rem; }
+
+    /* SECTION DIVIDER entre A11Y et JEU */
+    .section-divider {
+      display: flex; align-items: center;
+      margin: 3rem 0 1.5rem;
+      gap: 1rem;
+    }
+    .section-divider::before,
+    .section-divider::after {
+      content: ''; flex: 1;
+      height: 1px; background: var(--line);
+    }
+    .section-divider span {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+    }
+
+    /* TOC — navigation rapide */
+    .toc {
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .toc-title {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-mute);
+      margin-bottom: 0.6rem;
+    }
+    .toc-list {
+      display: flex; flex-wrap: wrap; gap: 0.4rem;
+      list-style: none; padding: 0; margin: 0;
+    }
+    .toc-link {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      padding: 0.35rem 0.65rem;
+      background: var(--bg-3);
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      text-decoration: none;
+    }
+    .toc-link:hover { border-color: var(--accent); color: var(--accent); }
+    .toc-num {
+      font-family: var(--mono); font-weight: 600;
+      color: var(--accent); font-size: 0.7rem;
+    }
+    .toc-group {
+      width: 100%;
+      font-family: var(--mono); font-size: 0.7rem;
+      color: var(--text-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin: 0.5rem 0 0.2rem;
+    }
+
+    /* DATA ACTIONS (sauvegarde) */
+    .data-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.5rem; }
+    .btn-data {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.65rem 1rem;
+      font-family: inherit; font-size: 0.85rem; font-weight: 600;
+      background: var(--bg-3); color: var(--text);
+      border: 1px solid var(--line); border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-data:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-import { cursor: pointer; }
+    .btn-danger { color: var(--err); border-color: rgba(248,113,113,0.3); }
+    .btn-danger:hover { background: rgba(248,113,113,0.1); border-color: var(--err); color: var(--err); }
+
+    /* DENSITÉ — appliqué via data-attr */
+    :root[data-game-density="compact"]  section.setting-block { padding: 1rem 1.25rem; }
+    :root[data-game-density="compact"]  .block-help { font-size: 0.85rem; margin-bottom: 0.75rem; }
+    :root[data-game-density="aere"]     section.setting-block { padding: 2rem 2.25rem; }
+    :root[data-game-density="aere"]     .block-help { font-size: 1.02rem; margin-bottom: 1.5rem; line-height: 1.7; }
+
+    /* MODE JOUR (alternative au noir par défaut) */
+    :root[data-game-mode="jour"] {
+      --bg-deep: #f5f3ee;
+      --bg:      #fafaf7;
+      --bg-2:    #ffffff;
+      --bg-3:    #ecebe5;
+      --line:    #d8d3c4;
+      --text:    #1a1f2c;
+      --text-soft: #3c4859;
+      --text-mute: #5e6c7e;
+      --accent:  #8a6938;
+      --accent-2: #a07c44;
+    }
+
     /* ─────────────────────────────────────────────────
        PRINT
     ───────────────────────────────────────────────── */
@@ -482,9 +598,35 @@
     </div>
 
     <!-- ════════════════════════════════════════════
+         TABLE DES MATIÈRES
+         ════════════════════════════════════════════ -->
+    <nav class="toc" aria-label="Sommaire des réglages">
+      <div class="toc-title">Sommaire — 15 sections</div>
+      <ul class="toc-list">
+        <li class="toc-group">▣ Accessibilité</li>
+        <li><a class="toc-link" href="#sec-01"><span class="toc-num">01</span> Contraste</a></li>
+        <li><a class="toc-link" href="#sec-02"><span class="toc-num">02</span> Texte</a></li>
+        <li><a class="toc-link" href="#sec-03"><span class="toc-num">03</span> Daltonisme</a></li>
+        <li><a class="toc-link" href="#sec-04"><span class="toc-num">04</span> Mouvement</a></li>
+        <li><a class="toc-link" href="#sec-05"><span class="toc-num">05</span> Clavier</a></li>
+        <li><a class="toc-link" href="#sec-06"><span class="toc-num">06</span> FALC</a></li>
+        <li><a class="toc-link" href="#sec-07"><span class="toc-num">07</span> Sous-titres</a></li>
+        <li class="toc-group">▣ Jeu</li>
+        <li><a class="toc-link" href="#sec-08"><span class="toc-num">08</span> Visuel & UI</a></li>
+        <li><a class="toc-link" href="#sec-09"><span class="toc-num">09</span> Son</a></li>
+        <li><a class="toc-link" href="#sec-10"><span class="toc-num">10</span> Narration</a></li>
+        <li><a class="toc-link" href="#sec-11"><span class="toc-num">11</span> Difficulté</a></li>
+        <li><a class="toc-link" href="#sec-12"><span class="toc-num">12</span> Pédagogie</a></li>
+        <li><a class="toc-link" href="#sec-13"><span class="toc-num">13</span> Partie</a></li>
+        <li><a class="toc-link" href="#sec-14"><span class="toc-num">14</span> Sauvegarde</a></li>
+        <li><a class="toc-link" href="#sec-15"><span class="toc-num">15</span> Confidentialité</a></li>
+      </ul>
+    </nav>
+
+    <!-- ════════════════════════════════════════════
          SECTION 1 — VUE / CONTRASTE
          ════════════════════════════════════════════ -->
-    <section class="setting-block" aria-labelledby="s1-title">
+    <section class="setting-block" aria-labelledby="s1-title" id="sec-01">
       <div class="block-head">
         <span class="block-num">01</span>
         <h2 class="block-title" id="s1-title">Vue & contraste</h2>
@@ -513,7 +655,7 @@
     <!-- ════════════════════════════════════════════
          SECTION 2 — TEXTE
          ════════════════════════════════════════════ -->
-    <section class="setting-block" aria-labelledby="s2-title">
+    <section class="setting-block" aria-labelledby="s2-title" id="sec-02">
       <div class="block-head">
         <span class="block-num">02</span>
         <h2 class="block-title" id="s2-title">Texte</h2>
@@ -555,7 +697,7 @@
     <!-- ════════════════════════════════════════════
          SECTION 3 — DALTONISME
          ════════════════════════════════════════════ -->
-    <section class="setting-block" aria-labelledby="s3-title">
+    <section class="setting-block" aria-labelledby="s3-title" id="sec-03">
       <div class="block-head">
         <span class="block-num">03</span>
         <h2 class="block-title" id="s3-title">Couleur & daltonisme</h2>
@@ -591,7 +733,7 @@
     <!-- ════════════════════════════════════════════
          SECTION 4 — MOUVEMENT
          ════════════════════════════════════════════ -->
-    <section class="setting-block" aria-labelledby="s4-title">
+    <section class="setting-block" aria-labelledby="s4-title" id="sec-04">
       <div class="block-head">
         <span class="block-num">04</span>
         <h2 class="block-title" id="s4-title">Mouvement & animations</h2>
@@ -616,7 +758,7 @@
     <!-- ════════════════════════════════════════════
          SECTION 5 — NAVIGATION CLAVIER
          ════════════════════════════════════════════ -->
-    <section class="setting-block" aria-labelledby="s5-title">
+    <section class="setting-block" aria-labelledby="s5-title" id="sec-05">
       <div class="block-head">
         <span class="block-num">05</span>
         <h2 class="block-title" id="s5-title">Navigation au clavier</h2>
@@ -638,7 +780,7 @@
     <!-- ════════════════════════════════════════════
          SECTION 6 — LECTURE FACILE (FALC)
          ════════════════════════════════════════════ -->
-    <section class="setting-block" aria-labelledby="s6-title">
+    <section class="setting-block" aria-labelledby="s6-title" id="sec-06">
       <div class="block-head">
         <span class="block-num">06</span>
         <h2 class="block-title" id="s6-title">Lecture facile</h2>
@@ -659,7 +801,7 @@
     <!-- ════════════════════════════════════════════
          SECTION 7 — AUDIO & SOUS-TITRES
          ════════════════════════════════════════════ -->
-    <section class="setting-block" aria-labelledby="s7-title">
+    <section class="setting-block" aria-labelledby="s7-title" id="sec-07">
       <div class="block-head">
         <span class="block-num">07</span>
         <h2 class="block-title" id="s7-title">Audio & sous-titres</h2>
@@ -681,6 +823,429 @@
           <span><strong>Couper tout le son</strong><small>Le jeu reste pleinement jouable en silence</small></span>
         </label>
       </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════
+         ━━━━ SECTION B — RÉGLAGES DE JEU ━━━━
+         (08 → 15 : visuel, son, narration, difficulté, pédagogie,
+          partie, sauvegarde, confidentialité)
+         ════════════════════════════════════════════════════════ -->
+
+    <div class="section-divider" role="separator" aria-orientation="horizontal">
+      <span>RÉGLAGES DE JEU</span>
+    </div>
+
+    <!-- ════════════════════════════════════════════
+         SECTION 8 — MODE VISUEL & INTERFACE
+         ════════════════════════════════════════════ -->
+    <section class="setting-block" aria-labelledby="s8-title" id="sec-08">
+      <div class="block-head">
+        <span class="block-num">08</span>
+        <h2 class="block-title" id="s8-title">Mode visuel & interface</h2>
+      </div>
+      <p class="block-help">
+        Apparence générale, densité d'information à l'écran, et orientation
+        des panneaux. Utile pour les jeux longs en session prolongée.
+      </p>
+
+      <h3 class="sub-title">Mode</h3>
+      <div class="radio-grid" role="radiogroup" aria-label="Mode visuel jour/nuit">
+        <label class="radio-card">
+          <input type="radio" name="mode" value="auto" checked />
+          <span><strong>Automatique</strong><small>Suit le système</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="mode" value="nuit" />
+          <span><strong>Nuit</strong><small>Sombre · par défaut PARITAS</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="mode" value="jour" />
+          <span><strong>Jour</strong><small>Clair · plus de luminosité</small></span>
+        </label>
+      </div>
+
+      <h3 class="sub-title">Densité d'interface</h3>
+      <div class="radio-grid" role="radiogroup" aria-label="Densité d'interface">
+        <label class="radio-card">
+          <input type="radio" name="density" value="compact" />
+          <span><strong>Compact</strong><small>Plus d'info à l'écran</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="density" value="standard" checked />
+          <span><strong>Standard</strong><small>Équilibre par défaut</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="density" value="aere" />
+          <span><strong>Aéré</strong><small>Plus d'espace, moins de fatigue</small></span>
+        </label>
+      </div>
+
+      <h3 class="sub-title">Côté des panneaux</h3>
+      <div class="radio-grid" role="radiogroup" aria-label="Côté des panneaux d'action">
+        <label class="radio-card">
+          <input type="radio" name="panelSide" value="droite" checked />
+          <span><strong>Droite</strong><small>Standard droitier</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="panelSide" value="gauche" />
+          <span><strong>Gauche</strong><small>Adapté gaucher</small></span>
+        </label>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════
+         SECTION 9 — SON
+         ════════════════════════════════════════════ -->
+    <section class="setting-block" aria-labelledby="s9-title" id="sec-09">
+      <div class="block-head">
+        <span class="block-num">09</span>
+        <h2 class="block-title" id="s9-title">Son & musique</h2>
+      </div>
+      <p class="block-help">
+        Volume des différentes pistes audio. PARITAS reste pleinement
+        jouable son coupé.
+      </p>
+
+      <div class="slider-row">
+        <label for="audio-master">Volume principal</label>
+        <input type="range" id="audio-master" name="audioMaster"
+               min="0" max="100" step="5" value="80"
+               aria-valuemin="0" aria-valuemax="100" aria-valuenow="80" />
+        <span class="slider-value" aria-live="polite" id="audio-master-display">80 %</span>
+      </div>
+      <div class="slider-row">
+        <label for="audio-music">Musique d'ambiance</label>
+        <input type="range" id="audio-music" name="audioMusic"
+               min="0" max="100" step="5" value="60" />
+        <span class="slider-value" id="audio-music-display">60 %</span>
+      </div>
+      <div class="slider-row">
+        <label for="audio-voice">Voix off</label>
+        <input type="range" id="audio-voice" name="audioVoice"
+               min="0" max="100" step="5" value="85" />
+        <span class="slider-value" id="audio-voice-display">85 %</span>
+      </div>
+      <div class="slider-row">
+        <label for="audio-effects">Effets sonores</label>
+        <input type="range" id="audio-effects" name="audioEffects"
+               min="0" max="100" step="5" value="70" />
+        <span class="slider-value" id="audio-effects-display">70 %</span>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════
+         SECTION 10 — NARRATION & TEXTE
+         ════════════════════════════════════════════ -->
+    <section class="setting-block" aria-labelledby="s10-title" id="sec-10">
+      <div class="block-head">
+        <span class="block-num">10</span>
+        <h2 class="block-title" id="s10-title">Narration & texte</h2>
+      </div>
+      <p class="block-help">
+        Vitesse d'apparition du texte narratif et comportement des transitions.
+        Utile pour les lecteurs rapides — ou ceux qui prennent leur temps.
+      </p>
+
+      <h3 class="sub-title">Vitesse de défilement</h3>
+      <div class="radio-grid" role="radiogroup" aria-label="Vitesse de défilement du texte">
+        <label class="radio-card">
+          <input type="radio" name="textSpeed" value="lent" />
+          <span><strong>Lent</strong><small>~ 18 mots/seconde</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="textSpeed" value="normal" checked />
+          <span><strong>Normal</strong><small>~ 35 mots/seconde</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="textSpeed" value="rapide" />
+          <span><strong>Rapide</strong><small>~ 60 mots/seconde</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="textSpeed" value="instantane" />
+          <span><strong>Instantané</strong><small>Affichage immédiat</small></span>
+        </label>
+      </div>
+
+      <h3 class="sub-title">Comportements</h3>
+      <div class="check-grid">
+        <label class="check-card">
+          <input type="checkbox" name="autoAdvance" value="true" />
+          <span><strong>Avance automatique</strong><small>Pas besoin de cliquer après chaque ligne</small></span>
+        </label>
+        <label class="check-card">
+          <input type="checkbox" name="skipAnimations" value="true" />
+          <span><strong>Sauter les animations narratives</strong><small>Cinématiques d'introduction d'époque, transitions</small></span>
+        </label>
+        <label class="check-card">
+          <input type="checkbox" name="voiceAutoplay" value="true" checked />
+          <span><strong>Lecture vocale automatique</strong><small>Voix off déclenchée à l'arrivée du texte</small></span>
+        </label>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════
+         SECTION 11 — DIFFICULTÉ & ASSISTANCE
+         ════════════════════════════════════════════ -->
+    <section class="setting-block" aria-labelledby="s11-title" id="sec-11">
+      <div class="block-head">
+        <span class="block-num">11</span>
+        <h2 class="block-title" id="s11-title">Difficulté & assistance</h2>
+      </div>
+      <p class="block-help">
+        Niveau de défi des IA adversariales et niveau d'aide proposé en jeu.
+        La difficulté <em>Découverte</em> est recommandée pour la première partie.
+      </p>
+
+      <h3 class="sub-title">Niveau de difficulté</h3>
+      <div class="radio-grid" role="radiogroup" aria-label="Niveau de difficulté">
+        <label class="radio-card">
+          <input type="radio" name="difficulty" value="decouverte" />
+          <span><strong>Découverte</strong><small>IA conciliantes · feedback détaillé</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="difficulty" value="normal" checked />
+          <span><strong>Normal</strong><small>IA équilibrées · expérience par défaut</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="difficulty" value="difficile" />
+          <span><strong>Difficile</strong><small>IA agressives · marges réduites</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="difficulty" value="expert" />
+          <span><strong>Expert</strong><small>IA optimales · aucune marge</small></span>
+        </label>
+      </div>
+
+      <h3 class="sub-title">Tutoriels &amp; aides</h3>
+      <div class="radio-grid" role="radiogroup" aria-label="Comportement des tutoriels">
+        <label class="radio-card">
+          <input type="radio" name="tutorials" value="toujours" checked />
+          <span><strong>Toujours</strong><small>Affichés à chaque nouvelle mécanique</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="tutorials" value="demande" />
+          <span><strong>À la demande</strong><small>Bouton « ? » accessible quand voulu</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="tutorials" value="desactives" />
+          <span><strong>Désactivés</strong><small>Aucune aide proactive</small></span>
+        </label>
+      </div>
+
+      <div class="check-grid" style="margin-top: 1rem;">
+        <label class="check-card">
+          <input type="checkbox" name="confirmActions" value="true" checked />
+          <span><strong>Confirmer les actions critiques</strong><small>Vendre un local, signer un accord, déclarer une grève</small></span>
+        </label>
+        <label class="check-card">
+          <input type="checkbox" name="errorHints" value="true" checked />
+          <span><strong>Indicateurs visuels d'erreur</strong><small>Surligner les choix sous-optimaux</small></span>
+        </label>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════
+         SECTION 12 — AIDES PÉDAGOGIQUES
+         ════════════════════════════════════════════ -->
+    <section class="setting-block" aria-labelledby="s12-title" id="sec-12">
+      <div class="block-head">
+        <span class="block-num">12</span>
+        <h2 class="block-title" id="s12-title">Aides pédagogiques</h2>
+      </div>
+      <p class="block-help">
+        PARITAS est un jeu sérieux. Ces réglages contrôlent la profondeur
+        d'explication des concepts (BATNA, électoralité, ZOPA, paritarisme…).
+      </p>
+
+      <h3 class="sub-title">Niveau de vocabulaire</h3>
+      <div class="radio-grid" role="radiogroup" aria-label="Niveau de vocabulaire">
+        <label class="radio-card">
+          <input type="radio" name="vocabularyLevel" value="novice" />
+          <span><strong>Novice</strong><small>Tout est expliqué simplement</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="vocabularyLevel" value="initie" checked />
+          <span><strong>Initié</strong><small>Vocabulaire courant · explication des termes techniques</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="vocabularyLevel" value="confirme" />
+          <span><strong>Confirmé</strong><small>Vocabulaire métier sans explication</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="vocabularyLevel" value="expert" />
+          <span><strong>Expert</strong><small>Références juridiques in extenso</small></span>
+        </label>
+      </div>
+
+      <h3 class="sub-title">Sources historiques</h3>
+      <div class="radio-grid" role="radiogroup" aria-label="Affichage des sources historiques">
+        <label class="radio-card">
+          <input type="radio" name="historicalSources" value="actives" />
+          <span><strong>Actives</strong><small>Notes en marge sur chaque référence</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="historicalSources" value="discretes" checked />
+          <span><strong>Discrètes</strong><small>Lien « source » sur clic</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="historicalSources" value="cachees" />
+          <span><strong>Cachées</strong><small>Aucune référence visible</small></span>
+        </label>
+      </div>
+
+      <div class="check-grid" style="margin-top: 1rem;">
+        <label class="check-card">
+          <input type="checkbox" name="glossary" value="true" checked />
+          <span><strong>Glossaire au survol</strong><small>Définition au passage de souris sur les termes-clés</small></span>
+        </label>
+        <label class="check-card">
+          <input type="checkbox" name="schoolMode" value="true" />
+          <span><strong>Mode école</strong><small>Pour usage en classe : verrouille certaines fonctions, mode partagé</small></span>
+        </label>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════
+         SECTION 13 — PRÉFÉRENCES DE PARTIE
+         ════════════════════════════════════════════ -->
+    <section class="setting-block" aria-labelledby="s13-title" id="sec-13">
+      <div class="block-head">
+        <span class="block-num">13</span>
+        <h2 class="block-title" id="s13-title">Préférences de partie</h2>
+      </div>
+      <p class="block-help">
+        Réglages appliqués à la création d'une nouvelle partie.
+        Les parties en cours ne sont pas affectées.
+      </p>
+
+      <h3 class="sub-title">Camp par défaut</h3>
+      <div class="radio-grid" role="radiogroup" aria-label="Camp préféré">
+        <label class="radio-card">
+          <input type="radio" name="defaultCamp" value="demander" checked />
+          <span><strong>Demander à chaque fois</strong><small>Choix conscient au démarrage</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="defaultCamp" value="salarie" />
+          <span><strong>Salarié</strong><small>Côté syndicat / délégué</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="defaultCamp" value="patron" />
+          <span><strong>Patron</strong><small>Côté direction / employeur</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="defaultCamp" value="aleatoire" />
+          <span><strong>Aléatoire</strong><small>Le jeu choisit pour vous</small></span>
+        </label>
+      </div>
+
+      <h3 class="sub-title">Période préférée</h3>
+      <div class="radio-grid" role="radiogroup" aria-label="Période historique préférée">
+        <label class="radio-card">
+          <input type="radio" name="preferredPeriod" value="aleatoire" checked />
+          <span><strong>Aléatoire</strong><small>Tirage à la création</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="preferredPeriod" value="belle-epoque" />
+          <span><strong>Belle Époque</strong><small>1900-1914</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="preferredPeriod" value="annees-30" />
+          <span><strong>Années 30</strong><small>1930-1940 · accords Matignon</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="preferredPeriod" value="trente-glorieuses" />
+          <span><strong>Trente Glorieuses</strong><small>1945-1975</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="preferredPeriod" value="contemporain" />
+          <span><strong>Contemporain</strong><small>1980-2026</small></span>
+        </label>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════
+         SECTION 14 — SAUVEGARDE & DONNÉES
+         ════════════════════════════════════════════ -->
+    <section class="setting-block" aria-labelledby="s14-title" id="sec-14">
+      <div class="block-head">
+        <span class="block-num">14</span>
+        <h2 class="block-title" id="s14-title">Sauvegarde & données</h2>
+      </div>
+      <p class="block-help">
+        Toutes les sauvegardes sont stockées <strong>localement dans votre
+        navigateur</strong>. Aucun envoi sur Internet, aucun compte requis.
+      </p>
+
+      <h3 class="sub-title">Sauvegarde automatique</h3>
+      <div class="radio-grid" role="radiogroup" aria-label="Fréquence de sauvegarde automatique">
+        <label class="radio-card">
+          <input type="radio" name="autoSave" value="chaque-tour" />
+          <span><strong>À chaque tour</strong><small>Sécurité maximale</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="autoSave" value="5min" checked />
+          <span><strong>Toutes les 5 min</strong><small>Recommandé</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="autoSave" value="15min" />
+          <span><strong>Toutes les 15 min</strong><small>Discrète</small></span>
+        </label>
+        <label class="radio-card">
+          <input type="radio" name="autoSave" value="desactive" />
+          <span><strong>Désactivée</strong><small>Sauvegarde manuelle uniquement</small></span>
+        </label>
+      </div>
+
+      <h3 class="sub-title">Import / export</h3>
+      <div class="data-actions">
+        <button type="button" class="btn-data" id="btn-export">📥 Exporter mes données (JSON)</button>
+        <label class="btn-data btn-import">
+          📤 Importer un fichier
+          <input type="file" id="file-import" accept=".json,application/json" hidden />
+        </label>
+        <button type="button" class="btn-data btn-danger" id="btn-erase-all">⚠ Effacer toutes mes données</button>
+      </div>
+      <p class="block-help" style="margin-top: 0.75rem; font-size: 0.82rem;">
+        L'export contient : préférences, parties sauvegardées, journaux locaux.
+        L'import remplace les données courantes (avec confirmation).
+        L'effacement est <strong>irréversible</strong>.
+      </p>
+    </section>
+
+    <!-- ════════════════════════════════════════════
+         SECTION 15 — CONFIDENTIALITÉ & TÉLÉMÉTRIE
+         ════════════════════════════════════════════ -->
+    <section class="setting-block" aria-labelledby="s15-title" id="sec-15">
+      <div class="block-head">
+        <span class="block-num">15</span>
+        <h2 class="block-title" id="s15-title">Confidentialité & télémétrie</h2>
+      </div>
+      <p class="block-help">
+        PARITAS ne collecte aucune donnée par défaut. Vous pouvez choisir
+        de partager des statistiques anonymes pour aider Argus à
+        identifier les bugs et déséquilibres.
+      </p>
+
+      <div class="check-grid">
+        <label class="check-card">
+          <input type="checkbox" name="telemetry" value="true" />
+          <span><strong>Télémétrie anonyme</strong><small>Outcomes de partie, durée des séances, jamais de contenu narratif. Désactivé par défaut.</small></span>
+        </label>
+        <label class="check-card">
+          <input type="checkbox" name="localLogs" value="true" checked />
+          <span><strong>Journaux de partie locaux</strong><small>Pour rejouer / analyser vos parties. Reste sur votre machine.</small></span>
+        </label>
+        <label class="check-card">
+          <input type="checkbox" name="crashReports" value="true" />
+          <span><strong>Rapports de crash anonymes</strong><small>Stack traces uniquement, jamais d'état de partie</small></span>
+        </label>
+      </div>
+
+      <p class="block-help" style="margin-top: 1rem; font-size: 0.82rem;">
+        <strong>Politique :</strong> les données télémétriques sont agrégées
+        et publiées en cycles ORDA (cf. doctrine Argus). Aucune donnée
+        nominative n'est collectée.
+      </p>
     </section>
 
     <!-- ════════════════════════════════════════════
@@ -728,59 +1293,122 @@
     (function() {
       'use strict';
 
-      const STORAGE_KEY = 'paritas-a11y-prefs';
+      // ── Deux clés de stockage : a11y (déjà utilisé partout) + game (nouveau)
+      const A11Y_KEY = 'paritas-a11y-prefs';
+      const GAME_KEY = 'paritas-game-prefs';
+
+      // ── Catégorisation des préférences par classe ──
+      const A11Y_RADIOS    = ['contrast', 'fontFamily', 'colorBlind'];
+      const A11Y_CHECKS    = ['reducedMotion', 'falc', 'captions', 'visualAudioCue', 'muteAll'];
+      const A11Y_TOGGLES   = ['focus'];   // focus → 'enhanced'/'default'
+      const A11Y_SLIDERS   = ['fontSize'];
+
+      const GAME_RADIOS = [
+        'mode', 'density', 'panelSide',
+        'textSpeed', 'difficulty', 'tutorials',
+        'vocabularyLevel', 'historicalSources',
+        'defaultCamp', 'preferredPeriod', 'autoSave'
+      ];
+      const GAME_CHECKS = [
+        'autoAdvance', 'skipAnimations', 'voiceAutoplay',
+        'confirmActions', 'errorHints',
+        'glossary', 'schoolMode',
+        'telemetry', 'localLogs', 'crashReports'
+      ];
+      const GAME_SLIDERS = ['audioMaster', 'audioMusic', 'audioVoice', 'audioEffects'];
+
+      // ── Valeurs par défaut ──
+      const DEFAULTS_A11Y = {
+        contrast: 'standard', fontFamily: 'standard', colorBlind: 'none',
+        reducedMotion: false, focus: 'default', falc: false,
+        captions: true, visualAudioCue: false, muteAll: false,
+        fontSize: 1
+      };
+      const DEFAULTS_GAME = {
+        mode: 'auto', density: 'standard', panelSide: 'droite',
+        textSpeed: 'normal',
+        autoAdvance: false, skipAnimations: false, voiceAutoplay: true,
+        difficulty: 'normal', tutorials: 'toujours',
+        confirmActions: true, errorHints: true,
+        vocabularyLevel: 'initie', historicalSources: 'discretes',
+        glossary: true, schoolMode: false,
+        defaultCamp: 'demander', preferredPeriod: 'aleatoire',
+        autoSave: '5min',
+        telemetry: false, localLogs: true, crashReports: false,
+        audioMaster: 80, audioMusic: 60, audioVoice: 85, audioEffects: 70
+      };
+
       const root = document.documentElement;
       const announcer = document.getElementById('announcer');
-      const fontPreview = document.getElementById('font-preview');
-      const fontSizeDisplay = document.getElementById('font-size-display');
 
-      // ── Charger l'état initial ──
-      function loadPrefs() {
-        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+      function loadKey(k) {
+        try { return JSON.parse(localStorage.getItem(k) || '{}'); }
         catch (e) { return {}; }
       }
-      function savePrefs(p) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
-      }
+      function saveKey(k, p) { localStorage.setItem(k, JSON.stringify(p)); }
 
-      // ── Appliquer une préférence au DOM ──
+      // ── Appliquer une pref au DOM (rendu visuel ou stockage runtime) ──
       function applyPref(key, value) {
         switch (key) {
-          case 'contrast':
-            root.dataset.a11yContrast = value || 'standard';
-            break;
+          // ─── A11Y rendering ───
+          case 'contrast':     root.dataset.a11yContrast = value || 'standard'; break;
           case 'fontFamily':
             if (value && value !== 'standard') root.dataset.a11yFontFamily = value;
-            else delete root.dataset.a11yFontFamily;
-            break;
+            else delete root.dataset.a11yFontFamily; break;
           case 'colorBlind':
             if (value && value !== 'none') root.dataset.a11yColorBlind = value;
-            else delete root.dataset.a11yColorBlind;
-            break;
+            else delete root.dataset.a11yColorBlind; break;
           case 'reducedMotion':
             if (value) root.dataset.a11yReducedMotion = 'true';
-            else delete root.dataset.a11yReducedMotion;
-            break;
+            else delete root.dataset.a11yReducedMotion; break;
           case 'focus':
             if (value === 'enhanced') root.dataset.a11yFocus = 'enhanced';
-            else delete root.dataset.a11yFocus;
-            break;
+            else delete root.dataset.a11yFocus; break;
           case 'falc':
             if (value) root.dataset.a11yFalc = 'true';
-            else delete root.dataset.a11yFalc;
-            break;
-          case 'fontSize':
+            else delete root.dataset.a11yFalc; break;
+          case 'fontSize': {
             root.style.setProperty('--a11y-font-scale', String(value));
-            if (fontSizeDisplay) {
-              fontSizeDisplay.textContent = Math.round(value * 100) + ' %';
-              const slider = document.getElementById('font-size');
-              if (slider) slider.setAttribute('aria-valuenow', String(Math.round(value * 100)));
+            const d = document.getElementById('font-size-display');
+            if (d) {
+              d.textContent = Math.round(value * 100) + ' %';
+              const sl = document.getElementById('font-size');
+              if (sl) sl.setAttribute('aria-valuenow', String(Math.round(value * 100)));
             }
             break;
+          }
+
+          // ─── GAME rendering ───
+          case 'mode':
+            if (value === 'jour') root.dataset.gameMode = 'jour';
+            else delete root.dataset.gameMode;
+            break;
+          case 'density':
+            if (value && value !== 'standard') root.dataset.gameDensity = value;
+            else delete root.dataset.gameDensity;
+            break;
+          case 'panelSide':
+            if (value === 'gauche') root.dataset.gamePanelSide = 'gauche';
+            else delete root.dataset.gamePanelSide;
+            break;
+          // Sliders audio — affichage du %
+          case 'audioMaster':
+          case 'audioMusic':
+          case 'audioVoice':
+          case 'audioEffects': {
+            const sliderId = key.replace('audio', 'audio-').toLowerCase();
+            const display = document.getElementById(sliderId + '-display');
+            if (display) display.textContent = Math.round(value) + ' %';
+            const input = document.getElementById(sliderId);
+            if (input) input.setAttribute('aria-valuenow', String(Math.round(value)));
+            break;
+          }
+          // Les autres prefs game (textSpeed, difficulty, tutorials, etc.)
+          // sont juste stockées et lues par le moteur du jeu — pas d'effet visuel ici.
         }
       }
 
-      // ── Annoncer aux lecteurs d'écran ──
+      // ── Annonces aux lecteurs d'écran ──
       let announceTimeout = null;
       function announce(msg) {
         if (!announcer) return;
@@ -790,125 +1418,223 @@
         announceTimeout = setTimeout(() => announcer.classList.remove('is-visible'), 2400);
       }
 
-      // ── Mettre à jour les états visuels des cartes radio/check ──
+      // ── États visuels des cartes radio/check ──
       function refreshRadioStates(name) {
-        const inputs = document.querySelectorAll('input[name="' + name + '"]');
-        inputs.forEach(input => {
+        document.querySelectorAll('input[name="' + name + '"]').forEach(input => {
           const card = input.closest('.radio-card, .check-card');
           if (!card) return;
-          if (input.type === 'radio') {
-            card.classList.toggle('is-selected', input.checked);
-          } else {
-            card.classList.toggle('is-checked', input.checked);
-          }
+          if (input.type === 'radio') card.classList.toggle('is-selected', input.checked);
+          else card.classList.toggle('is-checked', input.checked);
         });
       }
 
-      // ── Initialisation : appliquer les préférences stockées aux contrôles ──
+      // ── Initialiser tous les contrôles depuis le stockage ──
       function initFromStorage() {
-        const prefs = loadPrefs();
+        const a = loadKey(A11Y_KEY);
+        const g = loadKey(GAME_KEY);
 
-        // Radios
-        ['contrast', 'fontFamily', 'colorBlind'].forEach(name => {
-          const value = prefs[name];
-          if (value) {
-            const input = document.querySelector('input[name="' + name + '"][value="' + value + '"]');
-            if (input) input.checked = true;
-          }
+        // A11Y radios
+        A11Y_RADIOS.forEach(name => {
+          const v = a[name] !== undefined ? a[name] : DEFAULTS_A11Y[name];
+          const inp = document.querySelector('input[name="' + name + '"][value="' + v + '"]');
+          if (inp) inp.checked = true;
           refreshRadioStates(name);
+          applyPref(name, v);
         });
-
-        // Checkboxes
-        ['reducedMotion', 'focus', 'falc'].forEach(name => {
-          const value = prefs[name];
-          const input = document.querySelector('input[name="' + name + '"]');
-          if (input) {
-            input.checked = (name === 'focus') ? (value === 'enhanced') : !!value;
-          }
+        // A11Y checks
+        A11Y_CHECKS.forEach(name => {
+          const v = a[name] !== undefined ? a[name] : DEFAULTS_A11Y[name];
+          const inp = document.querySelector('input[name="' + name + '"]');
+          if (inp) inp.checked = !!v;
           refreshRadioStates(name);
+          applyPref(name, v);
         });
-
-        // Captions / mute (par défaut captions activés)
-        ['captions', 'visualAudioCue', 'muteAll'].forEach(name => {
-          const input = document.querySelector('input[name="' + name + '"]');
-          if (input && prefs[name] !== undefined) input.checked = !!prefs[name];
-          refreshRadioStates(name);
-        });
-
-        // Slider taille
-        if (prefs.fontSize) {
-          const slider = document.getElementById('font-size');
-          if (slider) slider.value = String(prefs.fontSize);
-          applyPref('fontSize', prefs.fontSize);
+        // A11Y focus toggle
+        {
+          const v = a.focus !== undefined ? a.focus : DEFAULTS_A11Y.focus;
+          const inp = document.querySelector('input[name="focus"]');
+          if (inp) inp.checked = (v === 'enhanced');
+          refreshRadioStates('focus');
+          applyPref('focus', v);
         }
+        // A11Y fontSize
+        {
+          const v = a.fontSize !== undefined ? a.fontSize : DEFAULTS_A11Y.fontSize;
+          const inp = document.getElementById('font-size');
+          if (inp) inp.value = String(v);
+          applyPref('fontSize', v);
+        }
+
+        // GAME radios
+        GAME_RADIOS.forEach(name => {
+          const v = g[name] !== undefined ? g[name] : DEFAULTS_GAME[name];
+          const inp = document.querySelector('input[name="' + name + '"][value="' + v + '"]');
+          if (inp) inp.checked = true;
+          refreshRadioStates(name);
+          applyPref(name, v);
+        });
+        // GAME checks
+        GAME_CHECKS.forEach(name => {
+          const v = g[name] !== undefined ? g[name] : DEFAULTS_GAME[name];
+          const inp = document.querySelector('input[name="' + name + '"]');
+          if (inp) inp.checked = !!v;
+          refreshRadioStates(name);
+        });
+        // GAME sliders
+        GAME_SLIDERS.forEach(name => {
+          const v = g[name] !== undefined ? g[name] : DEFAULTS_GAME[name];
+          const sliderId = name.replace('audio', 'audio-').toLowerCase();
+          const inp = document.getElementById(sliderId);
+          if (inp) inp.value = String(v);
+          applyPref(name, v);
+        });
       }
 
-      // ── Écouter les changements (preview en temps réel) ──
+      // ── Écouter tous les changements (live preview) ──
       document.addEventListener('change', function(e) {
         const t = e.target;
         if (!t.name) return;
-
-        const name = t.name;
         let value;
         if (t.type === 'radio') value = t.value;
-        else if (t.type === 'checkbox') value = t.checked ? (t.value === 'true' ? true : t.value) : false;
+        else if (t.type === 'checkbox') value = !!t.checked;
         else if (t.type === 'range') value = parseFloat(t.value);
         else value = t.value;
 
-        applyPref(name, value);
-        refreshRadioStates(name);
+        applyPref(t.name, value);
+        refreshRadioStates(t.name);
 
-        // Annoncer
         const card = t.closest('.radio-card, .check-card');
-        const labelText = card ? card.querySelector('strong').textContent : t.name;
-        announce('Modifié : ' + labelText + ' (cliquez Enregistrer pour conserver)');
+        const labelText = card ? (card.querySelector('strong') || {}).textContent || t.name : t.name;
+        announce('Modifié : ' + labelText);
       });
 
-      // Slider en input continu
-      const slider = document.getElementById('font-size');
-      if (slider) {
-        slider.addEventListener('input', function(e) {
-          applyPref('fontSize', parseFloat(e.target.value));
+      // Sliders en input continu (live)
+      ['font-size', 'audio-master', 'audio-music', 'audio-voice', 'audio-effects'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', function(e) {
+          const v = parseFloat(e.target.value);
+          applyPref(e.target.name, v);
         });
+      });
+
+      // ── Bouton ENREGISTRER ──
+      function collectInputs(names, type) {
+        const out = {};
+        names.forEach(name => {
+          if (type === 'radio') {
+            const c = document.querySelector('input[name="' + name + '"]:checked');
+            if (c) out[name] = c.value;
+          } else if (type === 'check') {
+            const i = document.querySelector('input[name="' + name + '"]');
+            if (i) out[name] = !!i.checked;
+          } else if (type === 'slider') {
+            const sliderId = name === 'fontSize' ? 'font-size' : name.replace('audio', 'audio-').toLowerCase();
+            const i = document.getElementById(sliderId);
+            if (i) out[name] = parseFloat(i.value);
+          }
+        });
+        return out;
       }
 
-      // ── Boutons enregistrer / réinitialiser ──
       document.getElementById('btn-save').addEventListener('click', function() {
-        const prefs = {};
-        ['contrast', 'fontFamily', 'colorBlind'].forEach(name => {
-          const checked = document.querySelector('input[name="' + name + '"]:checked');
-          if (checked) prefs[name] = checked.value;
-        });
-        ['reducedMotion', 'falc', 'captions', 'visualAudioCue', 'muteAll'].forEach(name => {
-          const input = document.querySelector('input[name="' + name + '"]');
-          if (input) prefs[name] = input.checked;
-        });
+        const a11y = Object.assign({},
+          collectInputs(A11Y_RADIOS, 'radio'),
+          collectInputs(A11Y_CHECKS, 'check'),
+          collectInputs(A11Y_SLIDERS, 'slider')
+        );
         const focusInput = document.querySelector('input[name="focus"]');
-        if (focusInput) prefs.focus = focusInput.checked ? 'enhanced' : 'default';
+        if (focusInput) a11y.focus = focusInput.checked ? 'enhanced' : 'default';
 
-        if (slider) prefs.fontSize = parseFloat(slider.value);
+        const game = Object.assign({},
+          collectInputs(GAME_RADIOS, 'radio'),
+          collectInputs(GAME_CHECKS, 'check'),
+          collectInputs(GAME_SLIDERS, 'slider')
+        );
 
-        savePrefs(prefs);
-        announce('✓ Préférences enregistrées');
+        saveKey(A11Y_KEY, a11y);
+        saveKey(GAME_KEY, game);
+        announce('✓ Préférences enregistrées (a11y + jeu)');
       });
 
+      // ── Bouton RÉINITIALISER ──
       document.getElementById('btn-reset').addEventListener('click', function() {
-        if (!confirm('Réinitialiser tous les réglages aux valeurs par défaut ?')) return;
-        localStorage.removeItem(STORAGE_KEY);
-        // Reset DOM
-        Object.keys(root.dataset).filter(k => k.startsWith('a11y')).forEach(k => delete root.dataset[k]);
+        if (!confirm('Réinitialiser tous les réglages (accessibilité ET jeu) aux valeurs par défaut ?')) return;
+        localStorage.removeItem(A11Y_KEY);
+        localStorage.removeItem(GAME_KEY);
+        Object.keys(root.dataset).filter(k => k.startsWith('a11y') || k.startsWith('game')).forEach(k => delete root.dataset[k]);
         root.dataset.a11yContrast = 'standard';
         root.style.removeProperty('--a11y-font-scale');
-        // Reset controls
-        document.querySelectorAll('input[name="contrast"][value="standard"], input[name="fontFamily"][value="standard"], input[name="colorBlind"][value="none"]').forEach(i => i.checked = true);
-        document.querySelectorAll('input[name="reducedMotion"], input[name="focus"], input[name="falc"], input[name="visualAudioCue"], input[name="muteAll"]').forEach(i => i.checked = false);
-        const cap = document.querySelector('input[name="captions"]'); if (cap) cap.checked = true;
-        if (slider) { slider.value = '1'; applyPref('fontSize', 1); }
-        ['contrast','fontFamily','colorBlind','reducedMotion','focus','falc','captions','visualAudioCue','muteAll'].forEach(refreshRadioStates);
-        announce('✓ Réglages réinitialisés');
+        initFromStorage();
+        announce('✓ Tous les réglages réinitialisés');
       });
 
-      // ── Initialisation finale ──
+      // ── Bouton EXPORTER ──
+      const btnExport = document.getElementById('btn-export');
+      if (btnExport) btnExport.addEventListener('click', function() {
+        const dump = {
+          _format: 'paritas-prefs',
+          _version: 1,
+          _exported: new Date().toISOString(),
+          a11y: loadKey(A11Y_KEY),
+          game: loadKey(GAME_KEY)
+        };
+        const blob = new Blob([JSON.stringify(dump, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'paritas-prefs-' + new Date().toISOString().slice(0, 10) + '.json';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        announce('✓ Fichier exporté');
+      });
+
+      // ── Bouton IMPORTER ──
+      const fileImport = document.getElementById('file-import');
+      if (fileImport) fileImport.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (!confirm('Importer ce fichier ? Vos préférences actuelles seront remplacées.')) {
+          e.target.value = '';
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          try {
+            const data = JSON.parse(ev.target.result);
+            if (data._format !== 'paritas-prefs') {
+              alert('Fichier non reconnu : format invalide.');
+              return;
+            }
+            if (data.a11y) saveKey(A11Y_KEY, data.a11y);
+            if (data.game) saveKey(GAME_KEY, data.game);
+            initFromStorage();
+            announce('✓ Préférences importées');
+          } catch (err) {
+            alert('Erreur de lecture : ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+      });
+
+      // ── Bouton EFFACER TOUTES MES DONNÉES ──
+      const btnErase = document.getElementById('btn-erase-all');
+      if (btnErase) btnErase.addEventListener('click', function() {
+        if (!confirm('⚠ EFFACEMENT IRRÉVERSIBLE\n\nCette action supprime :\n• toutes vos préférences\n• toutes vos parties sauvegardées\n• tous les journaux locaux\n\nÊtes-vous certain·e ?')) return;
+        if (!confirm('Dernière confirmation : effacer TOUTES les données PARITAS ?')) return;
+        // Tout ce qui commence par 'paritas-'
+        Object.keys(localStorage).filter(k => k.startsWith('paritas-')).forEach(k => localStorage.removeItem(k));
+        Object.keys(root.dataset).filter(k => k.startsWith('a11y') || k.startsWith('game')).forEach(k => delete root.dataset[k]);
+        root.dataset.a11yContrast = 'standard';
+        root.style.removeProperty('--a11y-font-scale');
+        initFromStorage();
+        announce('✓ Toutes les données effacées');
+      });
+
+      // ── INIT ──
       initFromStorage();
     })();
   </script>

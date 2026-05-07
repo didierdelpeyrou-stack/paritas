@@ -6,8 +6,8 @@
     <script>
       (function() {
         try {
-          var p = JSON.parse(localStorage.getItem('paritas-a11y-prefs') || '{}');
           var r = document.documentElement;
+          var p = JSON.parse(localStorage.getItem('paritas-a11y-prefs') || '{}');
           if (p.contrast) r.dataset.a11yContrast = p.contrast;
           if (p.fontFamily && p.fontFamily !== 'standard') r.dataset.a11yFontFamily = p.fontFamily;
           if (p.colorBlind && p.colorBlind !== 'none') r.dataset.a11yColorBlind = p.colorBlind;
@@ -15,6 +15,10 @@
           if (p.focus === 'enhanced') r.dataset.a11yFocus = 'enhanced';
           if (p.falc) r.dataset.a11yFalc = 'true';
           if (p.fontSize) r.style.setProperty('--a11y-font-scale', String(p.fontSize));
+          var g = JSON.parse(localStorage.getItem('paritas-game-prefs') || '{}');
+          if (g.mode === 'jour') r.dataset.gameMode = 'jour';
+          if (g.density && g.density !== 'standard') r.dataset.gameDensity = g.density;
+          if (g.panelSide === 'gauche') r.dataset.gamePanelSide = 'gauche';
         } catch(e) {}
       })();
     </script>

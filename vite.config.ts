@@ -25,6 +25,8 @@ export default defineConfig({
       input: {
         /* Jeu principal PARITAS */
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        /* Portail (page d'accueil avec jeu + ateliers) */
+        portail: fileURLToPath(new URL('./portail/index.html', import.meta.url)),
         /* Ateliers standalone */
         'mini-confrontation': fileURLToPath(new URL('./mini/confrontation/index.html', import.meta.url)),
         'mini-place':         fileURLToPath(new URL('./mini/place/index.html', import.meta.url)),

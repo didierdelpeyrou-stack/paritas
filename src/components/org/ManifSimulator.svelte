@@ -153,7 +153,13 @@
     const fuel = abilityFuelScore('manifestation', gs.resources);
     const fuelMul = fuelMultiplier(fuel);
 
-    const rawScore = (prep + baseFoule * lieuMult + comboBoost + mediaBoost + juristeBoost + sloganBonus + comboScoreBonus) * fuelMul + meteo;
+    /* Argus ORDA-005 / B-DT6 : baseFoule * lieuMult dominait
+       le rawScore (max 448 sur ~552) → 78 % des parties scoraient
+       ≥ 80, score moyen 89.1/100. Divisor /8 pour rééquilibrer la
+       contribution de la mobilisation par rapport aux bonus
+       narratifs (combos, médias, juristes, slogan). La FOULE
+       affichée reste calculée brute (ligne suivante). */
+    const rawScore = (prep + (baseFoule * lieuMult) / 8 + comboBoost + mediaBoost + juristeBoost + sloganBonus + comboScoreBonus) * fuelMul + meteo;
     const score = Math.max(0, Math.min(100, Math.round(rawScore)));
     const foule = Math.max(0, Math.round(baseFoule * lieuMult * 110 * fuelMul + comboBoost * 80 + comboScoreBonus * 60));
 

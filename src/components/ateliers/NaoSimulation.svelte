@@ -43,11 +43,14 @@
   let empConfirmed = $state(false);
   let synConfirmed = $state(false);
 
-  // Panneau actif en mode 2 joueurs
-  let activePanel = $state<'employeur' | 'syndicat'>('employeur');
-
   // Animation résultat
   let revealStep = $state(0); // 0=hidden, 1=themes, 2=unions, 3=full
+  // Stockage des timer IDs pour pouvoir les annuler au restart / unmount
+  let revealTimers: ReturnType<typeof setTimeout>[] = [];
+  function clearRevealTimers() {
+    revealTimers.forEach(id => clearTimeout(id));
+    revealTimers = [];
+  }
 
   /* ── Derived ───────────────────────────────────────────── */
   const isHotSeat   = $derived(startSide === null);
@@ -80,6 +83,21 @@
 
   const lastResult = $derived(gameState.history.at(-1));
 
+  /* En hot-seat, masquer la projection live des thèmes au délégué :
+     tant que l'employeur est en train de jouer, ses sliders sont privés.
+     Une fois employeur confirmé, on continue à masquer pour éviter que
+     le délégué ne voie EXACTEMENT où l'employeur a placé ses curseurs.
+     On affiche les positions de référence (themes courants, sans projection). */
+  const showProjection = $derived(
+    !isHotSeat || (gameState.phase === 'proposing' && !empConfirmed) || gameState.phase !== 'proposing'
+  );
+
+  /* Le badge "% suffrages" projeté révèle les choix employeur en hot-seat
+     pendant le tour syndicat. On ne l'affiche que pour le côté actif. */
+  const showSigningBadge = $derived(
+    !isHotSeat || (gameState.phase === 'proposing' && !empConfirmed) || gameState.phase !== 'proposing'
+  );
+
   /* ── Helpers ───────────────────────────────────────────── */
   function fmt(n: number) { return Math.round(n * 100); }
   function pct(pos: number, demand: number) { return Math.min(100, Math.round(pos / demand * 100)); }
@@ -91,25 +109,29 @@
     synTactic   = null;
     empConfirmed = false;
     synConfirmed = false;
-    activePanel  = 'employeur';
   }
 
   /* ── Actions ───────────────────────────────────────────── */
   function confirmEmployeur() {
+    if (empConfirmed) return;
     empConfirmed = true;
-    if (isHotSeat) { activePanel = 'syndicat'; }
-    else maybeResolve();
+    if (!isHotSeat) maybeResolve();
+    /* en hot-seat : ne pas résoudre, attendre confirmSyndicat */
   }
 
   function confirmSyndicat() {
+    if (synConfirmed) return;
     synConfirmed = true;
-    if (isHotSeat) maybeResolve();
-    else maybeResolve();
+    maybeResolve();
   }
 
   function maybeResolve() {
-    const empReady = isHotSeat ? empConfirmed : (humanSide === 'employeur' ? true : true);
-    const synReady = isHotSeat ? synConfirmed : (humanSide === 'syndicat'  ? true : true);
+    /* Garde de phase : si on n'est plus en proposing, on ne ré-anime pas
+       (évite double-trigger en VS AI) */
+    if (gameState.phase !== 'proposing') return;
+
+    const empReady = isHotSeat ? empConfirmed : true;
+    const synReady = isHotSeat ? synConfirmed : true;
     if (!empReady || !synReady) return;
 
     // Calculer le move AI si nécessaire
@@ -128,11 +150,17 @@
     s = resolveSeance(s);
     gameState = s;
 
+    /* Animation séquentielle — uniquement si phase 'result'.
+       En phase 'ended' on saute directement à l'écran final. */
+    clearRevealTimers();
     revealStep = 0;
-    // Animation séquentielle
-    setTimeout(() => { revealStep = 1; }, 200);
-    setTimeout(() => { revealStep = 2; }, 700);
-    setTimeout(() => { revealStep = 3; }, 1200);
+    if (gameState.phase === 'result') {
+      revealTimers.push(setTimeout(() => { revealStep = 1; }, 200));
+      revealTimers.push(setTimeout(() => { revealStep = 2; }, 700));
+      revealTimers.push(setTimeout(() => { revealStep = 3; }, 1200));
+    } else {
+      revealStep = 3;
+    }
   }
 
   function handleNext() {
@@ -148,6 +176,7 @@
   }
 
   function restart() {
+    clearRevealTimers();
     gameState = startNaoSession();
     resetLocalMoves();
     revealStep = 0;
@@ -168,12 +197,8 @@
     }
   });
 
-  /* ── Posture cycle ─────────────────────────────────────── */
-  const postureOrder: UnionPosture[] = ['pression', 'patience', 'compromis', 'retrait'];
-  function cyclePosture(union: keyof PostureMap) {
-    const cur = postureOrder.indexOf(synPostures[union]);
-    synPostures = { ...synPostures, [union]: postureOrder[(cur + 1) % postureOrder.length] };
-  }
+  /* ── Cleanup au démontage ─────────────────────────────── */
+  $effect(() => () => clearRevealTimers());
 </script>
 
 <!-- ═══════════════════════════════════════════════════════════
@@ -201,10 +226,16 @@
           {/if}
         </span>
       </div>
-      <div class="majority-badge" class:ok={projectedSigning.weight >= SIGNING_MAJORITY}>
-        {projectedSigning.weight}% suffrages
-        {projectedSigning.weight >= SIGNING_MAJORITY ? '✅' : '⚠️'}
-      </div>
+      {#if showSigningBadge}
+        <div class="majority-badge" class:ok={projectedSigning.weight >= SIGNING_MAJORITY}>
+          {projectedSigning.weight}% suffrages
+          {projectedSigning.weight >= SIGNING_MAJORITY ? '✅' : '⚠️'}
+        </div>
+      {:else}
+        <div class="majority-badge hidden">
+          ?? % suffrages 🔒
+        </div>
+      {/if}
     </div>
   </header>
 
@@ -224,7 +255,7 @@
         <div class="theme-bar-wrap">
           <div class="theme-bar">
             <div class="bar-fill employer" style="width:{empPct}%"></div>
-            {#if projPct > empPct}
+            {#if showProjection && projPct > empPct}
               <div class="bar-fill projected" style="width:{projPct}%;opacity:0.45"></div>
             {/if}
           </div>
@@ -277,28 +308,34 @@
             {@const meta = THEME_META[theme]}
             {@const cur  = gameState.themes[theme]}
             {@const proj = projectedThemes[theme]}
-            <div class="theme-adj">
-              <label class="adj-label">
+            <label class="theme-adj adj-label-wrap">
+              <div class="adj-label">
                 {meta.icon} {meta.label}
                 <span class="adj-delta">
                   {cur}% → {proj}%
                   {#if empAdj[theme] > 0}<span class="delta-pos">+{empAdj[theme]}</span>{/if}
                 </span>
-              </label>
+              </div>
               <input
                 type="range" min="0" max="20"
                 value={empAdj[theme]}
                 oninput={e => {
-                  const v = parseInt((e.target as HTMLInputElement).value);
+                  const el = e.target as HTMLInputElement;
+                  const v = parseInt(el.value);
                   const newAdj = { ...empAdj, [theme]: v };
                   const newCost = effectiveCost(newAdj, gameState.modifiers.mobilisationActive);
                   const maxAllowed = Math.min(seanceBudget, gameState.enveloppeMax - gameState.enveloppeSpent);
-                  if (newCost <= maxAllowed) empAdj = newAdj;
+                  if (newCost <= maxAllowed) {
+                    empAdj = newAdj;
+                  } else {
+                    /* Rejeter et resynchroniser le DOM avec la valeur acceptée */
+                    el.value = String(empAdj[theme]);
+                  }
                 }}
                 disabled={empConfirmed}
                 class="adj-slider"
               />
-            </div>
+            </label>
           {/each}
 
           <!-- Cartes tactiques -->
@@ -361,14 +398,18 @@
           <h2 class="panel-title">✊ Délégué Syndical</h2>
           <p class="panel-sub">Choisissez la posture de chaque syndicat</p>
 
-          <!-- Postures syndicats -->
+          <!-- Postures syndicats —
+               En hot-seat, la satisfaction est calculée sur les positions
+               EMPLOYEUR ACTUELLES (sans la proposition cachée), pour préserver
+               l'asymétrie d'information « simultanée ».
+               En vs IA / standalone : projection complète. -->
           {#each ALL_UNIONS as union}
-            {@const meta   = UNION_META[union]}
-            {@const pos    = synPostures[union]}
-            {@const pmeta  = POSTURE_META[pos]}
-            {@const sat    = computeSatisfaction(projectedThemes, union, gameState.modifiers.accordPartielActive)}
-            {@const seuil  = computeEffectiveSeuil(union, pos)}
-            {@const signs  = willUnionSign(projectedThemes, union, pos, gameState.modifiers.accordPartielActive)}
+            {@const meta    = UNION_META[union]}
+            {@const pos     = synPostures[union]}
+            {@const refThemes = isHotSeat ? gameState.themes : projectedThemes}
+            {@const sat     = computeSatisfaction(refThemes, union, gameState.modifiers.accordPartielActive)}
+            {@const seuil   = computeEffectiveSeuil(union, pos)}
+            {@const signs   = willUnionSign(refThemes, union, pos, gameState.modifiers.accordPartielActive)}
             <div class="union-row">
               <div class="union-header">
                 <span class="union-icon" style="color:{meta.color}">{meta.icon}</span>
@@ -434,10 +475,7 @@
 
           <button
             class="confirm-btn syn-btn"
-            onclick={() => {
-              confirmSyndicat();
-              if (!isHotSeat) maybeResolve();
-            }}
+            onclick={confirmSyndicat}
             disabled={synConfirmed}
           >
             {synConfirmed ? '✅ Verrouillé' : 'Valider les postures'}
@@ -543,6 +581,12 @@
       <div class="outcome-emoji">{olabel.emoji}</div>
       <h2 class="outcome-title">{olabel.title}</h2>
       <p class="outcome-subtitle">{olabel.subtitle}</p>
+
+      {#if lastResult}
+        <div class="narrative-box ended-narrative">
+          <p>{lastResult.narrative}</p>
+        </div>
+      {/if}
 
       <div class="outcome-perspectives">
         <div class="perspective emp-perspective">
@@ -651,6 +695,7 @@
     border: 1px solid #374151;
   }
   .majority-badge.ok { border-color: #10b981; color: #34d399; }
+  .majority-badge.hidden { color: #64748b; border-style: dashed; }
 
   /* ── Themes section ── */
   .themes-section {
@@ -810,6 +855,7 @@
   .outcome-emoji { font-size: 3.5rem; margin-bottom: 0.5rem; }
   .outcome-title { font-size: 1.6rem; font-weight: 900; margin: 0 0 0.25rem 0; }
   .outcome-subtitle { color: #94a3b8; margin: 0 0 1.25rem 0; font-size: 0.9rem; }
+  .ended-narrative { background: #0f172a; margin-bottom: 1rem; }
 
   .outcome-perspectives { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem; }
   .perspective { padding: 0.75rem; border-radius: 0.5rem; text-align: left; }

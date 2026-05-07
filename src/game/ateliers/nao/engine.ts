@@ -383,7 +383,10 @@ export function resolveSeance(state: NaoState): NaoState {
   const useMobilisation = state.modifiers.mobilisationActive; // actif depuis tour précédent
   const adjCost   = effectiveCost(employeurMove.adjustments, useMobilisation);
   const bonusCost = effectiveCost(bonusAdj, false);
-  const totalCost = adjCost + bonusCost;
+  /* Cap : on ne peut pas dépenser plus que l'enveloppe restante.
+     Si l'IA ou un joueur soumet un move qui dépasserait, on tronque. */
+  const enveloppeRemaining = state.enveloppeMax - state.enveloppeSpent;
+  const totalCost = Math.min(adjCost + bonusCost, enveloppeRemaining);
   const newEnveloppeSpent = state.enveloppeSpent + totalCost;
 
   /* --- Nouvelles positions thèmes --- */
@@ -618,6 +621,7 @@ export function aiEmployeurMove(state: NaoState): EmployeurMove {
   const budget = getSeanceBudget(state);
   const adj = emptyAdjustments();
   const accordPartiel = state.modifiers.accordPartielActive;
+  const useMobilisation = state.modifiers.mobilisationActive;
 
   // Calculer le gap de satisfaction pour chaque syndicat
   const gaps = ALL_UNIONS.map(u => ({
@@ -646,16 +650,26 @@ export function aiEmployeurMove(state: NaoState): EmployeurMove {
     ALL_THEMES.forEach(t => { themeScores[t] += w[t] * Math.max(gap, 0.05); });
   });
 
-  // Distribuer le budget en suivant les scores
+  // Distribuer le budget en suivant les scores.
+  // Sous mobilisation, chaque thème touché coûte 3 pts supplémentaires :
+  // on doit anticiper ce malus pour ne pas dépasser le budget.
   const sortedThemes = [...ALL_THEMES].sort((a, b) => themeScores[b] - themeScores[a]);
   let remaining = Math.min(budget, state.enveloppeMax - state.enveloppeSpent);
   for (const t of sortedThemes) {
-    if (remaining <= 0) break;
-    const give = Math.min(remaining, Math.max(1, Math.round(themeScores[t] * 8)));
+    const malus = useMobilisation ? 3 : 0;
+    if (remaining <= malus) break;       // pas assez pour couvrir le malus + ≥1pt utile
+    const target = Math.max(1, Math.round(themeScores[t] * 6));
+    const give   = Math.min(remaining - malus, target);
+    if (give <= 0) break;
     adj[t] = give;
-    remaining -= give;
+    remaining -= give + malus;            // déduire malus + dépense réelle
   }
-  if (remaining > 0) adj[sortedThemes[0]] += remaining;
+  // Compléter sur le thème prioritaire si reste — sans toucher de nouveau thème
+  if (remaining > 0) {
+    const empty = sortedThemes.find(t => adj[t] === 0);
+    const targetTheme = adj[sortedThemes[0]] > 0 ? sortedThemes[0] : empty ?? sortedThemes[0];
+    if (adj[targetTheme] > 0) adj[targetTheme] += remaining;
+  }
 
   // Choisir une tactique
   const available = (['offre_globale', 'ultimatum', 'communication', 'audit_bloquant'] as EmployeurTactic[])

@@ -1,0 +1,18 @@
+# Cloudflare Worker config — Paritas narrative enrichment
+# Worker pour l'enrichissement narratif et la génération du journal IA.
+# Déployé sur Cloudflare Workers via `npx wrangler deploy`.
+#
+# Secrets requis :
+#   ANTHROPIC_API_KEY (sk-ant-…)  → mets-le avec :
+#     npx wrangler secret put ANTHROPIC_API_KEY
+#
+# Le worker dispatche sur le champ `kind` du body :
+#   - 'scene' (défaut) → enrichissement narratif par scène (4 sections)
+#   - 'journal'        → journal end-of-game ~600 mots (Argus UX-3)
+
+name = "paritas-narrative"
+main = "src/server/paritas-worker.ts"
+compatibility_date = "2024-09-01"
+
+# Pas de KV ni de D1 nécessaires — le worker est stateless.
+# Pas de routes/zones — l'URL workers.dev par défaut suffit.

@@ -7,30 +7,50 @@
 import type { Choice, PlayerTrait, RebirthGameState, Scenario, SceneMood } from '../types';
 import type { NarrativePromptOutput } from './narrativeClient';
 
+/* P1-5 (ORDA-009/010, AAR bêta-30 §V — Camille D. #27 L2 socio,
+   Aïcha M. #23 aide-soignante, Manon E. #25 dys+TDAH, Yanis B. #19
+   apprenti, FG-2 + FG-5).
+   Camille compare à Disco Elysium (24 voix-skills). Précédent : 6
+   traits × 2 voix = 12 voix. Étendu à 6 traits × 4 voix = 24 voix.
+   Calibrage par trait : voix #1+2 = registres usuels, voix #3 =
+   doute/fissure (fatigue, ambivalence), voix #4 = grâce/élan
+   (sens, suite imaginée). */
 const INNER_VOICE_BY_TRAIT: Record<PlayerTrait, string[]> = {
   batisseur: [
     'Tu reconnais ta voix : ce qui se construit ne demande pas d’éclat, juste de la suite.',
-    'La trace que tu laisses ressemble à toi : lente, patiente, vérifiable.'
+    'La trace que tu laisses ressemble à toi : lente, patiente, vérifiable.',
+    'Parfois tu te demandes si la lenteur est encore une vertu ou si elle est devenue une excuse.',
+    'Tu travailles pour celles et ceux qui viendront après — c’est suffisant. Et c’est presque assez.'
   ],
   rupture: [
     'Quelque chose en toi pousse encore vers le risque ; tu ne sais pas si c’est de la lucidité ou de la fatigue.',
-    'Le geste te coûte mais il te ressemble. Tu ne saurais pas faire autrement.'
+    'Le geste te coûte mais il te ressemble. Tu ne saurais pas faire autrement.',
+    'Tu as déjà pensé : et si je m’étais trompé partout ? La pensée passe, elle revient, elle s’en va.',
+    'Le moment où tout cède est aussi celui où tu te sens vivant. Tu ne le diras à personne.'
   ],
   technocrate: [
     'Tu mets de l’ordre dans le bruit. La méthode te tient debout.',
-    'Tu as confiance dans le tableau qui résume. Tu sais que quelque part il manque une ligne.'
+    'Tu as confiance dans le tableau qui résume. Tu sais que quelque part il manque une ligne.',
+    'Quand le tableau craque, tu cherches une autre colonne. Pas une autre méthode. Pas encore.',
+    'Tu te dis qu’une note correctement classée vaut deux discours. Tu sais que c’est faux ; tu le penses quand même.'
   ],
   pragmatique: [
     'Tu ne demandes pas si c’était juste, tu demandes si c’était utile.',
-    'Tu acceptes la part de gris. Personne ne te remerciera, et tu peux vivre avec.'
+    'Tu acceptes la part de gris. Personne ne te remerciera, et tu peux vivre avec.',
+    'Tu te demandes parfois si l’habitude du compromis n’est pas devenue ta seule conviction.',
+    'Quelqu’un, un jour, te dira merci pour un geste que tu ne te souviens pas avoir fait. Ce sera assez.'
   ],
   paternaliste: [
     'Tu sens, sans le formuler, que tu protèges. C’est la façon que tu connais d’aimer le commun.',
-    'Tu te répètes : ils auront besoin de moi demain. Tu ne sais pas s’ils en sont d’accord.'
+    'Tu te répètes : ils auront besoin de moi demain. Tu ne sais pas s’ils en sont d’accord.',
+    'Tu reconnais en toi le geste de celui qui t’a tenu lieu de père. Tu n’es pas sûr d’en vouloir.',
+    'Quand ils t’écoutent, tu te sens utile. Quand ils ne t’écoutent pas, tu te sens vieux.'
   ],
   tribun: [
     'Tu cherches les mots qui resteront. Tu sais qu’une phrase juste fait plus que dix décrets.',
-    'Tu vois la salle avant les chiffres. C’est ce qui te rend dangereux et utile.'
+    'Tu vois la salle avant les chiffres. C’est ce qui te rend dangereux et utile.',
+    'Tu redoutes le silence après ton meilleur discours. Le silence te dit la vérité que les applaudissements masquent.',
+    'Tu comptes celles et ceux qui ont changé d’avis ce soir. Le chiffre est petit. Tu continues quand même.'
   ]
 };
 

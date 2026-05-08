@@ -364,6 +364,122 @@ Il quitte la présidence en avril 2024. Son successeur Amir Reza-Tofighi continu
     traitBonus: { pragmatique: 3, batisseur: 2 },
     resourceBonus: { confiance: 7, legitimite: 5 },
     rarity: 'or'
+  },
+
+  /* ============================================================
+     P1-6 (ORDA-009/010, AAR bêta-30 §V) — légendaires post-2000
+     + figures féminines racisées
+     ============================================================
+     Béroud #18 (FG-3) : SUD-Solidaires absent du roster.
+     Sami #22 (FG-3) : pas de figure plateforme/coursier.
+     Aïcha #23 (FG-4) : 0 nom féminin racisé au roster.
+
+     4 légendaires ajoutés ci-dessous (3 salariés + 1 patron) :
+     - Annick Coupé (SUD-Solidaires fondatrice, 1995)
+     - Jean-Daniel Levy (coursier CLAP composite, 2018-2024)
+     - Rachida Brahim-Djelloul (composite : déléguée CGT-Santé
+       AP-HP post-Covid, figure aide-soignante racisée)
+     - Sayanti Mukherjee (composite : DRH d'ETI tech d'origine
+       indo-britannique, voix patronale plurielle)
+
+     Note méthodologique : pour Brahim-Djelloul et Mukherjee,
+     personnages composites assumés (pas de personnage public
+     unique disponible). Inspirés de témoignages dans Le Crom,
+     Beaud, et entretiens publics CGT-Santé / ANDRH 2022-2024.
+     ============================================================ */
+  {
+    id: 'coupe',
+    name: 'Annick Coupé',
+    init: 'AC',
+    years: '1956 – aujourd\'hui',
+    era: 'SUD-Solidaires (1989 – 2014)',
+    camp: 'salarie',
+    blurb:
+      "Cofondatrice de SUD-PTT (1989) puis porte-parole de Solidaires (2002-2014). Figure du syndicalisme de transformation sociale — ligne d'autonomie radicale.",
+    bio:
+      `Née en 1956, militante CFDT-PTT puis exclue lors de la « refondation » de 1988-1989 que Notat impose pour réorienter la confédération. Avec d'autres exclus, elle cofonde SUD-PTT en 1989 — premier des syndicats SUD qui formeront ensuite l'Union syndicale Solidaires en 1998.
+
+Porte-parole nationale de Solidaires de 2002 à 2014. Sa ligne : refus du dialogue social institutionnalisé quand il vide la lutte de sa substance, défense des « précaires », alliance avec Attac et les altermondialistes (elle siège à son conseil scientifique). Elle théorise un syndicalisme de transformation sociale : pas seulement défendre les acquis, mais préparer une autre organisation du travail.
+
+Trois batailles emblématiques : la défense des sans-papiers (grève des travailleurs sans-papiers 2008-2010, 6800 régularisations obtenues) ; la lutte contre la réforme des retraites Sarkozy 2010 (où elle pousse pour la généralisation de la grève reconductible) ; le soutien aux mouvements précaires (intermittents 2003, coursiers à partir de 2017).
+
+Au moment où ce jeu est joué, elle est retraitée mais reste consultée. Sa figure incarne dans Paritas la voix qui rappelle qu'avant les confédérations établies (CGT, CFDT, FO), il y a toujours eu et il y aura toujours des marges militantes qui inventent les formes futures du syndicalisme.`,
+    signature: "« Le syndicalisme n'est pas que ses confédérations. »",
+    traitBonus: { rupture: 4, tribun: 2 },
+    resourceBonus: { rapportDeForce: 8, cohesionInterne: 5, legitimite: 2 },
+    rarity: 'or'
+  },
+  {
+    id: 'levy-coursier',
+    name: 'Jean-Daniel Lévy',
+    init: 'JL',
+    years: '1992 – aujourd\'hui',
+    era: 'CLAP / Coursiers en colère (2017 – 2024)',
+    camp: 'salarie',
+    blurb:
+      "Coursier Deliveroo depuis 2017, militant du Collectif des Livreurs Autonomes Parisiens (CLAP). Figure composite du syndicalisme de plateforme.",
+    bio:
+      `Né en 1992, formé en sociologie L2 à Nanterre puis décrocheur. Coursier Deliveroo à partir de 2017. Auto-entrepreneur — donc « salarié sans patron », statut hybride imposé par la plateforme qui contourne le droit du travail.
+
+Il rejoint le CLAP (Collectif des Livreurs Autonomes Parisiens) après une grève spontanée d'octobre 2017 quand la plateforme baisse unilatéralement la rémunération à la course. Il devient l'une des voix médiatiques du collectif, présent sur les plateaux de Mediapart et France Inter.
+
+Trois fronts simultanés : la requalification (procès au Conseil de prud'hommes — décisions favorables aux coursiers en 2020 et 2022) ; l'organisation horizontale (le CLAP refuse la forme syndicale traditionnelle, fonctionne en assemblées générales mobiles) ; la solidarité européenne (rencontres avec les coursiers d'IWGB Londres, Riders Madrid, NIDIL-CGIL Italie).
+
+Son rapport au paritarisme français est ambivalent. D'un côté, il critique les confédérations (« elles ne nous voient pas, on n'existe pas dans leur grille ») ; de l'autre, il les rejoint quand il le faut (alliance avec Solidaires Transports, soutien CGT-Métaux 2018).
+
+Au moment où ce jeu est joué, il continue, vacille, espère un statut. Sa figure incarne dans Paritas le syndicalisme du XXIe siècle qui ne ressemble plus aux trois lettres CGT/CFDT/FO mais qui invente — comme Pelletier en 1908, comme SUD en 1989.`,
+    signature: "« Il faudra bien qu'on existe quelque part dans leur droit. »",
+    traitBonus: { rupture: 3, technocrate: 1, tribun: 2 },
+    resourceBonus: { rapportDeForce: 6, cohesionInterne: 4 },
+    rarity: 'argent'
+  },
+  {
+    id: 'brahim-djelloul',
+    name: 'Rachida Brahim-Djelloul',
+    init: 'RB',
+    years: '1979 – aujourd\'hui',
+    era: 'CGT-Santé AP-HP (2010 – aujourd\'hui)',
+    camp: 'salarie',
+    blurb:
+      "Aide-soignante en gériatrie à l'AP-HP, déléguée CGT-Santé depuis la grève de 2022. Figure composite de la voix soignante racisée et féminine post-Covid.",
+    bio:
+      `Née en 1979 à Bagnolet de parents algériens kabyles, scolarisée en Seine-Saint-Denis, formée aide-soignante en 1999 à l'Hôpital Bichat. Vingt-cinq ans à l'AP-HP, dont quinze en gériatrie et dix en oncologie pédiatrique. Mère de deux enfants, élevée seule depuis 2018.
+
+Son entrée en syndicalisme est tardive — 2020, pendant le premier confinement. Comme nombreuses de ses collègues, elle vit l'expérience d'être à la fois « héroïne de la nation » (applaudissements à 20h) et invisible dans les arbitrages budgétaires (prime Covid versée tardivement, conditions de travail durcies). Cette dissonance la pousse à rejoindre la CGT-Santé.
+
+Elle devient déléguée en 2022 lors de la grande grève hospitalière. Sa ligne : ne pas séparer les revendications matérielles (salaires, ratios soignant/lit, RTT) des revendications symboliques (reconnaissance professionnelle, droit à parler à la presse, fin du racisme institutionnel dans les promotions). Elle pousse la CGT-Santé à porter explicitement la question de la racisation des soignantes — un terrain où les confédérations historiques restent prudentes.
+
+Son rapport au paritarisme français est lucide : « Le paritarisme dans le public, c'est la médiation avec une administration qui ne te voit pas comme négociatrice mais comme exécutante. On apprend à utiliser le droit. Mais on n'oublie pas qu'il a été écrit par des hommes blancs. »
+
+Au moment où ce jeu est joué, elle est en première ligne des négociations sur la prochaine convention collective hospitalière. Sa figure incarne dans Paritas la voix qui manquait : femme, racisée, soignante, post-2020. Personnage composite assumé — synthèse de témoignages publics de plusieurs déléguées CGT-Santé et SUD-Santé.`,
+    signature: "« On était essentielles pendant le Covid. On est restées invisibles. Ça change maintenant. »",
+    traitBonus: { tribun: 3, batisseur: 2 },
+    resourceBonus: { cohesionInterne: 7, legitimite: 4, rapportDeForce: 3 },
+    rarity: 'or'
+  },
+  {
+    id: 'mukherjee',
+    name: 'Sayanti Mukherjee',
+    init: 'SM',
+    years: '1976 – aujourd\'hui',
+    era: 'DRH ETI tech (2015 – aujourd\'hui)',
+    camp: 'patron',
+    blurb:
+      "DRH d'une ETI française de 800 salariés en cybersécurité (Bordeaux). Profil patronal pluriel, formé au Royaume-Uni, voix de la diversité dans l'ANDRH.",
+    bio:
+      `Née en 1976 à Birmingham (Royaume-Uni) de parents indo-bengalis migrants, formée à la London School of Economics (RH et droit du travail comparé), expatriée en France en 2008 pour rejoindre une ETI cyber bordelaise dont elle devient DRH en 2015.
+
+Son profil détonne dans le paysage RH français : binationale franco-britannique, racisée, diplômée d'une école de gestion étrangère. Elle apporte une lecture comparative qu'aucune DRH formée à HEC n'a aussi instinctivement : la France est un pays singulier dans son rapport au paritarisme, et cette singularité a un coût quand on recrute international.
+
+Sa ligne managériale : transparence salariale (publication de la grille interne dès 2018, avant l'index égalité), CSE pris au sérieux (refus de la fusion expéditive 2017, négociation lente de 18 mois), partenariat avec les écoles de banlieue parisienne (Pôle Sup'93, IUT Saint-Denis) pour diversifier les recrutements tech. Elle siège à l'ANDRH où elle pousse une critique discrète : la profession RH française est « monoculturelle au-delà du raisonnable », ce qui crée des angles morts dans les négociations sur la diversité, le racisme institutionnel, le voile au travail.
+
+Son rapport au syndicalisme français est paradoxalement positif : elle préfère négocier avec un délégué CGT formé que d'avoir une assemblée générale spontanée. Elle a une formule reprise plusieurs fois en conférence : « Le paritarisme français est lent, lourd, contestable — mais il existe. Aux États-Unis, je n'aurais personne à qui parler avant la grève. »
+
+Au moment où ce jeu est joué, elle pèse sur les arbitrages de la prochaine convention de branche cybersécurité. Sa figure incarne dans Paritas le patronat pluriel qui manquait : ni HEC blanc francophone, ni caricature anglo-saxonne — une voix qui prend au sérieux le paritarisme tout en pointant ses angles morts.`,
+    signature: "« Le paritarisme français est lent. Mais quelqu'un répond au téléphone. »",
+    traitBonus: { pragmatique: 3, technocrate: 2 },
+    resourceBonus: { institution: 6, legitimite: 5, confiance: 4 },
+    rarity: 'or'
   }
 ];
 

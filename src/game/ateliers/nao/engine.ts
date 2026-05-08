@@ -24,7 +24,14 @@
    ============================================================ */
 
 export type NaoTheme  = 'salaires' | 'primes' | 'teletravail' | 'egalite_pro';
-export type NaoUnion  = 'cgt' | 'cfdt' | 'fo';
+/* P1-4 (ORDA-009/010, AAR bêta-30 §V — Théo G. #21 ingé R&D
+   syndiqué CFE-CGC) : « Le persona cadre catégoriel CFE-CGC est
+   explicitement non couvert (cf. V3_PANEL_50_CURATED.md §I.4) ».
+   Ajout de la CFE-CGC comme 4e syndicat avec poids ~10% (réaliste
+   pour les CSE majoritairement non-cadre, plus haut sur scénarios
+   cadres dirigeants). Profil pragmatique-cadre — sensible salaires
+   ET télétravail (les cadres y tiennent), peu sensible primes. */
+export type NaoUnion  = 'cgt' | 'cfdt' | 'fo' | 'cfecgc';
 export type NaoSide   = 'employeur' | 'syndicat';
 
 export type EmployeurTactic =
@@ -52,7 +59,7 @@ export type NaoOutcome =
    ============================================================ */
 
 export const ALL_THEMES: NaoTheme[] = ['salaires', 'primes', 'teletravail', 'egalite_pro'];
-export const ALL_UNIONS: NaoUnion[] = ['cgt', 'cfdt', 'fo'];
+export const ALL_UNIONS: NaoUnion[] = ['cgt', 'cfdt', 'fo', 'cfecgc'];
 export const MAX_SEANCES          = 5;
 
 /* P1-3 (ORDA-008, AAR bêta-30 §V) — préset TPE/PME pour NAO.
@@ -136,6 +143,17 @@ export const UNION_META: Record<NaoUnion, {
     weights: { salaires: 0.60, primes: 0.30, teletravail: 0.06, egalite_pro: 0.04 },
     profile: 'Autonome',
     description: "Centrée pouvoir d'achat. Salaires + primes = 90 % de sa grille de lecture."
+  },
+  cfecgc: {
+    label: 'CFE-CGC', icon: '👔', color: '#7c3aed',
+    electoralWeight: 7, // moyenne nationale ; jusqu'à 30 % en scénario cadre dirigeant
+    seuilAccord: 0.52,
+    /* Profil pragmatique-cadre : télétravail prioritaire, salaires
+       importants, primes peu (les cadres ont déjà variables / actions),
+       égalité pro modérément (sensible mais sans être une priorité). */
+    weights: { salaires: 0.35, primes: 0.10, teletravail: 0.40, egalite_pro: 0.15 },
+    profile: 'Cadres et catégoriels',
+    description: "Voix des cadres — sensible au télétravail et aux conditions immatérielles. Plus pragmatique que la CGT, plus exigeant que la CFDT sur les conditions d'autonomie."
   }
 };
 
@@ -239,7 +257,7 @@ export function startNaoSession(preset: NaoPreset = 'standard'): NaoState {
       teletravail: THEME_META.teletravail.employeurStart,
       egalite_pro: THEME_META.egalite_pro.employeurStart
     },
-    postures: { cgt: 'pression', cfdt: 'patience', fo: 'patience' },
+    postures: { cgt: 'pression', cfdt: 'patience', fo: 'patience', cfecgc: 'patience' },
     enveloppeMax: meta.enveloppe,
     enveloppeSpent: 0,
     enveloppeRevealed: false,
@@ -268,7 +286,7 @@ export function emptyAdjustments(): ThemeAdjustments {
 }
 
 export function defaultPostures(): PostureMap {
-  return { cgt: 'patience', cfdt: 'patience', fo: 'patience' };
+  return { cgt: 'patience', cfdt: 'patience', fo: 'patience', cfecgc: 'patience' };
 }
 
 export function totalAdjustment(adj: ThemeAdjustments): number {
@@ -749,7 +767,7 @@ export function aiEmployeurMove(state: NaoState): EmployeurMove {
 
 export function aiSyndicatMove(state: NaoState): SyndicatMove {
   const accordPartiel = state.modifiers.accordPartielActive;
-  const postures: PostureMap = { cgt: 'pression', cfdt: 'patience', fo: 'patience' };
+  const postures: PostureMap = { cgt: 'pression', cfdt: 'patience', fo: 'patience', cfecgc: 'patience' };
 
   /* Argus ORDA-001 R1 (post-AAR Argus 2026-05-08) — IA syndicat
      RECALIBRÉE : la version précédente était trop conservatrice

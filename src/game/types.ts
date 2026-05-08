@@ -326,6 +326,25 @@ export interface Memory {
   playedScenarios: string[];
   /** Conséquences "longterm" en attente de déclenchement */
   pendingLongterm: { fromScenario: string; text: string; turnPosed: number }[];
+  /** P1-10 (ORDA-009/010, AAR bêta-30 §V — Fåhraeus #09, Romero #05) :
+   *  callbacks d'acteurs programmés à un tour futur. Quand un choix
+   *  pose un flag (ex: corruption préfet 1936), un callback peut être
+   *  programmé pour qu'un acteur réagisse 3-5 tours plus tard.
+   *  Permet la « mémoire des acteurs » CK3-grade. */
+  scheduledActorCallbacks?: ScheduledActorCallback[];
+}
+
+export interface ScheduledActorCallback {
+  /** Tour cible où le callback se déclenche (typiquement turnPosed + 3..5). */
+  atTurn: number;
+  /** Acteur qui se manifeste — Frachon, Pinot, Stalter, etc. */
+  actor: ActorId;
+  /** Texte court (≤ 80 mots) que l'acteur prononce/projette à ce tour. */
+  narrative: string;
+  /** Origine — choix qui a posé ce callback, pour traçabilité. */
+  fromChoiceId: string;
+  /** Tour où le choix a été posé (= atTurn - 3..5). */
+  posedAtTurn: number;
 }
 
 /* ============================================================
@@ -378,9 +397,14 @@ export interface RebirthGameState {
 
   /* Fin */
   endingId: EndingId | null;
+
+  /* Mini-jeu Matignon intégré (phase 'matignon') */
+  matignonPending?: boolean;
+  /* Atelier La Place intégré (phase 'laplace') */
+  laplacePending?: boolean;
 }
 
-export type GamePhase = 'idle' | 'scene' | 'consequence' | 'ended';
+export type GamePhase = 'idle' | 'scene' | 'consequence' | 'matignon' | 'laplace' | 'ended';
 
 export type EndingId =
   | 'mutilation'

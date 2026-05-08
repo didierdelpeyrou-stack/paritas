@@ -3,7 +3,10 @@
  * la phase 'consequence' du tour, et stocke ce texte dans le state.
  */
 
-import type { Choice, PlayerTrait, RebirthGameState, Scenario, TraitScores } from '../types';
+import type {
+  ActorId, Choice, Memory, PlayerTrait, RebirthGameState,
+  Scenario, ScheduledActorCallback, TraitScores
+} from '../types';
 import { composeConsequence } from '../narrative/consequenceWriter';
 import { composeNarrativeFallback } from '../narrative/narrativeFallback';
 import type { NarrativePromptOutput } from '../narrative/narrativeClient';
@@ -113,4 +116,65 @@ export function applyNarrativeFallback(
     memoryLine: fallback.memoryLine ?? current.memoryLine,
     enriched: false
   };
+}
+
+/* ============================================================
+   P1-10 (ORDA-009/010, AAR bêta-30 §V — Fåhraeus #09, Romero #05)
+   ============================================================
+   Mémoire des acteurs : callbacks programmés à un tour futur.
+
+   Pattern usage :
+     // Au moment d'un choix qui marque (ex: corruption préfet 1936) :
+     scheduleActorCallback(state.memory, currentTurn + 4, 'adversaire',
+       "Pinot n'a pas oublié — il fait passer le mot dans la presse.",
+       'corrompre-prefet', currentTurn);
+
+     // Dans le turn-resolver, à chaque début de tour :
+     const due = dueActorCallbacks(state.memory, state.turn);
+     // ...déclencher les narratives, afficher dans le ticker causal
+     consumeActorCallbacks(state.memory, due);
+
+   Le branchement effectif depuis les scénarios (programmation
+   automatique via `traitShift` ou `flag` du choix) est en backlog
+   ORDA-010. Cette infrastructure est l'API minimale requise pour
+   que les Diplomates ajoutent les hooks dans le contenu narratif.
+   ============================================================ */
+
+/** Programme un callback d'acteur pour un tour futur (typiquement
+ *  posedAtTurn + 3..5). Aucune limite de file ; le moteur déclenche
+ *  quand atTurn ≤ currentTurn. */
+export function scheduleActorCallback(
+  memory: Memory,
+  atTurn: number,
+  actor: ActorId,
+  narrative: string,
+  fromChoiceId: string,
+  posedAtTurn: number
+): void {
+  if (!memory.scheduledActorCallbacks) memory.scheduledActorCallbacks = [];
+  memory.scheduledActorCallbacks.push({
+    atTurn, actor, narrative, fromChoiceId, posedAtTurn
+  });
+}
+
+/** Retourne les callbacks dus au tour courant (atTurn ≤ currentTurn). */
+export function dueActorCallbacks(
+  memory: Memory,
+  currentTurn: number
+): ScheduledActorCallback[] {
+  const all = memory.scheduledActorCallbacks ?? [];
+  return all.filter(cb => cb.atTurn <= currentTurn);
+}
+
+/** Consomme les callbacks dus (les retire de la file). À appeler
+ *  après affichage / déclenchement par le moteur de tour. */
+export function consumeActorCallbacks(
+  memory: Memory,
+  consumed: ScheduledActorCallback[]
+): void {
+  if (!memory.scheduledActorCallbacks || consumed.length === 0) return;
+  const consumedSet = new Set(consumed.map(cb => `${cb.fromChoiceId}@${cb.atTurn}`));
+  memory.scheduledActorCallbacks = memory.scheduledActorCallbacks.filter(
+    cb => !consumedSet.has(`${cb.fromChoiceId}@${cb.atTurn}`)
+  );
 }

@@ -18,6 +18,17 @@
   import { abilitiesFor, ABILITY_SHORT_LABEL, thresholdFor } from '../../game/simulation/resourceUtility';
   import { sfx } from '../../game/audio/sfx';
   import CockpitIcon from './CockpitIcon.svelte';
+  import { longPress } from '$lib/actions/longPress';
+
+  /* P1-13 (ORDA-009, AAR bêta-30 §V — Wroblewski #01, Soueidan #03,
+     Yanis #19, FG-1) — long-press sur jauges → ouvre le glossary
+     du terme correspondant. Substitut tactile au hover desktop. */
+  function openResourceGlossary(termKey: string) {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(
+      new CustomEvent('paritas-open-glossary', { detail: { term: termKey } })
+    );
+  }
 
   interface Props {
     state: RebirthGameState;
@@ -264,6 +275,7 @@
         title={tooltipFor(r.key, r.label, r.desc, v)}
         aria-label="{r.label} : {Math.round(v)} sur 100"
         style="--c: {r.color}"
+        use:longPress={{ onTrigger: () => openResourceGlossary(r.label.toLowerCase()) }}
       >
         <span class="res-ico"><CockpitIcon name={r.icon} size={14} /></span>
         <span class="res-val">{Math.round(v)}</span>

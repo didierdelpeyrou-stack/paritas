@@ -150,6 +150,11 @@
      respire. Auto-activé en phase consequence (DMN priority). */
   let focusMode = $state<boolean>(loadFocusMode());
 
+  /* Argus B-DESK14 : popover "conditions de victoire" déclenché par
+     le bouton ? dans le score-pill. Touch-friendly (les tooltips
+     natifs n'apparaissent pas au touch). */
+  let victoryInfoOpen = $state<boolean>(false);
+
   /* === UX-N4 : interludes de restauration ===
      Tous les 6 tours, on intercepte la phase scène et on insère un
      interlude (image + citation, pause forcée 6s). Une fois consommé,
@@ -751,13 +756,28 @@
     <main class="space-y-4 order-1 lg:order-2">
       <!-- Mini barre d'outils main : score proéminent (UX-4) + focus (UX-1) -->
       <div class="main-toolbar">
-        <div class="score-pill" title="Score provisoire — il évolue à chaque choix.">
-          <span class="score-tag">Score</span>
+        <!-- Argus B-DESK14 : libellés explicites pour distinguer Score
+             (pourcentage de victoire calculé sur ressources + objectifs)
+             vs Tour (progression dans la partie sur 100 décisions).
+             Le bouton "?" ouvre un détail des conditions de victoire
+             (UX touch / lecteur d'écran qui ne lisent pas les tooltips). -->
+        <div
+          class="score-pill"
+          title={'Score de victoire provisoire (0-100). Calculé en continu sur :\n• Cohésion = confiance + santé sociale + légitimité\n• Construction = institutions bâties × 6 + accords signés × 4\n• Résistance = rapport de force + caisse\n• Mandat = avancement de tes objectifs personnels\n• Malus = trahisons de la base, mouvements épuisés\nL\'épilogue (100 tours) cristallise ces valeurs.'}
+        >
+          <span class="score-tag">Victoire</span>
           <span class="score-num">{liveScore}</span>
           <span class="score-den">/100</span>
+          <button
+            type="button"
+            class="score-help"
+            aria-label="Détails sur le score de victoire"
+            onclick={() => (victoryInfoOpen = !victoryInfoOpen)}
+            aria-expanded={victoryInfoOpen}
+          >?</button>
         </div>
         <div class="flex-1"></div>
-        <span class="turn-tag" aria-hidden="true">T{s.turn}/100</span>
+        <span class="turn-tag" title="Tour courant sur les 100 décisions de la partie. Tu joues 100 choix avant l'épilogue.">Tour {s.turn}/100</span>
         <button
           type="button"
           class="focus-btn"
@@ -769,6 +789,37 @@
           {focusMode ? '⤢ Quitter' : '⤡ Lecture'}
         </button>
       </div>
+
+      {#if victoryInfoOpen}
+        <!-- Argus B-DESK14 : popover détaillant les composantes du
+             score (touch + screen-reader friendly). Fermable. -->
+        <div class="victory-info" role="region" aria-label="Conditions de victoire">
+          <div class="victory-info-head">
+            <strong>Comment se calcule ton score de victoire</strong>
+            <button
+              type="button"
+              class="victory-info-close"
+              aria-label="Fermer"
+              onclick={() => (victoryInfoOpen = false)}
+            >×</button>
+          </div>
+          <p class="victory-info-lead">
+            Le score (0-100) évolue à chaque choix. Il agrège cinq familles d'effets,
+            cristallisées en épilogue après 100 tours :
+          </p>
+          <ul class="victory-info-list">
+            <li><strong>Cohésion</strong> — moyenne (confiance + santé sociale + légitimité), pondération forte.</li>
+            <li><strong>Construction</strong> — institutions paritaires bâties × 6 + grands accords signés × 4.</li>
+            <li><strong>Résistance</strong> — rapport de force ÷ 2 + caisse × 0,4.</li>
+            <li><strong>Mandat</strong> — avancement de tes objectifs personnels (panneau « Mandat »).</li>
+            <li><strong>Malus</strong> — chaque trahison de la base (×8) ou mouvement épuisé (×5) coûte cher.</li>
+          </ul>
+          <p class="victory-info-note">
+            Astuce : un score 100/100 ne garantit pas la fin la plus glorieuse — l'épilogue
+            relit aussi <em>comment</em> tu as joué (style, mouvement, base).
+          </p>
+        </div>
+      {/if}
 
       {#if s.phase === 'scene' && shouldShowInterlude}
         <Interlude era={e.id} turn={s.turn} onContinue={dismissInterlude} />
@@ -914,6 +965,91 @@
   .score-den {
     color: rgba(237, 228, 201, 0.55);
     font-size: 0.78rem;
+  }
+
+  /* Argus B-DESK14 : bouton "?" inline dans le score-pill —
+     ouvre la popover des conditions de victoire. */
+  .score-help {
+    margin-left: 0.4rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 999px;
+    border: 1px solid rgba(244, 213, 139, 0.45);
+    background: rgba(244, 213, 139, 0.08);
+    color: rgba(244, 213, 139, 0.85);
+    font-size: 0.7rem;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+  }
+  .score-help:hover,
+  .score-help:focus-visible {
+    background: rgba(244, 213, 139, 0.2);
+    color: #f4d58b;
+    outline: none;
+  }
+
+  /* Argus B-DESK14 : popover des conditions de victoire. */
+  .victory-info {
+    margin-top: 0.5rem;
+    padding: 0.85rem 1rem 0.95rem;
+    border: 1px solid rgba(244, 213, 139, 0.32);
+    border-radius: 0.5rem;
+    background: rgba(40, 26, 14, 0.85);
+    color: rgba(237, 228, 201, 0.9);
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
+  .victory-info-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+  }
+  .victory-info-head strong {
+    color: #f4d58b;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+  }
+  .victory-info-close {
+    border: none;
+    background: transparent;
+    color: rgba(237, 228, 201, 0.6);
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 0.25rem;
+  }
+  .victory-info-close:hover,
+  .victory-info-close:focus-visible {
+    color: #f4d58b;
+    outline: none;
+  }
+  .victory-info-lead {
+    margin: 0 0 0.4rem 0;
+    color: rgba(237, 228, 201, 0.85);
+  }
+  .victory-info-list {
+    margin: 0 0 0.5rem 0;
+    padding-left: 1.1rem;
+  }
+  .victory-info-list li {
+    margin: 0.15rem 0;
+  }
+  .victory-info-list strong {
+    color: #f4d58b;
+  }
+  .victory-info-note {
+    margin: 0;
+    font-size: 0.78rem;
+    color: rgba(237, 228, 201, 0.65);
+    font-style: italic;
   }
 
   .turn-tag {

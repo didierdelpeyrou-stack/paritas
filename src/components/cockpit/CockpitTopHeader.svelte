@@ -286,7 +286,9 @@
   <div class="header-right">
     <!-- Tour + Ère + Mood compacts -->
     <div class="ctx-meta">
-      <span class="turn">T{gs.turn}<small>/100</small></span>
+      <!-- Argus B-DESK14 : "Tour" explicite + tooltip pour distinguer
+           du score de victoire qu'on voit ailleurs. -->
+      <span class="turn" title="Tour courant sur les 100 décisions de la partie.">Tour {gs.turn}<small>/100</small></span>
       {#if era}
         <span class="era">{ERA_LABEL[era] ?? era}</span>
       {/if}

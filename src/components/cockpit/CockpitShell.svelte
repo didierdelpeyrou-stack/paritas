@@ -45,6 +45,8 @@
 
   import SceneCard from '../narrative/SceneCard.svelte';
   import ConsequenceScene from '../narrative/ConsequenceScene.svelte';
+  import LegendaryBioModal from '../narrative/LegendaryBioModal.svelte';
+  import { legendaryById } from '../../game/content/legendaryCharacters';
   import Settings from '../Settings.svelte';
   import EndingReport from '../feedback/EndingReport.svelte';
 
@@ -103,6 +105,13 @@
   let settingsOpen = $state(false);
   let mobileMenuOpen = $state(false);
   let isMobile = $state(false);
+  /* Argus B-DESK17 : modale bio du personnage légendaire accessible
+     à tout moment depuis le portrait du right rail (TheatrePersonalityPanel)
+     OU depuis un bouton dédié top bar (CockpitTopHeader prop onShowBio). */
+  let bioOpen = $state(false);
+  const legendaryCharacter = $derived(
+    gameState?.legendaryId ? legendaryById(gameState.legendaryId) : undefined
+  );
   let actionsDrawerOpen = $state(false);
   /* Krug #2 : hint mécanique dismissable. Persisté en localStorage
    * pour que le user qui ferme ne soit pas réimposé au reload. */
@@ -383,7 +392,9 @@
                   </span>
                   <p>
                     {#if gameState.turn === 1}
-                      <strong>Bienvenue, {traitLabelShort(gameState.dominantTrait)}.</strong>
+                      <!-- Argus B-DESK16 : utiliser le nom du joueur (pas le trait
+                           générique "Bâtisseur·e"). Fallback sur trait si pas de nom. -->
+                      <strong>Bienvenue {gameState.name || traitLabelShort(gameState.dominantTrait)}.</strong>
                       Lis le scénario, puis clique l'une des options pour engager
                       ton choix. Tu peux aussi déclencher 1 à 2 actions libres
                       (tracts, meeting, manif…) depuis la barre du bas.
@@ -422,7 +433,7 @@
              « portrait vivant du mouvement ». -->
         <TheatrePersonalityPanel
           state={gameState}
-          onOpenLegendaryBio={() => {/* TODO : ouvrir la modale bio depuis ici */}}
+          onOpenLegendaryBio={() => { bioOpen = true; }}
         />
       {:else}
         <CockpitRightRail state={gameState} />
@@ -692,6 +703,12 @@
   />
 
   <Settings open={settingsOpen} onClose={() => (settingsOpen = false)} />
+
+  <!-- Argus B-DESK17 : modale bio accessible à tout moment via clic
+       sur le portrait du right rail. -->
+  {#if bioOpen && legendaryCharacter}
+    <LegendaryBioModal legendary={legendaryCharacter} onClose={() => (bioOpen = false)} />
+  {/if}
 {/if}
 
 <style>
@@ -907,11 +924,9 @@
 
   /* En mode Théâtre (CK3) : portrait latéral 200 + sky 1fr + tuiles
      acteurs 240. Les colonnes sont définies par les composants
-     eux-mêmes via leur largeur fixe — le grid reste auto. */
-  .cockpit-main.cockpit-main-theatre {
-    /* Pas de changement de structure de grid ; les nouveaux composants
-       ont leur propre `width` (200 et 240). Le `auto` du grid s'adapte. */
-  }
+     eux-mêmes via leur largeur fixe — le grid reste auto.
+     Pas de changement de structure de grid ici ; les nouveaux composants
+     ont leur propre width (200 et 240). Le `auto` du grid s'adapte. */
 
   /* Bandeau d'anticipation vent historique (Johnson #3 — donner
      au joueur le temps d'adapter sa stratégie). Slim 24px, en

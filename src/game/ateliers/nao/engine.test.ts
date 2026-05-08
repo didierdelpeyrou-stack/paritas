@@ -324,19 +324,16 @@ describe('NAO — full session with official IA (Argus pre-beta target)', () => 
     /* Argus AAR 2026-05-08 cible : tous les outcomes ≥1% (Mémo Rouge R-A clos).
        MC sur scripts confirmait : accord_minoritaire 17.8%, pv_desaccord 6.0%
 
-       P1-4 (ORDA-009) puis B-15-recal (ORDA-010) : ajout de CFE-CGC
-       comme 4e syndicat + recalibrage partiel IA syndicat (posture
-       cfecgc configurée). MAIS : aiEmployeurMove inclut cfecgc dans
-       sa coalition cible, ce qui détourne du budget vers télétravail
-       au détriment salaires/primes (FO+CGT) et fait chuter
-       accord_majoritaire à 0% sur 1000 parties random.
-
-       Recalibrage complet (aiEmployeurMove ET aiSyndicatMove à 4
-       unions) en backlog ORDA-011. Test relâché à >=0% — au moins
-       les 4 buckets existent et les types compilent. */
+       P1-4 (ORDA-009) + B-15-recal (ORDA-010) + B-15-recal-emp (ORDA-011) :
+       ajout CFE-CGC + recalibrage IA syndicat ET employeur à 4 unions.
+       aiEmployeurMove trie maintenant par POIDS électoral décroissant
+       (au lieu de gap ascendant) + filtre gap plausible (≤ 0.35).
+       cfecgc n'entre plus dans la coalition cible quand elle est
+       marginale → CGT+CFDT (73 %) ou CFDT+FO (55 %) redeviennent les
+       coalitions naturelles → accord_majoritaire ≥ 1 % rétabli. */
     for (const [k, v] of Object.entries(counts)) {
       const pct = (100 * v) / 1000;
-      expect(pct, `${k}=${pct.toFixed(1)}%`).toBeGreaterThanOrEqual(0);
+      expect(pct, `${k}=${pct.toFixed(1)}%`).toBeGreaterThanOrEqual(1);
     }
   });
 });

@@ -701,19 +701,45 @@ export function aiEmployeurMove(state: NaoState): EmployeurMove {
     union: u,
     gap: computeEffectiveSeuil(u, state.postures[u]) - computeSatisfaction(state.themes, u, accordPartiel),
     weight: UNION_META[u].electoralWeight
-  })).sort((a, b) => a.gap - b.gap); // ceux qui sont le moins loin d'abord
+  }));
 
-  // Identifier la coalition la moins chère à convaincre (≥ 50 %)
+  /* P0 ORDA-011 (B-15-recal-emp) — ciblage coalition à 4 unions
+     ============================================================
+     Avant ORDA-009 (3 unions), trier par gap ascendant donnait
+     les plus proches du seuil — la coalition CFDT+FO (55 %) sortait
+     naturellement quand la CGT bloquait. Avec ajout cfecgc (7 %,
+     seuil 0.52 plus bas que les 3 autres), le tri par gap fait
+     remonter cfecgc en tête → l'IA dépense en télétravail (poids
+     40 % cfecgc) au détriment des salaires (poids 60 % FO) → FO
+     ne signe plus → coalition CFDT+FO casse → accord_majoritaire 0%.
+
+     Fix : tri par POIDS électoral décroissant + filtre gap plausible
+     (≤ 0.35) → la stratégie IA cible d'abord les gros poids, et
+     ignore les unions trop éloignées du seuil (gaspillage budget).
+     cfecgc n'entre dans la coalition que si elle est nécessaire. */
+  const byWeight = [...gaps].sort((a, b) => b.weight - a.weight);
+
   let targetWeight = 0;
   const targets: typeof gaps = [];
-  for (const g of gaps) {
-    if (g.gap <= 0) { targets.push(g); targetWeight += g.weight; }
+  for (const g of byWeight) {
     if (targetWeight >= SIGNING_MAJORITY) break;
+    /* Filtre gap : on ignore les unions trop loin (gap > 0.35)
+       — leur signer est improbable même avec budget important. */
+    if (g.gap <= 0.35) {
+      targets.push(g);
+      targetWeight += g.weight;
+    }
   }
-  // Si on n'y est pas encore, ajouter le prochain
+  /* Fallback : si majorité non atteinte avec les unions plausibles,
+     on ajoute la moins éloignée parmi les restantes (par gap). */
   if (targetWeight < SIGNING_MAJORITY) {
-    const next = gaps.find(g => g.gap > 0);
-    if (next) { targets.push(next); targetWeight += next.weight; }
+    const remaining = gaps
+      .filter(g => !targets.some(t => t.union === g.union))
+      .sort((a, b) => a.gap - b.gap);
+    if (remaining[0]) {
+      targets.push(remaining[0]);
+      targetWeight += remaining[0].weight;
+    }
   }
 
   // Scorer les thèmes par importance pour les cibles
@@ -857,16 +883,32 @@ export function aiSyndicatMove(state: NaoState): SyndicatMove {
   }
 
   /* CFE-CGC — pragmatique cadre, sensible télétravail + salaires.
-     P1-4 / B-15-recal (ORDA-010) : recalibrage IA pour les 4 unions.
+     P1-4 / B-15-recal (ORDA-010) + B-15-recal-emp (ORDA-011) :
+     recalibrage IA pour les 4 unions.
      Profil : autonomie catégorielle (ne suit pas la CGT en retrait
      comme CFDT/FO peuvent le faire — la CFE-CGC a sa propre
      dynamique cadre). Rôle pivot : facilite l'accord majoritaire
-     quand télétravail est bien servi. */
+     quand télétravail est bien servi.
+
+     Contagion finale (ORDA-011) : si CGT+CFDT+FO sont toutes en
+     retrait, la CFE-CGC ne signe pas non plus — sa légitimité
+     comme syndicat catégoriel s'effondrerait à signer seule un
+     accord refusé par toute la coalition syndicale. C'est ce
+     qui permet pv_desaccord d'être atteignable (Argus seuil ≥1%). */
   const cfecgcSat = computeSatisfaction(state.themes, 'cfecgc', accordPartiel);
   const cfecgcGap = UNION_META.cfecgc.seuilAccord - cfecgcSat;
   const cfecgcRoll = ROLL();
   const teletravailPos = state.themes.teletravail;
-  if (state.seance === 1) {
+  const allMajorRetrait = postures.cgt === 'retrait'
+    && postures.cfdt === 'retrait'
+    && postures.fo === 'retrait';
+  if (allMajorRetrait) {
+    /* Contagion finale : la CFE-CGC ne signe pas seule contre les
+       3 confédérations majeures. Cohérent avec son insertion dans
+       le paritarisme français (sans CGT/CFDT/FO, sa signature seule
+       n'a pas le poids démocratique requis). */
+    postures.cfecgc = 'retrait';
+  } else if (state.seance === 1) {
     /* Séance 1 : la CFE-CGC démarre dans l'attente, pas la pression
        comme la CGT. Profil cadre : on observe avant de signer. */
     postures.cfecgc = 'patience';

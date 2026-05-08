@@ -30,8 +30,20 @@ export type NaoTheme  = 'salaires' | 'primes' | 'teletravail' | 'egalite_pro';
    Ajout de la CFE-CGC comme 4e syndicat avec poids ~10% (réaliste
    pour les CSE majoritairement non-cadre, plus haut sur scénarios
    cadres dirigeants). Profil pragmatique-cadre — sensible salaires
-   ET télétravail (les cadres y tiennent), peu sensible primes. */
-export type NaoUnion  = 'cgt' | 'cfdt' | 'fo' | 'cfecgc';
+   ET télétravail (les cadres y tiennent), peu sensible primes.
+
+   P0 ORDA-017 / Béroud-18 (panel-30, sociologue syndicalisme combat) :
+   « Pluralité post-1995 absente. 4 unions seulement (CGT/CFDT/FO/CFE-CGC).
+   SUD/Solidaires manquant. Fausse pluralité quand toutes les
+   confédérations modélisées ont signé la loi 2008. »
+   Ajout de SUD/Solidaires comme 5e syndicat (poids 7 % réaliste
+   post-1995, descendant de SUD-PTT 1989). Profil COMBAT : seuil
+   d'accord 0.65 (plus exigeant que CGT 0.62), poids salaires +
+   égalité-pro dominants. Le retrait de SUD reste compatible avec
+   un accord majoritaire (CGT 38 + CFDT 35 + FO 20 + CFE-CGC 7 = 100 %
+   sans SUD) — donc l'arrivée de SUD n'altère pas la calibration
+   ORDA-011 sur le preset standard. */
+export type NaoUnion  = 'cgt' | 'cfdt' | 'fo' | 'cfecgc' | 'sud';
 export type NaoSide   = 'employeur' | 'syndicat';
 
 export type EmployeurTactic =
@@ -59,7 +71,7 @@ export type NaoOutcome =
    ============================================================ */
 
 export const ALL_THEMES: NaoTheme[] = ['salaires', 'primes', 'teletravail', 'egalite_pro'];
-export const ALL_UNIONS: NaoUnion[] = ['cgt', 'cfdt', 'fo', 'cfecgc'];
+export const ALL_UNIONS: NaoUnion[] = ['cgt', 'cfdt', 'fo', 'cfecgc', 'sud'];
 export const MAX_SEANCES          = 5;
 
 /* P0 Carmack-14 + Villani-07 (Sapeurs ORDA-015 PARITAS) — RNG overridable.
@@ -78,8 +90,36 @@ export function setNaoRng(fn: (() => number) | null | undefined): void {
    « la NAO du jeu est calibrée pour un grand groupe (60 pts, 5
    séances). Chez moi, on signe en 2-3 séances avec un délégué
    unique ». Ce préset divise par 2.5 l'enveloppe et raccourcit
-   la négociation, tout en gardant la mécanique identique. */
-export type NaoPreset = 'standard' | 'tpe-pme';
+   la négociation, tout en gardant la mécanique identique.
+
+   P1 ORDA-017 / Jobert-17 + P0 Léa-20 :
+   - `cadres` (Annette Jobert, sociologue négociation) :
+     « CFE-CGC poids fixe 7 % — pas de preset 'cadres dirigeants'
+     (où elle monte à 25-30 %). »
+   - `distribution-services` (Léa K., caissière Carrefour) :
+     « NAO calibrée cadres : télétravail 25-40 % invisibilise les
+     caissières. Manque planning/temps partiel/pénibilité. » */
+export type NaoPreset = 'standard' | 'tpe-pme' | 'cadres' | 'distribution-services';
+
+/* Override partiel des poids syndicat pour un preset donné.
+   Si un champ est absent, on retombe sur UNION_META. */
+export type UnionWeightOverride = Partial<Record<NaoUnion, {
+  electoralWeight?: number;
+  weights?: Partial<Record<NaoTheme, number>>;
+  seuilAccord?: number;
+}>>;
+
+/* Override de THEME_META pour les presets sectoriels.
+   Permet de remplacer un thème par un autre (ex: télétravail → planning)
+   sans toucher la structure NaoTheme (compatibilité v2.x). */
+export type ThemeOverride = Partial<Record<NaoTheme, {
+  label?: string;
+  icon?: string;
+  unit?: string;
+  demandLabel?: string;
+  unionDemand?: number;
+  employeurStart?: number;
+}>>;
 
 export const NAO_PRESET_META: Record<NaoPreset, {
   label: string;
@@ -87,10 +127,16 @@ export const NAO_PRESET_META: Record<NaoPreset, {
   enveloppe: number;
   maxSeances: number;
   seanceBudget: number;
+  /* Overrides optionnels (presets sectoriels ORDA-017). */
+  unionOverrides?: UnionWeightOverride;
+  themeOverrides?: ThemeOverride;
+  /* Préfère l'IA syndicat à un comportement majoritaire-signataire
+     pour CFDT (rapprochement Léa CFDT) — ne change pas la structure. */
+  cfdtBias?: 'signataire' | 'standard';
 }> = {
   standard: {
     label: 'NAO classique (grand groupe)',
-    description: '5 séances · enveloppe 60 pts · 4 thèmes · 3 syndicats',
+    description: '5 séances · enveloppe 60 pts · 4 thèmes · 5 syndicats',
     enveloppe: 60,
     maxSeances: 5,
     seanceBudget: 13
@@ -101,8 +147,104 @@ export const NAO_PRESET_META: Record<NaoPreset, {
     enveloppe: 24,
     maxSeances: 3,
     seanceBudget: 9
+  },
+  /* Preset CADRES (Jobert-17) — ETI cadres, NAO recadrage forfait-jours.
+     CFE-CGC monte à 25 % (poids cadre dirigeant), CGT/CFDT/FO chutent.
+     Thèmes : forfait-jours (= salaires), temps partiel cadre (= primes),
+     droit à la déconnexion (= télétravail). Égalité pro reste mais
+     poids moindre. L'employeur tient la ligne ferme sur le forfait
+     mais reste ouvert sur la déconnexion. */
+  cadres: {
+    label: 'NAO Cadres (forfait-jours)',
+    description: '5 séances · ETI cadres · CFE-CGC à 25 % (Jobert-17)',
+    enveloppe: 60,
+    maxSeances: 5,
+    seanceBudget: 13,
+    unionOverrides: {
+      /* Total = 18 + 32 + 12 + 30 + 8 = 100 % (rééquilibré pour cadres). */
+      cgt: { electoralWeight: 18 },
+      cfdt: { electoralWeight: 32 },
+      fo: { electoralWeight: 12 },
+      cfecgc: {
+        electoralWeight: 30, // 25-30 % en scénario cadre dirigeant (Jobert)
+        /* Cadres dirigeants : forfait-jours et déconnexion deviennent
+           prioritaires, salaires comptent moins (variable / actions). */
+        weights: { salaires: 0.25, primes: 0.10, teletravail: 0.45, egalite_pro: 0.20 }
+      },
+      sud: { electoralWeight: 8 }
+    },
+    themeOverrides: {
+      salaires:    { label: 'Forfait-jours (cadres)',     icon: '📅', unit: 'jours/an',  demandLabel: '208 jours' },
+      primes:      { label: 'Temps partiel cadre',        icon: '⏱️', unit: '% temps',   demandLabel: '80 %' },
+      teletravail: { label: 'Droit à la déconnexion',     icon: '🔕', unit: 'plages',    demandLabel: '4 plages' }
+    }
+  },
+  /* Preset DISTRIBUTION-SERVICES (Léa-20) — NAO grande distribution.
+     Pas de télétravail (caissières) → swap teletravail → planning.
+     Thèmes : planning (poids fort), temps partiel (poids fort),
+     pénibilité posturale (= primes), égalité pro. Syndicalisme
+     féminin majoritaire — CFDT-Services en posture majoritaire-
+     signataire (rapprochement Léa CFDT). */
+  'distribution-services': {
+    label: 'NAO Distribution & Services',
+    description: '5 séances · grande distribution · syndicalisme féminin (Léa-20)',
+    enveloppe: 60,
+    maxSeances: 5,
+    seanceBudget: 13,
+    cfdtBias: 'signataire',
+    unionOverrides: {
+      /* Réajuster les poids de thèmes pour refléter les priorités
+         des caissières : planning (ex-télétravail) ET égalité pro
+         dominent. Salaires reste central pour CGT/FO. */
+      cgt:    { weights: { salaires: 0.40, primes: 0.20, teletravail: 0.25, egalite_pro: 0.15 } },
+      cfdt:   {
+        /* CFDT-Services : pivot signataire — pragmatique sur le planning,
+           sensible à l'égalité pro. Profil Léa-20. */
+        weights: { salaires: 0.25, primes: 0.20, teletravail: 0.30, egalite_pro: 0.25 },
+        seuilAccord: 0.50
+      },
+      fo:     { weights: { salaires: 0.50, primes: 0.30, teletravail: 0.10, egalite_pro: 0.10 } },
+      cfecgc: { electoralWeight: 4 }, // peu de cadres en distribution
+      sud:    {
+        /* SUD-Commerce historiquement présent — combat sur égalité pro
+           et planning (refus du temps partiel imposé). */
+        electoralWeight: 9,
+        weights: { salaires: 0.30, primes: 0.15, teletravail: 0.25, egalite_pro: 0.30 }
+      }
+    },
+    themeOverrides: {
+      teletravail: { label: 'Planning & horaires',       icon: '📋', unit: 'jours/sem', demandLabel: 'fixes' },
+      primes:      { label: 'Pénibilité posturale',      icon: '🦴', unit: 'mesures',   demandLabel: '4 mesures' }
+    }
   }
 };
+
+/* Helper : poids électoral d'une union pour le preset courant.
+   Permet aux scripts MC de calculer la signing weight correcte
+   sans muter UNION_META. Utilisé par computeSigningWeight si
+   un override preset est actif. */
+export function getUnionElectoralWeight(union: NaoUnion, preset: NaoPreset = 'standard'): number {
+  const override = NAO_PRESET_META[preset].unionOverrides?.[union]?.electoralWeight;
+  return override ?? UNION_META[union].electoralWeight;
+}
+
+/* Helper : seuil d'accord d'une union pour le preset courant. */
+export function getUnionSeuilAccord(union: NaoUnion, preset: NaoPreset = 'standard'): number {
+  const override = NAO_PRESET_META[preset].unionOverrides?.[union]?.seuilAccord;
+  return override ?? UNION_META[union].seuilAccord;
+}
+
+/* Helper : poids thématiques d'une union pour le preset courant. */
+export function getUnionWeights(union: NaoUnion, preset: NaoPreset = 'standard'): Record<NaoTheme, number> {
+  const override = NAO_PRESET_META[preset].unionOverrides?.[union]?.weights;
+  if (!override) return UNION_META[union].weights;
+  return {
+    salaires:    override.salaires    ?? UNION_META[union].weights.salaires,
+    primes:      override.primes      ?? UNION_META[union].weights.primes,
+    teletravail: override.teletravail ?? UNION_META[union].weights.teletravail,
+    egalite_pro: override.egalite_pro ?? UNION_META[union].weights.egalite_pro
+  };
+}
 /* Argus ORDA-001 calibrage final après 2 swings extrêmes :
    - 48 pts → 100 % pv_desaccord (impossible)
    - 72 pts → 100 % accord_majoritaire (trivial)
@@ -165,6 +307,23 @@ export const UNION_META: Record<NaoUnion, {
     weights: { salaires: 0.35, primes: 0.10, teletravail: 0.40, egalite_pro: 0.15 },
     profile: 'Cadres et catégoriels',
     description: "Voix des cadres — sensible au télétravail et aux conditions immatérielles. Plus pragmatique que la CGT, plus exigeant que la CFDT sur les conditions d'autonomie."
+  },
+  /* P0 ORDA-017 / Béroud-18 — SUD/Solidaires (5e union, profil combat).
+     Poids 7 % cohérent avec les RP post-1995 (Solidaires 6-8 % selon
+     branches). Seuil 0.65 = plus exigeant que CGT (0.62) — assumé
+     "combat" : refus catégorique des reculs sociaux, exigence forte
+     sur salaires ET égalité pro (lutte contre temps partiel imposé,
+     précarisation). Faible sensibilité au télétravail (vu comme cadre
+     cadres, pas comme conquête sociale post-1995).
+     Le poids 7 % rend SUD non-pivot : son retrait laisse la coalition
+     CGT+CFDT+FO+CFE-CGC=100 % capable d'accord majoritaire. */
+  sud: {
+    label: 'SUD/Solidaires', icon: '🟥', color: '#be123c',
+    electoralWeight: 7,
+    seuilAccord: 0.65,
+    weights: { salaires: 0.45, primes: 0.15, teletravail: 0.05, egalite_pro: 0.35 },
+    profile: 'Combat',
+    description: "Syndicalisme de lutte (post-1995). Salaires + égalité pro = 80 % de sa grille. Plus exigeant que la CGT — refuse la plupart des accords où l'égalité pro reste cosmétique."
   }
 };
 
@@ -268,7 +427,7 @@ export function startNaoSession(preset: NaoPreset = 'standard'): NaoState {
       teletravail: THEME_META.teletravail.employeurStart,
       egalite_pro: THEME_META.egalite_pro.employeurStart
     },
-    postures: { cgt: 'pression', cfdt: 'patience', fo: 'patience', cfecgc: 'patience' },
+    postures: { cgt: 'pression', cfdt: 'patience', fo: 'patience', cfecgc: 'patience', sud: 'pression' },
     enveloppeMax: meta.enveloppe,
     enveloppeSpent: 0,
     enveloppeRevealed: false,
@@ -297,7 +456,7 @@ export function emptyAdjustments(): ThemeAdjustments {
 }
 
 export function defaultPostures(): PostureMap {
-  return { cgt: 'patience', cfdt: 'patience', fo: 'patience', cfecgc: 'patience' };
+  return { cgt: 'patience', cfdt: 'patience', fo: 'patience', cfecgc: 'patience', sud: 'patience' };
 }
 
 export function totalAdjustment(adj: ThemeAdjustments): number {
@@ -323,27 +482,30 @@ export function getMaxSeances(state: NaoState): number {
   return NAO_PRESET_META[state.modifiers.preset ?? 'standard'].maxSeances;
 }
 
-/** Satisfaction d'un syndicat par rapport aux positions actuelles (0-1). */
+/** Satisfaction d'un syndicat par rapport aux positions actuelles (0-1).
+ *  P0 ORDA-017 — preset-aware via getUnionWeights. Preset par défaut
+ *  'standard' pour rétro-compatibilité (tests existants + appels legacy). */
 export function computeSatisfaction(
   themes: Record<NaoTheme, number>,
   union: NaoUnion,
-  accordPartiel: boolean
+  accordPartiel: boolean,
+  preset: NaoPreset = 'standard'
 ): number {
-  const meta = UNION_META[union];
+  const baseWeights = getUnionWeights(union, preset);
   let activeThemes: NaoTheme[];
   let weights: Record<NaoTheme, number>;
 
   if (accordPartiel) {
     // Top-2 thèmes par poids syndicat, poids renormalisés
-    const sorted = [...ALL_THEMES].sort((a, b) => meta.weights[b] - meta.weights[a]);
+    const sorted = [...ALL_THEMES].sort((a, b) => baseWeights[b] - baseWeights[a]);
     activeThemes = sorted.slice(0, 2);
-    const totalW = activeThemes.reduce((s, t) => s + meta.weights[t], 0);
+    const totalW = activeThemes.reduce((s, t) => s + baseWeights[t], 0);
     const renorm = {} as Record<NaoTheme, number>;
-    activeThemes.forEach(t => { renorm[t] = meta.weights[t] / totalW; });
+    activeThemes.forEach(t => { renorm[t] = baseWeights[t] / totalW; });
     weights = renorm;
   } else {
     activeThemes = ALL_THEMES;
-    weights = meta.weights;
+    weights = baseWeights;
   }
 
   return activeThemes.reduce((sum, t) => {
@@ -353,29 +515,35 @@ export function computeSatisfaction(
   }, 0);
 }
 
-export function computeEffectiveSeuil(union: NaoUnion, posture: UnionPosture): number {
-  return UNION_META[union].seuilAccord + POSTURE_META[posture].seuilMod;
+export function computeEffectiveSeuil(
+  union: NaoUnion,
+  posture: UnionPosture,
+  preset: NaoPreset = 'standard'
+): number {
+  return getUnionSeuilAccord(union, preset) + POSTURE_META[posture].seuilMod;
 }
 
 export function willUnionSign(
   themes: Record<NaoTheme, number>,
   union: NaoUnion,
   posture: UnionPosture,
-  accordPartiel: boolean
+  accordPartiel: boolean,
+  preset: NaoPreset = 'standard'
 ): boolean {
   if (posture === 'retrait') return false;
-  const sat   = computeSatisfaction(themes, union, accordPartiel);
-  const seuil = computeEffectiveSeuil(union, posture);
+  const sat   = computeSatisfaction(themes, union, accordPartiel, preset);
+  const seuil = computeEffectiveSeuil(union, posture, preset);
   return sat >= seuil;
 }
 
 export function computeSigningWeight(
   themes: Record<NaoTheme, number>,
   postures: PostureMap,
-  accordPartiel: boolean
+  accordPartiel: boolean,
+  preset: NaoPreset = 'standard'
 ): { signing: NaoUnion[]; weight: number } {
-  const signing = ALL_UNIONS.filter(u => willUnionSign(themes, u, postures[u], accordPartiel));
-  const weight  = signing.reduce((s, u) => s + UNION_META[u].electoralWeight, 0);
+  const signing = ALL_UNIONS.filter(u => willUnionSign(themes, u, postures[u], accordPartiel, preset));
+  const weight  = signing.reduce((s, u) => s + getUnionElectoralWeight(u, preset), 0);
   return { signing, weight };
 }
 
@@ -479,16 +647,17 @@ export function resolveSeance(state: NaoState): NaoState {
 
   /* --- États syndicats --- */
   const accordPartiel = newModifiers.accordPartielActive;
+  const preset = state.modifiers.preset ?? 'standard';
   const unionStates: Record<NaoUnion, UnionSeanceState> = {} as Record<NaoUnion, UnionSeanceState>;
   ALL_UNIONS.forEach(u => {
     const posture       = newPostures[u];
-    const satisfaction  = computeSatisfaction(themesAfter, u, accordPartiel);
-    const effectiveSeuil = computeEffectiveSeuil(u, posture);
-    const ws = willUnionSign(themesAfter, u, posture, accordPartiel);
+    const satisfaction  = computeSatisfaction(themesAfter, u, accordPartiel, preset);
+    const effectiveSeuil = computeEffectiveSeuil(u, posture, preset);
+    const ws = willUnionSign(themesAfter, u, posture, accordPartiel, preset);
     unionStates[u] = { satisfaction, effectiveSeuil, willSign: ws, posture };
   });
 
-  const { signing, weight: signingWeight } = computeSigningWeight(themesAfter, newPostures, accordPartiel);
+  const { signing, weight: signingWeight } = computeSigningWeight(themesAfter, newPostures, accordPartiel, preset);
 
   /* --- Narrative --- */
   const narrative = composeSeanceNarrative(
@@ -706,12 +875,13 @@ export function aiEmployeurMove(state: NaoState): EmployeurMove {
   const adj = emptyAdjustments();
   const accordPartiel = state.modifiers.accordPartielActive;
   const useMobilisation = state.modifiers.mobilisationActive;
+  const preset = state.modifiers.preset ?? 'standard';
 
   // Calculer le gap de satisfaction pour chaque syndicat
   const gaps = ALL_UNIONS.map(u => ({
     union: u,
-    gap: computeEffectiveSeuil(u, state.postures[u]) - computeSatisfaction(state.themes, u, accordPartiel),
-    weight: UNION_META[u].electoralWeight
+    gap: computeEffectiveSeuil(u, state.postures[u], preset) - computeSatisfaction(state.themes, u, accordPartiel, preset),
+    weight: getUnionElectoralWeight(u, preset)
   }));
 
   /* P0 ORDA-011 (B-15-recal-emp) — ciblage coalition à 4 unions
@@ -756,7 +926,7 @@ export function aiEmployeurMove(state: NaoState): EmployeurMove {
   // Scorer les thèmes par importance pour les cibles
   const themeScores: Record<NaoTheme, number> = { salaires: 0, primes: 0, teletravail: 0, egalite_pro: 0 };
   targets.forEach(({ union, gap }) => {
-    const w = UNION_META[union].weights;
+    const w = getUnionWeights(union, preset);
     ALL_THEMES.forEach(t => { themeScores[t] += w[t] * Math.max(gap, 0.05); });
   });
 
@@ -787,7 +957,7 @@ export function aiEmployeurMove(state: NaoState): EmployeurMove {
   let tactic: EmployeurTactic | null = null;
 
   if (state.seance >= 4 && available.includes('ultimatum')) {
-    const { weight } = computeSigningWeight(state.themes, state.postures, accordPartiel);
+    const { weight } = computeSigningWeight(state.themes, state.postures, accordPartiel, preset);
     if (weight >= SIGNING_MAJORITY) tactic = 'ultimatum';
   }
   if (!tactic && available.length > 0 && _rng() > 0.55) {
@@ -804,7 +974,8 @@ export function aiEmployeurMove(state: NaoState): EmployeurMove {
 
 export function aiSyndicatMove(state: NaoState): SyndicatMove {
   const accordPartiel = state.modifiers.accordPartielActive;
-  const postures: PostureMap = { cgt: 'pression', cfdt: 'patience', fo: 'patience', cfecgc: 'patience' };
+  const preset = state.modifiers.preset ?? 'standard';
+  const postures: PostureMap = { cgt: 'pression', cfdt: 'patience', fo: 'patience', cfecgc: 'patience', sud: 'pression' };
 
   /* Argus ORDA-001 R1 (post-AAR Argus 2026-05-08) — IA syndicat
      RECALIBRÉE : la version précédente était trop conservatrice
@@ -820,8 +991,8 @@ export function aiSyndicatMove(state: NaoState): SyndicatMove {
   const ROLL = () => _rng();
 
   // CGT — revendicative + variance ténacité / retrait
-  const cgtSat = computeSatisfaction(state.themes, 'cgt', accordPartiel);
-  const cgtGap = UNION_META.cgt.seuilAccord - cgtSat;
+  const cgtSat = computeSatisfaction(state.themes, 'cgt', accordPartiel, preset);
+  const cgtGap = getUnionSeuilAccord('cgt', preset) - cgtSat;
   const cgtRoll = ROLL();
   if (state.seance === 1) {
     postures.cgt = 'pression';
@@ -845,17 +1016,23 @@ export function aiSyndicatMove(state: NaoState): SyndicatMove {
   }
 
   // CFDT — pragmatique (pivot) + retrait conditionné
-  const cfdtSat = computeSatisfaction(state.themes, 'cfdt', accordPartiel);
-  const cfdtGap = UNION_META.cfdt.seuilAccord - cfdtSat;
+  const cfdtSat = computeSatisfaction(state.themes, 'cfdt', accordPartiel, preset);
+  const cfdtGap = getUnionSeuilAccord('cfdt', preset) - cfdtSat;
+  /* P1 ORDA-017 — preset distribution-services : CFDT-Services biais
+     "signataire" (Léa-20). Réduction du taux de retrait. */
+  const cfdtBiasSignataire = NAO_PRESET_META[preset].cfdtBias === 'signataire';
   const cfdtRoll = ROLL();
   /* Argus R1 — couplage intersyndical (solidarité) : si CGT s'est
      mise en retrait, CFDT évalue le coût politique de signer seule.
      50 % de proba de suivre. Effet : pv_desaccord atteignable. */
   const cgtEnRetrait = postures.cgt === 'retrait';
-  if (cgtEnRetrait && cfdtRoll < 0.50) {
+  if (cgtEnRetrait && cfdtRoll < (cfdtBiasSignataire ? 0.20 : 0.50)) {
+    /* En preset distribution-services, CFDT suit moins facilement
+       le retrait CGT (rapprochement Léa CFDT, pivot signataire). */
     postures.cfdt = 'retrait';
-  } else if (cfdtRoll < 0.05) {
-    /* 5 % de retrait stratégique (consultation base réformiste) */
+  } else if (cfdtRoll < (cfdtBiasSignataire ? 0.02 : 0.05)) {
+    /* 5 % de retrait stratégique (consultation base réformiste).
+       2 % seulement en preset distribution-services. */
     postures.cfdt = 'retrait';
   } else if (cfdtGap < 0.05) {
     postures.cfdt = 'compromis';
@@ -868,8 +1045,8 @@ export function aiSyndicatMove(state: NaoState): SyndicatMove {
   }
 
   // FO — centrée salaires : refus si salaires sous minimum vital + variance
-  const foSat = computeSatisfaction(state.themes, 'fo', accordPartiel);
-  const foGap = UNION_META.fo.seuilAccord - foSat;
+  const foSat = computeSatisfaction(state.themes, 'fo', accordPartiel, preset);
+  const foGap = getUnionSeuilAccord('fo', preset) - foSat;
   /* Argus R1 : FO refuse explicitement si la position salaires reste
      basse en fin de partie (cohérent avec son profil "60 % salaires") */
   const salairesPos = state.themes.salaires;
@@ -906,8 +1083,8 @@ export function aiSyndicatMove(state: NaoState): SyndicatMove {
      comme syndicat catégoriel s'effondrerait à signer seule un
      accord refusé par toute la coalition syndicale. C'est ce
      qui permet pv_desaccord d'être atteignable (Argus seuil ≥1%). */
-  const cfecgcSat = computeSatisfaction(state.themes, 'cfecgc', accordPartiel);
-  const cfecgcGap = UNION_META.cfecgc.seuilAccord - cfecgcSat;
+  const cfecgcSat = computeSatisfaction(state.themes, 'cfecgc', accordPartiel, preset);
+  const cfecgcGap = getUnionSeuilAccord('cfecgc', preset) - cfecgcSat;
   const cfecgcRoll = ROLL();
   const teletravailPos = state.themes.teletravail;
   const allMajorRetrait = postures.cgt === 'retrait'
@@ -944,6 +1121,51 @@ export function aiSyndicatMove(state: NaoState): SyndicatMove {
     postures.cfecgc = 'patience';
   }
 
+  /* SUD/Solidaires — profil COMBAT (P0 ORDA-017 / Béroud-18).
+     Plus dur que la CGT : seuil 0.65, poids égalité-pro 35 %
+     (refus des accords cosmétiques sur ce thème). Pattern :
+     - séance 1 : pression (mandat de combat affirmé)
+     - retrait stratégique fréquent (35 % vs 22 % CGT) — combat
+       assumé, refus des reculs sociaux
+     - ténacité forte : reste en pression même si gap < 0.05
+     - couplage CGT : si CGT en retrait, SUD suit à 70 % (solidarité
+       intersyndicale combat)
+     - durcissement si égalité-pro reste basse en fin de partie
+     - jamais en `compromis` sur un gap > 0 — refus politique
+     IMPORTANT : SUD en retrait NE DOIT PAS faire chuter accord_majoritaire.
+     Le poids électoral 7 % (sur 107 % total avec SUD) garantit que la
+     coalition CGT+CFDT+FO+CFE-CGC=100 % reste viable sans SUD. */
+  const sudSat = computeSatisfaction(state.themes, 'sud', accordPartiel, preset);
+  const sudGap = getUnionSeuilAccord('sud', preset) - sudSat;
+  const sudRoll = ROLL();
+  const egalitePos = state.themes.egalite_pro;
+  if (state.seance === 1) {
+    postures.sud = 'pression';
+  } else if (postures.cgt === 'retrait' && sudRoll < 0.70) {
+    /* Solidarité combat : SUD suit la CGT en retrait à 70 %.
+       Plus haut que CFDT/FO (50 %) car affinité doctrinale forte. */
+    postures.sud = 'retrait';
+  } else if (sudRoll < 0.35) {
+    /* 35 % de retrait stratégique (combat assumé). Compatible
+       avec accord majoritaire car 100 % autres unions = majorité
+       atteignable. */
+    postures.sud = 'retrait';
+  } else if (state.seance >= 3 && egalitePos < 30) {
+    /* Durcissement si égalité-pro reste basse en fin de partie
+       (poids 35 % de la grille SUD). */
+    postures.sud = 'pression';
+  } else if (sudGap < 0.03) {
+    /* Compromis SUD très rare : ne signe que si seuil dépassé
+       quasi entièrement (gap < 0.03 — vs 0.05 pour les autres). */
+    postures.sud = 'compromis';
+  } else if (sudGap < 0.10) {
+    postures.sud = 'patience';
+  } else if (state.seance >= 4) {
+    postures.sud = 'patience';
+  } else {
+    postures.sud = 'pression';
+  }
+
   // Tactique
   const available = (['expertise', 'coordination', 'mobilisation', 'accord_partiel'] as SyndicatTactic[])
     .filter(t => !state.tacticsUsed.syndicat.includes(t));
@@ -961,7 +1183,7 @@ export function aiSyndicatMove(state: NaoState): SyndicatMove {
               elle persiste via nextModifiers.accordPartielActive et
               force tous les outcomes en accord_partiel. UNIQUEMENT
               à la DERNIÈRE séance, en dernier recours. */
-    const { weight } = computeSigningWeight(state.themes, postures, false);
+    const { weight } = computeSigningWeight(state.themes, postures, false, preset);
     if (weight < SIGNING_MAJORITY) tactic = 'accord_partiel';
   }
 

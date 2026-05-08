@@ -43,6 +43,11 @@
   let debugOverlay = $state<boolean>(loadDebugOverlay());
   let swipeEnabled = $state<boolean>(loadSwipeEnabled());
   let textMode = $state<'falc' | 'litteraire'>(loadTextMode());
+  /* ORDA-017 (P0 Aïcha #23) — Mode pédagogique ("Séance prof"). Quand
+     activé, le StartScreen propose de démarrer à un tour/ère donné(e)
+     pour focaliser un cours d'1h sur une période précise (Matignon
+     1936, Grenelle 1968, ordonnances Macron 2017). */
+  let pedagogicalMode = $state<boolean>(loadPedagogicalMode());
   const TS_KEY = 'paritas_text_size';
   const HC_KEY = 'paritas_high_contrast';
   const CB_KEY = 'paritas_color_blind';
@@ -51,6 +56,7 @@
   const DBG_KEY = 'paritas_debug_overlay';
   const SW_KEY = 'paritas_swipe_enabled';
   const TM_KEY = 'paritas_text_mode';
+  const PED_KEY = 'paritas_pedagogical_mode';
   const MV_KEY = 'paritas_music_volume';
   const SV_KEY = 'paritas_sfx_volume';
   const VV_KEY = 'paritas_voice_volume';
@@ -131,6 +137,10 @@
     try { return localStorage.getItem(SW_KEY) === 'true'; } catch { return false; }
   }
 
+  function loadPedagogicalMode(): boolean {
+    try { return localStorage.getItem(PED_KEY) === 'true'; } catch { return false; }
+  }
+
   function apply() {
     const root = document.documentElement;
     root.classList.toggle('a11y-text-sm', textSize === 'sm');
@@ -151,6 +161,7 @@
       localStorage.setItem(DBG_KEY, debugOverlay ? 'true' : 'false');
       localStorage.setItem(SW_KEY, swipeEnabled ? 'true' : 'false');
       localStorage.setItem(TM_KEY, textMode);
+      localStorage.setItem(PED_KEY, pedagogicalMode ? 'true' : 'false');
       localStorage.setItem(MV_KEY, String(musicVolume));
       localStorage.setItem(SV_KEY, String(sfxVolume));
       localStorage.setItem(VV_KEY, String(voiceVolume));
@@ -173,6 +184,7 @@
   $effect(() => {
     void textSize; void highContrast; void colorBlindFriendly; void reducedMotion; void cognitiveFriendly; void debugOverlay; void swipeEnabled; void textMode;
     void musicVolume; void sfxVolume; void voiceVolume; void speechGranularity; void voicesBoost;
+    void pedagogicalMode;
     apply();
   });
 
@@ -495,6 +507,20 @@
           <b>FALC</b> : phrases courtes, vocabulaire simple, pédagogique. <b>Littéraire</b> :
           style dense (uniquement quand Haiku enrichit la scène — sinon le contenu écrit est en FALC).
         </p>
+      </section>
+
+      <section class="opt-toggle">
+        <label>
+          <input type="checkbox" bind:checked={pedagogicalMode} />
+          <span class="lbl">
+            <b>Mode « Séance prof » (pédagogie)</b>
+            <small>Débloque le démarrage à une ère précise sur l'écran
+              de création de personnage (Matignon 1936, Grenelle 1968,
+              ordonnances Macron 2017…). Pour tenir une séance d'1h
+              focalisée sur une période, sans rejouer les 100 tours.
+              Recommandé en lycée / TP. ORDA-017.</small>
+          </span>
+        </label>
       </section>
 
       <section class="opt-group">

@@ -123,6 +123,8 @@
     camp: Camp;
     mode: RenderMode;
     legendaryId?: string;
+    /* ORDA-017 — Mode Séance prof. Si défini, démarre à ce tour. */
+    startTurn?: number;
   }) {
     await contentReady;
     rebirth.start(opts);

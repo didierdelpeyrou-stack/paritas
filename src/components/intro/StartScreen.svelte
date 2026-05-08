@@ -10,6 +10,7 @@
     LAUNCH_PRESET_META,
     type LaunchPreset
   } from '$lib/a11y/launchPreset';
+  import { ERAS } from '../../game/content/eras';
 
   interface Props {
     onStart: (opts: {
@@ -17,6 +18,7 @@
       camp: Camp;
       mode: RenderMode;
       legendaryId?: string;
+      startTurn?: number;
     }) => void;
   }
   let { onStart }: Props = $props();
@@ -32,6 +34,21 @@
      pré-cochent mode + a11y-cognitive. Persisté implicitement via
      le helper launchPreset.ts (DOM + localStorage). */
   let activePreset = $state<LaunchPreset>('balanced');
+
+  /* ORDA-017 (P0 Aïcha #23) — Mode "Séance prof". Si activé dans les
+     Réglages, on affiche un picker d'ère pour démarrer la partie à un
+     tour précis (T17 Front pop, T29 Trente Glorieuses, T69 Macron…).
+     Lu directement de localStorage (cf. Settings.svelte PED_KEY). */
+  function loadPedagogicalMode(): boolean {
+    try {
+      return localStorage.getItem('paritas_pedagogical_mode') === 'true';
+    } catch {
+      return false;
+    }
+  }
+  const pedagogicalMode = loadPedagogicalMode();
+  /* `null` = démarrage normal T1 ; sinon, le tour de démarrage choisi. */
+  let startTurn = $state<number | null>(null);
 
   function selectPreset(p: LaunchPreset) {
     activePreset = p;
@@ -65,7 +82,10 @@
       name: name.trim(),
       camp,
       mode,
-      legendaryId: legendary?.id
+      legendaryId: legendary?.id,
+      /* Mode pédagogique : on transmet le tour de démarrage si choisi.
+         Sinon (null), comportement par défaut → T1. */
+      startTurn: pedagogicalMode && startTurn !== null ? startTurn : undefined
     });
   }
 </script>
@@ -227,6 +247,46 @@
     </div>
   </details>
 
+  {#if pedagogicalMode}
+    <!-- ORDA-017 (P0 Aïcha #23) — Mode Séance prof : picker d'ère
+         pour démarrer à une période historique précise au lieu du T1.
+         Placé après le sélecteur de camp et avant le bouton Démarrer. -->
+    <div class="pedagogical-block">
+      <span class="pedagogical-tag">Mode Séance prof</span>
+      <p class="pedagogical-blurb">
+        Démarre la partie à une période précise pour focaliser ta
+        séance sur Matignon 1936, Grenelle 1968, ordonnances Macron 2017…
+        L'état des forces sera ajusté au contexte historique.
+      </p>
+      <div class="era-list" role="radiogroup" aria-label="Choisir le tour de démarrage">
+        <button
+          type="button"
+          role="radio"
+          aria-checked={startTurn === null}
+          class="era-option"
+          data-active={startTurn === null}
+          onclick={() => (startTurn = null)}
+        >
+          <span class="era-name">Début (T1)</span>
+          <span class="era-period">Démarrage normal · 1789, Révolution</span>
+        </button>
+        {#each ERAS as era (era.id)}
+          <button
+            type="button"
+            role="radio"
+            aria-checked={startTurn === era.fromTurn}
+            class="era-option"
+            data-active={startTurn === era.fromTurn}
+            onclick={() => (startTurn = era.fromTurn)}
+          >
+            <span class="era-name">{era.name} (T{era.fromTurn})</span>
+            <span class="era-period">{era.period}</span>
+          </button>
+        {/each}
+      </div>
+    </div>
+  {/if}
+
   <button
     type="button"
     class="btn-primary w-full disabled:opacity-40 disabled:cursor-not-allowed"
@@ -296,5 +356,78 @@
 
   details[open] .custom-summary::before {
     transform: rotate(90deg);
+  }
+
+  /* ORDA-017 — Mode Séance prof. Encart pédago à l'écran de démarrage. */
+  .pedagogical-block {
+    position: relative;
+    border: 1px solid rgba(102, 187, 106, 0.35);
+    border-radius: 0.7rem;
+    background: rgba(102, 187, 106, 0.06);
+    padding: 1rem 0.85rem 0.75rem;
+  }
+
+  .pedagogical-tag {
+    position: absolute;
+    top: -0.65rem;
+    left: 1rem;
+    color: #a5d6a7;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: linear-gradient(180deg, #1a1f26, #232a33);
+    padding: 0.18rem 0.55rem;
+    border-radius: 0.35rem;
+    border: 1px solid rgba(102, 187, 106, 0.45);
+  }
+
+  .pedagogical-blurb {
+    color: rgba(237, 228, 201, 0.75);
+    font-size: 0.82rem;
+    line-height: 1.45;
+    margin: 0 0 0.6rem;
+  }
+
+  .era-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 0.4rem;
+  }
+
+  .era-option {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    text-align: left;
+    border: 1px solid rgba(237, 228, 201, 0.18);
+    border-radius: 0.5rem;
+    background: rgba(13, 16, 20, 0.4);
+    padding: 0.55rem 0.7rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .era-option:hover {
+    border-color: rgba(244, 213, 139, 0.5);
+    background: rgba(201, 154, 64, 0.06);
+  }
+
+  .era-option[data-active='true'] {
+    border-color: #a5d6a7;
+    background: rgba(102, 187, 106, 0.12);
+  }
+
+  .era-name {
+    color: #f4d58b;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+  }
+
+  .era-period {
+    color: rgba(237, 228, 201, 0.65);
+    font-size: 0.75rem;
+    font-family: 'Source Serif 4', Georgia, serif;
   }
 </style>

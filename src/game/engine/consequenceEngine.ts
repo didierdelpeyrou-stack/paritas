@@ -125,26 +125,33 @@ export function applyNarrativeFallback(
 
    Pattern usage :
      // Au moment d'un choix qui marque (ex: corruption préfet 1936) :
-     scheduleActorCallback(state.memory, currentTurn + 4, 'adversaire',
+     nextMemory = scheduleActorCallback(nextMemory, currentTurn + 4, 'adversaire',
        "Pinot n'a pas oublié — il fait passer le mot dans la presse.",
        'corrompre-prefet', currentTurn);
 
      // Dans le turn-resolver, à chaque début de tour :
      const due = dueActorCallbacks(state.memory, state.turn);
      // ...déclencher les narratives, afficher dans le ticker causal
-     consumeActorCallbacks(state.memory, due);
+     nextMemory = consumeActorCallbacks(state.memory, due);
 
    Le branchement effectif depuis les scénarios (programmation
    automatique via `traitShift` ou `flag` du choix) est en backlog
    ORDA-010. Cette infrastructure est l'API minimale requise pour
    que les Diplomates ajoutent les hooks dans le contenu narratif.
+
+   P1 Muratori-13 (Sapeurs ORDA-017 PARITAS) — refactor pure.
+   Avant : `scheduleActorCallback` mutait `memory.scheduledActorCallbacks`
+   par `.push(...)`. Comme `consumeChoice/markPlayed` produisent un
+   shallow clone du Memory, la référence array fuyait dans le state
+   d'entrée. Désormais : retour d'un nouveau Memory à chaque appel.
    ============================================================ */
 
 /** Programme un callback d'acteur pour un tour futur (typiquement
  *  posedAtTurn + 3..5). Aucune limite de file ; le moteur déclenche
  *  quand atTurn ≤ currentTurn.
  *  P0 Pope-04 (Sapeurs ORDA-015) — accepte un 7e argument optionnel
- *  `effects` qui sera appliqué au state au moment du déclenchement. */
+ *  `effects` qui sera appliqué au state au moment du déclenchement.
+ *  P1 Muratori-13 (Sapeurs ORDA-017) — pure : retourne un nouveau Memory. */
 export function scheduleActorCallback(
   memory: Memory,
   atTurn: number,
@@ -153,11 +160,14 @@ export function scheduleActorCallback(
   fromChoiceId: string,
   posedAtTurn: number,
   effects?: Effects
-): void {
-  if (!memory.scheduledActorCallbacks) memory.scheduledActorCallbacks = [];
+): Memory {
   const cb: ScheduledActorCallback = { atTurn, actor, narrative, fromChoiceId, posedAtTurn };
   if (effects) cb.effects = effects;
-  memory.scheduledActorCallbacks.push(cb);
+  const previous = memory.scheduledActorCallbacks ?? [];
+  return {
+    ...memory,
+    scheduledActorCallbacks: [...previous, cb]
+  };
 }
 
 /** Retourne les callbacks dus au tour courant (atTurn ≤ currentTurn). */
@@ -170,14 +180,19 @@ export function dueActorCallbacks(
 }
 
 /** Consomme les callbacks dus (les retire de la file). À appeler
- *  après affichage / déclenchement par le moteur de tour. */
+ *  après affichage / déclenchement par le moteur de tour.
+ *  P1 Muratori-13 (Sapeurs ORDA-017) — pure : retourne un nouveau Memory. */
 export function consumeActorCallbacks(
   memory: Memory,
   consumed: ScheduledActorCallback[]
-): void {
-  if (!memory.scheduledActorCallbacks || consumed.length === 0) return;
+): Memory {
+  if (!memory.scheduledActorCallbacks || consumed.length === 0) return memory;
   const consumedSet = new Set(consumed.map(cb => `${cb.fromChoiceId}@${cb.atTurn}`));
-  memory.scheduledActorCallbacks = memory.scheduledActorCallbacks.filter(
+  const filtered = memory.scheduledActorCallbacks.filter(
     cb => !consumedSet.has(`${cb.fromChoiceId}@${cb.atTurn}`)
   );
+  return {
+    ...memory,
+    scheduledActorCallbacks: filtered
+  };
 }

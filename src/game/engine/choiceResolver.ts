@@ -82,7 +82,7 @@ export function resolveChoice(
      + 1 sur la trahison générique. À étendre par les Diplomates. */
   if (choice.flag === 'refuse-compromis') {
     /* L'adversaire ricane et fait passer le mot. Tour +4. */
-    scheduleActorCallback(
+    nextMemory = scheduleActorCallback(
       nextMemory, state.turn + 4, 'adversaire',
       "L'adversaire n'a pas oublié ton refus. Le mot court chez les patrons : « Le syndicat ne signe rien. On peut continuer. »",
       choice.id, state.turn
@@ -90,7 +90,7 @@ export function resolveChoice(
   }
   if (choice.flag === 'jouer-cgt-cgtu') {
     /* La base est divisée. Tour +5. Romero-grade. */
-    scheduleActorCallback(
+    nextMemory = scheduleActorCallback(
       nextMemory, state.turn + 5, 'base',
       'Une lettre de la base te parvient. Trois lignes. Elle sait que tu as joué la division. Elle ne te le redira pas.',
       choice.id, state.turn
@@ -100,7 +100,7 @@ export function resolveChoice(
     /* La base perd confiance — opinion publique aussi. Tour +3.
        P0 Pope-04 : la base ne « perd confiance » plus en simple narratif —
        trust −3 sur l'acteur base au déclenchement. */
-    scheduleActorCallback(
+    nextMemory = scheduleActorCallback(
       nextMemory, state.turn + 3, 'opinion',
       "Une dépêche AFP nomme ta trahison. La presse syndicale relaie. L'opinion bascule, lentement.",
       choice.id, state.turn,
@@ -114,7 +114,7 @@ export function resolveChoice(
        ORDA-015 (Goodwin-12) : la version initiale (« Tu as bien fait. »)
        sonnait post-1945. Réécriture ambivalente : préserve la tension
        CGT / CGT-Unitaire (refusion 1936) et amorce la scission FO 1947. */
-    scheduleActorCallback(
+    nextMemory = scheduleActorCallback(
       nextMemory, state.turn + 5, 'base',
       'Frachon t\'écrit, trois lignes : « Le 7 juin restera. Reste à voir si la base nous suit. La CGT-Unitaire ne pardonne pas vite. » Tu plies la lettre, sans la ranger.',
       choice.id, state.turn,
@@ -127,7 +127,7 @@ export function resolveChoice(
      N+3..N+5 que le bloc Matignon ci-dessus. */
   if (choice.flag === 'signe-grenelle') {
     /* Mai 1968 — la base trouve les chiffres « pâles » face à l'espérance révolutionnaire. Tour +4. */
-    scheduleActorCallback(
+    nextMemory = scheduleActorCallback(
       nextMemory, state.turn + 4, 'base',
       "Aux portes de Renault-Billancourt, on lit les accords à voix haute. La base te répond : « 35% du SMIG, c'est bien. Mais ce n'est pas la révolution. »",
       choice.id, state.turn
@@ -135,7 +135,7 @@ export function resolveChoice(
   }
   if (choice.flag === 'fonde-fo') {
     /* Scission 1947 — la CGT garde rancune, l'État reconnaît. Tour +5. */
-    scheduleActorCallback(
+    nextMemory = scheduleActorCallback(
       nextMemory, state.turn + 5, 'adversaire',
       "Une note interne CGT circule : « Jouhaux a fondé sa boutique avec l'argent américain. » L'attaque s'installe pour quarante ans.",
       choice.id, state.turn
@@ -143,7 +143,7 @@ export function resolveChoice(
   }
   if (choice.flag === 'fait-victoire-historique') {
     /* Juppé 1995 — l'opinion retient le triomphe, l'État panse les plaies. Tour +5. */
-    scheduleActorCallback(
+    nextMemory = scheduleActorCallback(
       nextMemory, state.turn + 5, 'opinion',
       "Les sondages bougent tard. Six mois après, l'opinion te reconnaît la victoire. La rue, elle, n'a pas oublié les trois semaines de gel.",
       choice.id, state.turn
@@ -151,7 +151,7 @@ export function resolveChoice(
   }
   if (choice.flag === 'refondation-paritaire') {
     /* Ordonnances 2017 / CSE / Florange — l'État valide la nouvelle grammaire. Tour +4. */
-    scheduleActorCallback(
+    nextMemory = scheduleActorCallback(
       nextMemory, state.turn + 4, 'etat',
       "Une circulaire DGT cite ton accord en exemple. Les préfets reçoivent consigne : « ce dialogue social-là, on l'accompagne, on ne le bloque pas. »",
       choice.id, state.turn
@@ -161,7 +161,7 @@ export function resolveChoice(
     /* Sur-usage de la mobilisation — la base se retire silencieusement. Tour +3.
        P0 Pope-04 : base patience −3 — l'érosion silencieuse a une trace
        chiffrée, le joueur sent la jauge se retirer en même temps que les militants. */
-    scheduleActorCallback(
+    nextMemory = scheduleActorCallback(
       nextMemory, state.turn + 3, 'base',
       "Les permanences se vident. Trois militants démissionnent sans bruit. Personne ne te le dit, mais tu sens le silence aux assemblées.",
       choice.id, state.turn,
@@ -175,7 +175,7 @@ export function resolveChoice(
     /* 1945 — Croizat fonde la Sécu. L'État institutionnalise. Tour +5.
        P0 Pope-04 : etat trust +3 — l'État reconnaît le canal paritaire,
        et la jauge le dit. Pas un compliment, un repère. */
-    scheduleActorCallback(
+    nextMemory = scheduleActorCallback(
       nextMemory, state.turn + 5, 'etat',
       "Le ministère du Travail t'envoie copie d'une circulaire : « La gestion paritaire des caisses est désormais le canal officiel. » Tu lis deux fois — c'est inattendu venant d'eux.",
       choice.id, state.turn,
@@ -184,7 +184,7 @@ export function resolveChoice(
   }
   if (choice.flag === 'cree-chsct') {
     /* 1982 lois Auroux — la base découvre un nouveau levier juridique. Tour +4. */
-    scheduleActorCallback(
+    nextMemory = scheduleActorCallback(
       nextMemory, state.turn + 4, 'base',
       "Trois CHSCT déposent leur premier droit d'alerte la même semaine. Les militants se passent les comptes-rendus comme des relais — il y a quelque chose à apprendre.",
       choice.id, state.turn
@@ -192,7 +192,7 @@ export function resolveChoice(
   }
   if (choice.flag === 'cgpf-cogestion') {
     /* CGPF années 30 — l'adversaire patronal serre les rangs. Tour +4. */
-    scheduleActorCallback(
+    nextMemory = scheduleActorCallback(
       nextMemory, state.turn + 4, 'adversaire',
       "Une réunion CGPF restreinte refuse ton ouverture. Le compte-rendu fuite : « Pas de cogestion. On garde la main, ou on perd tout. »",
       choice.id, state.turn
@@ -200,9 +200,121 @@ export function resolveChoice(
   }
   if (choice.flag === 'mediation-elysee') {
     /* Médiation présidentielle — l'État reconnaît, l'opinion observe. Tour +3. */
-    scheduleActorCallback(
+    nextMemory = scheduleActorCallback(
       nextMemory, state.turn + 3, 'opinion',
       "Le palais publie un communiqué sobre : « Les partenaires sociaux ont fait preuve de responsabilité. » L'opinion enregistre — c'est rare, ça compte.",
+      choice.id, state.turn
+    );
+  }
+
+  /* ORDA-017 PARITAS (Diplomates content, P1 Romero-05) : 9 callbacks
+     symétriques pour rétablir l'équilibre acteur-réaction sur les flags
+     institutionnels et patronaux. Asymétrie pointée par Romero panel-30 :
+     créer la Sécu fait écrire l'État, mais créer les prud'hommes laissait
+     le silence. On corrige : chaque institution posée laisse une trace
+     dans le monde diégétique. Mêmes décalages N+3..N+5. */
+  if (choice.flag === 'cree-mutuelle-1864') {
+    /* Loi Ollivier 1864 — l'abrogation du délit de coalition libère la
+       mutualité ouvrière. L'État enregistre, presque malgré lui. Tour +5. */
+    nextMemory = scheduleActorCallback(
+      nextMemory, state.turn + 5, 'etat',
+      "Une note préfectorale circule. Les mutuelles désormais légales doivent déposer leurs statuts en sous-préfecture — l'administration veut compter. La loi Ollivier reconnaît l'existence ; elle exige l'enregistrement.",
+      choice.id, state.turn
+    );
+  }
+  if (choice.flag === 'cree-syndicat-1884') {
+    /* Loi Waldeck-Rousseau 21 mars 1884 — la Chambre des manufactures
+       prend acte avec inquiétude. L'adversaire patronal s'organise. Tour +4. */
+    nextMemory = scheduleActorCallback(
+      nextMemory, state.turn + 4, 'adversaire',
+      "La Chambre des manufactures de Lille s'inquiète : le syndicat n'est plus interdit, et le Comité des Forges l'apprend dans Le Temps. Une circulaire interne recommande la prudence : « Ne licenciez plus les délégués sans précaution écrite. »",
+      choice.id, state.turn
+    );
+  }
+  if (choice.flag === 'cree-conventions-1919') {
+    /* Loi du 25 mars 1919 sur les conventions collectives. La base
+       reçoit ses premiers contrats écrits — la promesse devient lisible. Tour +5. */
+    nextMemory = scheduleActorCallback(
+      nextMemory, state.turn + 5, 'base',
+      "Les ouvriers reçoivent leurs premiers contrats écrits : tarif minimum, durée, repos hebdomadaire, signés par la branche. Aux portes des usines de Lyon-Vaise, on lit le texte à voix haute. Une délégation t'écrit : « C'est sur papier, désormais. »",
+      choice.id, state.turn
+    );
+  }
+  if (choice.flag === 'cree-prudhommes') {
+    /* Réforme Boulin (loi du 18 janvier 1979) — généralisation des
+       conseils de prud'hommes, élections par collège. Le ministère
+       de la Justice publie. Tour +4. */
+    nextMemory = scheduleActorCallback(
+      nextMemory, state.turn + 4, 'etat',
+      "Le ministère de la Justice publie une circulaire : la généralisation des conseils de prud'hommes au régime général s'accompagne d'élections par collège. La Chancellerie se félicite — sobrement — d'une « justice du travail enracinée dans le paritarisme ».",
+      choice.id, state.turn
+    );
+  }
+  if (choice.flag === 'cree-unedic') {
+    /* Convention du 31 décembre 1958 — création de l'Unédic / ASSEDIC.
+       Le CNPF veille à la gestion paritaire (et donc patronale). Tour +5. */
+    nextMemory = scheduleActorCallback(
+      nextMemory, state.turn + 5, 'adversaire',
+      "Le CNPF s'organise : la cotisation chômage doit rester gérée par les partenaires sociaux, hors de la Sécu. Une note de Georges Villiers à ses fédérations le martèle : « Nous tenons l'Unédic, ou nous perdons la main sur l'emploi. »",
+      choice.id, state.turn
+    );
+  }
+  if (choice.flag === 'cnpf-insertion') {
+    /* CNPF — création décembre 1945, première AG janvier 1946. Le mot
+       « insertion » résonne ; la base écoute, sans illusion. Tour +4. */
+    nextMemory = scheduleActorCallback(
+      nextMemory, state.turn + 4, 'base',
+      "Au café près de l'usine Renault de Billancourt, on entend le mot « insertion » dans les comptes-rendus du nouveau CNPF. La base écoute — elle attend les actes. Un délégué te le résume : « Insertion, oui. Dans quoi, c'est nous qui le dirons. »",
+      choice.id, state.turn
+    );
+  }
+  if (choice.flag === 'cpme-divergence-medef') {
+    /* CPME ≠ MEDEF — la confédération des PME marque sa différence
+       avec le MEDEF. Communiqué cinglant, divergence publique. Tour +3. */
+    nextMemory = scheduleActorCallback(
+      nextMemory, state.turn + 3, 'adversaire',
+      "Le MEDEF publie un communiqué tranchant : « La CPME parle pour elle, pas pour le patronat français. » L'avenue Bosquet recadre l'avenue de Suffren — la divergence devient publique, et Le Figaro la titre dès le lendemain.",
+      choice.id, state.turn
+    );
+  }
+  if (choice.flag === 'patronat-organise') {
+    /* CGPF (1936) → CNPF (1945) → MEDEF (1998) — la fédération
+       du patronat est un fait social que la base entend de loin. Tour +5. */
+    nextMemory = scheduleActorCallback(
+      nextMemory, state.turn + 5, 'base',
+      "Au café près de l'usine, on apprend que le patronat se fédère — CGPF, CNPF, MEDEF, les sigles défilent. Un vieux militant hausse les épaules : « Ils sont organisés depuis toujours, nous on apprend chaque génération. »",
+      choice.id, state.turn
+    );
+  }
+  if (choice.flag === 'pose-charte-independance') {
+    /* Charte d'Amiens 1906 — indépendance syndicale vis-à-vis des partis.
+       Le ministère prend acte, sans chaleur. Tour +4. */
+    nextMemory = scheduleActorCallback(
+      nextMemory, state.turn + 4, 'etat',
+      "Le ministère prend acte : la CGT pose son indépendance vis-à-vis des partis politiques. Clemenceau, ministre de l'Intérieur, lit le texte d'Amiens et le glisse à un préfet : « Tant qu'ils sont entre eux, nous savons à qui parler. »",
+      choice.id, state.turn
+    );
+  }
+
+  /* ORDA-017 PARITAS (Diplomates content, P0 Lukas-28) : écho
+     Mitbestimmung. Asymétrie pointée par Lukas K. (IG-Metall Stuttgart) —
+     `cogestion-rejetee` et `mitbestimmung-presented` posaient un flag
+     mais aucun callback n'animait le miroir comparatiste. On le rétablit. */
+  if (choice.flag === 'mitbestimmung-presented') {
+    /* Maastricht 1992 — la délégation IG Metall présente le modèle
+       allemand à Paris. La base écoute, sceptique. Tour +12 (cycle long). */
+    nextMemory = scheduleActorCallback(
+      nextMemory, state.turn + 12, 'base',
+      "Maastricht 1992. Une délégation IG Metall vient présenter le modèle Mitbestimmung à Paris. La base écoute, sceptique — la cogestion sent l'Allemagne, et l'autonomie syndicale française a été achetée trop cher pour qu'on la cède sans débat.",
+      choice.id, state.turn
+    );
+  }
+  if (choice.flag === 'cogestion-rejetee') {
+    /* Directive 94/45/CE — comités d'entreprise européens. La cogestion
+       s'introduit par la porte communautaire, malgré le refus français. Tour +8. */
+    nextMemory = scheduleActorCallback(
+      nextMemory, state.turn + 8, 'etat',
+      "Une directive européenne (94/45/CE, 22 septembre 1994) impose les comités d'entreprise européens dans les groupes transnationaux. La cogestion frappe à la porte indirectement — la France transposera en 1996, sans enthousiasme, sans débat parlementaire.",
       choice.id, state.turn
     );
   }

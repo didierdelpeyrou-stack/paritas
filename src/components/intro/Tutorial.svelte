@@ -23,17 +23,32 @@
     }
   }
 
+  /* ORDA-017 (P0 Aïcha #23) — Mode "Séance prof". Si activé, on bascule
+     directement sur l'écran rappel-express avec un encart contextuel
+     ("Tu prends la main sur la période X"), pour ne pas faire perdre
+     6-8 minutes de TP de lycée à un tutoriel générique 4 écrans. */
+  function readPedagogicalMode(): boolean {
+    try {
+      return localStorage.getItem('paritas_pedagogical_mode') === 'true';
+    } catch {
+      return false;
+    }
+  }
+
   const playedCount = readPlayedCount();
   const isReturning = playedCount >= 1;
   const isVeteran = playedCount >= 3;
+  const isPedagogical = readPedagogicalMode();
 
   /* Vétéran : on saute immédiatement. */
   if (isVeteran) {
     queueMicrotask(() => onDone());
   }
 
-  /* Mode express : 1 seul écran de rappel ; mode novice : 4 écrans. */
-  let expressMode = $state<boolean>(isReturning);
+  /* Mode express : 1 seul écran de rappel. Activé si le joueur a déjà
+     joué OU si le mode pédagogique est on (séance prof — pas de temps
+     pour un tutoriel complet 4 écrans). */
+  let expressMode = $state<boolean>(isReturning || isPedagogical);
 
   let step = $state(0);
   const TOTAL = $derived(expressMode ? 1 : 4);
@@ -59,7 +74,7 @@
       {expressMode ? 'Rappel express' : `Avant d'entrer · ${step + 1}/${TOTAL}`}
     </div>
     <div class="flex items-center gap-2">
-      {#if isReturning}
+      {#if isReturning || isPedagogical}
         <button
           type="button"
           class="mode-switch"
@@ -79,7 +94,19 @@
 
   {#if expressMode}
     <div in:fly={{ y: 8, duration: 240 }}>
-      <h2 class="font-display text-2xl text-gold mb-3">Rappel — tu as déjà joué</h2>
+      <h2 class="font-display text-2xl text-gold mb-3">
+        {isPedagogical ? 'Mode Séance prof — rappel rapide' : 'Rappel — tu as déjà joué'}
+      </h2>
+      {#if isPedagogical}
+        <!-- ORDA-017 — encart pédago : on annonce que la période sera
+             choisie à l'écran suivant + état des forces ajusté. -->
+        <aside class="pedago-aside">
+          <b>Tu prends la main sur une période historique précise.</b>
+          À l'écran suivant, choisis l'ère de démarrage (Front populaire 1936,
+          Grenelle 1968, ordonnances Macron 2017…). L'état des 7 ressources
+          sera ajusté au contexte de cette époque.
+        </aside>
+      {/if}
       <ul class="express-list">
         <li>
           <b>7 ressources</b> — Confiance, Caisse, Santé sociale, Légitimité, Rapport de force, Cohésion interne, Institution. Aucune décision ne change tout.
@@ -97,9 +124,11 @@
           <b>Mode lecture</b> — clique sur Lecture pour cacher la sidebar et lire en grand.
         </li>
       </ul>
-      <p class="mt-3 text-parchment-dim/65 text-xs italic">
-        Tu as joué {playedCount} partie{playedCount > 1 ? 's' : ''}. Tu peux revoir le tutoriel complet avec le bouton plus haut.
-      </p>
+      {#if !isPedagogical}
+        <p class="mt-3 text-parchment-dim/65 text-xs italic">
+          Tu as joué {playedCount} partie{playedCount > 1 ? 's' : ''}. Tu peux revoir le tutoriel complet avec le bouton plus haut.
+        </p>
+      {/if}
     </div>
   {:else if step === 0}
     <div in:fly={{ y: 8, duration: 240 }}>
@@ -408,5 +437,28 @@
     letter-spacing: 0.04em;
     text-transform: uppercase;
     margin-right: 0.3rem;
+  }
+
+  /* ORDA-017 — encart contextuel "Mode Séance prof" dans le tutoriel express. */
+  .pedago-aside {
+    border-left: 2px solid rgba(102, 187, 106, 0.55);
+    background: rgba(102, 187, 106, 0.08);
+    border-radius: 0 0.45rem 0.45rem 0;
+    padding: 0.55rem 0.8rem;
+    color: rgba(237, 228, 201, 0.85);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    margin-bottom: 0.65rem;
+  }
+
+  .pedago-aside b {
+    color: #a5d6a7;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 0.25rem;
   }
 </style>

@@ -13,17 +13,17 @@ import { freshTraits } from '../narrative/personalityEngine';
 import type { Memory, Choice, Scenario, RebirthGameState, PlayerTrait } from '../types';
 
 /* P1-10-branch (ORDA-010) : tests + démonstration d'usage de l'API
-   callbacks acteurs. Pattern :
+   callbacks acteurs. Pattern (ORDA-017 PARITAS — pure functions) :
 
      // 1. Au moment d'un choix marquant
-     scheduleActorCallback(memory, currentTurn + 4, 'adversaire',
+     memory = scheduleActorCallback(memory, currentTurn + 4, 'adversaire',
        "Pinot n'a pas oublié — il fait passer le mot dans la presse.",
        'corrompre-prefet', currentTurn);
 
      // 2. Au début de chaque tour (turn-resolver)
      const due = dueActorCallbacks(memory, currentTurn);
      // ...déclencher narratives, afficher dans ticker causal
-     consumeActorCallbacks(memory, due);
+     memory = consumeActorCallbacks(memory, due);
 */
 
 function emptyMemory(): Memory {
@@ -44,14 +44,14 @@ describe('consequenceEngine — scheduleActorCallback', () => {
     const memory = emptyMemory();
     expect(memory.scheduledActorCallbacks).toBeUndefined();
 
-    scheduleActorCallback(
+    const next = scheduleActorCallback(
       memory, 5, 'adversaire',
       'Pinot n\'a pas oublié.',
       'corrompre-prefet', 1
     );
 
-    expect(memory.scheduledActorCallbacks).toHaveLength(1);
-    expect(memory.scheduledActorCallbacks?.[0]).toMatchObject({
+    expect(next.scheduledActorCallbacks).toHaveLength(1);
+    expect(next.scheduledActorCallbacks?.[0]).toMatchObject({
       atTurn: 5,
       actor: 'adversaire',
       narrative: 'Pinot n\'a pas oublié.',
@@ -61,20 +61,46 @@ describe('consequenceEngine — scheduleActorCallback', () => {
   });
 
   it('empile plusieurs callbacks indépendants', () => {
-    const memory = emptyMemory();
-    scheduleActorCallback(memory, 5, 'adversaire', 'A', 'choice-1', 1);
-    scheduleActorCallback(memory, 7, 'base', 'B', 'choice-2', 2);
-    scheduleActorCallback(memory, 6, 'etat', 'C', 'choice-3', 3);
+    let memory = emptyMemory();
+    memory = scheduleActorCallback(memory, 5, 'adversaire', 'A', 'choice-1', 1);
+    memory = scheduleActorCallback(memory, 7, 'base', 'B', 'choice-2', 2);
+    memory = scheduleActorCallback(memory, 6, 'etat', 'C', 'choice-3', 3);
+    expect(memory.scheduledActorCallbacks).toHaveLength(3);
+  });
+
+  /* P1 Muratori-13 (Sapeurs ORDA-017 PARITAS) — pureté :
+     scheduleActorCallback ne mute jamais le Memory d'entrée. */
+  it('pureté : ne mute pas le Memory d\'entrée (P1 Muratori-13)', () => {
+    const original = emptyMemory();
+    const next = scheduleActorCallback(
+      original, 5, 'adversaire', 'narratif', 'c-1', 1
+    );
+    /* L'original n'a pas reçu le push */
+    expect(original.scheduledActorCallbacks).toBeUndefined();
+    /* La nouvelle référence est différente */
+    expect(next).not.toBe(original);
+    /* Et le tableau est sur la nouvelle réf */
+    expect(next.scheduledActorCallbacks).toHaveLength(1);
+  });
+
+  it('pureté : appels chaînés ne fuitent pas dans la référence initiale', () => {
+    const initial = emptyMemory();
+    let memory = initial;
+    memory = scheduleActorCallback(memory, 5, 'adversaire', 'A', 'c-1', 1);
+    memory = scheduleActorCallback(memory, 6, 'base', 'B', 'c-2', 1);
+    memory = scheduleActorCallback(memory, 7, 'etat', 'C', 'c-3', 1);
+    /* La réf initiale est restée vierge — preuve que rien ne fuite. */
+    expect(initial.scheduledActorCallbacks).toBeUndefined();
     expect(memory.scheduledActorCallbacks).toHaveLength(3);
   });
 });
 
 describe('consequenceEngine — dueActorCallbacks', () => {
   it('retourne uniquement les callbacks dont atTurn ≤ currentTurn', () => {
-    const memory = emptyMemory();
-    scheduleActorCallback(memory, 5, 'adversaire', 'A', 'c-1', 1);
-    scheduleActorCallback(memory, 8, 'base', 'B', 'c-2', 2);
-    scheduleActorCallback(memory, 3, 'etat', 'C', 'c-3', 1);
+    let memory = emptyMemory();
+    memory = scheduleActorCallback(memory, 5, 'adversaire', 'A', 'c-1', 1);
+    memory = scheduleActorCallback(memory, 8, 'base', 'B', 'c-2', 2);
+    memory = scheduleActorCallback(memory, 3, 'etat', 'C', 'c-3', 1);
 
     /* Au tour 4 : seul c-3 est dû (atTurn=3 ≤ 4). */
     const due4 = dueActorCallbacks(memory, 4);
@@ -105,23 +131,23 @@ describe('consequenceEngine — dueActorCallbacks', () => {
 
 describe('consequenceEngine — consumeActorCallbacks', () => {
   it('retire les callbacks consommés et garde les autres', () => {
-    const memory = emptyMemory();
-    scheduleActorCallback(memory, 5, 'adversaire', 'A', 'c-1', 1);
-    scheduleActorCallback(memory, 8, 'base', 'B', 'c-2', 2);
-    scheduleActorCallback(memory, 3, 'etat', 'C', 'c-3', 1);
+    let memory = emptyMemory();
+    memory = scheduleActorCallback(memory, 5, 'adversaire', 'A', 'c-1', 1);
+    memory = scheduleActorCallback(memory, 8, 'base', 'B', 'c-2', 2);
+    memory = scheduleActorCallback(memory, 3, 'etat', 'C', 'c-3', 1);
 
     const due6 = dueActorCallbacks(memory, 6);
-    consumeActorCallbacks(memory, due6);
+    memory = consumeActorCallbacks(memory, due6);
 
     expect(memory.scheduledActorCallbacks).toHaveLength(1);
     expect(memory.scheduledActorCallbacks?.[0].fromChoiceId).toBe('c-2');
   });
 
   it('no-op si la liste consommée est vide', () => {
-    const memory = emptyMemory();
-    scheduleActorCallback(memory, 5, 'adversaire', 'A', 'c-1', 1);
-    consumeActorCallbacks(memory, []);
-    expect(memory.scheduledActorCallbacks).toHaveLength(1);
+    let memory = emptyMemory();
+    memory = scheduleActorCallback(memory, 5, 'adversaire', 'A', 'c-1', 1);
+    const result = consumeActorCallbacks(memory, []);
+    expect(result.scheduledActorCallbacks).toHaveLength(1);
   });
 
   it('no-op si scheduledActorCallbacks est undefined', () => {
@@ -129,6 +155,20 @@ describe('consequenceEngine — consumeActorCallbacks', () => {
     delete memory.scheduledActorCallbacks;
     /* Ne plante pas sur un tableau undefined */
     expect(() => consumeActorCallbacks(memory, [])).not.toThrow();
+  });
+
+  /* P1 Muratori-13 (Sapeurs ORDA-017 PARITAS) — pureté de consume. */
+  it('pureté : ne mute pas le Memory d\'entrée (P1 Muratori-13)', () => {
+    let memory = emptyMemory();
+    memory = scheduleActorCallback(memory, 5, 'adversaire', 'A', 'c-1', 1);
+    memory = scheduleActorCallback(memory, 6, 'base', 'B', 'c-2', 2);
+    const before = memory;
+    const due = dueActorCallbacks(memory, 5);
+    const after = consumeActorCallbacks(memory, due);
+    /* La réf source garde 2 callbacks ; seule la nouvelle réf en a 1. */
+    expect(before.scheduledActorCallbacks).toHaveLength(2);
+    expect(after.scheduledActorCallbacks).toHaveLength(1);
+    expect(after).not.toBe(before);
   });
 });
 
@@ -281,15 +321,15 @@ describe('consequenceEngine — pattern complet "Matignon corruption préfet"', 
     /* Tour 7 — joueur signe corruption préfet (1936 Matignon).
        On programme 2 callbacks différés : Pinot dans 4 tours
        (tour 11) + Frachon dans 5 tours (tour 12). */
-    const memory = emptyMemory();
+    let memory = emptyMemory();
     const turnPosed = 7;
 
-    scheduleActorCallback(
+    memory = scheduleActorCallback(
       memory, turnPosed + 4, 'adversaire',
       'Pinot ricane. Le mot court chez les patrons : « Le syndicat fait ses courses chez nous. »',
       'corrompre-prefet', turnPosed
     );
-    scheduleActorCallback(
+    memory = scheduleActorCallback(
       memory, turnPosed + 5, 'base',
       'Frachon t\'écrit. Trois lignes seulement. Il sait. Il ne te le redira pas.',
       'corrompre-prefet', turnPosed
@@ -307,7 +347,7 @@ describe('consequenceEngine — pattern complet "Matignon corruption préfet"', 
     expect(dueT11).toHaveLength(1);
     expect(dueT11[0].actor).toBe('adversaire');
     expect(dueT11[0].narrative).toContain('Pinot');
-    consumeActorCallbacks(memory, dueT11);
+    memory = consumeActorCallbacks(memory, dueT11);
     expect(memory.scheduledActorCallbacks).toHaveLength(1);
 
     /* Tour 12 : Frachon se manifeste. */
@@ -315,7 +355,7 @@ describe('consequenceEngine — pattern complet "Matignon corruption préfet"', 
     expect(dueT12).toHaveLength(1);
     expect(dueT12[0].actor).toBe('base');
     expect(dueT12[0].narrative).toContain('Frachon');
-    consumeActorCallbacks(memory, dueT12);
+    memory = consumeActorCallbacks(memory, dueT12);
     expect(memory.scheduledActorCallbacks).toHaveLength(0);
   });
 });

@@ -23,7 +23,12 @@ import {
   MAX_SEANCES,
   TOTAL_ENVELOPPE,
   SEANCE_BUDGET,
-  SIGNING_MAJORITY
+  SIGNING_MAJORITY,
+  NAO_PRESET_META,
+  UNION_META,
+  getUnionElectoralWeight,
+  getUnionSeuilAccord,
+  getUnionWeights
 } from './engine';
 
 /* PRNG mulberry32 — petit générateur 32-bit déterministe seedable.
@@ -45,9 +50,12 @@ describe('NAO — constants & invariants (Argus AAR 2026-05-08 fix)', () => {
     expect(TOTAL_ENVELOPPE).toBe(60);
   });
 
-  it('exposes 4 themes, 3 unions, 5 seances max', () => {
+  it('exposes 4 themes, 5 unions (CGT/CFDT/FO/CFE-CGC/SUD), 5 seances max', () => {
     expect(ALL_THEMES).toHaveLength(4);
-    expect(ALL_UNIONS).toHaveLength(4); // P1-4 ORDA-009 : CFE-CGC ajoutée comme 4e union
+    /* P1-4 ORDA-009 : CFE-CGC ajoutée comme 4e union.
+       P0 ORDA-017 / Béroud-18 : SUD/Solidaires ajoutée comme 5e union. */
+    expect(ALL_UNIONS).toHaveLength(5);
+    expect(ALL_UNIONS).toContain('sud');
     expect(MAX_SEANCES).toBe(5);
   });
 
@@ -192,18 +200,21 @@ describe('NAO — computeSigningWeight', () => {
 
   it('returns weight 0 when all unions are in retrait', () => {
     const themes = { salaires: 50, primes: 50, teletravail: 50, egalite_pro: 50 };
-    const postures = { cgt: 'retrait', cfdt: 'retrait', fo: 'retrait', cfecgc: 'retrait' } as const;
+    const postures = { cgt: 'retrait', cfdt: 'retrait', fo: 'retrait', cfecgc: 'retrait', sud: 'retrait' } as const;
     const result = computeSigningWeight(themes, postures, false);
     expect(result.weight).toBe(0);
     expect(result.signing).toEqual([]);
   });
 
-  it('returns ≤100% weight when all unions sign', () => {
-    /* High-satisfaction themes : tous les syndicats devraient signer */
+  it('returns ≤110% weight when all unions sign (5 unions, total ~107%)', () => {
+    /* High-satisfaction themes : tous les syndicats devraient signer.
+       P0 ORDA-017 : avec SUD/Solidaires (poids 7 %), le total des
+       poids électoraux est 107 % (CGT 38 + CFDT 35 + FO 20 + CFE-CGC 7
+       + SUD 7). Plafond ≤110 % pour absorber arrondis. */
     const themes = { salaires: 100, primes: 100, teletravail: 100, egalite_pro: 100 };
-    const postures = { cgt: 'compromis', cfdt: 'compromis', fo: 'compromis', cfecgc: 'compromis' } as const;
+    const postures = { cgt: 'compromis', cfdt: 'compromis', fo: 'compromis', cfecgc: 'compromis', sud: 'compromis' } as const;
     const result = computeSigningWeight(themes, postures, false);
-    expect(result.weight).toBeLessThanOrEqual(100);
+    expect(result.weight).toBeLessThanOrEqual(110);
     expect(result.weight).toBeGreaterThanOrEqual(0);
   });
 
@@ -211,12 +222,12 @@ describe('NAO — computeSigningWeight', () => {
     const themes = { salaires: 100, primes: 100, teletravail: 100, egalite_pro: 100 };
     const onlyCfdt = computeSigningWeight(
       themes,
-      { cgt: 'retrait', cfdt: 'compromis', fo: 'retrait', cfecgc: 'retrait' },
+      { cgt: 'retrait', cfdt: 'compromis', fo: 'retrait', cfecgc: 'retrait', sud: 'retrait' },
       false
     );
     const cfdtAndFo = computeSigningWeight(
       themes,
-      { cgt: 'retrait', cfdt: 'compromis', fo: 'compromis', cfecgc: 'compromis' },
+      { cgt: 'retrait', cfdt: 'compromis', fo: 'compromis', cfecgc: 'compromis', sud: 'retrait' },
       false
     );
     expect(cfdtAndFo.weight).toBeGreaterThanOrEqual(onlyCfdt.weight);
@@ -285,7 +296,7 @@ describe('NAO — AI moves (aiEmployeurMove + aiSyndicatMove, ORDA-001 R1)', () 
     }
   });
 
-  it('aiSyndicatMove returns valid postures for all 3 unions', () => {
+  it('aiSyndicatMove returns valid postures for all 5 unions', () => {
     const s = startNaoSession();
     const validPostures = ['pression', 'patience', 'compromis', 'retrait'];
     for (let i = 0; i < 50; i++) {
@@ -432,5 +443,227 @@ describe('NAO — RNG seedable (P0 Sapeurs Carmack-14 / Villani-07)', () => {
     // Au moins un coup IA doit différer — sinon le RNG override est inopérant.
     expect(a).not.toEqual(b);
     setNaoRng(null);
+  });
+});
+
+/* ============================================================
+   P0 ORDA-017 / Béroud-18 — SUD/Solidaires (5e union, profil combat)
+   ============================================================ */
+describe('NAO — SUD/Solidaires (P0 ORDA-017 Béroud-18, 5e union profil combat)', () => {
+  it('UNION_META contains 5 entries including sud', () => {
+    expect(Object.keys(UNION_META)).toHaveLength(5);
+    expect(UNION_META.sud).toBeDefined();
+    expect(UNION_META.sud.label).toBe('SUD/Solidaires');
+  });
+
+  it('SUD has profile combat, seuil 0.65 (plus exigeant que CGT 0.62), poids électoral 7%', () => {
+    expect(UNION_META.sud.profile).toBe('Combat');
+    expect(UNION_META.sud.seuilAccord).toBe(0.65);
+    expect(UNION_META.sud.electoralWeight).toBe(7);
+    /* Plus exigeant que la CGT — sinon SUD ne se distingue pas. */
+    expect(UNION_META.sud.seuilAccord).toBeGreaterThan(UNION_META.cgt.seuilAccord);
+  });
+
+  it('SUD weights : salaires + égalité-pro dominants (≥ 70 %), télétravail faible', () => {
+    const w = UNION_META.sud.weights;
+    expect(w.salaires + w.egalite_pro).toBeGreaterThanOrEqual(0.70);
+    /* Télétravail faible : SUD historiquement vu comme cadre cadres
+       (caissières/services pas de télétravail, profil combat post-1995). */
+    expect(w.teletravail).toBeLessThan(0.15);
+  });
+
+  it('aiSyndicatMove returns a posture for sud (variance attendue)', () => {
+    setNaoRng(null);
+    const s = startNaoSession();
+    const validPostures = ['pression', 'patience', 'compromis', 'retrait'];
+    const sudPostures = new Set<string>();
+    for (let i = 0; i < 100; i++) {
+      const move = aiSyndicatMove(s);
+      expect(validPostures).toContain(move.postures.sud);
+      sudPostures.add(move.postures.sud);
+    }
+    /* Séance 1 : SUD démarre déterministe en pression. */
+    expect(sudPostures.has('pression')).toBe(true);
+  });
+
+  it('SUD plus dur que la CGT : sur thèmes identiques, SUD signe moins souvent', () => {
+    /* Même position, mêmes postures patience : SUD doit refuser plus
+       souvent que CGT car son seuil est plus élevé. */
+    const themes = { salaires: 60, primes: 50, teletravail: 40, egalite_pro: 60 };
+    const cgtSign = willUnionSign(themes, 'cgt', 'patience', false);
+    const sudSign = willUnionSign(themes, 'sud', 'patience', false);
+    /* Au minimum : si SUD signe, CGT doit signer aussi. */
+    if (sudSign) expect(cgtSign).toBe(true);
+  });
+
+  it('Monte-Carlo 1000 runs : distribution outcomes reste dans les cibles ORDA-011 (±5%)', () => {
+    setNaoRng(null);
+    const counts: Record<string, number> = {
+      accord_majoritaire: 0, accord_partiel: 0, accord_minoritaire: 0, pv_desaccord: 0
+    };
+    const N = 1000;
+    for (let i = 0; i < N; i++) {
+      let s = startNaoSession();
+      let safety = 0;
+      while (s.phase !== 'ended' && safety++ < 10) {
+        s = setEmployeurMove(s, aiEmployeurMove(s));
+        s = setSyndicatMove(s, aiSyndicatMove(s));
+        s = resolveSeance(s);
+        if (s.phase !== 'ended') s = nextSeance(s);
+      }
+      if (s.outcome) counts[s.outcome]++;
+    }
+    /* Cibles ORDA-011 (4 unions) : 31.3 / 44.7 / 18.4 / 5.6.
+       Tolérance ±5 % absolus + variance MC sur 1k échantillons.
+       Avec 5 unions (SUD ajoutée), la calibration doit rester
+       proche : SUD en retrait ne casse pas la coalition CGT/CFDT/FO/CFE-CGC. */
+    const pctMaj = (100 * counts.accord_majoritaire) / N;
+    const pctPart = (100 * counts.accord_partiel) / N;
+    const pctMin = (100 * counts.accord_minoritaire) / N;
+    const pctPv = (100 * counts.pv_desaccord) / N;
+
+    expect(pctMaj, `accord_majoritaire ${pctMaj.toFixed(1)}%`).toBeGreaterThan(20);
+    expect(pctMaj, `accord_majoritaire ${pctMaj.toFixed(1)}%`).toBeLessThan(45);
+    expect(pctPart, `accord_partiel ${pctPart.toFixed(1)}%`).toBeGreaterThan(35);
+    expect(pctPart, `accord_partiel ${pctPart.toFixed(1)}%`).toBeLessThan(55);
+    expect(pctMin, `accord_minoritaire ${pctMin.toFixed(1)}%`).toBeGreaterThan(10);
+    expect(pctMin, `accord_minoritaire ${pctMin.toFixed(1)}%`).toBeLessThan(28);
+    expect(pctPv, `pv_desaccord ${pctPv.toFixed(1)}%`).toBeGreaterThan(1);
+    expect(pctPv, `pv_desaccord ${pctPv.toFixed(1)}%`).toBeLessThan(12);
+  });
+
+  it('SUD en retrait ne bloque pas la coalition CGT+CFDT+FO+CFE-CGC (= 100 %)', () => {
+    /* Validation conceptuelle : si les 4 confédérations historiques signent
+       en compromis/patience et SUD en retrait, l'accord majoritaire reste
+       atteignable (poids 100 % >= SIGNING_MAJORITY 50 %). */
+    const themes = { salaires: 100, primes: 100, teletravail: 100, egalite_pro: 100 };
+    const postures = {
+      cgt: 'compromis', cfdt: 'compromis', fo: 'compromis', cfecgc: 'compromis', sud: 'retrait'
+    } as const;
+    const result = computeSigningWeight(themes, postures, false);
+    expect(result.signing).not.toContain('sud');
+    expect(result.weight).toBeGreaterThanOrEqual(SIGNING_MAJORITY);
+    /* CGT(38) + CFDT(35) + FO(20) + CFE-CGC(7) = 100 % sans SUD. */
+    expect(result.weight).toBe(100);
+  });
+});
+
+/* ============================================================
+   P1 ORDA-017 / Jobert-17 + P0 Léa-20 — Presets sectoriels
+   ============================================================ */
+describe('NAO — Preset cadres (Jobert-17, ETI cadres NAO forfait-jours)', () => {
+  it('NAO_PRESET_META.cadres exists with correct structure', () => {
+    expect(NAO_PRESET_META.cadres).toBeDefined();
+    expect(NAO_PRESET_META.cadres.label).toContain('Cadres');
+    expect(NAO_PRESET_META.cadres.unionOverrides).toBeDefined();
+  });
+
+  it('cadres preset : CFE-CGC electoralWeight monte à 25-30 % (Jobert)', () => {
+    const cfecgcWeight = getUnionElectoralWeight('cfecgc', 'cadres');
+    expect(cfecgcWeight).toBeGreaterThanOrEqual(25);
+    expect(cfecgcWeight).toBeLessThanOrEqual(30);
+    /* CFE-CGC standard reste à 7 %. */
+    expect(getUnionElectoralWeight('cfecgc', 'standard')).toBe(7);
+  });
+
+  it('cadres preset : thèmes recadrés (forfait-jours, temps partiel cadre, déconnexion)', () => {
+    const overrides = NAO_PRESET_META.cadres.themeOverrides;
+    expect(overrides).toBeDefined();
+    expect(overrides!.salaires?.label).toContain('Forfait-jours');
+    expect(overrides!.teletravail?.label).toContain('déconnexion');
+    expect(overrides!.primes?.label).toContain('Temps partiel');
+  });
+
+  it('cadres preset : startNaoSession initialise la session correctement', () => {
+    const s = startNaoSession('cadres');
+    expect(s.modifiers.preset).toBe('cadres');
+    expect(s.enveloppeMax).toBe(NAO_PRESET_META.cadres.enveloppe);
+    expect(Object.keys(s.postures)).toContain('sud');
+  });
+
+  it('cadres preset : Monte-Carlo 500 runs distribution ≠ standard preset', () => {
+    setNaoRng(null);
+    const counts: Record<string, number> = {
+      accord_majoritaire: 0, accord_partiel: 0, accord_minoritaire: 0, pv_desaccord: 0
+    };
+    const N = 500;
+    for (let i = 0; i < N; i++) {
+      let s = startNaoSession('cadres');
+      let safety = 0;
+      while (s.phase !== 'ended' && safety++ < 10) {
+        s = setEmployeurMove(s, aiEmployeurMove(s));
+        s = setSyndicatMove(s, aiSyndicatMove(s));
+        s = resolveSeance(s);
+        if (s.phase !== 'ended') s = nextSeance(s);
+      }
+      if (s.outcome) counts[s.outcome]++;
+    }
+    /* Distribution doit être différente de standard.
+       Au moins un outcome doit avoir un écart > 5 % par rapport à
+       la calibration ORDA-011 (31.3 / 44.7 / 18.4 / 5.6).
+       Le preset cadres rebascule la dynamique : on s'attend à
+       accord_minoritaire significativement plus haut (CFE-CGC à 30 %
+       devient pivot, et les coalitions changent). */
+    const pctMin = (100 * counts.accord_minoritaire) / N;
+    /* En preset standard accord_minoritaire ≈ 18 %, en cadres on observe
+       souvent > 30 % (CFE-CGC à 30 % seule = pas de majorité). */
+    const isDifferent = Math.abs(pctMin - 18.4) > 5;
+    expect(isDifferent, `accord_minoritaire cadres=${pctMin.toFixed(1)}% vs standard 18.4%`).toBe(true);
+  });
+});
+
+describe('NAO — Preset distribution-services (Léa-20, syndicalisme féminin)', () => {
+  it('NAO_PRESET_META["distribution-services"] exists', () => {
+    expect(NAO_PRESET_META['distribution-services']).toBeDefined();
+    expect(NAO_PRESET_META['distribution-services'].label).toContain('Distribution');
+  });
+
+  it('distribution-services : pas de label "télétravail" (swap vers planning)', () => {
+    const overrides = NAO_PRESET_META['distribution-services'].themeOverrides;
+    expect(overrides).toBeDefined();
+    /* Le thème teletravail est swap vers Planning & horaires. */
+    expect(overrides!.teletravail?.label).toContain('Planning');
+    expect(overrides!.teletravail?.label?.toLowerCase()).not.toContain('télétravail');
+  });
+
+  it('distribution-services : pénibilité posturale présent (swap primes)', () => {
+    const overrides = NAO_PRESET_META['distribution-services'].themeOverrides;
+    expect(overrides!.primes?.label).toContain('Pénibilité');
+  });
+
+  it('distribution-services : CFDT bias signataire (rapprochement Léa CFDT)', () => {
+    expect(NAO_PRESET_META['distribution-services'].cfdtBias).toBe('signataire');
+  });
+
+  it('distribution-services : CFE-CGC poids ≤ 5 % (peu de cadres en distribution)', () => {
+    expect(getUnionElectoralWeight('cfecgc', 'distribution-services')).toBeLessThanOrEqual(5);
+  });
+
+  it('distribution-services : SUD-Commerce poids ≥ 8 % (plus que standard)', () => {
+    /* SUD historiquement présent dans le commerce — poids légèrement
+       plus élevé que la moyenne nationale 7 %. */
+    expect(getUnionElectoralWeight('sud', 'distribution-services')).toBeGreaterThanOrEqual(8);
+  });
+
+  it('distribution-services : poids égalité-pro CFDT augmenté vs standard', () => {
+    const wStd = getUnionWeights('cfdt', 'standard');
+    const wDS = getUnionWeights('cfdt', 'distribution-services');
+    /* CFDT-Services plus sensible à l'égalité pro (Léa-20). */
+    expect(wDS.egalite_pro).toBeGreaterThan(wStd.egalite_pro);
+  });
+
+  it('distribution-services : startNaoSession ok + run sans erreur', () => {
+    const s = startNaoSession('distribution-services');
+    expect(s.modifiers.preset).toBe('distribution-services');
+    /* Vérifier qu'un run complet fonctionne. */
+    let cur = s;
+    let safety = 0;
+    while (cur.phase !== 'ended' && safety++ < 10) {
+      cur = setEmployeurMove(cur, aiEmployeurMove(cur));
+      cur = setSyndicatMove(cur, aiSyndicatMove(cur));
+      cur = resolveSeance(cur);
+      if (cur.phase !== 'ended') cur = nextSeance(cur);
+    }
+    expect(cur.outcome).toBeDefined();
   });
 });

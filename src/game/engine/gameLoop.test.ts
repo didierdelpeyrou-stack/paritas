@@ -44,7 +44,7 @@ function buildState(turn: number): RebirthGameState {
 describe('gameLoop — processTurnCallbacks (P0 Sapeurs Pope-04)', () => {
   it('callback sans effects ne modifie ni ressources ni acteurs', () => {
     const state = buildState(5);
-    scheduleActorCallback(
+    state.memory = scheduleActorCallback(
       state.memory, 5, 'base',
       'narratif pur',
       'choice-narratif', 1
@@ -60,7 +60,7 @@ describe('gameLoop — processTurnCallbacks (P0 Sapeurs Pope-04)', () => {
   it('callback avec effects.actors applique le delta sur l\'acteur ciblé', () => {
     const state = buildState(5);
     const trustBefore = state.actors.opinion.trust;
-    scheduleActorCallback(
+    state.memory = scheduleActorCallback(
       state.memory, 5, 'base',
       'reconnaissance différée',
       'signe-matignon', 1,
@@ -74,7 +74,7 @@ describe('gameLoop — processTurnCallbacks (P0 Sapeurs Pope-04)', () => {
   it('callback avec effects.resources applique le delta sur les ressources', () => {
     const state = buildState(5);
     const caisseBefore = state.resources.caisse;
-    scheduleActorCallback(
+    state.memory = scheduleActorCallback(
       state.memory, 5, 'etat',
       'État rembourse',
       'cree-secu', 1,
@@ -87,10 +87,10 @@ describe('gameLoop — processTurnCallbacks (P0 Sapeurs Pope-04)', () => {
   it('plusieurs callbacks dus s\'empilent (FIFO)', () => {
     const state = buildState(5);
     const baseTrustBefore = state.actors.base.trust;
-    scheduleActorCallback(state.memory, 5, 'base', 'A', 'c-1', 1, {
+    state.memory = scheduleActorCallback(state.memory, 5, 'base', 'A', 'c-1', 1, {
       actors: { base: { trust: -3 } }
     });
-    scheduleActorCallback(state.memory, 5, 'base', 'B', 'c-2', 2, {
+    state.memory = scheduleActorCallback(state.memory, 5, 'base', 'B', 'c-2', 2, {
       actors: { base: { trust: -2 } }
     });
     const result = processTurnCallbacks(state);
@@ -101,7 +101,7 @@ describe('gameLoop — processTurnCallbacks (P0 Sapeurs Pope-04)', () => {
   it('callback non-dû (atTurn > currentTurn) reste en file et n\'applique pas ses effets', () => {
     const state = buildState(3);
     const trustBefore = state.actors.opinion.trust;
-    scheduleActorCallback(
+    state.memory = scheduleActorCallback(
       state.memory, 8, 'base', 'futur',
       'signe-matignon', 3,
       { actors: { opinion: { trust: 5 } } }

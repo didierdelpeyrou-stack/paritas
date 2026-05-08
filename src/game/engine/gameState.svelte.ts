@@ -37,6 +37,7 @@ import { pickEnding, buildEnding, type EndingRender } from './endingEngine';
 import { pickNextScenario } from '../narrative/scenarioEngine';
 import { evaluateTensions, type TensionAlert } from '../simulation/tensions';
 import { eraForTurn, yearForTurn } from '../content/eras';
+import { presetForEra } from '../content/erasPresets';
 import { causalTicker } from '../../lib/stores/causalTicker.svelte';
 import {
   legendaryById,
@@ -147,10 +148,16 @@ function freshRebirthState(
   camp: Camp,
   name: string,
   mode: RenderMode,
-  legendary?: LegendaryCharacter
+  legendary?: LegendaryCharacter,
+  startTurn: number = 1
 ): RebirthGameState {
   let traits = freshTraits();
-  let resources = freshResources();
+  /* Mode "Séance prof" (ORDA-017) — si on démarre à un tour > 1, on
+     applique la preset de ressources de l'ère correspondante au lieu
+     de l'état frais T1. La preset 'revolution' est strictement
+     identique à freshResources() (cf. erasPresets.test.ts). */
+  const startEra = eraForTurn(startTurn);
+  let resources = startTurn > 1 ? presetForEra(startEra.id) : freshResources();
   if (legendary) {
     traits = applyTraitShift(traits, legendary.traitBonus);
     if (legendary.resourceBonus) {
@@ -163,8 +170,8 @@ function freshRebirthState(
     camp,
     mode,
     legendaryId: legendary?.id ?? null,
-    turn: 1,
-    era: eraForTurn(1).id,
+    turn: startTurn,
+    era: startEra.id,
     currentScenarioId: null,
     traits,
     dominantTrait: computeDominantTrait(traits),
@@ -203,17 +210,38 @@ class RebirthGameStore {
   /** Aborts the in-flight narrative enrichment, if any. */
   private narrativeAbort: AbortController | null = null;
 
-  /** Démarre une nouvelle partie. */
-  start(opts: { name: string; camp: Camp; mode: RenderMode; legendaryId?: string }) {
+  /** Démarre une nouvelle partie.
+   *
+   *  `startTurn` (défaut 1) — Mode "Séance prof" (ORDA-017, P0 panel-30
+   *  Aïcha #23). Permet à un enseignant de démarrer la partie à un tour
+   *  donné (ex : T17 Front populaire, T29 Trente Glorieuses, T69
+   *  ordonnances Macron) pour focaliser un cours sur une période
+   *  historique précise. Les ressources sont alors initialisées via la
+   *  preset d'ère (cf. erasPresets.ts) plutôt que l'état frais T1. */
+  start(opts: {
+    name: string;
+    camp: Camp;
+    mode: RenderMode;
+    legendaryId?: string;
+    startTurn?: number;
+  }) {
     const legendary = opts.legendaryId ? legendaryById(opts.legendaryId) : undefined;
-    this.state = freshRebirthState(opts.camp, opts.name, opts.mode, legendary);
+    const startTurn = Math.max(1, Math.min(100, Math.floor(opts.startTurn ?? 1)));
+    this.state = freshRebirthState(opts.camp, opts.name, opts.mode, legendary, startTurn);
     this.consequence = null;
     this.alerts = [];
     this.ending = null;
+    const era = eraForTurn(startTurn);
     const intro = legendary
       ? `${opts.name} incarne ${legendary.name} (${legendary.years}) — côté ${opts.camp === 'patron' ? 'patronal' : 'salarié'}, mode ${opts.mode === 'reflechi' ? 'Réfléchi' : 'Compulsif'}.`
       : `${opts.name} entre dans l'histoire — côté ${opts.camp === 'patron' ? 'patronal' : 'salarié'}, mode ${opts.mode === 'reflechi' ? 'Réfléchi' : 'Compulsif'}.`;
     this.log = [intro];
+    if (startTurn > 1) {
+      this.log = [
+        ...this.log,
+        `Mode pédagogique — démarrage à ${era.name} (T${startTurn}, ${era.period}).`
+      ];
+    }
     if (legendary?.signature) {
       this.log = [...this.log, `« ${legendary.signature} » — ${legendary.name}`];
     }

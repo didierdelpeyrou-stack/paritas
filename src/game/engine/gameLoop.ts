@@ -43,12 +43,9 @@ export function processTurnCallbacks(state: RebirthGameState): TurnCallbacksResu
   if (due.length === 0) {
     return { state, triggered: [] };
   }
-  /* Clone defensif de memory pour ne pas muter le state d'entrée. */
-  const nextMemory = {
-    ...state.memory,
-    scheduledActorCallbacks: [...(state.memory.scheduledActorCallbacks ?? [])]
-  };
-  consumeActorCallbacks(nextMemory, due);
+  /* P1 Muratori-13 (Sapeurs ORDA-017 PARITAS) — consumeActorCallbacks
+     est désormais pure : retourne un nouveau Memory sans mutation. */
+  const nextMemory = consumeActorCallbacks(state.memory, due);
 
   /* P0 Pope-04 (Sapeurs ORDA-015) — applique les effets numériques
      éventuels portés par chaque callback. La mémoire des acteurs cesse

@@ -18,7 +18,7 @@ export async function loadAllScenarios(): Promise<Scenario[]> {
   if (LOAD_PROMISE) return LOAD_PROMISE;
 
   LOAD_PROMISE = (async () => {
-    const [premium, matignon, patron, persona, early, belle, late, cpme, futur, fillers] = await Promise.all([
+    const [premium, matignon, patron, persona, early, belle, late, cpme, futur, fillers, ouvriersPost2000] = await Promise.all([
       import('./premium'),
       import('./1936-matignon'),
       import('./patron'),
@@ -28,7 +28,8 @@ export async function loadAllScenarios(): Promise<Scenario[]> {
       import('./late-period'),
       import('./cpme'),
       import('./futur'),
-      import('./chronologie-trous')
+      import('./chronologie-trous'),
+      import('./ouvriers-post-2000')
     ]);
     CACHE = [
       ...premium.PREMIUM_SCENARIOS,
@@ -40,7 +41,8 @@ export async function loadAllScenarios(): Promise<Scenario[]> {
       ...late.LATE_PERIOD_SCENARIOS,
       ...cpme.CPME_SCENARIOS,
       ...futur.FUTUR_SCENARIOS,
-      ...fillers.FILLER_SCENARIOS
+      ...fillers.FILLER_SCENARIOS,
+      ...ouvriersPost2000.OUVRIERS_POST_2000_SCENARIOS
     ].sort((a, b) => a.turn - b.turn);
     return CACHE;
   })();

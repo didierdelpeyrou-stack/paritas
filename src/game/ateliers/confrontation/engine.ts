@@ -405,14 +405,25 @@ export function zoneLabel(zone: number): string {
    - Police agressive si zone > 55 (manif gagne)
    - Manif agressive si zone < 45 (police gagne)
    Tableau de pondération non uniforme : certaines actions reviennent
-   plusieurs fois pour augmenter leur probabilité. ============================================================ */
+   plusieurs fois pour augmenter leur probabilité.
+
+   P1-15 / B (ORDA-008, rebuttal Ghys #08) — RNG overridable
+   pour reproductibilité MC + tests Vitest seedés. */
+
+let rngOverride: (() => number) | null = null;
+export function setConfrontationRng(rng: (() => number) | null): void {
+  rngOverride = rng;
+}
+function rng(): number {
+  return rngOverride ? rngOverride() : Math.random();
+}
 
 export function aiPolice(state: ConfrState): PoliceAction {
   const aggressive = state.zone > 55;
   const opts: PoliceAction[] = aggressive
     ? ['charge', 'lacrymo', 'nasse', 'charge', 'bouclier']
     : ['bouclier', 'lacrymo', 'bouclier', 'nasse', 'retraite'];
-  return opts[Math.floor(Math.random() * opts.length)];
+  return opts[Math.floor(rng() * opts.length)];
 }
 
 export function aiManif(state: ConfrState): ManifAction {
@@ -420,5 +431,5 @@ export function aiManif(state: ConfrState): ManifAction {
   const opts: ManifAction[] = aggressive
     ? ['pousser', 'barricade', 'chanter', 'pousser', 'tenir']
     : ['tenir', 'chanter', 'reculer', 'tenir', 'barricade'];
-  return opts[Math.floor(Math.random() * opts.length)];
+  return opts[Math.floor(rng() * opts.length)];
 }

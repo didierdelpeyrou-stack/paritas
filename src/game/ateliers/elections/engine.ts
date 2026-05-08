@@ -61,6 +61,20 @@ export type Allocation = Record<Channel, number>;
 export const BUDGET_PER_ROUND = 8;
 export const ALL_CHANNELS: Channel[] = ['terrain', 'reunions', 'affiches', 'tractage'];
 
+/* P1-15 / B (ORDA-008, rebuttal Ghys #08) — RNG overridable.
+   Le moteur a 7 sites Math.random() identifiés. Plutôt que de
+   refacto chaque appel pour passer un seed, on offre un override
+   module-scope. Les scripts MC et tests Vitest peuvent injecter
+   un PRNG seedé via setElectionsRng() avant la session. Fallback
+   transparent vers Math.random() en prod. */
+let rngOverride: (() => number) | null = null;
+export function setElectionsRng(rng: (() => number) | null): void {
+  rngOverride = rng;
+}
+function rng(): number {
+  return rngOverride ? rngOverride() : Math.random();
+}
+
 export interface ChannelResult {
   channel: Channel;
   salarieAlloc: number;
@@ -151,7 +165,7 @@ export function resolveScrutin(state: ElectionState): ElectionState {
     if (pA > sA) return { channel, salarieAlloc: sA, patronAlloc: pA, winner: 'patron', seats };
     /* Égalité avec allocation > 0 : tirage 50/50 */
     if (sA > 0) {
-      const winner = Math.random() < 0.5 ? 'salarie' as const : 'patron' as const;
+      const winner = rng() < 0.5 ? 'salarie' as const : 'patron' as const;
       return { channel, salarieAlloc: sA, patronAlloc: pA, winner, seats };
     }
     /* 0+0 : aucun camp n'a investi → personne ne gagne */
@@ -274,15 +288,15 @@ export function aiElectionAlloc(
     /* "tout-petits"         */ { terrain: 0, reunions: 0, affiches: 4, tractage: 4 }
   ];
 
-  let p = PROFILES[Math.floor(Math.random() * PROFILES.length)];
+  let p = PROFILES[Math.floor(rng() * PROFILES.length)];
 
   /* Biais selon score courant */
   if (lead < -3) {
     /* En retard : on force surpuissance terrain (3 chances sur 4) */
-    if (Math.random() > 0.25) p = { terrain: 6, reunions: 2, affiches: 0, tractage: 0 };
+    if (rng() > 0.25) p = { terrain: 6, reunions: 2, affiches: 0, tractage: 0 };
   } else if (lead > 3) {
     /* En avance : défense des petits (2 chances sur 3) */
-    if (Math.random() > 0.33) p = { terrain: 2, reunions: 2, affiches: 2, tractage: 2 };
+    if (rng() > 0.33) p = { terrain: 2, reunions: 2, affiches: 2, tractage: 2 };
   }
 
   /* Asymétrie salarié/patron — bloc atténué (1/3 du temps) :
@@ -291,7 +305,7 @@ export function aiElectionAlloc(
      l'asymétrie produisait 72 %/81 % de victoires unilatérales par
      canal — atténué à 33 % de tirages pour rester variable. */
   let { terrain, reunions, affiches, tractage } = p;
-  const asymRoll = Math.random();
+  const asymRoll = rng();
   if (asymRoll < 0.33) {
     if (side === 'salarie' && terrain < 6 && reunions > 0) { terrain++; reunions--; }
     else if (side === 'patron' && reunions < 4 && terrain > 0) { reunions++; terrain--; }
@@ -299,8 +313,8 @@ export function aiElectionAlloc(
 
   /* Petit bruit final ±1 sur le canal le plus chargé pour casser
      les dernières symétries résiduelles */
-  if (Math.random() < 0.5 && terrain > 0 && tractage < 4) { terrain--; tractage++; }
-  else if (Math.random() < 0.5 && reunions > 0 && affiches < 4) { reunions--; affiches++; }
+  if (rng() < 0.5 && terrain > 0 && tractage < 4) { terrain--; tractage++; }
+  else if (rng() < 0.5 && reunions > 0 && affiches < 4) { reunions--; affiches++; }
 
   /* Normaliser au budget */
   const total = terrain + reunions + affiches + tractage;

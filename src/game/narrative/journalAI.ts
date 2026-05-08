@@ -43,6 +43,65 @@ export interface JournalPromptInput {
   mandateBilan: { label: string; status: 'satisfied' | 'failed' | 'pending' }[];
   /** Tail du log narratif — les 12 dernières entrées suffisent. */
   recentLog: string[];
+  /** P1-2 (ORDA-008, AAR bêta-30 §V) — directive de format pour le
+   *  journal IA. Romero #05 veut la morsure (« tu as choisi la
+   *  corruption »), McGonigal #06 veut l'action (« voilà ce que tu
+   *  peux faire dans le réel »). Le worker peut ignorer ce hint —
+   *  fallback côté client via splitJournalInTwoParagraphs(). */
+  formatHint?: 'morsure-action' | 'free';
+}
+
+/** P1-2 — sépare un texte de journal IA en 2 paragraphes :
+ *    (1) MORSURE  — confronte le joueur à ses choix
+ *    (2) ACTION   — propose 1-3 actions concrètes dans le réel
+ *
+ *  Heuristique : si le texte contient un marqueur explicite
+ *  (« [MORSURE] » / « [ACTION] » ou « ── » double tiret cadratin),
+ *  on découpe dessus. Sinon on coupe au milieu logiquement (premier
+ *  changement de paragraphe après ~60% du texte).
+ *
+ *  Garde-fou : si le découpage rate, on retourne `{ morsure: full,
+ *  action: '' }` pour ne pas perdre le contenu. */
+export function splitJournalInTwoParagraphs(
+  full: string
+): { morsure: string; action: string } {
+  const text = full.trim();
+  if (!text) return { morsure: '', action: '' };
+
+  /* Marqueurs explicites privilégiés. */
+  const markerRe = /\[(?:MORSURE|ACTION)\]|^\s*──+\s*$|^\s*\*\*\s*Action\s*\*\*/im;
+  const markedSplit = text.split(/\n+/).reduce<{ buf: string[]; sect: string[][] }>(
+    (acc, line) => {
+      if (markerRe.test(line)) {
+        if (acc.buf.length) acc.sect.push(acc.buf);
+        acc.buf = [];
+      } else {
+        acc.buf.push(line);
+      }
+      return acc;
+    },
+    { buf: [], sect: [] }
+  );
+  if (markedSplit.buf.length) markedSplit.sect.push(markedSplit.buf);
+  if (markedSplit.sect.length === 2) {
+    return {
+      morsure: markedSplit.sect[0]!.join('\n').trim(),
+      action: markedSplit.sect[1]!.join('\n').trim()
+    };
+  }
+
+  /* Fallback : split au milieu logique sur paragraphe vide. */
+  const paragraphs = text.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+  if (paragraphs.length >= 2) {
+    const cutAt = Math.max(1, Math.floor(paragraphs.length * 0.6));
+    return {
+      morsure: paragraphs.slice(0, cutAt).join('\n\n'),
+      action: paragraphs.slice(cutAt).join('\n\n')
+    };
+  }
+
+  /* Texte indécoupable : tout en morsure. */
+  return { morsure: text, action: '' };
 }
 
 export interface JournalStreamHandlers {
@@ -106,7 +165,8 @@ export function buildJournalInput(
       exhaustedMovements: ending.stats.exhaustedMovements
     },
     mandateBilan,
-    recentLog: tail
+    recentLog: tail,
+    formatHint: 'morsure-action'
   };
 }
 

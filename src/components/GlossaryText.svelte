@@ -3,10 +3,17 @@
 
   interface Props {
     text: string;
-    /** Pas de match sur les très petits termes (évite les faux positifs). */
+    /** Pas de match sur les très petits termes (évite les faux positifs).
+     *  P1-7 (ORDA-008, AAR bêta-30 §V) — abaissé de 4 → 2 pour
+     *  inclure les sigles syndicaux : FO (2), CGT/CFDT/FO/ANI/CSE/FSU
+     *  (3-4). Lukas #28 a confondu FO avec un sigle technique pendant
+     *  8 tours. Manon #25 et Aïcha #23 ont signalé le manque de
+     *  glossaire au survol des sigles. Le pattern de la regex
+     *  applique des frontières de mot (`\\s.,;:!?…`) qui empêchent
+     *  les faux positifs sur des mots comme « fou », « cseux », etc. */
     minTermLength?: number;
   }
-  let { text, minTermLength = 4 }: Props = $props();
+  let { text, minTermLength = 2 }: Props = $props();
 
   /* Le clic émet un événement global capté par GameShell, qui ouvre
      la modale Glossary et défile sur le terme demandé. */

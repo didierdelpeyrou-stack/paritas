@@ -52,6 +52,30 @@ html.a11y-high-contrast .bordered-card {
 /* Mode daltonien : ajoute des chevrons devant les valeurs positives
    et négatives, et bascule la couleur danger d'un rouge vers un
    ambré-orange différenciable. */
+/* P1-14 (ORDA-008, AAR bêta-30 §V) — preset cognitive-friendly.
+   Manon #25 (dyslexie + TDAH) : « top-header dense, ticker en fond,
+   je ferme l'onglet ». Aïcha #23 + Goodwin #12 + Charlot (panel 202)
+   demandent un mode lecture aérée par défaut. Activable via Settings.
+   Composé de : line-height généreuse, letter/word spacing, paragraphes
+   espacés, ticker en pause par défaut. Compatible avec a11y-text-lg
+   (les deux peuvent être actifs simultanément). */
+html.a11y-cognitive {
+  line-height: 1.7;
+  letter-spacing: 0.012em;
+  word-spacing: 0.04em;
+}
+html.a11y-cognitive p,
+html.a11y-cognitive .scene-text,
+html.a11y-cognitive .glossary-def {
+  margin-block: 0.9em;
+  max-width: 65ch;
+}
+html.a11y-cognitive .news-ticker .ticker-track {
+  /* Pause par défaut — l'utilisateur peut toujours relancer via le
+     bouton ticker-pause ajouté en P0-2. */
+  animation-play-state: paused !important;
+}
+
 html.a11y-color-blind {
   --sem-positive: #2563eb;  /* bleu pour les gains au lieu de vert */
   --sem-danger: #d97706;    /* ambré vif pour les pertes au lieu de rouge */

@@ -54,6 +54,37 @@ export type NaoOutcome =
 export const ALL_THEMES: NaoTheme[] = ['salaires', 'primes', 'teletravail', 'egalite_pro'];
 export const ALL_UNIONS: NaoUnion[] = ['cgt', 'cfdt', 'fo'];
 export const MAX_SEANCES          = 5;
+
+/* P1-3 (ORDA-008, AAR bêta-30 §V) — préset TPE/PME pour NAO.
+   Bruno #30 (CPME, 28 salariés BTP) et Léa #20 (caissière) :
+   « la NAO du jeu est calibrée pour un grand groupe (60 pts, 5
+   séances). Chez moi, on signe en 2-3 séances avec un délégué
+   unique ». Ce préset divise par 2.5 l'enveloppe et raccourcit
+   la négociation, tout en gardant la mécanique identique. */
+export type NaoPreset = 'standard' | 'tpe-pme';
+
+export const NAO_PRESET_META: Record<NaoPreset, {
+  label: string;
+  description: string;
+  enveloppe: number;
+  maxSeances: number;
+  seanceBudget: number;
+}> = {
+  standard: {
+    label: 'NAO classique (grand groupe)',
+    description: '5 séances · enveloppe 60 pts · 4 thèmes · 3 syndicats',
+    enveloppe: 60,
+    maxSeances: 5,
+    seanceBudget: 13
+  },
+  'tpe-pme': {
+    label: 'NAO TPE/PME',
+    description: '3 séances · enveloppe 24 pts · format compact (Bruno P. #30)',
+    enveloppe: 24,
+    maxSeances: 3,
+    seanceBudget: 9
+  }
+};
 /* Argus ORDA-001 calibrage final après 2 swings extrêmes :
    - 48 pts → 100 % pv_desaccord (impossible)
    - 72 pts → 100 % accord_majoritaire (trivial)
@@ -171,6 +202,9 @@ export interface NaoModifiers {
   auditBloquant: boolean;        // expertise syndicale bloquée ce tour
   ultimatumActive: boolean;      // dernier tour forcé
   accordPartielActive: boolean;  // peut signer sur 2 thèmes seulement
+  /** P1-3 (ORDA-008) — preset actif : 'standard' ou 'tpe-pme'.
+   *  Optionnel pour rétro-compat (parties sauvegardées v2.1.x). */
+  preset?: NaoPreset;
 }
 
 export interface NaoState {
@@ -194,7 +228,8 @@ export interface NaoState {
    Initialisateur
    ============================================================ */
 
-export function startNaoSession(): NaoState {
+export function startNaoSession(preset: NaoPreset = 'standard'): NaoState {
+  const meta = NAO_PRESET_META[preset];
   return {
     seance: 1,
     phase: 'proposing',
@@ -205,7 +240,7 @@ export function startNaoSession(): NaoState {
       egalite_pro: THEME_META.egalite_pro.employeurStart
     },
     postures: { cgt: 'pression', cfdt: 'patience', fo: 'patience' },
-    enveloppeMax: TOTAL_ENVELOPPE,
+    enveloppeMax: meta.enveloppe,
     enveloppeSpent: 0,
     enveloppeRevealed: false,
     employeurMove: null,
@@ -216,7 +251,8 @@ export function startNaoSession(): NaoState {
       mobilisationActive: false,
       auditBloquant: false,
       ultimatumActive: false,
-      accordPartielActive: false
+      accordPartielActive: false,
+      preset
     },
     outcome: null,
     signingUnions: []
@@ -248,7 +284,14 @@ export function effectiveCost(adj: ThemeAdjustments, mobilisation: boolean): num
 
 export function getSeanceBudget(state: NaoState): number {
   const remaining = state.enveloppeMax - state.enveloppeSpent;
-  return Math.min(SEANCE_BUDGET, remaining);
+  /* P1-3 — préset TPE/PME a un budget par séance plus serré (9 vs 13). */
+  const presetBudget = NAO_PRESET_META[state.modifiers.preset ?? 'standard'].seanceBudget;
+  return Math.min(presetBudget, remaining);
+}
+
+/** P1-3 — Nombre max de séances pour la partie courante (preset-aware). */
+export function getMaxSeances(state: NaoState): number {
+  return NAO_PRESET_META[state.modifiers.preset ?? 'standard'].maxSeances;
 }
 
 /** Satisfaction d'un syndicat par rapport aux positions actuelles (0-1). */
@@ -451,7 +494,9 @@ export function resolveSeance(state: NaoState): NaoState {
   };
 
   /* --- Fin de négociation ? --- */
-  const isLast    = state.seance >= MAX_SEANCES;
+  /* P1-3 — preset-aware : MAX_SEANCES standard vs preset TPE/PME (3). */
+  const maxSeances = NAO_PRESET_META[state.modifiers.preset ?? 'standard'].maxSeances;
+  const isLast    = state.seance >= maxSeances;
   const shouldEnd = isLast || newModifiers.ultimatumActive;
 
   if (shouldEnd) {
@@ -802,7 +847,7 @@ export function aiSyndicatMove(state: NaoState): SyndicatMove {
     tactic = 'mobilisation';
   } else if (state.seance === 2 && available.includes('expertise')) {
     tactic = 'expertise';
-  } else if (state.seance === MAX_SEANCES && available.includes('accord_partiel')) {
+  } else if (state.seance === getMaxSeances(state) && available.includes('accord_partiel')) {
     /* Argus B-MC1 + B-MC2 :
        (B-MC1) condition inversée — accord_partiel ne se joue que si
               l'accord majoritaire est hors de portée.

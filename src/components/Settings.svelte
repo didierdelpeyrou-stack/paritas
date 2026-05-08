@@ -31,12 +31,15 @@
   let highContrast = $state<boolean>(loadHighContrast());
   let colorBlindFriendly = $state<boolean>(loadColorBlind());
   let reducedMotion = $state<boolean>(loadReducedMotion());
+  /* P1-14 (ORDA-008) — preset cognitive-friendly (Manon #25, Aïcha #23). */
+  let cognitiveFriendly = $state<boolean>(loadCognitiveFriendly());
   let swipeEnabled = $state<boolean>(loadSwipeEnabled());
   let textMode = $state<'falc' | 'litteraire'>(loadTextMode());
   const TS_KEY = 'paritas_text_size';
   const HC_KEY = 'paritas_high_contrast';
   const CB_KEY = 'paritas_color_blind';
   const RM_KEY = 'paritas_reduced_motion';
+  const CG_KEY = 'paritas_cognitive_friendly';
   const SW_KEY = 'paritas_swipe_enabled';
   const TM_KEY = 'paritas_text_mode';
   const MV_KEY = 'paritas_music_volume';
@@ -107,6 +110,10 @@
     try { return localStorage.getItem(RM_KEY) === 'true'; } catch { return false; }
   }
 
+  function loadCognitiveFriendly(): boolean {
+    try { return localStorage.getItem(CG_KEY) === 'true'; } catch { return false; }
+  }
+
   function loadSwipeEnabled(): boolean {
     try { return localStorage.getItem(SW_KEY) === 'true'; } catch { return false; }
   }
@@ -119,11 +126,13 @@
     root.classList.toggle('a11y-high-contrast', highContrast);
     root.classList.toggle('a11y-color-blind', colorBlindFriendly);
     root.classList.toggle('a11y-reduced-motion', reducedMotion);
+    root.classList.toggle('a11y-cognitive', cognitiveFriendly);
     try {
       localStorage.setItem(TS_KEY, textSize);
       localStorage.setItem(HC_KEY, highContrast ? 'true' : 'false');
       localStorage.setItem(CB_KEY, colorBlindFriendly ? 'true' : 'false');
       localStorage.setItem(RM_KEY, reducedMotion ? 'true' : 'false');
+      localStorage.setItem(CG_KEY, cognitiveFriendly ? 'true' : 'false');
       localStorage.setItem(SW_KEY, swipeEnabled ? 'true' : 'false');
       localStorage.setItem(TM_KEY, textMode);
       localStorage.setItem(MV_KEY, String(musicVolume));
@@ -146,7 +155,7 @@
 
   /* Réapplique à chaque changement (hooks Svelte 5). */
   $effect(() => {
-    void textSize; void highContrast; void colorBlindFriendly; void reducedMotion; void swipeEnabled; void textMode;
+    void textSize; void highContrast; void colorBlindFriendly; void reducedMotion; void cognitiveFriendly; void swipeEnabled; void textMode;
     void musicVolume; void sfxVolume; void voiceVolume; void speechGranularity; void voicesBoost;
     apply();
   });
@@ -322,6 +331,16 @@
           <span class="lbl">
             <b>Animations réduites</b>
             <small>Désactive pulses, shakes et compteurs animés pour les sensibilités vestibulaires.</small>
+          </span>
+        </label>
+      </section>
+
+      <section class="opt-toggle">
+        <label>
+          <input type="checkbox" bind:checked={cognitiveFriendly} />
+          <span class="lbl">
+            <b>Lecture aérée (dyslexie · TDAH · charge cognitive)</b>
+            <small>Augmente l'interlignage, espacement de mots, marges des paragraphes. Met le ticker en pause par défaut. Recommandé combiné avec « Texte large ». P1-14 ORDA-008.</small>
           </span>
         </label>
       </section>

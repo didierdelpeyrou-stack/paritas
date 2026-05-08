@@ -5,43 +5,36 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#0d1014" />
   <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
-  <!-- PWA -->
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="apple-touch-icon" href="/icon-192.svg" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="PARITAS" />
   <title>PARITAS — Portail</title>
+  <meta name="description" content="PARITAS — simulation politique narrative sur le paritarisme français. Jeu principal + 10 ateliers." />
 
-  <!-- Bootstrap a11y · applique les préférences AVANT le rendu (anti-FOUC) -->
+  <!-- Bootstrap a11y · applique les préférences AVANT le rendu -->
   <script>
-      (function() {
-        try {
-          var r = document.documentElement;
-          var p = JSON.parse(localStorage.getItem('paritas-a11y-prefs') || '{}');
-          if (p.contrast) r.dataset.a11yContrast = p.contrast;
-          if (p.fontFamily && p.fontFamily !== 'standard') r.dataset.a11yFontFamily = p.fontFamily;
-          if (p.colorBlind && p.colorBlind !== 'none') r.dataset.a11yColorBlind = p.colorBlind;
-          if (p.reducedMotion) r.dataset.a11yReducedMotion = 'true';
-          if (p.focus === 'enhanced') r.dataset.a11yFocus = 'enhanced';
-          if (p.falc) r.dataset.a11yFalc = 'true';
-          if (p.fontSize) r.style.setProperty('--a11y-font-scale', String(p.fontSize));
-          var g = JSON.parse(localStorage.getItem('paritas-game-prefs') || '{}');
-          if (g.mode === 'jour') r.dataset.gameMode = 'jour';
-          if (g.density && g.density !== 'standard') r.dataset.gameDensity = g.density;
-          if (g.panelSide === 'gauche') r.dataset.gamePanelSide = 'gauche';
-        } catch(e) {}
-      })();
-    </script>
-  <meta name="description" content="PARITAS — simulation politique narrative sur le paritarisme français, de 1789 à 2026. Jeu principal + 10 ateliers de négociation jouables en standalone." />
-  <meta property="og:title" content="PARITAS — Portail" />
-  <meta property="og:description" content="Le jeu principal, 10 ateliers de négociation, et la doctrine Argus." />
-  <meta property="og:type" content="website" />
-  <meta property="og:locale" content="fr_FR" />
+    (function() {
+      try {
+        var r = document.documentElement;
+        var p = JSON.parse(localStorage.getItem('paritas-a11y-prefs') || '{}');
+        if (p.contrast) r.dataset.a11yContrast = p.contrast;
+        if (p.fontFamily && p.fontFamily !== 'standard') r.dataset.a11yFontFamily = p.fontFamily;
+        if (p.colorBlind && p.colorBlind !== 'none') r.dataset.a11yColorBlind = p.colorBlind;
+        if (p.reducedMotion) r.dataset.a11yReducedMotion = 'true';
+        if (p.focus === 'enhanced') r.dataset.a11yFocus = 'enhanced';
+        if (p.falc) r.dataset.a11yFalc = 'true';
+        if (p.fontSize) r.style.setProperty('--a11y-font-scale', String(p.fontSize));
+        var g = JSON.parse(localStorage.getItem('paritas-game-prefs') || '{}');
+        if (g.mode === 'jour') r.dataset.gameMode = 'jour';
+      } catch(e) {}
+    })();
+  </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Cinzel:wght@400;600;700;900&family=Inter:wght@400;500;600;700&family=Lexend:wght@400;500;600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600;700&family=Lexend:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
 
   <style>
     :root {
@@ -53,1103 +46,415 @@
       --text:       #e8ecf1;
       --text-soft:  #94a3b8;
       --text-mute:  #64748b;
-      --accent:     #c9a25b;        /* or vieilli */
-      --accent-2:   #8a6938;
-      --salarie:    #34d399;        /* vert syndical */
-      --patron:     #60a5fa;        /* bleu institution */
-      --argus:      #dc2626;        /* rouge Argus */
-      --serif:      'Cinzel', 'Source Serif 4', serif;
-      --body:       'Inter', system-ui, sans-serif;
-      --mono:       'JetBrains Mono', ui-monospace, monospace;
+      --accent:     #c9a25b;
+      --accent-2:   #d9b46d;
+      --serif: 'Cinzel', Georgia, serif;
+      --body:  'Inter', system-ui, sans-serif;
+      --mono:  'JetBrains Mono', ui-monospace, monospace;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html { font-size: calc(16px * var(--a11y-font-scale, 1)); }
-    html, body {
-      background: var(--bg-deep);
-      color: var(--text);
-      font-family: var(--body);
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-      min-height: 100vh;
-    }
-
-    /* ─── A11y overrides ────────────────────────────── */
-    :root[data-a11y-contrast="eleve"] {
-      --bg-deep: #000; --bg: #0a0a0a; --bg-2: #141414; --bg-3: #1f1f1f;
-      --line: #4a4a4a; --text: #ffffff; --text-soft: #e6e6e6; --text-mute: #c6c6c6;
-      --accent: #ffd166;
-    }
-    :root[data-a11y-contrast="max"] {
-      --bg-deep: #000; --bg: #000; --bg-2: #000; --bg-3: #0a0a0a;
-      --line: #fff; --text: #fff; --text-soft: #fff; --text-mute: #fff;
-      --accent: #ffff00;
-    }
-    :root[data-a11y-color-blind="deutera"] { --salarie: #4ea2ff; --patron: #ffd166; --argus: #ff8c00; }
-    :root[data-a11y-color-blind="prota"]   { --salarie: #4ea2ff; --patron: #ffd166; --argus: #ffaa00; }
-    :root[data-a11y-color-blind="trita"]   { --salarie: #ff6db6; --patron: #ffb14e; --argus: #c5b9cd; }
-    :root[data-a11y-color-blind="achroma"] { --salarie: #fff; --patron: #ddd; --argus: #aaa; --accent: #fff; }
-    :root[data-a11y-font-family="atkinson"] body { font-family: 'Atkinson Hyperlegible', system-ui, sans-serif; }
-    :root[data-a11y-font-family="lexend"]   body { font-family: 'Lexend', system-ui, sans-serif; letter-spacing: 0.02em; }
+    /* a11y overrides */
+    :root[data-a11y-contrast="eleve"]{--bg-deep:#000;--bg:#0a0a0a;--bg-2:#141414;--bg-3:#1f1f1f;--line:#4a4a4a;--text:#fff;--text-soft:#e6e6e6;--text-mute:#c6c6c6;--accent:#ffd166}
+    :root[data-a11y-contrast="max"]{--bg-deep:#000;--bg:#000;--bg-2:#000;--bg-3:#0a0a0a;--line:#fff;--text:#fff;--text-soft:#fff;--text-mute:#fff;--accent:#ff0}
+    :root[data-a11y-font-family="atkinson"] body{font-family:'Atkinson Hyperlegible',system-ui,sans-serif}
+    :root[data-a11y-font-family="lexend"] body{font-family:'Lexend',system-ui,sans-serif;letter-spacing:.02em}
     :root[data-a11y-reduced-motion="true"] *,
     :root[data-a11y-reduced-motion="true"] *::before,
-    :root[data-a11y-reduced-motion="true"] *::after {
-      animation-duration: 0.001s !important;
-      transition-duration: 0.001s !important;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
-    }
-    :root[data-a11y-focus="enhanced"] *:focus-visible {
-      outline: 4px solid #ffd166 !important;
-      outline-offset: 3px !important;
-      box-shadow: 0 0 0 6px rgba(255, 209, 102, 0.35) !important;
-    }
-    *:focus-visible {
-      outline: 3px solid #ffd166;
-      outline-offset: 2px;
-      border-radius: 3px;
-    }
+    :root[data-a11y-reduced-motion="true"] *::after{animation-duration:.001s!important;transition-duration:.001s!important}
+    @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001s!important;transition-duration:.001s!important}}
 
-    /* SKIP LINK */
-    .skip-link {
-      position: absolute; top: -100px; left: 1rem;
-      background: #ffd166; color: #000; padding: 0.7rem 1.25rem;
-      font-weight: 700; border-radius: 4px; text-decoration: none;
-      z-index: 1000; transition: top 0.15s ease;
-    }
-    .skip-link:focus { top: 1rem; }
-
-    .sr-only {
-      position: absolute; width: 1px; height: 1px;
-      padding: 0; margin: -1px; overflow: hidden;
-      clip: rect(0,0,0,0); white-space: nowrap; border: 0;
-    }
-
+    *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: calc(16px * var(--a11y-font-scale, 1)); }
+    html, body { background: var(--bg-deep); color: var(--text); font-family: var(--body); line-height: 1.55; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
     a { color: inherit; text-decoration: none; }
 
-    /* ── Background grain ── */
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background:
-        radial-gradient(ellipse at top, rgba(201,162,91,0.06), transparent 50%),
-        radial-gradient(ellipse at bottom, rgba(96,165,250,0.04), transparent 50%);
-      pointer-events: none;
-      z-index: 0;
+    *:focus-visible { outline: 3px solid #ffd166; outline-offset: 2px; border-radius: 3px; }
+    :root[data-a11y-focus="enhanced"] *:focus-visible { outline-width: 4px; outline-offset: 3px; box-shadow: 0 0 0 6px rgba(255,209,102,.35); }
+
+    .skip-link { position: absolute; top: -100px; left: 1rem; background: #ffd166; color: #000; padding: .7rem 1.25rem; font-weight: 700; border-radius: 4px; z-index: 1000; transition: top .15s; }
+    .skip-link:focus { top: 1rem; }
+
+    .page {
+      max-width: 56rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+      min-height: 100dvh;
     }
 
-    .container { max-width: 1180px; margin: 0 auto; padding: 0 1.5rem; position: relative; z-index: 1; }
-
-    /* ─────────────────────────────────────────────────
-       NAV
-    ───────────────────────────────────────────────── */
-    nav.top {
-      padding: 1.25rem 0;
-      border-bottom: 1px solid var(--line);
-      background: rgba(13, 16, 20, 0.85);
-      backdrop-filter: blur(8px);
-      position: sticky; top: 0; z-index: 10;
+    /* ─── Hero minimal ─── */
+    .hero {
+      text-align: center;
+      padding: 2rem 0 3rem;
     }
-    .nav-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-    .brand { display: flex; align-items: center; gap: 0.75rem; }
-    .brand-mark {
-      width: 36px; height: 36px;
-      background: var(--accent);
-      border-radius: 4px;
-      display: grid; place-items: center;
-      color: var(--bg-deep);
-      font-family: var(--serif); font-weight: 900; font-size: 1.1rem;
-    }
-    .brand-text { font-family: var(--serif); font-weight: 700; font-size: 1.1rem; letter-spacing: 0.08em; }
-    .brand-text span { color: var(--text-mute); font-weight: 400; font-size: 0.85em; }
-
-    .nav-links { display: flex; gap: 1.25rem; font-size: 0.88rem; color: var(--text-soft); }
-    .nav-links a:hover { color: var(--accent); }
-
-    /* ─────────────────────────────────────────────────
-       HERO
-    ───────────────────────────────────────────────── */
-    .hero { padding: 5rem 0 4rem; }
-    .hero-row {
-      display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 4rem;
-      align-items: center;
-    }
-    @media (max-width: 880px) { .hero-row { grid-template-columns: 1fr; gap: 2rem; } .hero { padding: 3rem 0 2rem; } }
-
     .hero-eyebrow {
       font-family: var(--mono);
-      font-size: 0.78rem;
-      letter-spacing: 0.18em;
+      font-size: .72rem;
+      letter-spacing: .22em;
       color: var(--accent);
       text-transform: uppercase;
-      margin-bottom: 1.25rem;
+      margin-bottom: .8rem;
     }
-    .hero h1 {
+    .hero-title {
       font-family: var(--serif);
       font-weight: 900;
-      font-size: clamp(2.5rem, 5vw, 4rem);
-      line-height: 1.05;
-      letter-spacing: -0.01em;
-      margin-bottom: 1.25rem;
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      letter-spacing: -.01em;
+      line-height: 1;
+      margin-bottom: .6rem;
     }
-    .hero h1 .accent { color: var(--accent); }
-    .hero-promise {
-      font-family: var(--serif);
-      font-style: italic;
-      font-size: 1.15rem;
-      line-height: 1.5;
+    .hero-tag {
       color: var(--text-soft);
-      max-width: 32rem;
-      margin-bottom: 2rem;
-      border-left: 3px solid var(--accent);
-      padding-left: 1rem;
+      font-size: 1rem;
+      margin-bottom: 1.75rem;
     }
-    .hero-cta { display: flex; flex-wrap: wrap; gap: 0.75rem; }
-    .btn {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      padding: 0.85rem 1.4rem;
-      font-family: var(--body); font-weight: 600; font-size: 0.95rem;
-      border-radius: 4px;
-      border: 1px solid var(--line);
-      background: var(--bg-2);
-      color: var(--text);
-      cursor: pointer;
-      transition: all 0.18s ease;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .btn:hover { background: var(--bg-3); border-color: var(--accent); }
-    .btn-primary {
+
+    .cta-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      padding: 1rem 1.75rem;
       background: var(--accent);
       color: var(--bg-deep);
-      border-color: var(--accent);
-    }
-    .btn-primary:hover { background: #d9b46d; color: var(--bg-deep); border-color: #d9b46d; }
-    .btn-ghost { background: transparent; }
-
-    .hero-stats {
-      display: flex; flex-direction: column; gap: 1rem;
-    }
-    .stat-card {
-      background: var(--bg-2);
-      border: 1px solid var(--line);
-      border-left: 3px solid var(--accent);
-      padding: 1rem 1.25rem;
+      border: 1px solid var(--accent);
       border-radius: 4px;
-    }
-    .stat-card strong {
-      font-family: var(--serif);
-      font-size: 1.5rem;
+      font-family: var(--body);
       font-weight: 700;
-      color: var(--accent);
-      display: block;
-      margin-bottom: 0.15rem;
-    }
-    .stat-card span { font-size: 0.85rem; color: var(--text-mute); }
-
-    /* ─────────────────────────────────────────────────
-       SECTIONS génériques
-    ───────────────────────────────────────────────── */
-    section.block { padding: 4rem 0; border-top: 1px solid var(--line); }
-    .section-eyebrow {
-      font-family: var(--mono);
-      font-size: 0.75rem;
-      letter-spacing: 0.18em;
-      color: var(--accent);
+      font-size: 1rem;
+      letter-spacing: .04em;
       text-transform: uppercase;
-      margin-bottom: 0.75rem;
+      cursor: pointer;
+      transition: background .15s ease;
     }
-    .section-title {
-      font-family: var(--serif);
-      font-weight: 700;
-      font-size: clamp(1.75rem, 3vw, 2.5rem);
-      line-height: 1.1;
-      margin-bottom: 0.75rem;
+    .cta-primary:hover { background: var(--accent-2); border-color: var(--accent-2); }
+
+    /* ─── Section title ─── */
+    .section-label {
+      font-family: var(--mono);
+      font-size: .7rem;
+      letter-spacing: .2em;
+      color: var(--text-mute);
+      text-transform: uppercase;
+      margin: 2.5rem 0 .75rem;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
     }
-    .section-sub {
-      color: var(--text-soft);
-      font-size: 1.05rem;
-      max-width: 42rem;
-      margin-bottom: 2.5rem;
+    .section-label::before,
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--line);
     }
 
-    /* ─────────────────────────────────────────────────
-       BOUSSOLE PRODUIT
-    ───────────────────────────────────────────────── */
-    .compass-grid {
+    /* ─── Grille ateliers compacte ─── */
+    .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: .5rem;
     }
-    .compass-card {
-      background: var(--bg-2);
-      border: 1px solid var(--line);
-      padding: 1.25rem;
-      border-radius: 4px;
-      position: relative;
-      transition: all 0.18s ease;
-    }
-    .compass-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-    .compass-num {
-      font-family: var(--serif);
-      font-size: 0.85rem;
-      color: var(--accent);
-      letter-spacing: 0.1em;
-      margin-bottom: 0.5rem;
-    }
-    .compass-title {
-      font-family: var(--serif);
-      font-weight: 700;
-      font-size: 1.1rem;
-      margin-bottom: 0.4rem;
-    }
-    .compass-desc { font-size: 0.85rem; color: var(--text-mute); line-height: 1.5; }
-
-    /* ─────────────────────────────────────────────────
-       ATELIERS GRID
-    ───────────────────────────────────────────────── */
-    .ateliers-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1rem;
-    }
-    .atelier {
+    .tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .35rem;
+      padding: 1rem .5rem .75rem;
       background: var(--bg-2);
       border: 1px solid var(--line);
       border-radius: 6px;
-      padding: 1.4rem;
-      display: flex; flex-direction: column;
-      transition: all 0.2s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    .atelier::before {
-      content: '';
-      position: absolute; left: 0; top: 0; bottom: 0;
-      width: 3px;
-      background: var(--accent);
-      opacity: 0.3;
-      transition: opacity 0.2s;
-    }
-    .atelier:hover { border-color: var(--accent); }
-    .atelier:hover::before { opacity: 1; }
-
-    .atelier-head { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.75rem; }
-    .atelier-icon { font-size: 1.8rem; line-height: 1; }
-    .atelier-title {
-      font-family: var(--serif);
-      font-weight: 700;
-      font-size: 1.1rem;
-      line-height: 1.2;
-      flex: 1;
-    }
-    .atelier-tags { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
-    .tag {
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      padding: 0.15rem 0.4rem;
-      border-radius: 3px;
-      background: var(--bg-3);
-      color: var(--text-mute);
-      border: 1px solid var(--line);
-    }
-    .tag.salarie { color: var(--salarie); border-color: rgba(52,211,153,0.3); }
-    .tag.patron  { color: var(--patron);  border-color: rgba(96,165,250,0.3); }
-    .tag.symetrique { color: var(--accent); border-color: rgba(201,162,91,0.4); }
-    .tag.solo { color: var(--text-soft); }
-
-    .atelier-desc {
-      font-size: 0.88rem;
-      color: var(--text-soft);
-      line-height: 1.5;
-      flex: 1;
-      margin-bottom: 1rem;
-    }
-    .atelier-meta {
-      display: flex; gap: 0.75rem;
-      font-size: 0.75rem;
-      color: var(--text-mute);
-      margin-bottom: 1rem;
-      font-family: var(--mono);
-    }
-    .atelier-meta span::before { content: '·'; margin-right: 0.4rem; color: var(--accent); }
-    .atelier-meta span:first-child::before { content: ''; margin: 0; }
-
-    .atelier-actions { display: flex; gap: 0.5rem; }
-    .atelier-btn {
-      flex: 1;
-      padding: 0.55rem 0.75rem;
-      font-size: 0.8rem;
-      font-weight: 600;
-      border-radius: 3px;
-      border: 1px solid var(--line);
-      text-align: center;
-      transition: all 0.15s;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-    .atelier-btn.standalone {
-      background: var(--bg-3);
+      text-decoration: none;
       color: var(--text);
+      transition: all .15s ease;
+      text-align: center;
     }
-    .atelier-btn.standalone:hover { background: var(--accent); color: var(--bg-deep); border-color: var(--accent); }
-    .atelier-btn.integrated {
-      background: transparent;
-      color: var(--text-soft);
+    .tile:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
     }
-    .atelier-btn.integrated:hover { color: var(--accent); border-color: var(--accent); }
+    .tile-icon { font-size: 1.85rem; line-height: 1; }
+    .tile-name {
+      font-family: var(--serif);
+      font-size: .85rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .tile-meta {
+      font-family: var(--mono);
+      font-size: .65rem;
+      color: var(--text-mute);
+      letter-spacing: .04em;
+      margin-top: .15rem;
+    }
 
-    /* ─────────────────────────────────────────────────
-       ARGUS BANDEAU
-    ───────────────────────────────────────────────── */
-    .argus-band {
-      background: linear-gradient(135deg, #1a0e0e 0%, #2a1818 50%, #0e1a1a 100%);
-      border: 1px solid #3a1f1f;
-      border-radius: 8px;
-      padding: 2.5rem 2rem;
-      margin-top: 1rem;
-      position: relative;
+    /* ─── Boutons d'info en bas ─── */
+    .links-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: .5rem;
+      margin-top: .5rem;
+    }
+    .info-btn {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      padding: .85rem 1rem;
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      color: var(--text-soft);
+      font-family: var(--body);
+      font-size: .88rem;
+      cursor: pointer;
+      transition: all .15s;
+      text-align: left;
+    }
+    .info-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .info-btn-glyph { font-size: 1.05rem; opacity: .8; }
+
+    /* ─── Sections d'info repliables ─── */
+    details.info {
+      margin-top: 1.5rem;
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: 6px;
       overflow: hidden;
     }
-    .argus-band::before {
-      content: 'ARGUS';
-      position: absolute;
-      right: -2rem; top: 50%;
-      transform: translateY(-50%) rotate(-90deg);
-      font-family: var(--serif);
-      font-weight: 900;
-      font-size: 8rem;
-      color: rgba(220, 38, 38, 0.04);
-      letter-spacing: 0.15em;
-      pointer-events: none;
-    }
-    .argus-quote {
-      font-family: var(--serif);
-      font-style: italic;
-      font-size: 1.1rem;
-      color: #fca5a5;
-      max-width: 36rem;
-      margin-bottom: 1.5rem;
-      line-height: 1.5;
-    }
-    .argus-quote::before { content: '«'; margin-right: 0.4rem; }
-    .argus-quote::after { content: '»'; margin-left: 0.4rem; }
-    .argus-attr {
-      font-family: var(--mono);
-      font-size: 0.75rem;
-      letter-spacing: 0.1em;
-      color: var(--text-mute);
-      text-transform: uppercase;
-      margin-bottom: 1.5rem;
-    }
-    .argus-codes { display: flex; flex-wrap: wrap; gap: 0.75rem; }
-    .argus-code {
-      background: rgba(220, 38, 38, 0.08);
-      border: 1px solid rgba(220, 38, 38, 0.3);
-      padding: 0.6rem 0.9rem;
-      border-radius: 4px;
-      font-family: var(--mono);
-      font-size: 0.85rem;
+    details.info[open] { border-color: var(--accent); }
+    details.info > summary {
+      list-style: none;
       cursor: pointer;
-      transition: all 0.18s;
-    }
-    .argus-code:hover {
-      background: rgba(220, 38, 38, 0.15);
-      border-color: var(--argus);
-      color: #fca5a5;
-    }
-    .argus-code-key { color: var(--argus); font-weight: 600; }
-    .argus-code-desc { color: var(--text-soft); font-size: 0.78rem; margin-left: 0.5rem; }
-
-    /* ─────────────────────────────────────────────────
-       INTEGRITY
-    ───────────────────────────────────────────────── */
-    .integrity-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1rem;
-    }
-    .integrity-item {
-      background: var(--bg-2);
-      border-left: 3px solid var(--salarie);
       padding: 1rem 1.25rem;
-      border-radius: 0 4px 4px 0;
-    }
-    .integrity-item:nth-child(2n) { border-left-color: var(--patron); }
-    .integrity-item:nth-child(3n) { border-left-color: var(--accent); }
-    .integrity-item h4 {
       font-family: var(--serif);
       font-weight: 700;
       font-size: 1rem;
-      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      user-select: none;
     }
-    .integrity-item p { font-size: 0.85rem; color: var(--text-mute); line-height: 1.5; }
-
-    /* ─────────────────────────────────────────────────
-       FOOTER
-    ───────────────────────────────────────────────── */
-    footer {
+    details.info > summary::-webkit-details-marker { display: none; }
+    details.info > summary::after {
+      content: '+';
+      margin-left: auto;
+      font-family: var(--mono);
+      color: var(--accent);
+      font-size: 1.4rem;
+      line-height: 1;
+    }
+    details.info[open] > summary::after { content: '−'; }
+    details.info > .info-body {
+      padding: 0 1.25rem 1.25rem;
       border-top: 1px solid var(--line);
-      padding: 3rem 0 2rem;
-      margin-top: 4rem;
+      padding-top: 1.25rem;
+      font-size: .9rem;
+      color: var(--text-soft);
+      line-height: 1.6;
     }
-    .footer-row {
-      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;
-      font-size: 0.82rem; color: var(--text-mute);
+    .info-body h3 {
+      font-family: var(--serif);
+      font-size: .85rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 1rem 0 .4rem;
     }
-    .footer-row a:hover { color: var(--accent); }
-    .footer-credits { font-family: var(--mono); }
+    .info-body h3:first-of-type { margin-top: 0; }
+    .info-body p { margin-bottom: .65rem; }
+    .info-body ul { padding-left: 1.25rem; margin-bottom: .65rem; }
+    .info-body li { margin-bottom: .25rem; }
+    .info-body code {
+      font-family: var(--mono);
+      background: var(--bg-3);
+      padding: .15rem .4rem;
+      border-radius: 3px;
+      font-size: .82em;
+      color: var(--accent);
+    }
 
-    /* ─────────────────────────────────────────────────
-       ACCESS
-    ───────────────────────────────────────────────── */
-    @media (max-width: 600px) {
-      .container { padding: 0 1rem; }
-      .hero { padding: 2rem 0 1.5rem; }
-      .hero-row { gap: 1.5rem; }
-      .nav-links { display: none; }
-      .ateliers-grid { grid-template-columns: 1fr; }
+    /* ─── Score a11y compact ─── */
+    .score-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .35rem .75rem;
+      background: var(--bg-3);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: .75rem;
+      color: var(--text-soft);
+      margin-top: 1.5rem;
+    }
+    .score-pill strong { color: #34d399; font-size: .85rem; }
+
+    /* ─── Footer ─── */
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--line);
+      font-family: var(--mono);
+      font-size: .72rem;
+      color: var(--text-mute);
+      text-align: center;
+      letter-spacing: .08em;
     }
   </style>
 </head>
 <body>
 
-<!-- SKIP LINK · première cible clavier -->
-<a href="#contenu-principal" class="skip-link">Aller au contenu</a>
+<a href="#contenu" class="skip-link">Aller au contenu</a>
 
-<!-- ═══════════════════════════════════════════════════════════
-     NAV
-═══════════════════════════════════════════════════════════ -->
-<nav class="top" role="navigation" aria-label="Navigation principale">
-  <div class="container nav-row">
-    <a class="brand" href="./" aria-label="PARITAS · accueil portail">
-      <div class="brand-mark" aria-hidden="true">P</div>
-      <div class="brand-text">PARITAS <span>· portail</span></div>
+<main id="contenu" class="page" role="main">
+
+  <!-- ╔═══ HERO MINIMAL ═══╗ -->
+  <section class="hero" aria-labelledby="t1">
+    <div class="hero-eyebrow">Simulation politique · 1789 → 2026</div>
+    <h1 class="hero-title" id="t1">PARITAS</h1>
+    <p class="hero-tag">100 décisions · 10 ateliers · 2 camps</p>
+    <a class="cta-primary" href="../index.html">▶ Lancer le jeu</a>
+  </section>
+
+  <!-- ╔═══ ATELIERS ═══╗ -->
+  <div class="section-label">Ateliers</div>
+  <nav class="grid" aria-label="10 ateliers de négociation">
+    <a class="tile" href="../mini/nao/">
+      <span class="tile-icon">🏛️</span>
+      <span class="tile-name">La NAO</span>
+      <span class="tile-meta">5 séances</span>
     </a>
-    <div class="nav-links">
-      <a href="#jeu">Jeu principal</a>
-      <a href="#ateliers">Ateliers</a>
-      <a href="#integrite">Intégrité</a>
-      <a href="#a11y">Accessibilité</a>
-      <a href="#argus">Argus</a>
-      <a href="../reglages/" style="border: 1px solid var(--accent); padding: 0.3rem 0.7rem; border-radius: 3px;">⚙ Réglages</a>
-    </div>
+    <a class="tile" href="../mini/elections/">
+      <span class="tile-icon">🗳️</span>
+      <span class="tile-name">Élections</span>
+      <span class="tile-meta">3 scrutins</span>
+    </a>
+    <a class="tile" href="../mini/greve/">
+      <span class="tile-icon">✊</span>
+      <span class="tile-name">La Grève</span>
+      <span class="tile-meta">5 mouvements</span>
+    </a>
+    <a class="tile" href="../mini/table/">
+      <span class="tile-icon">🤝</span>
+      <span class="tile-name">La Table</span>
+      <span class="tile-meta">3 rounds</span>
+    </a>
+    <a class="tile" href="../mini/matignon/">
+      <span class="tile-icon">🏛️</span>
+      <span class="tile-name">Matignon</span>
+      <span class="tile-meta">1936</span>
+    </a>
+    <a class="tile" href="../mini/manif/">
+      <span class="tile-icon">📣</span>
+      <span class="tile-name">La Manif</span>
+      <span class="tile-meta">7 paramètres</span>
+    </a>
+    <a class="tile" href="../mini/meeting/">
+      <span class="tile-icon">🎙️</span>
+      <span class="tile-name">Le Meeting</span>
+      <span class="tile-meta">rhétorique</span>
+    </a>
+    <a class="tile" href="../mini/confrontation/">
+      <span class="tile-icon">⚔️</span>
+      <span class="tile-name">Confront.</span>
+      <span class="tile-meta">tactique</span>
+    </a>
+    <a class="tile" href="../mini/place/">
+      <span class="tile-icon">🏛️</span>
+      <span class="tile-name">La Place</span>
+      <span class="tile-meta">3 actes</span>
+    </a>
+    <a class="tile" href="../mini/arena/">
+      <span class="tile-icon">🥊</span>
+      <span class="tile-name">Arena</span>
+      <span class="tile-meta">stochastique</span>
+    </a>
+  </nav>
+
+  <!-- ╔═══ BOUTONS D'INFO ═══╗ -->
+  <div class="section-label">À propos</div>
+  <div class="links-row">
+    <a class="info-btn" href="#integrite"><span class="info-btn-glyph">📜</span> Intégrité du jeu</a>
+    <a class="info-btn" href="#argus"><span class="info-btn-glyph">⚔</span> Argus &amp; doctrine</a>
+    <a class="info-btn" href="#a11y"><span class="info-btn-glyph">♿</span> Accessibilité</a>
+    <a class="info-btn" href="../reglages/"><span class="info-btn-glyph">⚙</span> Réglages</a>
   </div>
-</nav>
 
-<main id="contenu-principal" role="main">
+  <!-- ╔═══ SECTIONS REPLIABLES (cachées par défaut) ═══╗ -->
+  <details class="info" id="integrite">
+    <summary>📜 Intégrité du jeu</summary>
+    <div class="info-body">
+      <h3>Promesse publique</h3>
+      <p><em>Deviens meilleur négociateur social, côté salarié ou côté employeur, en traversant deux siècles de conflits, d'accords, de trahisons, de compromis et d'institutions.</em></p>
 
-<!-- ═══════════════════════════════════════════════════════════
-     HERO
-═══════════════════════════════════════════════════════════ -->
-<section class="hero" id="jeu">
-  <div class="container hero-row">
-    <div>
-      <div class="hero-eyebrow">Simulation politique narrative · 1789 → 2026</div>
-      <h1>
-        Le <span class="accent">paritarisme</span><br/>
-        comme un jeu sérieux.
-      </h1>
-      <p class="hero-promise">
-        Deviens meilleur négociateur social, côté salarié ou côté employeur,
-        en traversant deux siècles de conflits, d'accords, de trahisons,
-        de compromis et d'institutions.
-      </p>
-      <div class="hero-cta">
-        <a class="btn btn-primary" href="../index.html">▶ Lancer le jeu principal</a>
-        <a class="btn btn-ghost" href="#ateliers">10 ateliers ↓</a>
-      </div>
+      <h3>Boussole produit</h3>
+      <p>Arbitrage strict en 5 axes :</p>
+      <ul>
+        <li><strong>Jouabilité</strong> — un choix intéressant, clair, avec un coût</li>
+        <li><strong>Vérité sociale</strong> — le système respecte les rapports de force réels</li>
+        <li><strong>Apprentissage</strong> — le joueur comprend mieux après avoir agi</li>
+        <li><strong>Beauté</strong> — l'interface, les silences, les transitions portent le poids historique</li>
+        <li><strong>IA vérifiable</strong> — l'IA anime, mais ne remplace jamais les règles</li>
+      </ul>
+
+      <h3>Garanties</h3>
+      <p>Symétrie paritariste · moteur découplé du DOM · conséquences propagées · effet pédagogique mesurable · cohérence historique · audit Argus permanent.</p>
     </div>
-    <div class="hero-stats">
-      <div class="stat-card">
-        <strong>100</strong>
-        <span>tours narratifs · 4 époques historiques</span>
-      </div>
-      <div class="stat-card">
-        <strong>10</strong>
-        <span>ateliers de négociation jouables en standalone</span>
-      </div>
-      <div class="stat-card">
-        <strong>2</strong>
-        <span>camps symétriques · salarié ⟺ employeur</span>
-      </div>
+  </details>
+
+  <details class="info" id="argus">
+    <summary>⚔ Argus &amp; doctrine organo-stratéguerre</summary>
+    <div class="info-body">
+      <p><em>« Un jeu sans audit est une promesse sans preuve. Une promesse sans preuve est un mensonge poli. Je ne polis pas les mensonges — je les démonte. »</em></p>
+
+      <h3>5 corps</h3>
+      <ul>
+        <li><strong>I — Architectes</strong> · architecture, UX, pédagogie</li>
+        <li><strong>II — Géomètres</strong> · Monte Carlo, RNG, calibrage</li>
+        <li><strong>III — Diplomates</strong> · IA adverse, dialogue, symétrie</li>
+        <li><strong>IV — Stratèges</strong> · panel bêta, mémo rouge, analyse</li>
+        <li><strong>V — Sapeurs</strong> · audit code, dette technique, tests</li>
+      </ul>
+
+      <h3>Codes de convocation</h3>
+      <ul>
+        <li><code>/argus</code> — le Maréchal seul</li>
+        <li><code>/etat-major</code> — Argus + 5 colonels</li>
+        <li><code>/orda</code> ⭐ — cycle complet 14 jours (recommandé)</li>
+        <li><code>/ban-et-arriere-ban</code> — mobilisation totale</li>
+      </ul>
+
+      <h3>Bilan campagne</h3>
+      <p>29 bugs frappés · 6 cycles ORDA · 10/10 ateliers consolidés · 2 armées (Designers + IT).</p>
+
+      <p><a href="../docs/V3_ARGUS_DOCTRINE_ORGANO_STRATEGUERRE.md" style="color: var(--accent); text-decoration: underline; text-underline-offset: 2px;">Doctrine complète →</a></p>
     </div>
-  </div>
-</section>
+  </details>
 
-<!-- ═══════════════════════════════════════════════════════════
-     SCORING HANDICAP · BADGE A11Y
-═══════════════════════════════════════════════════════════ -->
-<section class="block a11y-scoring" id="a11y" aria-labelledby="a11y-title">
-  <div class="container">
-    <div class="section-eyebrow">Accessibilité · audit transparent</div>
-    <h2 class="section-title" id="a11y-title">Score handicap — visibilité publique</h2>
-    <p class="section-sub">
-      PARITAS audite et publie son niveau d'accessibilité. Aucune cosmétique :
-      les chiffres sont mesurés selon 10 critères WCAG 2.2 pondérés.
-      Cycle ORDA-006 dédié à atteindre <strong>95/100</strong>.
-    </p>
-
-    <div class="a11y-grid">
-
-      <!-- BADGE GROS -->
-      <div class="a11y-badge">
-        <div class="a11y-badge-label">Score actuel</div>
-        <div class="a11y-badge-num">
-          <span id="portail-score">32</span><span class="badge-slash">/100</span>
-        </div>
-        <div class="a11y-badge-status">
-          <span class="dot" aria-hidden="true"></span>
-          Conformité partielle WCAG 2.2 AA
-        </div>
-        <div class="a11y-badge-target">Cible J+70 : <strong>95/100</strong></div>
-        <a href="../reglages/" class="a11y-badge-cta">⚙ Personnaliser mes réglages →</a>
+  <details class="info" id="a11y">
+    <summary>♿ Accessibilité</summary>
+    <div class="info-body">
+      <p>PARITAS audite et publie son niveau d'accessibilité.</p>
+      <div class="score-pill">
+        <span>Score WCAG 2.2 :</span>
+        <strong>32 / 100</strong>
+        <span style="color: var(--text-mute);">→ cible J+70 : 95/100</span>
       </div>
-
-      <!-- DÉTAIL CRITÈRES -->
-      <div class="a11y-criteria">
-        <h3 class="criteria-title">Détail des 10 critères pondérés</h3>
-        <ul class="criteria-list" role="list">
-          <li><span class="crit-name">Contraste WCAG AAA</span><span class="crit-bar"><span class="crit-fill" style="width:53%"></span></span><span class="crit-pts">8/15</span></li>
-          <li><span class="crit-name">Navigation clavier 100 %</span><span class="crit-bar"><span class="crit-fill" style="width:47%"></span></span><span class="crit-pts">7/15</span></li>
-          <li><span class="crit-name">ARIA labels &amp; landmarks</span><span class="crit-bar"><span class="crit-fill" style="width:30%"></span></span><span class="crit-pts">3/10</span></li>
-          <li><span class="crit-name">Indicateur de focus</span><span class="crit-bar"><span class="crit-fill" style="width:40%"></span></span><span class="crit-pts">4/10</span></li>
-          <li><span class="crit-name">Reduced motion respecté</span><span class="crit-bar"><span class="crit-fill" style="width:0%"></span></span><span class="crit-pts no">0/10</span></li>
-          <li><span class="crit-name">Lecture d'écran testée</span><span class="crit-bar"><span class="crit-fill" style="width:0%"></span></span><span class="crit-pts no">0/10</span></li>
-          <li><span class="crit-name">Texte ajustable 200 %</span><span class="crit-bar"><span class="crit-fill ok" style="width:100%"></span></span><span class="crit-pts ok">10/10</span></li>
-          <li><span class="crit-name">Palettes daltonisme</span><span class="crit-bar"><span class="crit-fill" style="width:0%"></span></span><span class="crit-pts no">0/10</span></li>
-          <li><span class="crit-name">Sous-titres / signal visuel</span><span class="crit-bar"><span class="crit-fill" style="width:0%"></span></span><span class="crit-pts no">0/5</span></li>
-          <li><span class="crit-name">FALC (Facile à Lire)</span><span class="crit-bar"><span class="crit-fill" style="width:0%"></span></span><span class="crit-pts no">0/5</span></li>
-        </ul>
-        <p class="criteria-meta">
-          Audit du 2026-05-07 · méthode publique · prochaine révision après ORDA-006
-        </p>
-      </div>
+      <h3>10 critères pondérés</h3>
+      <ul>
+        <li>Contraste AAA · Navigation clavier · ARIA labels</li>
+        <li>Focus visible · Reduced motion · Lecture d'écran</li>
+        <li>Texte resize · Daltonisme · Sous-titres · FALC</li>
+      </ul>
+      <p>Personnalise ton expérience : <a href="../reglages/" style="color: var(--accent); text-decoration: underline;">Réglages &amp; accessibilité →</a></p>
     </div>
-  </div>
-</section>
+  </details>
 
-<style>
-  .a11y-scoring { background: linear-gradient(180deg, transparent 0%, rgba(52,211,153,0.03) 100%); }
-  .a11y-grid {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 2rem;
-    align-items: start;
-  }
-  @media (max-width: 760px) { .a11y-grid { grid-template-columns: 1fr; } }
-
-  .a11y-badge {
-    background: var(--bg-2);
-    border: 1px solid var(--line);
-    border-left: 4px solid #34d399;
-    padding: 1.75rem 1.5rem;
-    border-radius: 6px;
-    text-align: center;
-    position: sticky; top: 5rem;
-  }
-  .a11y-badge-label {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--text-mute);
-    margin-bottom: 0.5rem;
-  }
-  .a11y-badge-num {
-    font-family: var(--serif);
-    font-size: 4.5rem;
-    font-weight: 700;
-    color: #34d399;
-    line-height: 1;
-    margin-bottom: 0.5rem;
-  }
-  .badge-slash { font-size: 2rem; color: var(--text-mute); }
-  .a11y-badge-status {
-    font-size: 0.85rem;
-    color: var(--text-soft);
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    margin-bottom: 1rem;
-  }
-  .a11y-badge-status .dot {
-    width: 8px; height: 8px;
-    background: #f59e0b; border-radius: 50%;
-    animation: pulse 2s ease infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-  .a11y-badge-target {
-    font-size: 0.82rem;
-    color: var(--text-mute);
-    padding-top: 0.75rem;
-    border-top: 1px solid var(--line);
-    margin-bottom: 1rem;
-  }
-  .a11y-badge-target strong { color: var(--accent); }
-  .a11y-badge-cta {
-    display: inline-block;
-    padding: 0.65rem 1rem;
-    background: var(--accent);
-    color: var(--bg-deep) !important;
-    border-radius: 4px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    transition: background 0.15s;
-  }
-  .a11y-badge-cta:hover { background: var(--accent-2); }
-
-  .a11y-criteria { padding-top: 0.5rem; }
-  .criteria-title {
-    font-family: var(--serif);
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
-    color: var(--text);
-  }
-  .criteria-list { list-style: none; padding: 0; margin: 0; }
-  .criteria-list li {
-    display: grid;
-    grid-template-columns: 1fr 100px 60px;
-    gap: 0.75rem;
-    align-items: center;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--line);
-    font-size: 0.88rem;
-  }
-  .criteria-list li:last-child { border-bottom: none; }
-  .crit-name { color: var(--text-soft); }
-  .crit-bar {
-    height: 8px;
-    background: var(--bg-3);
-    border-radius: 4px;
-    overflow: hidden;
-    border: 1px solid var(--line);
-  }
-  .crit-fill {
-    display: block;
-    height: 100%;
-    background: #f59e0b;
-    border-radius: 4px;
-    transition: width 0.4s ease;
-  }
-  .crit-fill.ok { background: #34d399; }
-  .crit-pts {
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    text-align: right;
-    color: var(--text-mute);
-  }
-  .crit-pts.ok { color: #34d399; }
-  .crit-pts.no { color: var(--text-mute); opacity: 0.5; }
-  .criteria-meta {
-    margin-top: 1rem;
-    font-size: 0.78rem;
-    color: var(--text-mute);
-    font-family: var(--mono);
-  }
-</style>
-
-<!-- ═══════════════════════════════════════════════════════════
-     BOUSSOLE PRODUIT
-═══════════════════════════════════════════════════════════ -->
-<section class="block" id="integrite">
-  <div class="container">
-    <div class="section-eyebrow">Boussole produit · arbitrage strict en 5 axes</div>
-    <h2 class="section-title">Ce que ce jeu garantit</h2>
-    <p class="section-sub">
-      L'ordre est strict : si deux axes s'opposent, on tranche en faveur du plus haut.
-      C'est la doctrine défendue par Argus et son armée d'amélioration.
-    </p>
-
-    <div class="compass-grid">
-      <div class="compass-card">
-        <div class="compass-num">AXE 01</div>
-        <div class="compass-title">Jouabilité</div>
-        <p class="compass-desc">Un choix intéressant, clair, avec un coût. Pas de dilemme cosmétique.</p>
-      </div>
-      <div class="compass-card">
-        <div class="compass-num">AXE 02</div>
-        <div class="compass-title">Vérité sociale</div>
-        <p class="compass-desc">Le système respecte les rapports de force réels. Pas de gentillesse fictive.</p>
-      </div>
-      <div class="compass-card">
-        <div class="compass-num">AXE 03</div>
-        <div class="compass-title">Apprentissage</div>
-        <p class="compass-desc">Le joueur comprend mieux après avoir agi. Jamais de cours magistral.</p>
-      </div>
-      <div class="compass-card">
-        <div class="compass-num">AXE 04</div>
-        <div class="compass-title">Beauté</div>
-        <p class="compass-desc">L'interface, les silences, les transitions portent le poids historique.</p>
-      </div>
-      <div class="compass-card">
-        <div class="compass-num">AXE 05</div>
-        <div class="compass-title">IA vérifiable</div>
-        <p class="compass-desc">L'IA anime les acteurs et la narration, mais ne remplace jamais les règles.</p>
-      </div>
-    </div>
-
-    <h3 style="font-family: var(--serif); font-size: 1.3rem; margin: 3rem 0 1rem;">
-      Garanties d'intégrité
-    </h3>
-    <div class="integrity-list">
-      <div class="integrity-item">
-        <h4>Symétrie paritariste</h4>
-        <p>Tout atelier est jouable des deux côtés. Le salarié et l'employeur ont chacun leurs leviers, sans posture morale imposée.</p>
-      </div>
-      <div class="integrity-item">
-        <h4>Moteur découplé</h4>
-        <p>Le moteur (engine, négociation) ne dépend ni de Svelte ni du DOM. Portable web · desktop · mobile.</p>
-      </div>
-      <div class="integrity-item">
-        <h4>Conséquences propagées</h4>
-        <p>Chaque action coûte, chaque coût se mémorise, chaque décision laisse une trace narrative et numérique.</p>
-      </div>
-      <div class="integrity-item">
-        <h4>Effet pédagogique mesurable</h4>
-        <p>Chaque atelier apprend une compétence réelle de négociation : BATNA, ZOPA, électoralité, stratégies adversariales.</p>
-      </div>
-      <div class="integrity-item">
-        <h4>Cohérence historique</h4>
-        <p>Les époques traversées (Belle Époque · 1936 · Trente Glorieuses · ère contemporaine) respectent les faits sociaux et juridiques.</p>
-      </div>
-      <div class="integrity-item">
-        <h4>Audit Argus permanent</h4>
-        <p>Cycle ORDA toutes les 14 jours. Sapeurs en surveillance. Aucun merge sans signature. Aucune mécanique brisée tolérée.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════
-     ATELIERS — 10 micro-apps
-═══════════════════════════════════════════════════════════ -->
-<section class="block" id="ateliers">
-  <div class="container">
-    <div class="section-eyebrow">10 ateliers · jouables intégrés au jeu principal ou en standalone</div>
-    <h2 class="section-title">Les ateliers de négociation</h2>
-    <p class="section-sub">
-      Chaque atelier est une micro-app autonome avec son propre moteur.
-      Ils sont déclenchés par le scénario du jeu principal aux moments-clés,
-      et accessibles aussi en accès direct pour s'entraîner.
-    </p>
-
-    <div class="ateliers-grid">
-
-      <!-- 1. NAO -->
-      <div class="atelier">
-        <div class="atelier-head">
-          <span class="atelier-icon">🏛️</span>
-          <h3 class="atelier-title">La NAO</h3>
-        </div>
-        <div class="atelier-tags">
-          <span class="tag symetrique">Symétrique</span>
-          <span class="tag">Négociation</span>
-        </div>
-        <p class="atelier-desc">
-          Négociation Annuelle Obligatoire. Employeur vs délégué syndical.
-          4 thèmes, 3 syndicats (CGT/CFDT/FO), 5 séances. Accord valide ↔ ≥ 50% des suffrages.
-        </p>
-        <div class="atelier-meta">
-          <span>5 séances</span><span>4 thèmes</span><span>tactiques</span>
-        </div>
-        <div class="atelier-actions">
-          <a class="atelier-btn standalone" href="../mini/nao/">Standalone</a>
-          <a class="atelier-btn integrated" href="../index.html">Intégré au jeu</a>
-        </div>
-      </div>
-
-      <!-- 2. Élections -->
-      <div class="atelier">
-        <div class="atelier-head">
-          <span class="atelier-icon">🗳️</span>
-          <h3 class="atelier-title">Les Élections Pro</h3>
-        </div>
-        <div class="atelier-tags">
-          <span class="tag symetrique">Symétrique</span>
-          <span class="tag">Allocation cachée</span>
-        </div>
-        <p class="atelier-desc">
-          Allocation cachée sur 4 canaux de campagne (terrain, réunions, affiches, tractage).
-          3 scrutins, 21 sièges CSE. Anticiper l'adversaire.
-        </p>
-        <div class="atelier-meta">
-          <span>3 scrutins</span><span>4 canaux</span><span>21 sièges</span>
-        </div>
-        <div class="atelier-actions">
-          <a class="atelier-btn standalone" href="../mini/elections/">Standalone</a>
-          <a class="atelier-btn integrated" href="../index.html">Intégré au jeu</a>
-        </div>
-      </div>
-
-      <!-- 3. Grève -->
-      <div class="atelier">
-        <div class="atelier-head">
-          <span class="atelier-icon">✊</span>
-          <h3 class="atelier-title">La Grève</h3>
-        </div>
-        <div class="atelier-tags">
-          <span class="tag symetrique">Symétrique</span>
-          <span class="tag">Attrition</span>
-        </div>
-        <p class="atelier-desc">
-          Double attrition : solidarité salariée vs production patronale.
-          5 mouvements par camp. Sortie possible par accord ou par épuisement.
-        </p>
-        <div class="atelier-meta">
-          <span>2 ressources</span><span>10 mouvements</span><span>5 issues</span>
-        </div>
-        <div class="atelier-actions">
-          <a class="atelier-btn standalone" href="../mini/greve/">Standalone</a>
-          <a class="atelier-btn integrated" href="../index.html">Intégré au jeu</a>
-        </div>
-      </div>
-
-      <!-- 4. Table -->
-      <div class="atelier">
-        <div class="atelier-head">
-          <span class="atelier-icon">🤝</span>
-          <h3 class="atelier-title">La Table</h3>
-        </div>
-        <div class="atelier-tags">
-          <span class="tag symetrique">Symétrique</span>
-          <span class="tag">Curseur</span>
-        </div>
-        <p class="atelier-desc">
-          Négociation par curseur de zone (0-100). 5 mouvements asymétriques par camp.
-          Accord ambitieux, accord minimal, ou rupture.
-        </p>
-        <div class="atelier-meta">
-          <span>5 vs 5</span><span>3 issues</span><span>beats</span>
-        </div>
-        <div class="atelier-actions">
-          <a class="atelier-btn standalone" href="../mini/table/">Standalone</a>
-          <a class="atelier-btn integrated" href="../index.html">Intégré au jeu</a>
-        </div>
-      </div>
-
-      <!-- 5. Matignon -->
-      <div class="atelier">
-        <div class="atelier-head">
-          <span class="atelier-icon">🏛️</span>
-          <h3 class="atelier-title">Matignon 1936</h3>
-        </div>
-        <div class="atelier-tags">
-          <span class="tag salarie">Côté CGT</span>
-          <span class="tag">Historique</span>
-        </div>
-        <p class="atelier-desc">
-          Reproduction de la négociation Matignon. 3 phases (ouverture, contre-offre, ratification),
-          9 compétences mesurables, 36 chemins simulés.
-        </p>
-        <div class="atelier-meta">
-          <span>3 phases</span><span>9 skills</span><span>36 paths</span>
-        </div>
-        <div class="atelier-actions">
-          <a class="atelier-btn standalone" href="../mini/matignon/">Standalone</a>
-          <a class="atelier-btn integrated" href="../index.html">Intégré au jeu</a>
-        </div>
-      </div>
-
-      <!-- 6. Manifestation -->
-      <div class="atelier">
-        <div class="atelier-head">
-          <span class="atelier-icon">📣</span>
-          <h3 class="atelier-title">La Manif</h3>
-        </div>
-        <div class="atelier-tags">
-          <span class="tag salarie">Côté syndicat</span>
-          <span class="tag">Mobilisation</span>
-        </div>
-        <p class="atelier-desc">
-          Simulateur de manifestation. 7 paramètres (foule, cadres, cohésion, météo, parcours,
-          ordre de service, pression policière). Calibrer l'effort, anticiper le bilan.
-        </p>
-        <div class="atelier-meta">
-          <span>7 paramètres</span><span>foule simulée</span>
-        </div>
-        <div class="atelier-actions">
-          <a class="atelier-btn standalone" href="../mini/manif/">Standalone</a>
-          <a class="atelier-btn integrated" href="../index.html">Intégré au jeu</a>
-        </div>
-      </div>
-
-      <!-- 7. Meeting -->
-      <div class="atelier">
-        <div class="atelier-head">
-          <span class="atelier-icon">🎙️</span>
-          <h3 class="atelier-title">Le Meeting</h3>
-        </div>
-        <div class="atelier-tags">
-          <span class="tag symetrique">Bicamp</span>
-          <span class="tag">Rhétorique</span>
-        </div>
-        <p class="atelier-desc">
-          Construction d'un meeting public : thème, posture, slogan, arguments.
-          Le score d'effet dépend de la cohérence et du rapport de force courant.
-        </p>
-        <div class="atelier-meta">
-          <span>thème · posture</span><span>arguments composables</span>
-        </div>
-        <div class="atelier-actions">
-          <a class="atelier-btn standalone" href="../mini/meeting/">Standalone</a>
-          <a class="atelier-btn integrated" href="../index.html">Intégré au jeu</a>
-        </div>
-      </div>
-
-      <!-- 8. Confrontation -->
-      <div class="atelier">
-        <div class="atelier-head">
-          <span class="atelier-icon">⚔️</span>
-          <h3 class="atelier-title">Confrontation</h3>
-        </div>
-        <div class="atelier-tags">
-          <span class="tag symetrique">Symétrique</span>
-          <span class="tag">Tactique</span>
-        </div>
-        <p class="atelier-desc">
-          Affrontement tactique direct : ouverture, riposte, cadrage médiatique, retrait.
-          Lecture du tempo et de l'arène.
-        </p>
-        <div class="atelier-meta">
-          <span>tactiques</span><span>tempo</span>
-        </div>
-        <div class="atelier-actions">
-          <a class="atelier-btn standalone" href="../mini/confrontation/">Standalone</a>
-          <a class="atelier-btn integrated" href="../index.html">Intégré au jeu</a>
-        </div>
-      </div>
-
-      <!-- 9. La Place -->
-      <div class="atelier">
-        <div class="atelier-head">
-          <span class="atelier-icon">🏛️</span>
-          <h3 class="atelier-title">La Place</h3>
-        </div>
-        <div class="atelier-tags">
-          <span class="tag symetrique">Symétrique</span>
-          <span class="tag">Espace public</span>
-        </div>
-        <p class="atelier-desc">
-          Occupation d'un espace public (place, parvis, rond-point).
-          Présence, légitimité, durée. Forces de l'ordre et opinion.
-        </p>
-        <div class="atelier-meta">
-          <span>occupation</span><span>opinion</span>
-        </div>
-        <div class="atelier-actions">
-          <a class="atelier-btn standalone" href="../mini/place/">Standalone</a>
-          <a class="atelier-btn integrated" href="../index.html">Intégré au jeu</a>
-        </div>
-      </div>
-
-      <!-- 10. Brawl Arena -->
-      <div class="atelier">
-        <div class="atelier-head">
-          <span class="atelier-icon">🥊</span>
-          <h3 class="atelier-title">Brawl Arena</h3>
-        </div>
-        <div class="atelier-tags">
-          <span class="tag salarie">Police vs manifs</span>
-          <span class="tag">Stochastique</span>
-        </div>
-        <p class="atelier-desc">
-          Affrontement de factions (foule, cadres, police). Résolution stochastique
-          basée sur les forces relatives. Issue : repli, dispersion, charge réussie.
-        </p>
-        <div class="atelier-meta">
-          <span>factions</span><span>stochastique</span>
-        </div>
-        <div class="atelier-actions">
-          <a class="atelier-btn standalone" href="../mini/arena/">Standalone</a>
-          <a class="atelier-btn integrated" href="../index.html">Intégré au jeu</a>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════
-     ARGUS BANDEAU
-═══════════════════════════════════════════════════════════ -->
-<section class="block" id="argus">
-  <div class="container">
-    <div class="section-eyebrow">Doctrine organo-stratéguerre · l'armée d'amélioration des jeux</div>
-    <h2 class="section-title" style="color: #fca5a5;">Argus veille.</h2>
-    <p class="section-sub">
-      Cinq corps spécialisés sous chaîne de commandement unique :
-      Architectes, Géomètres, Diplomates, Stratèges, Sapeurs.
-      Cycle ORDA en 14 jours. Aucun merge sans audit. Aucune mécanique brisée tolérée.
-    </p>
-
-    <div class="argus-band">
-      <p class="argus-quote">
-        Un jeu sans audit est une promesse sans preuve. Une promesse sans preuve est un mensonge poli. Je ne polis pas les mensonges — je les démonte.
-      </p>
-      <p class="argus-attr">— Argus, Maréchal-auditeur, Journal de campagne</p>
-
-      <div style="margin-bottom: 1rem; font-size: 0.88rem; color: var(--text-soft);">
-        <strong style="color: #fca5a5;">Codes de convocation</strong> · prononcer le code rallie le corps correspondant
-      </div>
-
-      <div class="argus-codes">
-        <div class="argus-code">
-          <span class="argus-code-key">/argus</span>
-          <span class="argus-code-desc">→ le Maréchal seul (audit ponctuel)</span>
-        </div>
-        <div class="argus-code">
-          <span class="argus-code-key">/etat-major</span>
-          <span class="argus-code-desc">→ Argus + 5 colonels (délibération stratégique)</span>
-        </div>
-        <div class="argus-code">
-          <span class="argus-code-key">/orda</span>
-          <span class="argus-code-desc">→ cycle complet 14 j (opération régulière) · code primaire</span>
-        </div>
-        <div class="argus-code">
-          <span class="argus-code-key">/ban-et-arriere-ban</span>
-          <span class="argus-code-desc">→ mobilisation totale (refonte profonde)</span>
-        </div>
-      </div>
-
-      <div style="margin-top: 1.5rem; font-size: 0.78rem; color: var(--text-mute); font-family: var(--mono);">
-        Doctrine complète · <a href="../docs/V3_ARGUS_DOCTRINE_ORGANO_STRATEGUERRE.md" style="color: var(--accent);">V3_ARGUS_DOCTRINE_ORGANO_STRATEGUERRE.md</a>
-      </div>
-    </div>
-
-  </div>
-</section>
-
+  <footer>
+    Beta · panel 30 · ORDA-006 ouvert
+  </footer>
 </main>
 
-<!-- ═══════════════════════════════════════════════════════════
-     FOOTER
-═══════════════════════════════════════════════════════════ -->
-<footer role="contentinfo">
-  <div class="container footer-row">
-    <div>
-      <div style="font-family: var(--serif); font-weight: 700; margin-bottom: 0.3rem;">PARITAS</div>
-      <div>Simulation politique narrative · 1789 → 2026</div>
-    </div>
-    <div>
-      <a href="../index.html">Lancer le jeu</a> ·
-      <a href="#ateliers">Ateliers</a> ·
-      <a href="../reglages/">Réglages &amp; accessibilité</a> ·
-      <a href="#argus">Argus</a>
-    </div>
-    <div class="footer-credits">
-      Beta · panel 30 · cycle ORDA n°1 ouvert
-    </div>
-  </div>
-</footer>
-
 <script>
-  /* Service Worker — PWA offline */
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js').catch(() => {});

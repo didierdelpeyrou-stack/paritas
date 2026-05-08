@@ -1,0 +1,9 @@
+agent: 01
+nom: "Luke Wroblewski"
+corps: "Architectes"
+tour_comprehension: 6
+moment_marquant: "À l'ère Trente Glorieuses, le Cinzel sur PARITAS tient sur 390px et sonne juste — la signature fonctionne même mobile."
+moment_decrochage: "Tour 7, je cherche le LayoutSwitcher pour basculer en Théâtre, je ne le trouve pas — confondu avec un bouton kebab."
+nps: 6
+fix_prioritaire: "src/components/cockpit/CockpitTopHeader.svelte:9-17 — masquer 4 jauges sur 7 par défaut en Carnet, déverrouiller au fil des tours pivots (cf. ROADMAP_PANEL_INTEGRATION §1A.1)"
+biais_reconnu: "J'ai sous-noté l'élégance typographique au profit de la densité fonctionnelle — préférence pour la sobriété assumée."

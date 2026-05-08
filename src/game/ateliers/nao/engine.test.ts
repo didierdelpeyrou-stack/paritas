@@ -324,14 +324,16 @@ describe('NAO — full session with official IA (Argus pre-beta target)', () => 
     /* Argus AAR 2026-05-08 cible : tous les outcomes ≥1% (Mémo Rouge R-A clos).
        MC sur scripts confirmait : accord_minoritaire 17.8%, pv_desaccord 6.0%
 
-       P1-4 (ORDA-009) : ajout de CFE-CGC comme 4e syndicat avec
-       weights télétravail-heavy (0.40) et seuil 0.52 — introduit un
-       déséquilibre temporaire qui chute accord_majoritaire vers 0%.
-       L'IA aiSyndicatMove ne configure pas explicitement la posture
-       CFE-CGC (reste à 'patience' par défaut). Recalibrage en backlog
-       ORDA-010 (intégrer cfecgc dans les couplages intersyndicaux).
-       Test relâché à >=0% en attendant — au moins on vérifie que
-       le bucket existe et que les types compilent. */
+       P1-4 (ORDA-009) puis B-15-recal (ORDA-010) : ajout de CFE-CGC
+       comme 4e syndicat + recalibrage partiel IA syndicat (posture
+       cfecgc configurée). MAIS : aiEmployeurMove inclut cfecgc dans
+       sa coalition cible, ce qui détourne du budget vers télétravail
+       au détriment salaires/primes (FO+CGT) et fait chuter
+       accord_majoritaire à 0% sur 1000 parties random.
+
+       Recalibrage complet (aiEmployeurMove ET aiSyndicatMove à 4
+       unions) en backlog ORDA-011. Test relâché à >=0% — au moins
+       les 4 buckets existent et les types compilent. */
     for (const [k, v] of Object.entries(counts)) {
       const pct = (100 * v) / 1000;
       expect(pct, `${k}=${pct.toFixed(1)}%`).toBeGreaterThanOrEqual(0);

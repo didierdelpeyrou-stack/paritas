@@ -4,8 +4,18 @@
    ──────────────────────────────────────────────────────────────── */
 import {
   startConfrSession, pickAction, resolveRound, nextRound,
-  MANIF_ACTIONS, POLICE_ACTIONS
+  MANIF_ACTIONS, POLICE_ACTIONS, setConfrontationRng
 } from '../src/game/ateliers/confrontation/engine.ts';
+import { seededRandom } from '../src/lib/seed.ts';
+
+/* B-RNG-seed (ORDA-010) : PRNG seedé pour reproductibilité.
+   Couvre les IA aiPolice/aiManif (utilisées dans Confrontation.svelte
+   en mode solo). Les random `pick()` locaux du script restent en
+   Math.random — random vs random pur, pas reproductible mais
+   l'engine moteur est now seedable. */
+const SEED = process.env.MC_SEED || 'orda-004-confrontation-mc';
+setConfrontationRng(seededRandom(SEED, 'monte-carlo'));
+console.log(`[seed] ${SEED}`);
 
 const N = 10000;
 const out = { manif_victoire: 0, police_victoire: 0, blocage: 0 };

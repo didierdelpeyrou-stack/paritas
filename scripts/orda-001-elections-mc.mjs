@@ -7,8 +7,16 @@
    ──────────────────────────────────────────────────────────────── */
 import {
   startElectionSession, resolveScrutin, nextScrutin,
-  setElectionAlloc, aiElectionAlloc
+  setElectionAlloc, aiElectionAlloc, setElectionsRng
 } from '../src/game/ateliers/elections/engine.ts';
+import { seededRandom } from '../src/lib/seed.ts';
+
+/* B-RNG-seed (ORDA-010) : PRNG seedé pour reproductibilité MC.
+   Lancement : MC_SEED=<string> node scripts/orda-001-elections-mc.mjs
+   Sans MC_SEED, seed par défaut → 2 lancements identiques. */
+const SEED = process.env.MC_SEED || 'orda-001-elections-mc';
+setElectionsRng(seededRandom(SEED, 'monte-carlo'));
+console.log(`[seed] ${SEED}`);
 
 const N = 10000;
 const out = { salarie_majorite: 0, patron_majorite: 0, parite: 0 };

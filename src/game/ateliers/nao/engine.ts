@@ -856,6 +856,41 @@ export function aiSyndicatMove(state: NaoState): SyndicatMove {
     postures.fo = 'patience';
   }
 
+  /* CFE-CGC — pragmatique cadre, sensible télétravail + salaires.
+     P1-4 / B-15-recal (ORDA-010) : recalibrage IA pour les 4 unions.
+     Profil : autonomie catégorielle (ne suit pas la CGT en retrait
+     comme CFDT/FO peuvent le faire — la CFE-CGC a sa propre
+     dynamique cadre). Rôle pivot : facilite l'accord majoritaire
+     quand télétravail est bien servi. */
+  const cfecgcSat = computeSatisfaction(state.themes, 'cfecgc', accordPartiel);
+  const cfecgcGap = UNION_META.cfecgc.seuilAccord - cfecgcSat;
+  const cfecgcRoll = ROLL();
+  const teletravailPos = state.themes.teletravail;
+  if (state.seance === 1) {
+    /* Séance 1 : la CFE-CGC démarre dans l'attente, pas la pression
+       comme la CGT. Profil cadre : on observe avant de signer. */
+    postures.cfecgc = 'patience';
+  } else if (cfecgcGap < 0.05) {
+    postures.cfecgc = 'compromis';
+  } else if (cfecgcGap < 0.12) {
+    postures.cfecgc = 'patience';
+  } else if (cfecgcRoll < 0.08) {
+    /* 8 % de retrait stratégique : défense des conditions immatérielles
+       du cadre (autonomie d'organisation du travail, droit à la
+       déconnexion). Plus rare que CGT (22 %) ou FO (6 %). */
+    postures.cfecgc = 'retrait';
+  } else if (state.seance >= 3 && teletravailPos < 30) {
+    /* Si la position télétravail reste basse en fin de partie, CFE-CGC
+       durcit (poids 40 % de sa grille de lecture). Cohérent avec son
+       profil "cadres et catégoriels" sensible aux conditions
+       d'autonomie. */
+    postures.cfecgc = 'pression';
+  } else if (state.seance >= 4) {
+    postures.cfecgc = 'patience';
+  } else {
+    postures.cfecgc = 'patience';
+  }
+
   // Tactique
   const available = (['expertise', 'coordination', 'mobilisation', 'accord_partiel'] as SyndicatTactic[])
     .filter(t => !state.tacticsUsed.syndicat.includes(t));

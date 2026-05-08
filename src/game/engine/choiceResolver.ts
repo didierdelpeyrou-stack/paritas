@@ -20,6 +20,7 @@ import {
   addAccord,
   addInstitution
 } from '../narrative/memoryEngine';
+import { scheduleActorCallback } from './consequenceEngine';
 import { applyOrganizationDelta } from '../org/organization';
 
 export function resolveChoice(
@@ -71,6 +72,45 @@ export function resolveChoice(
   }
   if (choice.flag === 'epuise-mouvement') {
     nextMemory = { ...nextMemory, exhaustedMovements: nextMemory.exhaustedMovements + 1 };
+  }
+
+  /* P1-10-branch (ORDA-012, AAR bêta-30 §V — Fåhraeus #09, Romero #05) :
+     Mémoire des acteurs — programmer des callbacks différés selon
+     les flags pivots. Les acteurs réagissent N+3..N+5 tours plus tard,
+     ce qui produit la sensation CK3-grade que « les choix laissent
+     une trace ». Démarrage sur 3 flags emblématiques de Matignon 1936
+     + 1 sur la trahison générique. À étendre par les Diplomates. */
+  if (choice.flag === 'refuse-compromis') {
+    /* L'adversaire ricane et fait passer le mot. Tour +4. */
+    scheduleActorCallback(
+      nextMemory, state.turn + 4, 'adversaire',
+      "L'adversaire n'a pas oublié ton refus. Le mot court chez les patrons : « Le syndicat ne signe rien. On peut continuer. »",
+      choice.id, state.turn
+    );
+  }
+  if (choice.flag === 'jouer-cgt-cgtu') {
+    /* La base est divisée. Tour +5. Romero-grade. */
+    scheduleActorCallback(
+      nextMemory, state.turn + 5, 'base',
+      'Une lettre de la base te parvient. Trois lignes. Elle sait que tu as joué la division. Elle ne te le redira pas.',
+      choice.id, state.turn
+    );
+  }
+  if (choice.flag === 'trahit-base') {
+    /* La base perd confiance — opinion publique aussi. Tour +3. */
+    scheduleActorCallback(
+      nextMemory, state.turn + 3, 'opinion',
+      "Une dépêche AFP nomme ta trahison. La presse syndicale relaie. L'opinion bascule, lentement.",
+      choice.id, state.turn
+    );
+  }
+  if (choice.flag === 'signe-matignon') {
+    /* Reconnaissance différée — Frachon écrit. Tour +5. */
+    scheduleActorCallback(
+      nextMemory, state.turn + 5, 'base',
+      'Frachon t\'écrit, deux lignes : « Le 7 juin restera. Tu as bien fait. » Tu plies la lettre soigneusement.',
+      choice.id, state.turn
+    );
   }
 
   // 4. Fatigue militante : croît avec mouvements épuisés et grosses

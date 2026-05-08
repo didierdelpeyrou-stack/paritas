@@ -85,6 +85,22 @@
     return () => mq.removeEventListener('change', apply);
   });
 
+  /* P0-2 (ORDA-008, AAR bêta-30 §V) — pause manuelle du ticker.
+     Soueidan, Pascal, Manon, Wroblewski, Pope (5 mentions) :
+     l'animation auto-défilante distrait. Bouton pause + stop sur
+     focus clavier. Persisté en sessionStorage (vie d'onglet). */
+  let paused = $state(false);
+  $effect(() => {
+    if (typeof window === 'undefined') return;
+    paused = sessionStorage.getItem('paritas.ticker.paused') === '1';
+  });
+  function togglePause() {
+    paused = !paused;
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('paritas.ticker.paused', paused ? '1' : '0');
+    }
+  }
+
   function onClick(entry: TickerEntry) {
     /* Causal items : pas cliquables (réaction du monde, pas un side
        event). Seuls les historiques avec sideEventId sont cliquables. */
@@ -119,10 +135,20 @@
 {#if items.length > 0}
   <div class="news-ticker"
     class:reduced={reducedMotion}
-    role="marquee"
+    class:paused={paused || reducedMotion}
+    role="region"
+    aria-live="polite"
+    aria-atomic="false"
     aria-label="Fil d'actualités historiques"
     style:--duration="{durationSec}s"
   >
+    <button
+      type="button"
+      class="ticker-pause"
+      onclick={togglePause}
+      aria-label={paused ? 'Reprendre le défilement du fil' : 'Mettre en pause le fil d\'actualités'}
+      title={paused ? 'Reprendre' : 'Pause'}
+    >{paused ? '▶' : '⏸'}</button>
     <div class="ticker-track">
       {#each renderItems as entry, i (entry.id + ':' + i)}
         {@const interactive = isEntryInteractive(entry)}
@@ -190,6 +216,38 @@
   .news-ticker:hover .ticker-track,
   .news-ticker:focus-within .ticker-track {
     animation-play-state: paused;
+  }
+
+  /* P0-2 : pause manuelle (bouton ou prefers-reduced-motion).
+     Différent de :hover — état persistant. */
+  .news-ticker.paused .ticker-track {
+    animation-play-state: paused;
+  }
+
+  /* P0-2 : bouton pause/play accessible clavier, dans le tab order. */
+  .ticker-pause {
+    flex: 0 0 auto;
+    background: transparent;
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.12));
+    color: var(--color-muted, rgba(255, 255, 255, 0.7));
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-right: 0.4rem;
+    transition: background 120ms ease, color 120ms ease;
+  }
+  .ticker-pause:hover,
+  .ticker-pause:focus-visible {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    outline: 2px solid var(--sem-action, #d6a949);
+    outline-offset: 1px;
   }
 
   /* prefers-reduced-motion : pas de défilement, on liste les

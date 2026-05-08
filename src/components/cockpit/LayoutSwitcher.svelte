@@ -58,6 +58,7 @@
     onclick={() => (open = !open)}
     aria-haspopup="menu"
     aria-expanded={open}
+    aria-label="Choisir le layout du jeu (actuel : {badgeLabel})"
     title="Choisir le layout — Théâtre (large), Atelier (moyen), Carnet (concentré). Auto = selon ton écran."
   >
     <span class="badge-glyph">{PREF_GLYPH[cockpit.preference]}</span>

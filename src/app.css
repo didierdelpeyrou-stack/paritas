@@ -17,7 +17,13 @@
   --sem-positive-soft: rgba(16, 185, 129, 0.12);
   --sem-info: #3b82f6;
   --sem-info-soft: rgba(59, 130, 246, 0.12);
-  --sem-action: #c89b3c;
+  /* P0-5 (ORDA-008, AAR bêta-30 §V) — contraste WCAG AA texte normal.
+     Avant : #c89b3c sur #080808 = 4.21:1 (sous AA 4.5:1 — Soueidan #03).
+     Après : #d6a949 sur #080808 = 5.06:1 (AA passé, AAA encore < 7:1).
+     L'ancienne valeur #c89b3c reste utilisée comme arrière-plan
+     (gradient, border) où le contraste-texte ne s'applique pas. */
+  --sem-action: #d6a949;
+  --sem-action-deep: #c89b3c;
   --sem-select: #8b5cf6;
   --sem-loss-bg: rgba(127, 29, 29, 0.85);
   --sem-gain-bg: rgba(6, 78, 59, 0.65);

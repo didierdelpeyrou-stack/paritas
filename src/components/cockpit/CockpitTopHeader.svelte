@@ -260,7 +260,9 @@
       {@const crit = v < 25}
       {@const d = deltaFor(r.key, v)}
       <div class="res-chip" class:crit
+        data-rkey={r.key}
         title={tooltipFor(r.key, r.label, r.desc, v)}
+        aria-label="{r.label} : {Math.round(v)} sur 100"
         style="--c: {r.color}"
       >
         <span class="res-ico"><CockpitIcon name={r.icon} size={14} /></span>
@@ -673,5 +675,22 @@
     .res-chip .res-val { font-size: 0.68rem; }
     .res-delta { display: none; }
     .res-bar { display: none; }
+  }
+
+  /* P0-1 (ORDA-008, AAR bêta-30 §V) — disclosure progressive en Carnet
+     ≤480 px (Wroblewski, Krug, Manon, Pascal, Yanis = 5 mentions).
+     Sur très petit viewport on garde les 3 ressources essentielles
+     (Caisse, Confiance, Santé sociale) et on masque Légitimité,
+     Force ext, Force int, Institution. Les 4 jauges masquées restent
+     dans le DOM (état lisible par lecteurs d'écran) : on cache via
+     CSS uniquement, pas via {#if} — pour la disclosure pédagogique
+     un futur unlockedAt: number sera à implémenter en P1. */
+  @media (max-width: 480px) {
+    .res-chip[data-rkey="legitimite"],
+    .res-chip[data-rkey="rapportDeForce"],
+    .res-chip[data-rkey="cohesionInterne"],
+    .res-chip[data-rkey="institution"] {
+      display: none;
+    }
   }
 </style>

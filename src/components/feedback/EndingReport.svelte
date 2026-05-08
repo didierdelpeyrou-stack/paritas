@@ -4,6 +4,8 @@
   import type { EndingRender } from '../../game/engine/endingEngine';
   import { TRAIT_LABELS, TRAIT_BLURBS } from '../../game/narrative/personalityEngine';
   import { rebirth } from '../../game/engine/gameState.svelte';
+  import AIJournalModal from './AIJournalModal.svelte';
+  import { isJournalAIEnabled } from '../../game/narrative/journalAI';
 
   interface Props {
     ending: EndingRender;
@@ -24,6 +26,11 @@
   let act = $state<Act>(1);
   let scoreDisplay = $state(0);
   let revealedObjectives = $state(0);
+
+  /* Argus UX-3 — modale du journal IA personnalisé, ouvrable en
+     acte 4 si VITE_NARRATIVE_API est configuré. */
+  let aiJournalOpen = $state(false);
+  const aiJournalAvailable = isJournalAIEnabled();
 
   const timers: ReturnType<typeof setTimeout>[] = [];
   let scoreRaf: number | null = null;
@@ -378,6 +385,20 @@
       </div>
     </div>
 
+    {#if aiJournalAvailable}
+      <!-- Argus UX-3 : bouton supplémentaire visible quand le worker
+           Cloudflare est configuré. Génère un journal personnalisé
+           IA (~600 mots, voix du trait dominant). -->
+      <button
+        type="button"
+        class="btn-ai-journal"
+        onclick={() => (aiJournalOpen = true)}
+        in:fade={{ duration: 360, delay: 440 }}
+      >
+        ✨ Journal personnalisé (IA)
+      </button>
+    {/if}
+
     <div
       class="grid grid-cols-2 gap-2 mt-2"
       in:fade={{ duration: 360, delay: 480 }}
@@ -394,6 +415,10 @@
     </p>
   {/if}
 </article>
+
+{#if aiJournalOpen}
+  <AIJournalModal {ending} onClose={() => (aiJournalOpen = false)} />
+{/if}
 
 <style>
   /* Argus UX-2 : skip button minimaliste, top-right de l'épilogue */
@@ -535,6 +560,30 @@
 
   .objective-line[data-status='failed'] em {
     color: #e8a09b;
+  }
+
+  /* Argus UX-3 — bouton journal IA, distinctif (gradient violet
+     pour indiquer la fonctionnalité IA, sans mimer btn-primary
+     pour ne pas concurrencer Rejouer). */
+  .btn-ai-journal {
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid rgba(184, 154, 244, 0.4);
+    border-radius: 0.5rem;
+    background: linear-gradient(135deg, rgba(140, 100, 220, 0.18) 0%, rgba(244, 213, 139, 0.12) 100%);
+    color: #e0d4f5;
+    font-family: 'Cinzel', Georgia, serif;
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: background 220ms, border-color 220ms;
+  }
+  .btn-ai-journal:hover,
+  .btn-ai-journal:focus-visible {
+    background: linear-gradient(135deg, rgba(140, 100, 220, 0.28) 0%, rgba(244, 213, 139, 0.18) 100%);
+    border-color: rgba(184, 154, 244, 0.6);
+    outline: none;
   }
 
   /* prefers-reduced-motion : neutralise les animations CSS

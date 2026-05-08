@@ -352,7 +352,7 @@ export function applyAction(state: PlaceState, actionId: ActionId): PlaceState {
 
   // Fin de l'acte 3 → calcul outcome
   if (state.act === 3) {
-    const outcome = resolveOutcome(newEscalade, newFoule);
+    const outcome = resolveOutcome(newEscalade, newFoule, newHistory);
     return {
       ...state,
       act: 3,
@@ -379,9 +379,21 @@ export function applyAction(state: PlaceState, actionId: ActionId): PlaceState {
   };
 }
 
-function resolveOutcome(escalade: number, foule: number): PlaceOutcome {
+function resolveOutcome(escalade: number, foule: number, history: PlaceHistory[]): PlaceOutcome {
   if (escalade >= 80) return 'repression';
+
+  // Décrochage explicite : foule effondrée
   if (foule < 20) return 'abandon';
+
+  /* Décrochage diégétique — « mouvement essoufflé »
+     Argus AAR 2026-05-08 : abandon mathématiquement trop rare (1.8 %)
+     car nécessitait 3 reculs consécutifs (proba random ~1.56 %).
+     Élargi à : 2 reculs + foule mince (< 35) → la base décroche
+     parce que les retraits successifs ont vidé la rue, même si la
+     foule n'est pas tombée sous 20. Cible : abandon ≥ 5 %. */
+  const reculCount = history.filter(h => h.action === 'reculer').length;
+  if (reculCount >= 2 && foule < 35) return 'abandon';
+
   if (foule >= 45 && escalade < 55) return 'victoire';
   return 'compromis';
 }

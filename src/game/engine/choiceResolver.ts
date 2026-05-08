@@ -113,6 +113,50 @@ export function resolveChoice(
     );
   }
 
+  /* ORDA-013 (extension Diplomates) : 5 callbacks supplémentaires
+     sur les flags pivots des époques ultérieures. Même logique
+     N+3..N+5 que le bloc Matignon ci-dessus. */
+  if (choice.flag === 'signe-grenelle') {
+    /* Mai 1968 — la base trouve les chiffres « pâles » face à l'espérance révolutionnaire. Tour +4. */
+    scheduleActorCallback(
+      nextMemory, state.turn + 4, 'base',
+      "Aux portes de Renault-Billancourt, on lit les accords à voix haute. La base te répond : « 35% du SMIG, c'est bien. Mais ce n'est pas la révolution. »",
+      choice.id, state.turn
+    );
+  }
+  if (choice.flag === 'fonde-fo') {
+    /* Scission 1947 — la CGT garde rancune, l'État reconnaît. Tour +5. */
+    scheduleActorCallback(
+      nextMemory, state.turn + 5, 'adversaire',
+      "Une note interne CGT circule : « Jouhaux a fondé sa boutique avec l'argent américain. » L'attaque s'installe pour quarante ans.",
+      choice.id, state.turn
+    );
+  }
+  if (choice.flag === 'fait-victoire-historique') {
+    /* Juppé 1995 — l'opinion retient le triomphe, l'État panse les plaies. Tour +5. */
+    scheduleActorCallback(
+      nextMemory, state.turn + 5, 'opinion',
+      "Les sondages bougent tard. Six mois après, l'opinion te reconnaît la victoire. La rue, elle, n'a pas oublié les trois semaines de gel.",
+      choice.id, state.turn
+    );
+  }
+  if (choice.flag === 'refondation-paritaire') {
+    /* Ordonnances 2017 / CSE / Florange — l'État valide la nouvelle grammaire. Tour +4. */
+    scheduleActorCallback(
+      nextMemory, state.turn + 4, 'etat',
+      "Une circulaire DGT cite ton accord en exemple. Les préfets reçoivent consigne : « ce dialogue social-là, on l'accompagne, on ne le bloque pas. »",
+      choice.id, state.turn
+    );
+  }
+  if (choice.flag === 'epuise-mouvement') {
+    /* Sur-usage de la mobilisation — la base se retire silencieusement. Tour +3. */
+    scheduleActorCallback(
+      nextMemory, state.turn + 3, 'base',
+      "Les permanences se vident. Trois militants démissionnent sans bruit. Personne ne te le dit, mais tu sens le silence aux assemblées.",
+      choice.id, state.turn
+    );
+  }
+
   // 4. Fatigue militante : croît avec mouvements épuisés et grosses
   // poussées de rapport de force ; récupère sinon dans applyOrganizationUpkeep.
   let fatigueGain = 0;

@@ -32,7 +32,7 @@ import {
   streamNarrativeEnrichment
 } from '../narrative/narrativeClient';
 import type { NarrativePromptOutput } from '../narrative/narrativeClient';
-import { advanceTurn, isFinalTurn } from './gameLoop';
+import { advanceTurn, isFinalTurn, processTurnCallbacks } from './gameLoop';
 import { pickEnding, buildEnding, type EndingRender } from './endingEngine';
 import { pickNextScenario } from '../narrative/scenarioEngine';
 import { evaluateTensions, type TensionAlert } from '../simulation/tensions';
@@ -252,6 +252,19 @@ class RebirthGameStore {
     const scenario = this.currentScenario;
     if (!s || !scenario) return;
     if (choice.requiresTrait && choice.requiresTrait !== s.dominantTrait) return;
+
+    /* Choix spécial : déclenche le mini-jeu Matignon (V3) */
+    if (choice.flag === 'enter_matignon') {
+      this.enterMatignon();
+      return;
+    }
+
+    /* Choix spécial : déclenche l'Atelier La Place (fusion Arena+Rue) */
+    if (choice.flag === 'enter_laplace') {
+      this.enterLaPlace();
+      return;
+    }
+
     const previousDominantTrait = s.dominantTrait;
     const next = advancePipelineAfterScenario(resolveChoice(s, scenario, choice), scenario);
     const render = buildConsequence(next, scenario, choice, previousDominantTrait);
@@ -356,7 +369,12 @@ class RebirthGameStore {
       return;
     }
     const upkept = this.applyOrganizationUpkeep(advanceTurn(s));
-    const advanced = this.applyTalentGroupBonuses(upkept);
+    /* P1-10-branch (ORDA-013) — déclenchement auto des callbacks
+       acteurs au nouveau tour. Les callbacks dus sont consommés
+       (retirés de la file) puis convertis en lignes de log avec
+       préfixe acteur. */
+    const callbackTick = processTurnCallbacks(upkept);
+    const advanced = this.applyTalentGroupBonuses(callbackTick.state);
     const strategyTick = tickStrategies(advanced);
     const worldTick = tickWorldAI(strategyTick.state);
     const electionTick = tickInternalElection(worldTick.state);
@@ -369,12 +387,181 @@ class RebirthGameStore {
         pipelineState.objectiveProgress
       )
     };
-    const logs = [...strategyTick.logs, ...worldTick.logs, ...electionTick.logs];
+    /* Préfixer chaque callback déclenché par "Mémoire {acteur} — " */
+    const currentTurn = pipelineState.turn;
+    const callbackLogs = callbackTick.triggered.map(cb => {
+      const actorLabel = cb.actor === 'base' ? 'Base' :
+                         cb.actor === 'adversaire' ? 'Adversaire' :
+                         cb.actor === 'etat' ? 'État' :
+                         cb.actor === 'opinion' ? 'Opinion' :
+                         cb.actor === 'factions' ? 'Factions' :
+                         cb.actor === 'joueur' ? 'Toi' : String(cb.actor);
+      return `T${currentTurn} — Mémoire (${actorLabel}) : ${cb.narrative}`;
+    });
+    const logs = [
+      ...callbackLogs,
+      ...strategyTick.logs,
+      ...worldTick.logs,
+      ...electionTick.logs
+    ];
     if (logs.length > 0) {
       this.log = [...this.log, ...logs].slice(-50);
     }
     this.consequence = null;
     this.advanceToNextScenario();
+    this.persist();
+  }
+
+  /** Déclenche le mini-jeu Matignon (passe en phase 'matignon'). */
+  enterMatignon() {
+    const s = this.state;
+    if (!s) return;
+    this.state = { ...s, phase: 'matignon', matignonPending: true };
+  }
+
+  /** Applique le résultat de la table Matignon aux ressources V2, puis continue. */
+  resolveMatignon(result: { agreementId: string | null; quality: Record<string, number> }) {
+    const s = this.state;
+    if (!s) return;
+
+    let deltaConfiance = 0;
+    let deltaCaisse = 0;
+    let deltaLegitimite = 0;
+    let deltaRapportDeForce = 0;
+    let logLine = '';
+
+    if (result.agreementId) {
+      // Accord → gains mesurés sur la qualité de l'accord
+      const avgQuality = Object.values(result.quality).reduce((a, b) => a + b, 0) / Object.keys(result.quality).length;
+      deltaConfiance = Math.round(avgQuality * 0.4);       // max ~40
+      deltaCaisse = 25;
+      deltaLegitimite = Math.round(avgQuality * 0.25);     // max ~25
+      deltaRapportDeForce = 5;
+      logLine = `Matignon : accord signé (qualité ${Math.round(avgQuality)}/100). +${deltaConfiance} confiance, +${deltaCaisse}k caisse.`;
+    } else {
+      // Rupture → coût confiance, gain légitimité radicale
+      deltaConfiance = -25;
+      deltaCaisse = -10;
+      deltaLegitimite = 15;
+      deltaRapportDeForce = 10;
+      logLine = 'Matignon : table rompue. La base se radicalise. -25 confiance, +15 légitimité.';
+    }
+
+    const next: typeof s = {
+      ...s,
+      phase: 'consequence',
+      matignonPending: false,
+      resources: {
+        ...s.resources,
+        confiance: Math.max(0, Math.min(100, s.resources.confiance + deltaConfiance)),
+        caisse: Math.max(0, s.resources.caisse + deltaCaisse),
+        legitimite: Math.max(0, Math.min(100, s.resources.legitimite + deltaLegitimite)),
+        rapportDeForce: Math.max(0, Math.min(100, s.resources.rapportDeForce + deltaRapportDeForce))
+      },
+      lastConsequenceText: result.agreementId
+        ? 'L\'accord sur les salaires passe. La base respire. Mais l\'État pose déjà des conditions pour l\'application.'
+        : 'La table casse. La rue se radicalise. Le patronat jubile en coulisses, mais la rue ne se laissera pas oublier.',
+      memory: {
+        ...s.memory,
+        playedScenarios: [...s.memory.playedScenarios, 'matignon-1936']
+      }
+    };
+    this.state = next;
+    this.consequence = {
+      text: next.lastConsequenceText!,
+      numericSummary: `Confiance ${deltaConfiance > 0 ? '+' : ''}${deltaConfiance} · Caisse ${deltaCaisse > 0 ? '+' : ''}${deltaCaisse}k · Légitimité ${deltaLegitimite > 0 ? '+' : ''}${deltaLegitimite}`,
+      voice: null,
+      innerVoice: result.agreementId
+        ? 'On a tenu. La base a sa victoire. Pour l\'instant.'
+        : 'On a refusé un accord trop fragile. C\'est cher. Mais parfois le refus est le seul langage qui compte.',
+      newspaperHeadline: result.agreementId
+        ? 'Matignon : les syndicats arrachent un accord historique sur les salaires'
+        : 'Rupture à Matignon : les négociations échouent, la grève reprend',
+      memoryLine: result.agreementId
+        ? 'L\'accord de Matignon inaugure une ère de conventions collectives en France.'
+        : 'La rupture de Matignon renforce les courants radicaux pendant cinq ans.',
+      enriched: true,
+      traitShift: null,
+      traitChange: null,
+      concreteMeasures: result.agreementId
+        ? ['Hausses salariales immédiates signées', 'Conventions collectives reconnues', 'Congés payés acquis']
+        : ['La rue reprend les barricades', 'L\'État prépare des décrets d\'ordre']
+    };
+    this.log = [...this.log, logLine].slice(-50);
+    this.persist();
+  }
+
+  /** Déclenche l'Atelier La Place (fusion Arena+Rue). */
+  enterLaPlace() {
+    const s = this.state;
+    if (!s) return;
+    this.state = { ...s, phase: 'laplace', laplacePending: true };
+  }
+
+  /** Applique le résultat de La Place aux ressources V2, puis continue. */
+  resolveLaPlace(effects: {
+    confiance: number; rapportDeForce: number; santeSociale: number;
+    legitimite: number; caisse: number; cohesionInterne: number;
+  }) {
+    const s = this.state;
+    if (!s) return;
+
+    const sign = (n: number) => n > 0 ? `+${n}` : `${n}`;
+    const summaryParts: string[] = [];
+    if (effects.confiance !== 0) summaryParts.push(`Confiance ${sign(effects.confiance)}`);
+    if (effects.rapportDeForce !== 0) summaryParts.push(`Rapport de force ${sign(effects.rapportDeForce)}`);
+    if (effects.santeSociale !== 0) summaryParts.push(`Santé sociale ${sign(effects.santeSociale)}`);
+
+    const victoire = effects.confiance > 10;
+    const repression = effects.santeSociale < -10;
+
+    const next: typeof s = {
+      ...s,
+      phase: 'consequence',
+      laplacePending: false,
+      resources: {
+        ...s.resources,
+        confiance: Math.max(0, Math.min(100, s.resources.confiance + effects.confiance)),
+        rapportDeForce: Math.max(0, Math.min(100, s.resources.rapportDeForce + effects.rapportDeForce)),
+        santeSociale: Math.max(0, Math.min(100, s.resources.santeSociale + effects.santeSociale)),
+        legitimite: Math.max(0, Math.min(100, s.resources.legitimite + effects.legitimite)),
+        caisse: Math.max(0, s.resources.caisse + effects.caisse),
+        cohesionInterne: Math.max(0, Math.min(100, s.resources.cohesionInterne + effects.cohesionInterne))
+      },
+      lastConsequenceText: victoire
+        ? 'La place tient. Le cortège a montré sa force. Ce soir, les journaux parleront de vous — en bien.'
+        : repression
+        ? 'Les CRS ont chargé. Des blessés dans les rangs. La base est ébranlée, mais pas brisée.'
+        : 'La manif se disperse sur un bilan mitigé. On a tenu, sans victoire nette. La prochaine fois.'
+    };
+    this.state = next;
+    this.consequence = {
+      text: next.lastConsequenceText!,
+      numericSummary: summaryParts.join(' · '),
+      voice: null,
+      innerVoice: victoire
+        ? 'La rue a parlé. Le patronat a entendu.'
+        : repression
+        ? 'On paie le prix de la rue. Mais la colère ne s\'efface pas.'
+        : 'Pas de victoire. Pas de défaite. On continue.',
+      newspaperHeadline: victoire
+        ? 'Grande manifestation — le cortège impose son passage'
+        : repression
+        ? 'Affrontements en marge de la manifestation — plusieurs interpellations'
+        : 'Manifestation nationale : mobilisation en demi-teinte',
+      memoryLine: victoire
+        ? 'La rue a prouvé sa capacité à tenir face aux forces de l\'ordre.'
+        : 'La manif laisse des traces dans les rangs militants.',
+      enriched: true,
+      traitShift: null,
+      traitChange: null,
+      concreteMeasures: victoire
+        ? ['Cortège pacifique et massif', 'Presse favorable', 'Patronat contraint de négocier']
+        : repression
+        ? ['Interpellations dans les rangs', 'Blessés légers', 'Ministre de l\'Intérieur en alerte']
+        : ['Mobilisation dans les objectifs', 'Aucun incident majeur']
+    };
+    this.log = [...this.log, `La Place : ${victoire ? 'victoire' : repression ? 'répression' : 'compromis'}.`].slice(-50);
     this.persist();
   }
 

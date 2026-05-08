@@ -157,6 +157,41 @@ export function resolveChoice(
     );
   }
 
+  /* ORDA-014 (extension Diplomates, vague 2) : 4 callbacks
+     supplémentaires sur les flags institutionnels et patronaux. */
+  if (choice.flag === 'cree-secu') {
+    /* 1945 — Croizat fonde la Sécu. L'État institutionnalise. Tour +5. */
+    scheduleActorCallback(
+      nextMemory, state.turn + 5, 'etat',
+      "Le ministère du Travail t'envoie copie d'une circulaire : « La gestion paritaire des caisses est désormais le canal officiel. » Tu lis deux fois — c'est inattendu venant d'eux.",
+      choice.id, state.turn
+    );
+  }
+  if (choice.flag === 'cree-chsct') {
+    /* 1982 lois Auroux — la base découvre un nouveau levier juridique. Tour +4. */
+    scheduleActorCallback(
+      nextMemory, state.turn + 4, 'base',
+      "Trois CHSCT déposent leur premier droit d'alerte la même semaine. Les militants se passent les comptes-rendus comme des relais — il y a quelque chose à apprendre.",
+      choice.id, state.turn
+    );
+  }
+  if (choice.flag === 'cgpf-cogestion') {
+    /* CGPF années 30 — l'adversaire patronal serre les rangs. Tour +4. */
+    scheduleActorCallback(
+      nextMemory, state.turn + 4, 'adversaire',
+      "Une réunion CGPF restreinte refuse ton ouverture. Le compte-rendu fuite : « Pas de cogestion. On garde la main, ou on perd tout. »",
+      choice.id, state.turn
+    );
+  }
+  if (choice.flag === 'mediation-elysee') {
+    /* Médiation présidentielle — l'État reconnaît, l'opinion observe. Tour +3. */
+    scheduleActorCallback(
+      nextMemory, state.turn + 3, 'opinion',
+      "Le palais publie un communiqué sobre : « Les partenaires sociaux ont fait preuve de responsabilité. » L'opinion enregistre — c'est rare, ça compte.",
+      choice.id, state.turn
+    );
+  }
+
   // 4. Fatigue militante : croît avec mouvements épuisés et grosses
   // poussées de rapport de force ; récupère sinon dans applyOrganizationUpkeep.
   let fatigueGain = 0;

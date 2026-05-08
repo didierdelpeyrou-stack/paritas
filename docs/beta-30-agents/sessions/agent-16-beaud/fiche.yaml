@@ -1,0 +1,9 @@
+agent: 16
+nom: "Stéphane Beaud"
+corps: "Paritarisme — voix ouvrière contemporaine"
+tour_comprehension: 4
+moment_marquant: "Le callback Grenelle T+4 cite Renault-Billancourt et le SMIG +35% — la base répond avec un lieu et un chiffre, c'est la seule fois où j'entends un ouvrier (choiceResolver.ts:122)."
+moment_decrochage: "T13/T17/T21 : trois fois le même callback 'trois militants démissionnent' (choiceResolver.ts:155). La mémoire CK3-grade promet une trace, ici c'est un copier-coller — les démissionnaires ne sont pas incarnés."
+nps: 5
+fix_prioritaire: "choiceResolver.ts:151-158 — paramétrer le callback epuise-mouvement avec contexte (section, ville, métier) et le différencier par camp (patronal vs salarié) ; le flag est aujourd'hui partagé entre persona.ts:142 (Seillière) et patron.ts:156 (CGPF), ce qui produit un message ouvrier sur un geste patronal."
+biais_reconnu: "Je cherche le pittoresque de l'usine et je sous-note les scénarios académiquement bons mais sans corps (Croizat 1945, conventions 1919). La forge me parle plus que le décret — je l'admets."

@@ -1,0 +1,9 @@
+agent: 28
+nom: "Lukas K."
+corps: "Hors-France (Stuttgart, IG-Metall, ingénieur Bosch)"
+tour_comprehension: 12
+moment_marquant: "Tour 67, side event Mitbestimmung 1992 (sideEvents.ts:466-516). La carte de visite à deux faces de Klaus, et la phrase 'Vous croyez encore qu'il faut être dehors pour être libre ?' touche très juste le centre de la spécificité française : l'autonomie syndicale (Charte d'Amiens 1906) versus l'intégration cogestionnaire allemande. Dramaturgie parfaite."
+moment_decrochage: "Le flag `mitbestimmung-presented` (sideEvents.ts:501) et `cogestion-rejetee` (sideEvents.ts:488) ne sont JAMAIS rappelés par scheduleActorCallback (choiceResolver.ts a 13 callbacks dont cgpf-cogestion ligne 178, mais rien sur les flags du side event 1992). L'événement s'évapore — le joueur salarié n'entend pas l'écho de son choix anti-cogestion vingt tours plus tard. Asymétrie frustrante : le patron a un callback, le salarié non."
+nps: 7
+fix_prioritaire: "src/game/engine/choiceResolver.ts:178-193 — ajouter deux blocs callback symétriques pour les flags du side event Mitbestimmung. Si `mitbestimmung-presented` : T+12, acteur=base, message Maastricht/CE européen ratifié, le mot Mitbestimmung resurgit dans une AG CFDT. Si `cogestion-rejetee` : T+8, acteur=etat, communiqué officiel rappelant que la France a refusé la directive 'comité d'entreprise européen' en 1994. Coût : 30 lignes. Bénéfice : le miroir comparatiste devient persistant, pas décoratif."
+biais_reconnu: "Centrisme germanique. Je voulais voir Mitbestimmung partout — dans la NAO, dans Matignon, dans les élections professionnelles. Le jeu n'est pas un comparatif systématique, c'est un jeu sur LA France. J'ai sous-noté la finesse française du pluralisme à 4 confédérations (engine.ts:122-156) parce que ça ne 'ressemble' pas à mon DGB unitaire. À mi-parcours, j'ai compris que le paritarisme français est un autre système, pas un Mitbestimmung incomplet."

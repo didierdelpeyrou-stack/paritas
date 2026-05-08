@@ -1,0 +1,9 @@
+agent: agent-03-soueidan
+nom: Hadi Soueidan
+corps: Architectes
+tour_comprehension: 4
+moment_marquant: "T7 partie 1 — la barre d'accent 4px gauche du choice-btn (SceneCard.svelte:524) m'a permis d'identifier la posture du choix sans souris ni glyph, juste en focus successifs. Fix ORDA-015 réussi côté clavier."
+moment_decrochage: "T22 partie 2 — focus saute sur un .ticker-item.interactive qui disparaît du DOM 800ms plus tard (NewsTicker.svelte:165). NVDA annonce le focus dans le vide. Fatigue cognitive."
+nps: 7
+fix_prioritaire: "Restaurer outline visible sur .ticker-item.interactive:focus-visible (NewsTicker.svelte:297). Le background tint à 18% est insuffisant pour WCAG SC 2.4.11 / 1.4.11 Focus Indicator."
+biais_reconnu: "Mon installation NVDA + voix française épelle Cinzel ALL CAPS. Sur d'autres lecteurs (JAWS, VoiceOver macOS), le comportement diffère. Ma critique sur le titre `<h2>` doré ALL CAPS est partiellement subjective."

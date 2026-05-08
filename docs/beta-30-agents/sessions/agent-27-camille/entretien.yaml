@@ -1,0 +1,123 @@
+agent: agent-27-camille
+posture: lentille juriste droit social TPE/PME (mission ORDA-014)
+build: HEAD 0813c75 / v2.2.2-prebeta
+
+Q1_premiere_impression: |
+  La densité juridique des scénarios premium.ts m'a frappée. Citation datée
+  de l'article 2 de la loi Waldeck-Rousseau du 21 mars 1884 avec source
+  (premium.ts:215-220). C'est rare dans un jeu. Première impression : un
+  produit qui veut tenir devant un juriste. Et qui tient, à 90%.
+
+Q2_justesse_juridique_globale: |
+  Sur les 13 institutions du catalogue (institutions.ts), 11 datations sur
+  13 sont correctes ou défendables. Les 2 imprécisions :
+  - secu-1945 (l.67) ne cite que l'ordonnance du 4 octobre, alors que
+    l'architecture vient des deux ordonnances des 4 et 19 octobre 1945.
+    Le scénario premium.ts:322 cite bien les deux. Désynchronisation
+    catalogue ↔ scénario.
+  - matignon-1936 (l.58-62) écrit "1936" et énumère 40h, congés, DP. C'est
+    un raccourci : les accords Matignon sont du 7 juin, mais les lois (40h
+    21 juin, congés 20 juin, DP 24 juin) sont distinctes. Pour qui cherche
+    la base légale, c'est trop compact.
+  La 4ᵉ loi Auroux (CHSCT, loi du 23 décembre 1982) est correctement
+  qualifiée en institutions.ts:91 et distinguée des trois autres lois
+  Auroux (4 août 1982, etc.) — bon point.
+
+Q3_distinction_CCN_vs_ANI: |
+  Distinction maîtrisée dans la NARRATION :
+  - premium.ts:391 cite "Convention nationale interprofessionnelle du
+    31 décembre 1958" pour Unédic — formulation juste.
+  - "accord interprofessionnel" / ANI utilisé correctement dans
+    futur.ts:33,79,162 et legendaryCharacters.ts:338 pour les ANI 2023
+    partage de la valeur, plateformes, GPEC verte.
+  - Conventions collectives 1919 traitées comme normes de branche
+    (premium.ts:267-276), conformément à la loi de 1919.
+  ÉCHEC dans l'UI compacte :
+  - institutionsRegistry.ts:32 → Unédic décrit comme "Convention
+    collective interprofessionnelle". C'est une qualification juridique
+    fausse : l'Unédic ne procède pas d'une CCN au sens de L.2232-5
+    C. trav. mais d'un accord/convention nationale interprofessionnelle.
+    La confusion CCN/ANI est l'erreur que je vois le plus en consultation
+    PME — l'avoir dans le panneau "Mon œuvre" est gênant.
+
+Q4_loi_du_25_mars_1919: |
+  Bien distinguée des accords interprofessionnels. La loi du 25 mars 1919
+  est traitée comme "cadre des conventions collectives" (premium.ts:267)
+  avec citation de l'article 31a Livre I (numérotation d'époque, juste).
+  Aucun risque de confusion avec les ANI dans ce scénario.
+
+Q5_loi_Waldeck_21_mars_1884: |
+  Datation parfaite (premium.ts:204 : "21 mars 1884"). Citation textuelle
+  de l'article 2. Mention que la légalisation rend possibles les
+  conventions collectives postérieures (premium.ts:230). Architecture
+  juridique respectée.
+
+Q6_ordonnances_Croizat_octobre_1945: |
+  Scénario premium.ts:322 : "Les ordonnances des 4 et 19 octobre 1945".
+  Conforme.
+  Catalogue institutions.ts:67 : "Ordonnances du 4 octobre" — incomplet.
+  À harmoniser.
+
+Q7_lois_Auroux_4_aout_1982: |
+  Scénario patron.ts:444 : "4 août 1982" — c'est la loi sur les libertés
+  des travailleurs, première des quatre. Date juste.
+  Catalogue institutions.ts:91 : "Loi Auroux du 23 décembre" — c'est la
+  quatrième loi Auroux (CHSCT n° 82-1097). Date juste.
+  glossary.ts:119 reconnaît "quatre lois sociales de 1982". Le jeu tient
+  donc la pluralité des lois Auroux, contrairement à beaucoup d'ouvrages
+  vulgarisés. Très bon point.
+
+Q8_traversee_institution_builder: |
+  Partie syndicaliste-bâtisseur, T1 → T55 (mental). Création successive
+  de mutuelle (T~30), syndicat 1884 (T~36), conventions collectives
+  (T~46), Sécu (T~50), prud'hommes en latence. choiceResolver.ts:60-66
+  alimente bien memory.builtInstitutions à chaque flag (cree-secu,
+  cree-conventions-1919, cree-chsct). Boucle de tour cohérente. Aucun
+  bug juridique observé dans les conséquences narratives ; les imprécisions
+  restent confinées aux labels du registre UI.
+
+Q9_partie_patron_CPME: |
+  Le scénario cpme.ts:22 sur les ordonnances Macron (CSE) est le plus
+  juste juridiquement de tout le corpus. Effet seuil 11-49 salariés
+  parfaitement décrit. Refus CPME / signature MEDEF documenté avec les
+  bons noms (Asselin, Gattaz, Roux de Bézieux). C'est exactement la
+  difficulté que je rencontre en clientèle TPE/PME et le jeu la rend.
+
+Q10_top_3_issues_priorites: |
+  P0 (à corriger avant focus group 14 mai) :
+    - institutionsRegistry.ts:32 : remplacer "Convention collective
+      interprofessionnelle de l'assurance chômage" par "Convention
+      nationale interprofessionnelle de l'assurance chômage". Aligne
+      label UI sur premium.ts:391. ~5 minutes de travail.
+
+  P1 (à corriger avant go/no-go 23 mai) :
+    - institutions.ts:67 : "Ordonnances des 4 et 19 octobre 1945."
+      pour aligner sur premium.ts:322 et restituer l'architecture
+      régime général/caisses.
+    - institutions.ts:60-62 (matignon-1936) : préciser "Accords du 7 juin
+      1936 ; lois 40h (21 juin), congés payés (20 juin), DP (24 juin)"
+      pour rendre la base légale repérable.
+
+  P2 (cosmétique pédagogique) :
+    - premium.ts:276 : ajouter une note "ancien Code du travail, art. 31a
+      Livre I, recodifié 2008 art. L.2232 et s." pour les joueurs juristes
+      contemporains.
+    - institutionsRegistry.ts:39 (mutuelle Ollivier) : la loi du 25 mai
+      1864 dépénalise la coalition, elle ne crée pas la mutuelle (charte
+      mutualité = loi du 1er avril 1898). Glissement journalistique
+      acceptable mais à signaler dans une infobulle.
+
+NPS: 8
+moment_marquant: |
+  T46 — lecture in extenso de l'article 31a du Livre I du Code du travail
+  ancien (premium.ts:275-276) sur les conventions collectives. Le jeu
+  cite la source. Je n'avais jamais vu un jeu vidéo français citer un
+  article du Code du travail.
+fix_prioritaire: |
+  institutionsRegistry.ts:32 — corriger "Convention collective" en
+  "Convention nationale" pour Unédic 1958. P0, 5 minutes, alignement
+  catalogue ↔ narration.
+biais_reconnu: |
+  Sortie du profil canonique (étudiante L2 socio) pour tenir la lentille
+  juriste demandée par la mission. Voix plus technique que la vraie
+  Camille de Nanterre — assumé.

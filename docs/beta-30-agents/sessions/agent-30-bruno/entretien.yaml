@@ -1,0 +1,102 @@
+agent: agent-30-bruno
+date: 2026-05-08
+build: v2.2.2-prebeta
+
+Q1_premiere_impression: |
+  Première heure : je cherche "PME", "TPE", "Asselin", "Picon", "artisan". Je
+  trouve cpme.ts (deux scénarios), pas de Picon, Asselin nommé une fois
+  (cpme.ts:22, 27). Foucher nommée une fois (cpme.ts:125). C'est mince.
+  En revanche, le moteur de mémoire (choiceResolver.ts:83-193, 13 callbacks)
+  est solide — la sensation que les choix laissent une trace marche.
+
+Q2_scenario_qui_parle_a_une_PME: |
+  Trois qui me parlent :
+  1. cpme.ts:11 — CSE 2017, Asselin, seuil 50, contre-projet livre blanc.
+     Le seul du jeu qui me met dans la tête d'un dirigeant 28 salariés.
+  2. cpme.ts:99 — U2P / OPCO EP / boulanger / Foucher 2024. Voix vraie,
+     "apprenti en visio sur Excel" — j'ai entendu cette phrase.
+  3. premium.ts:147 — Loi Ollivier 1864, "ollivier-mutuelle". La caisse
+     mutuelle 1864 résonne avec l'artisanat actuel (chambre des métiers).
+     Pas explicite PME mais structurellement proche.
+
+Q3_scenario_qui_ne_parle_quaux_grands_groupes: |
+  Trois qui me laissent dehors :
+  1. premium.ts:313 — Sécurité sociale 1945. Caisse -5 pour fonder la Sécu
+     (premium.ts:344). Une PME 1945 n'a aucun rôle dans cette décision —
+     elle subit la cotisation. Le jeu m'en fait l'architecte. Faux.
+  2. premium.ts:489 — Lois Auroux 1982 / NAO. Pas de campFilter. La NAO
+     est calibrée pour des entreprises >50 salariés. Pour 28 salariés en
+     1982 il n'y avait quasi rien — le scénario me fait habiter Renault.
+  3. patron.ts:266 — MEDEF 1998 / refondation sociale. Seillière, CNPF →
+     MEDEF. Une PME ne participe pas à cette stratégie ; la CGPME (devenue
+     CPME) a quitté la table en 1999 (CGPME/MEDEF, scission Mer). Le
+     scénario n'a pas de variante PME.
+
+Q4_la_ressource_caisse_est_credible_pour_une_PME: |
+  Non. La "Caisse" est calibrée grand groupe / fédération. Exemples :
+  - premium.ts:344 (Sécu): caisse -5 pour fonder la Sécu — pour une PME,
+    c'est l'intégralité du compte courant. Pour Renault, c'est 0.001%.
+  - premium.ts:111 (canuts) : caisse -5 pour tenir le tarif. Une PME BTP
+    n'a pas de "caisse de grève".
+  Il faut DEUX ressources distinctes : caisse-organisation (fédération,
+  syndicat) et trésorerie-entreprise (PME). Sinon on confond le pouvoir
+  d'une CGT et celui d'un patron de 28 salariés.
+
+Q5_callback_Frachon_t_es_y_reconnais_tu: |
+  Mi-figue mi-raisin. Le geste — "tu plies la lettre soigneusement"
+  (choiceResolver.ts:111) — est juste, c'est ce que faisait mon père
+  syndiqué CGT métallo dans les années 70. Il pliait les courriers fédé
+  comme on plie un drap. MAIS le ton "Le 7 juin restera. Tu as bien fait."
+  ne sonne pas Frachon 1936. Frachon en juin 36 face à un confédéré
+  Jouhaux qui venait de signer SANS l'échelle mobile aurait écrit froid.
+  La phrase actuelle a un ton de Séguy 1968 ou de Krasucki 1980.
+  **Authentique en geste, anachronique en voix.** Un permanent vivant
+  aurait corrigé ça.
+
+Q6_militants_demissionnaires_epuise_mouvement: |
+  C'est la phrase la plus juste du jeu (choiceResolver.ts:155) :
+  "Les permanences se vident. Trois militants démissionnent sans bruit.
+  Personne ne te le dit, mais tu sens le silence aux assemblées."
+  J'ai vu ça en 2023 côté CFDT BTP après les retraites. Le "personne ne
+  te le dit" est exact — les permanents partent en cessation tacite,
+  pas en clash. L'auteur a parlé à quelqu'un, ou il a perdu des
+  délégués lui-même. À garder tel quel, et à propager comme modèle pour
+  les autres callbacks "base".
+
+Q7_PME_vs_grand_groupe_est_il_differencie: |
+  Faiblement. Deux scénarios CPME (cpme.ts) + un U2P. Aucun campFilter
+  granulaire (PME vs grand groupe). Le campFilter est binaire
+  patron/salarie. Il faudrait un sous-filtre `patronType: 'TPE' | 'PME' |
+  'ETI' | 'GE'` pour qu'un dirigeant 28 salariés ne joue pas Seillière à
+  la table CNPF 1998. Sans ça, le jeu lisse 4,5 millions de TPE-PME en
+  un seul "patron" générique — ce qui est exactement ce que le tissu
+  économique reproche au MEDEF depuis 25 ans.
+
+Q8_Asselin_Picon_legendaires: |
+  Asselin nommé deux fois (cpme.ts:22, 27). Picon (président UPA puis
+  U2P historique) absent. Foucher (Confédération nationale artisanat)
+  nommée une fois (cpme.ts:125) — c'est la seule incarnation patronale
+  artisanale du jeu. Pas de Roux de Bézieux face à Asselin sur la
+  divergence MEDEF/CPME 2017. Manque : un face-à-face CPME-MEDEF
+  scénarisé, qui reflèterait les vraies fractures patronales.
+
+Q9_les_ateliers_traitent_ils_la_PME: |
+  Les 7 ateliers (matignon, NAO, grève, manif, meeting, table, place)
+  sont calibrés grands événements / grandes confédérations. L'atelier
+  NAO est paramétré pour Renault-Auroux 1982, pas pour une NAO de 28
+  salariés où le dirigeant et le délégué se connaissent depuis 12 ans
+  et boivent un café avant. Manque : un atelier "table-pme" — entretien
+  un-à-un dirigeant PME / délégué unique, calibré confiance personnelle
+  et historique de boîte. C'est la vraie texture de la NAO française
+  (75% des accords de branche, mais 90% des accords d'entreprise sont
+  signés sous 50 salariés).
+
+Q10_un_seul_fix: |
+  Ajouter quatre scénarios PME entre 2008 et 2024 (rupture conventionnelle
+  2008, CICE 2013, ordonnances 2017 vue PME 28 salariés — pas seulement
+  vue président CPME, accord de performance collective 2017-2020). Sans
+  ça, le jeu reste un jeu de grandes confédérations qui mentionne la PME
+  deux fois pour cocher la case. Avec ça, il devient le premier serious
+  game à prendre au sérieux les 4,5 millions de TPE-PME qui font 50% des
+  salariés du privé. C'est aussi le levier marketing CPME/U2P le plus
+  fort — Asselin parlerait de ce jeu si la PME y existait vraiment.

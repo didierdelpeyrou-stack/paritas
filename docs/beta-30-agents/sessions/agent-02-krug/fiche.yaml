@@ -1,0 +1,9 @@
+agent: 02
+nom: "Steve Krug"
+corps: "Architectes"
+tour_comprehension: 8
+moment_marquant: "Tour 5 partie A — le ToastStack me sert un 'cahier de doléances' diégétique (ToastStack.svelte:27-29 + 247-261). Le toast ne ressemble plus à un toast. Premier clic-révélation."
+moment_decrochage: "Minute 2:00 — je cherche 'Tour N / 100' et l'horizon de partie ; la timeline des ères dit 'Révolution' mais pas la position dans la course (CockpitEraTimeline embarqué dans CockpitShell.svelte:326). Je suppose, je ne sais pas."
+nps: 6
+fix_prioritaire: "Promouvoir un compteur 'Tour N/100 · Ère X' au-dessus des 7 jauges du CockpitTopHeader, et élever le upcoming-forcing-banner (CockpitShell.svelte:330-339) en signal permanent dès le tour 1 — le code existe, il faut juste le hisser dans la hiérarchie visuelle."
+biais_reconnu: "Je sous-estime le plaisir d'apprendre lentement (Suzerain, Disco Elysium). Mon test 3-minutes est un tri brutal, pas un verdict de qualité — Paritas vise un public qui aime fouiller, et ce public ne m'écoute pas."

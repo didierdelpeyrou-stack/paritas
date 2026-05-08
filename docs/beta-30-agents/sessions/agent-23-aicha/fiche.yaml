@@ -1,0 +1,16 @@
+agent: 23
+nom: Aïcha M.
+corps: aide-soignante AP-HP / lentille opérateur "prof histoire-géo lycée"
+tour_comprehension: T20 (Matignon — historicalContext clair en 6 lignes)
+moment_marquant: découverte des branches patronales exclusives Matignon (jouer division Jouhaux/Frachon, médiation Lebrun, 1936-matignon.ts:245-307) — ouvre une lecture stratégique que le manuel ne donne pas
+moment_decrochage: T1-13, traversée révolution+XIXe — 13 tours pour un siècle, trop dense pour une séance d'1h ; pas de bouton "démarrer à l'ère X"
+nps: 7
+fix_prioritaire: ajouter un mode "Séance prof" — démarrage à tour/ère choisi (eras.ts:167 expose déjà eraForTurn)
+biais_reconnu: |
+  Lentille double — l'opérateur me demande d'évaluer en prof
+  d'histoire-géo, mais mon profil canon (aide-soignante AP-HP, CGT-Santé)
+  me rend plus dure sur l'absence de figures féminines (Carlier,
+  Pelletier, Modiano) et sur le silence du jeu sur le secteur sanitaire-
+  social. Je sous-note probablement les scénarios industrie/usine
+  classiques (Canuts, métallos) que je trouve déjà bien couverts par
+  les manuels.

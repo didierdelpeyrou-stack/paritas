@@ -1,0 +1,92 @@
+agent: agent-12-goodwin
+date: 2026-05-08
+build: v2.2.2-prebeta (HEAD 0813c75)
+
+Q1_premier_geste: |
+  J'ai cliqué T1 cahiers de doléances avant de lire les voix. Réflexe
+  d'historienne : voir si l'événement est documenté ou inventé. Cahier
+  des charpentiers de Paris (early-period.ts:36) — vrai. J'ai continué.
+
+Q2_moment_compris: |
+  T4 livret ouvrier 1803, le compulsif « impertinent » sur le carnet
+  (early-period.ts:108). À ce moment je comprends que le jeu ne
+  raconte pas l'histoire en surplomb : il fait sentir l'asymétrie de
+  pouvoir par un détail matériel. C'est la méthode Kearns Goodwin —
+  on ne *résume* pas Lincoln, on *cite* le télégramme.
+
+Q3_moment_ennui: |
+  Les théoryHints quand ils empilent les mots savants (« stratégie
+  d'institutionnalisation précoce », « principal-agent ») sans les
+  ancrer à un acteur historique. Je préfère « Lambert-Ribot dirait
+  alors... » à « stratégie maximaliste pour redescendre ». Le théorique
+  abstrait sonne comme une fiche de prépa. P2.
+
+Q4_persona_lycéen: |
+  Hook : « Écrire la première revendication ouvrière dans un texte
+  royal. » Friction : T1 affiche +6 institution, -2 rapportDeForce sans
+  contexte. Pour 16 ans, ces chiffres sont du bruit avant le tour 5-6.
+
+Q5_persona_syndicaliste_CFDT: |
+  Le panel des voix est très CGT (Frachon, Jouhaux, Séguy, Martinez).
+  La CFDT n'apparaît substantiellement que tardivement (Marc Blondel
+  est FO, pas CFDT). Marylise Léon est en futur 2026. Edmond Maire
+  manque. Hyacinthe Dubreuil aussi. **P1** : ajouter une voix CFDT
+  d'avant 2016 (Eugène Descamps 1964 ? Edmond Maire 1972 ?).
+
+Q6_persona_DRH: |
+  Les deux branches patronales exclusives Matignon
+  (jouer-division-CGT, médiation-Élysée) sont la bonne nouvelle. Le
+  DRH peut jouer sans rage ni honte. Mais le scénario Sécu 1945 ne
+  donne pas de branche patronale exclusive — le DRH joue en miroir
+  des choix salarié, ce qui caricature la position CGPF de l'époque
+  (qui acceptait techniquement tout en lobbyant pour la gestion
+  étatique). P1.
+
+Q7_voix_frachon: |
+  Présent T20 (Matignon, à la table). Le scénario le distingue
+  proprement de Jouhaux comme « celui qui veut tenir » — juste. Son
+  surgissement T+5 dans le callback `signe-matignon` est moins juste :
+  Frachon-CGTU 1936 ne félicitait pas une signature en privé. Voir
+  fix_prioritaire dans fiche.yaml.
+
+Q8_voix_croizat: |
+  Présent T23 par citation Vél d'Hiv 1946 (premium.ts:335) — date
+  exacte (21 mars 1946) bien que le scénario T23 soit daté oct 1945.
+  La voix Croizat est *fausse* dans la pédagogie scolaire qui le
+  réduit à « le ministre communiste » : ici il porte la phrase exacte
+  « la maladie cesse d'être facteur de misère ». Très bien. Le
+  callback `cree-secu` à T+5 (choiceResolver.ts:162-168) est juste :
+  oui, la circulaire d'octobre 1945 reconnaît le canal paritaire.
+
+Q9_voix_jouhaux: |
+  Présent à Matignon (« Tout est possible ! » correctement attribué)
+  et FO 1947 (communiqué de rupture du 19 décembre cité, exact). Le
+  Manifeste des Douze 1940 (belle-epoque.ts:220) — reférence rare,
+  bien sourcée. Goodwin valide.
+
+Q10_top_3_issues:
+  - P0_aucun: |
+      Aucun bloqueur P0. Les pivots sont historiquement défendables.
+      La pédagogie tient.
+  - P1_callback_signe_matignon: |
+      choiceResolver.ts:107-114. Lettre Frachon « Tu as bien fait »
+      anachronique de tonalité (1945+ projeté sur 1936). Réécrire en
+      ambivalence. Bénéfice : préserve la vérité des tensions
+      internes CGT et amorce le scénario FO 1947 sans incohérence.
+  - P1_voix_CFDT_manquante: |
+      Edmond Maire / Eugène Descamps / Hyacinthe Dubreuil absents.
+      La CFDT (née 1964) est sans figure tutélaire historique entre
+      1947 et 2016. Persona syndicaliste CFDT ne se reconnaît pas
+      avant la moitié du jeu. Ajouter au moins une voix Auroux 1982
+      (Maire) et Matignon-bis si possible.
+  - P2_flag_cree_mutuelle_1864: |
+      early-period.ts:221. Nommage ambigu — 1864 c'est la loi
+      Ollivier (droit de coalition), pas une mutuelle. Renommer
+      `cree-mutuelle-1864` → `cree-secours-mutuel-1820` ou
+      `prepare-coalition-1864` selon ce qu'il déclenche.
+
+verbatim_finale: |
+  « Le détail "le banc des accusés sent l'huile à machine"
+  (early-period.ts:274) vaut tout le théoryHint qui le surplombe.
+  L'histoire qu'on retient est celle qu'on a sentie, pas celle qu'on
+  a comprise. Continuez sur cette ligne — vous tenez quelque chose. »

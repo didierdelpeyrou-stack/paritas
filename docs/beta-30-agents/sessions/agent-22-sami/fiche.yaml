@@ -1,0 +1,9 @@
+agent: 22
+nom: "Sami L."
+corps: "Cible primaire 18-30 / Plateforme (FG-3)"
+tour_comprehension: 8       # Q2 — j'ai compris la boucle au tour 8 (boost-by tooltip)
+moment_marquant: "Tour 94, scénario plateformes-directive-2026 : CLAP nommé, je suis enfin DANS le jeu (futur.ts:115)."
+moment_decrochage: "Tour 5, salarié : 7 jauges au lieu des 6 promises par le tuto, vocabulaire abstrait (Légitimité, Force ext/int), je quitte."
+nps: 3                      # 0-10 — je quitterais avant le tour 10 si je payais
+fix_prioritaire: "src/components/intro/Tutorial.svelte:85,127,138 — réécrire pour 7 ressources (cohesionInterne manquante), aligner avec ALL_RESOURCES (game/types.ts:99-107)."
+biais_reconnu: "Je sous-note le contenu pré-2010 — radical sur la critique. Mais l'écart tutoriel/UI (6 vs 7 jauges) est objectivement un bug, pas un biais."

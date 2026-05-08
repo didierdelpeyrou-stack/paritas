@@ -1,0 +1,73 @@
+agent: agent-15-friot
+build: v2.2.2-prebeta
+date: 2026-05-08
+
+q1_premiere_impression: |
+  Le catalogue de 13 institutions (institutions.ts:14-93) tient debout
+  historiquement. Croizat est nommé en clair (l67). Ça commence bien.
+  Mais la structure de donnée est bureaucratique : id, name, year, desc.
+  Pas de gouvernance. Pas de propriétaire. L'institution comme jauge.
+
+q2_thèse_restituee: |
+  Oui, partiellement. Sur secu-caisses (premium.ts:341), le mot-clé
+  "paritarisme de gestion" + le bonus institution:+18 est doctrinalement
+  juste. Sur waldeck-syndicat (premium.ts:225), "passage du rapport de
+  force ponctuel au capital institutionnel" est presque mon vocabulaire.
+
+q3_thèse_trahie: |
+  Le choix secu-priorite-salaires (premium.ts:362) oppose salaire et
+  caisse comme s'ils étaient antagonistes. La cotisation EST du salaire —
+  socialisé. Le jeu reproduit la fausse opposition néolibérale.
+  Cicatrice doctrinale principale.
+
+q4_secu_etat_ou_paritaire: |
+  Bien gérée. Le choix secu-etat (premium.ts:352) est l'OPTION
+  alternative, moins-disante en institution (+10 vs +18). Le moteur
+  prend parti pour le paritarisme. La hiérarchie est juste.
+
+q5_glossaire_institution: |
+  ÉCHEC. Grep "Institution" dans glossary.ts : aucune entrée concept.
+  Seulement Matignon et Grenelle comme événements (l101, l107). Le mot
+  central du jeu n'est pas défini. Pour Friot, c'est la pièce manquante
+  numéro 1.
+
+q6_salaire_socialise: |
+  ABSENT. Aucune occurrence de "salaire socialisé" ou "capital salarial"
+  dans src/. Le mode Réfléchi ne fait pas la distinction. Le jeu reste
+  dans le couple salaire-prestation, pas salaire direct/socialisé.
+
+q7_qui_paye_qui_decide: |
+  Posée IMPLICITEMENT par les trois choix Sécu (caisse / état / salaire
+  immédiat) et par les trois choix Unédic (paritaire / cotisations
+  basses / État garant, premium.ts:394-425). Mais jamais formulée comme
+  question explicite à l'écran. C'est dommage.
+
+q8_nao_atelier: |
+  Mécaniquement honnête. 4 unions calibrées (engine.ts:62), TPE/PME
+  preset (l71-94), commentaires Argus sur le calibrage (l95-99). Mais
+  l'atelier reste un bargaining game. Aucun moment ne rappelle que
+  cotiser, c'est cogérer. La NAO comme institution disparaît derrière
+  la NAO comme négociation.
+
+q9_callbacks_ck3: |
+  13 callbacks (Bulletin ORDA-014 §I) : cree-secu, cree-chsct,
+  cree-unedic, cogestion-rejetee, etc. Le branchement est techniquement
+  remarquable. Croizat circulaire +5 tours après cree-secu : c'est la
+  bonne profondeur historique. Bravo Argus.
+
+q10_si_je_pouvais_changer_une_chose: |
+  Étendre InstitutionDef avec un champ
+  gouvernance: 'paritaire' | 'mutualiste' | 'etatique' | 'mixte'.
+  Ajouter au glossaire une entrée "Institution = capital salarial
+  conquis hors marché du travail". Reformuler secu-priorite-salaires
+  pour ne plus opposer salaire et cotisation. Trois lignes, gros effet.
+
+verdict: |
+  J'ai joué jusqu'au bout. Je me suis reconnu une fois, trahi une fois,
+  ignoré sept fois. C'est mieux qu'un manuel et moins bien qu'une thèse.
+  Pour un jeu de 100 tours, c'est honnête. Je signe.
+
+biais_reconnu: |
+  Je suis dur avec les jeux qui "expliquent à l'enfant". PARITAS ne
+  m'explique pas Friot, et c'est peut-être sa qualité. Un autre lecteur
+  — Supiot, Reynaud — y trouverait peut-être SON vocabulaire.

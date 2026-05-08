@@ -1,0 +1,84 @@
+agent: 28
+nom: "Lukas K."
+profil: "Stuttgart, IG-Metall, ingénieur Bosch, B2 français, regard comparé Mitbestimmung"
+
+Q1_premiere_impression: |
+  Le mot 'paritarisme' dans le titre est opaque pour un Allemand — chez nous on dit
+  Sozialpartnerschaft. Le glossaire (glossary.ts:34) m'aide tour 3, mais l'écran
+  d'accueil pourrait dire en une phrase 'en France, on cogère les caisses, pas l'entreprise'.
+
+Q2_paritarisme_compris_quand: |
+  Tour 12, après ma première NAO. Le moment-clé : voir 4 unions distinctes
+  (engine.ts:122-156) m'a fait comprendre que le paritarisme français n'est pas
+  un Mitbestimmung incomplet, c'est un autre système — pluraliste, antagoniste,
+  centré sur les caisses (Sécu/Unédic/Agirc-Arrco) plutôt que sur le conseil
+  de surveillance.
+
+Q3_role_etat_matignon_vs_allemagne_1949: |
+  Pas pareil du tout. À Matignon 1936, l'État fait l'arbitre Blum entre CGT et
+  CGPF — il met de l'huile, il ne cogère pas. La Mitbestimmung allemande de 1951/1976
+  est imposée PAR L'ÉTAT FÉDÉRAL aux entreprises, dans le cadre rhénan. En France,
+  l'État crée un cadre puis se retire — et ce sont les partenaires sociaux qui
+  vivent dans la maison. La 'lettre de cadrage' Unédic 2018 (historicalBase.ts:43)
+  est une rupture de ce pacte : l'État reprend la main. Le jeu pourrait nommer
+  cette différence plus explicitement.
+
+Q4_confederations_distinguees: |
+  Confondu CGT et CFDT pendant 6 tours. La grille NAO (engine.ts:122-156) a tout
+  changé : CGT revendicative seuil élevé, CFDT réformiste pivot, FO autonome
+  centrée salaires, CFE-CGC cadres. Le tableau profilé est très bon pédagogiquement.
+  Manque côté narratif — j'aurais aimé une carte 'biographique' courte par confédération
+  dès le tour 1.
+
+Q5_specificite_francaise_nommee: |
+  OUI, deux fois.
+  - Tour 23 (cnpf-1946 dans patron.ts:188-194) : 'Sécurité sociale paritaire où
+    les salariés sont majoritaires dans les caisses' — clair, daté, opposable.
+  - Tour 67 (sideEvents.ts:480) : 'Charte d'Amiens 1906 — l'indépendance plutôt
+    que la cogestion.' Phrase culte, je l'ai notée.
+  Ailleurs, le paritarisme est SUPPOSÉ acquis par le joueur. Manque une 'fiche
+  d'identité' à la fin de l'ère Reconstruction qui dirait 'voilà ce qui est
+  spécifiquement français : pluralisme + cogestion des caisses + autonomie syndicale'.
+
+Q6_moment_marquant: |
+  Side event Klaus 1992 (sideEvents.ts:466-516). La carte de visite à deux faces.
+  La phrase 'Vous croyez encore qu'il faut être dehors pour être libre ?' Bouleversant
+  parce que c'est exactement ce qu'on entend dans les couloirs IG-Metall quand
+  on parle des Français — avec cette même nuance d'incompréhension respectueuse.
+
+Q7_moment_ennuyeux: |
+  Atelier Laplace. Je n'ai pas saisi en quoi il valorise le paritarisme. Pour un
+  débutant Mitbestimmung, c'est trop abstrait — j'ai cliqué sans comprendre ce
+  que je manipulais. Manque tooltip pédagogique.
+
+Q8_jeu_explique_refus_francais_cogestion: |
+  PARTIELLEMENT. Côté patron, oui : le callback sur cgpf-cogestion
+  (choiceResolver.ts:178-185) restitue le refus patronal d'après-Matignon
+  ('Pas de cogestion. On garde la main, ou on perd tout.'). C'est puissant.
+  Côté salarié, NON : les flags `cogestion-rejetee` et `mitbestimmung-presented`
+  du side event 1992 n'ont AUCUN callback. Le joueur salarié choisit, puis
+  l'événement s'évapore. Asymétrie qui handicape la lentille comparatiste.
+
+Q9_organes_paritaires_valorises: |
+  OUI mais inégalement. La Sécu est très bien servie (legendaryCharacters.ts
+  Croizat, ordonnances 1945, plusieurs scénarios). L'Unédic est nommée
+  (institutionsRegistry.ts:30, eras.ts:89, 'apogée du paritarisme'). Agirc-Arrco
+  apparaît dans Veyrier (legendaryCharacters.ts:175). MAIS : ces trois ne sont
+  jamais MIS EN SCÈNE comme un trio fondateur. Suggestion : un side event
+  'Le triangle paritaire' où le joueur découvre Sécu+Unédic+Agirc-Arrco comme
+  système, pas comme institutions séparées.
+
+Q10_3_specificites_3_confusions_apres_30_tours: |
+  3 spécificités retenues :
+  1. Cogestion DES CAISSES (Sécu, Unédic, Agirc-Arrco), pas de l'entreprise.
+  2. Pluralisme syndical à 4 confédérations en compétition.
+  3. Charte d'Amiens 1906 — autonomie syndicale comme doctrine fondatrice.
+
+  3 confusions persistantes :
+  1. Pourquoi le patronat français refuse la cogestion d'entreprise (j'ai
+     l'explication seulement côté patron — choiceResolver.ts:178 — jamais côté
+     salarié).
+  2. Pourquoi 1945 a fait Sécu paritaire plutôt qu'étatique (NHS) ou
+     bismarckienne (Krankenkasse). Le jeu présente le fait, pas le choix.
+  3. Articulation actuelle État / partenaires sociaux post-2018 (lettre de cadrage,
+     Macron) — j'ai senti une rupture mais je n'en saisis pas la mécanique.

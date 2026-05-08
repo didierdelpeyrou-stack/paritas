@@ -1,0 +1,79 @@
+agent: agent-13-muratori
+build: v2.2.2-prebeta
+date: 2026-05-08
+
+Q1_premiere_impression: |
+  C'est PROPORTIONNEL. Pas de framework boursouflé, pas d'abstraction
+  performative. Svelte 5 runes utilisées comme primitives, pas comme
+  liturgie. 87 composants pour 67k LoC, c'est dense mais lisible. Le
+  séparation src/game/engine (pure) vs src/components (UI réactif) est
+  faite avec rigueur — dans la plupart des fichiers.
+
+Q2_moment_marquant: |
+  Ligne 146-158 de src/game/engine/consequenceEngine.ts : scheduleActorCallback
+  est une void function qui mute son argument (memory.scheduledActorCallbacks.push).
+  Pendant ce temps choiceResolver.ts:5 clame en commentaire « Pure function ».
+  L'écart entre l'intention déclarée et la réalité, en moins de 200 LoC.
+
+Q3_moment_decrochage: |
+  CockpitShell.svelte, 1491 lignes. Pas un god-object — c'est pire,
+  c'est un god-SHELL : il orchestre trois identités visuelles
+  (théâtre/atelier/carnet) via des branches if-isTheatre/if-isAtelier
+  internes. Le découpage à faire en 3 fichiers + une CockpitFrame
+  partagée est évident, et pas fait. Maintenant il se fait à reculons.
+
+Q4_perf_observee: |
+  Le tick (continueAfterConsequence ligne 371-389 de gameState.svelte.ts)
+  enchaîne 7 passes pures qui chacune réalloue un nouveau RebirthGameState
+  via spread {...state, x:y}. Pour 100 tours × 2 parties = 1400 allocations
+  intermédiaires. Pas un drame — V8 nettoie, allocations courtes durée.
+  Mais un applyTick(state) unique qui ferait les 7 en un seul objet final
+  économiserait ~85% des intermédiaires. Graisse, pas hémorragie.
+
+Q5_god_object_check: |
+  gameState.svelte.ts à 1061 lignes : ce N'EST PAS un god-object au
+  sens classique. C'est un store-coordinator. Le calcul est DÉLÉGUÉ
+  aux engines purs (engine/, simulation/, org/, strategy/, ai/).
+  Le store coordonne 10 phases (idle/scene/consequence/matignon/laplace/
+  ended/...) et persiste. Ce qui pue, c'est la duplication entre
+  choose() / resolveMatignon() / resolveLaPlace() : trois implémentations
+  parallèles de « j'applique des deltas, je passe en phase consequence ».
+
+Q6_chunks_split: |
+  Validé sur dist/. pipelineContentData-DTvNuQgj.js = 45305 bytes raw,
+  bien isolé en chunk dynamique. main-CB-Wjnbz.js = 448994 bytes raw
+  (~147 KB gzip). audio-DdP1Cr58.js = 265019 bytes — c'est gros pour
+  de l'audio. À investiguer : code ou samples ?
+
+Q7_re_render_gratuit: |
+  Pas trouvé en lecture statique. Les $derived dans CockpitShell sont
+  dépendants du store (gameState, scenario, consequence, ending, era,
+  epoque) — fine-grained, ré-évaluation seulement quand l'état change.
+  Pas de $effect qui tourne à chaque tick. À confirmer en runtime avec
+  le profiler Svelte.
+
+Q8_purity_audit: |
+  Engines purs vérifiés : applyResourceDelta, applyActorsDelta,
+  applyTraitShift, computeDominantTrait, processTurnCallbacks,
+  resolveChoice (sauf l'effet de bord scheduleActorCallback). 376 tests
+  Vitest verts en 549ms — couverture honnête. Le seul bug de pureté que
+  j'ai isolé est consequenceEngine.ts:146-180.
+
+Q9_3_fichiers_a_splitter: |
+  - src/game/engine/gameState.svelte.ts:362-413 (continueAfterConsequence)
+    + 423-492 (resolveMatignon) + 501-566 (resolveLaPlace) → factoriser
+    une applyAtelierResult(state, deltas, narrativeRender) commune.
+  - src/components/cockpit/CockpitShell.svelte → splitter en
+    TheatreShell.svelte / AtelierShell.svelte / CarnetShell.svelte
+    + une CockpitFrame.svelte partagée (status bar + cockpit-main +
+    instruments + action bar).
+  - src/components/layout/GameShell.svelte (1328 lignes) → même diagnostic
+    que CockpitShell, à examiner ensuite.
+
+Q10_fix_prioritaire: |
+  consequenceEngine.ts:146-180 — refactor scheduleActorCallback et
+  consumeActorCallbacks en pure functions qui RETOURNENT un nouveau
+  Memory au lieu de muter. Propager le retour dans choiceResolver.ts:85
+  et dans les 9 autres sites d'appel (5 ORDA-013 + 4 ORDA-014). Coût
+  estimé : 1 j-h. Bénéfice : rétablit la garantie de pureté annoncée,
+  débloque undo/redo/replay déterministe.

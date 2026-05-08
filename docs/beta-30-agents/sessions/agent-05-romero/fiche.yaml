@@ -1,0 +1,9 @@
+agent: 05
+nom: "Brenda Romero"
+corps: "Architectes"
+tour_comprehension: 5
+moment_marquant: "T26 — 'Trois militants démissionnent sans bruit.' Cinq tours après mon choix Gignoux. J'avais oublié. Le jeu, lui, n'avait pas. choiceResolver.ts:151-158."
+moment_decrochage: "Aucun atelier (LaPlace, LaTable, Confrontation, NAO, Élections, Manif, Grève) ne pose de scheduleActorCallback. Sortie de mini-jeu = trou mémoriel."
+nps: 8
+fix_prioritaire: "src/game/engine/choiceResolver.ts:60-66 — les flags 'cree-prudhommes', 'cree-syndicat-1884', 'cree-conventions-1919', 'cree-unedic' posent une institution mais ne déclenchent aucun callback acteur. Créer la Sécu fait écrire l'État ; créer les prud'hommes laisse le silence. Ajouter 4 callbacks symétriques (1 j-h)."
+biais_reconnu: "Je préfère les jeux qui blessent — j'ai sur-noté la réussite des 13 callbacks et sous-noté le silence des 7 ateliers. Un tester moins masochiste donnerait NPS 6, pas 8."

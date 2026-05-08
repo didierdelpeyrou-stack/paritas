@@ -1,0 +1,87 @@
+agent: agent-24-pascal
+persona_joue: Pascal M. — patron PME 80 salariés Lyon, CPME (cf. note dissonance dans fiche.yaml)
+
+Q1_premiere_impression: |
+  Côté patron, l'écran d'accueil parle de "Union patronale" mais ne
+  dit pas si je suis adhérent CPME, MEDEF ou U2P. C'est important
+  pour un patron de PME — la chapelle structure tout. Manque un
+  choix initial.
+
+Q2_moment_je_me_reconnais: |
+  Tour 71. La phrase d'Asselin (cpme.ts:36) sur le CSE en PME
+  30 salariés. C'est *littéralement* mon discours. Et le tour 82
+  avec le boulanger qui décrit l'apprenti formé sur Excel
+  (cpme.ts:115). Ces deux scénarios pèsent plus que tout le reste
+  du parcours patronal pour me garder dans le jeu.
+
+Q3_moment_je_decroche: |
+  Tour 48 (Refondation Seillière) et tour 24 (Villiers/CNPF 1946).
+  Ce sont des scénarios de "haut patronat parisien" où je suis
+  spectateur. La CGPF de 1936 fonctionne mieux parce que la
+  question de "scinder ou pas" est intemporelle pour un dirigeant.
+
+Q4_les_figures_sonnent_juste: |
+  Asselin (legendaryCharacters.ts:349) : ton parfait, biographie
+  exacte sur HEC, Asselin SA, charpentes/Compagnons du Devoir.
+  Roux de Bézieux : OK mais distant pour un patron de PME.
+  Mukherjee (composite) : crédible et fait du bien — la voix
+  patronale plurielle existe (j'ai croisé des DRH de ce profil
+  dans l'ANDRH Rhône). Manque : un président de chambre patronale
+  provinciale vivant. Asselin couvre, mais Asselin parle Paris
+  CPME nationale, pas terrain.
+
+Q5_atelier_NAO_employeur: |
+  Le préset 'tpe-pme' (engine.ts:87-93, 24 pts/3 séances) est
+  juste — chez moi, c'est 2-3 séances avec un délégué unique.
+  Mais aiEmployeurMove (engine.ts:693) tend à *jouer à ma place*
+  si l'UI n'expose pas un mode "je distribue mon enveloppe moi-
+  même côté patron". À vérifier en jouant l'UI réelle. Si l'IA
+  joue le patron pendant que je regarde, l'expérience patron côté
+  NAO est fade.
+
+Q6_treasury_32_pourcent: |
+  Il y a un vrai problème. organization.ts:55 dit rate=0.32
+  côté patron, treasury.ts:87 dit rate=0.16. Le test
+  organization.test.ts:114 valide 0.32, mais le calcul de tour
+  passe par computeRecettes (treasury.ts). Côté joueur, mon
+  revenu réel par tour est 16% de membership × multipliés par
+  stratégie, alors que le tooltip d'`expectedDuesIncome` annonce
+  32%. Soit on aligne les deux, soit on documente que 0.32 est le
+  *plein potentiel théorique* et 0.16 le rendement réel — et
+  alors il faut le dire à l'écran.
+
+Q7_treasury_realisme: |
+  Le ratio 1:8 (organization.ts) est *trop fort*. Une union
+  patronale n'a pas 8x le revenu/membre d'un syndicat salarié.
+  Le ratio 1:3 de treasury.ts (commentaire ligne 86) est plus
+  juste — un MEDEF d'entreprise paie effectivement 3-5x ce qu'un
+  salarié CGT paie de cotisations, mais pas 8x. Donc treasury.ts
+  est plus crédible. La cohérence devrait s'aligner sur 1:3
+  (rate 0.16), pas 1:8.
+
+Q8_scenarios_CPME_voix_patronale: |
+  Les deux scénarios cpme.ts sont *les seuls moments du jeu où le
+  patronat de terrain existe*. Sans eux, je quitte au tour 50.
+  Avec eux, je reste jusqu'à 100. Pondération à revoir : 8
+  scénarios patron.ts vs 2 cpme.ts. Pour 60% des entreprises
+  françaises (TPE-PME), il faudrait au moins 4-5 cpme/u2p sur le
+  parcours.
+
+Q9_callbacks_memoire_visibles: |
+  ORDA-013/014 ajoute 13 callbacks acteurs branchés. Mon scénario
+  cpme-contre-projet (turn 71) pose flag `refondation-paritaire`
+  → callback turn+4 (acteur etat, "circulaire DGT"). Je n'ai pas
+  vu de log "Mémoire (etat) :" au tour 75 dans mes parties. Soit
+  l'UI n'affiche pas, soit le routing CPME ne déclenche pas. À
+  qualifier — P1.
+
+Q10_recommandation_finale: |
+  Le jeu est sérieux et tient sur le fond. Trois fixes pour qu'il
+  parle à 60% du patronat français :
+  - P0 cohérence treasury rate (0.16 vs 0.32)
+  - P0 mode joueur explicite côté patron pour la NAO (ne pas
+    laisser aiEmployeurMove dominer l'UX patron)
+  - P1 ajouter 2-3 scénarios CPME/U2P de plus (climat 2018,
+    branches 2020, transition écologique TPE) pour rééquilibrer
+    le parcours patronal vs MEDEF
+  NPS 7. Avec les fixes ci-dessus : 8-9.

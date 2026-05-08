@@ -1,0 +1,49 @@
+Q1_premiere_impression: |
+  Tab depuis Landing pose le focus au bon endroit, indicateur doré 2px
+  conforme. Le mode radiogroup sur StartScreen (StartScreen.svelte:159)
+  est annoncé propre par NVDA. Bonne entrée.
+
+Q2_tour_comprehension: |
+  T4. Quand j'ai compris que .choice-btn:focus-visible (SceneCard.svelte:539)
+  signale la posture par couleur de bordure ET par box-shadow latéral, j'ai
+  arrêté de chercher la souris.
+
+Q3_moment_friction: |
+  T22 partie 2 — le ticker causal me piège. Tabindex=0 sur des items qui
+  défilent + sortent du DOM toutes les 30s = focus dans le vide. NVDA
+  annonce "vide, vide, vide" jusqu'au prochain tab utile.
+
+Q4_jauges_lisibles: |
+  Oui sur surface sombre (gold #c89b3c sur #1a1f26 ≈ 7.5:1). Non si le
+  même gold tombe sur parchment #ede4c9 (~1.6:1, FAIL AA). Vérifier
+  Gauge.svelte:42 et StrategicRadar.svelte:126.
+
+Q5_a_quoi_sert_la_caisse: |
+  Compris. Le label currencyForEra dans ToastStack.svelte:11-16 fait le
+  travail historique (livres → francs → euros).
+
+Q6_choix_perçu_signifiant: |
+  Le coh-flag ⚠/✓ avec aria-label complet (SceneCard.svelte:411-415).
+  NVDA me dit pourquoi c'est tendu. Beau lien dominantTrait → choix.
+
+Q7_atelier_le_plus_pertinent: |
+  Brawl Arena. role=dialog tabindex=-1 (BrawlArena.svelte:532) bien posé,
+  focus trap correct. Manifestation a un role=button sur <div>
+  (ManifMap.svelte:58) — devrait être <button>.
+
+Q8_partagerais_a_un_collegue: |
+  À mes pairs a11y oui. À un utilisateur AT débutant : pas encore. Trop
+  de tabindex chaînés sur le ticker, et les toasts à 3.2s sont trop courts
+  pour SC 2.2.1.
+
+Q9_changerais_quoi: |
+  1. Rendre les toasts pausables (bouton "Pause notifs" dans le stack).
+  2. Retirer tabindex=0 du ticker scroll, utiliser un panneau "Historique"
+     dépliable (un bouton "Voir le fil" qui ouvre un dialog).
+  3. Restaurer outline:2px solid var(--sem-action) sur tous
+     :focus-visible où outline:none (17 occurrences à auditer).
+
+Q10_NPS_et_pourquoi: |
+  7. Joué 60 tours sans souris. C'est une réussite. Mais 3 frictions WCAG
+     2.2 AA m'empêchent de passer à 9. Patron : restaurer outline
+     systématique = +1 NPS. Pause toasts = +1.

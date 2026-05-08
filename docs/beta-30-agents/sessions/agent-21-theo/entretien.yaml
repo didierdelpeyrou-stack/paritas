@@ -1,0 +1,74 @@
+agent: agent-21-theo
+nom: Théo G.
+date: 2026-05-08
+build: v2.2.2-prebeta
+
+q1_premiere_impression: |
+  Trois modes au launch (pédago/équilibré/littéraire), c'est propre.
+  J'ai pris équilibré. L'écran est dense mais lisible. Comparé à
+  l'ouverture d'Old World, c'est moins guidé mais on n'est pas perdu.
+
+q2_comprehension_systeme: |
+  T20. Le déclic est venu via le callback Frachon (signe-matignon T15+5,
+  choiceResolver.ts:107-114). Avant ça, je voyais des chiffres bouger,
+  je ne sentais pas la mémoire. Cinq tours après mon choix, l'acteur
+  m'écrit. Là j'ai compris la promesse : les choix laissent une trace
+  différée. Pattern Paradox / Old World classique — exécuté correctement.
+
+q3_moment_jeu_le_plus_fort: |
+  T55 partie 1 — bascule de trait dominant batisseur → pragmatique.
+  Le jeu m'a affiché traitChange explicitement (consequenceEngine.ts:53).
+  Pas un gros effet visuel, pas de musique, juste un texte. Mais c'est
+  exactement le moment où je me suis dit "ce n'est plus le perso que
+  j'avais en tête au tour 1". CK3 a cette même qualité de bascule
+  silencieuse. Réussi.
+
+q4_moment_decrochage: |
+  T28 partie 2 — stress "tendu", 4e refus consécutif. Je grep pour voir
+  où stressLevel est consommé. Réponse : trois usages UI (label, hint,
+  classe CSS), zéro consommateur mécanique. C'est le défaut le plus
+  honnête à pointer. Le palier "effondré" promet une cassure, le moteur
+  ne la livre pas.
+
+q5_persona_servi: |
+  Cadre CFE-CGC partiellement servi. Présent en NAO (4e syndicat,
+  P1-4 ORDA-009), absent des scénarios narratifs spécifiques cadre.
+  Mes 3 livrables (forfait-jours 2008, fusion Agirc-Arrco 2019,
+  droit à la déconnexion 2017) signalent le manque. Symboliquement
+  ok ; thématiquement à étendre.
+
+q6_progression_emergente_vs_scriptee: |
+  Hybride honnête. 5 archétypes pipeline × 6 stages (pipelineEngine.ts +
+  pipelineContent.ts MAX_STAGE=5), gates par ressources/mémoire :
+  c'est de l'émergence à 5 voies. Mes 2 parties divergent vraiment
+  (P1 institution → P2 rupture, scènes différentes). Mais les choix
+  intérieurs aux scènes sont écrits-main. Comme Old World : une grille
+  émergente sur des nodes scriptés. Plus que Paradox, moins que CK3.
+
+q7_profondeur_paradox_grade: |
+  70% du chemin. Forces : API callbacks propre (consequenceEngine.ts:146-180),
+  formule stress correcte (personalityEngine.ts:94-108), pipeline gating
+  multi-ressources. Faiblesses : 13 callbacks sur 100 tours = densité
+  faible vs CK3, stress sans conséquence mécanique, ateliers Greve/
+  Laplace/Table plus légers que NAO/Confrontation.
+
+q8_comparaison_ck3_civ_oldworld: |
+  Ce n'est pas CK3 (pas de système de mort/maladie/héritage,
+  acteurs limités à 4: base/adversaire/etat/opinion).
+  C'est plus dense qu'un Civ standard sur la mémoire narrative.
+  Le bon repère est Old World : 4X scénarisé avec écho d'acteurs,
+  poids historique fort. Je le rangerais à côté.
+
+q9_bug_ou_friction_concrete: |
+  Friction P1 — mode débug overlay (Settings.svelte ORDA-009 P1-11)
+  expose des compteurs internes ; pas trouvé moyen de voir la file
+  scheduledActorCallbacks à un instant T. Pour un joueur stratège qui
+  veut anticiper, c'est de l'info utile (cf. Old World où les ambitions
+  futures sont visibles). À ajouter dans le debug overlay.
+
+q10_recommanderais_a_un_pote: |
+  Oui, à mes potes Old World. Avec la mention "tu vas y trouver de la
+  mémoire d'acteur, mais ne t'attends pas au sandbox CK3 — c'est un
+  jeu pédagogique 100 tours". À mes potes EU4 hardcore, non — ils
+  trouveront la grille trop guidée. NPS 7. Si le fix stress mécanique
+  passe, je passe à 8.

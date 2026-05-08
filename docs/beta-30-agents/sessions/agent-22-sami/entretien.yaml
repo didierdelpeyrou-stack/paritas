@@ -1,0 +1,53 @@
+agent: 22
+nom: "Sami L."
+
+Q1_premier_geste: |
+  Cliqué « Côté salarié » par défaut, parce qu'il y a deux camps et que « patronal » c'est pas moi.
+  Pas de troisième option pour les coursiers/auto-entrepreneurs (StartScreen.svelte:124-152).
+  J'aurais voulu un bouton « Plateforme / indé organisé », même symbolique.
+
+Q2_tour_comprehension: |
+  Tour 8 environ. Le déclic vient du tooltip « boosté par Caisse + Confiance » (CockpitDashboardBar.svelte:83-90).
+  Avant ça, les 7 jauges flottent en haut sans logique évidente.
+  La boucle « 1 décision scénarique + 0-2 actions libres » est claire mais arrive trop vite après le tuto.
+
+Q3_choix_hesitation: |
+  Tour 94, scénario plateformes (futur.ts:133-186) : requalification massive vs statut TPL vs organisation hors-statut.
+  C'est exactement le débat interne au CLAP en vrai.
+  Là j'ai vraiment hésité 30 secondes — ailleurs je cliquais l'option qui sonnait « rupture ».
+
+Q4_personnage_memorable: |
+  Aucun ne me reste — Eugène Maire (CFDT, recentrage 1983) est la figure que j'ai recroisée le plus
+  (legendaryCharacters.ts:154), mais c'est l'opposé de mon imaginaire.
+  Annick Coupé (SUD fondatrice) serait MON personnage. Elle est listée comme MANQUANTE (legendaryCharacters.ts:378).
+
+Q5_sourire: |
+  La pancarte « Nous ne sommes pas des entrepreneurs » dans le setup compulsif du tour 94 (futur.ts:120).
+  Pour la première fois en 94 tours j'ai ri parce que le jeu me reconnaissait.
+
+Q6_soupir: |
+  Le tuto qui dit « 6 ressources » (Tutorial.svelte:85, 127) alors qu'il y en a 7 affichées (CockpitTopHeader.svelte:121-136).
+  Effet « les développeurs ne se relisent pas » — ça donne l'impression d'un truc bricolé.
+
+Q7_envie_relancer: |
+  Non. Si je payais 20€ pour ce jeu et que je décrochais au tour 5, je ne reviens pas.
+  J'ai tenté côté patron par curiosité — pas par plaisir.
+  À la limite, je relancerais SI on me garantissait 3 scénarios plateforme avant le tour 30.
+
+Q8_recommandation: |
+  À mon coloc qui fait sciences-po. Pas à mes potes coursiers — ils décrochent avant moi.
+  Le jeu est pensé pour des gens qui aiment déjà l'histoire syndicale, pas pour ceux qui la vivent sans la nommer.
+
+Q9_pas_compris: |
+  La différence Force externe / Force interne sans tooltip (CockpitTopHeader.svelte:130-133).
+  Et pourquoi « Légitimité » plutôt que « Image publique » ou « Reconnaissance ».
+  Les noms de jauges sont écrits en jargon de chercheur, pas de militant.
+
+Q10_garderais_exact: |
+  Le scénario plateformes-directive-2026 (futur.ts:106-187). Trois choix vrais, contexte juste, citations correctes,
+  CLAP nommé, directive 2024/2831 référencée. C'est la pièce qui montre que le jeu PEUT atterrir.
+  Garder ça intact — et en mettre trois autres comme ça avant le tour 30.
+
+biais_reconnu: |
+  Je sous-note pré-2010, je suis radical dans la critique, j'attends le jeu auquel je veux jouer
+  plutôt que celui qui est devant moi. L'écart tutoriel/UI sur les 7 jauges reste un défaut objectif.

@@ -1,0 +1,21 @@
+agent: agent-09-fahraeus
+nom: Henrik Fåhraeus (CK3)
+corps: Diplomates
+tour_comprehension: 25  # le premier callback Frachon T25 a tout déclenché
+moment_marquant: |
+  T44 — double callback (etat T48 "circulaire DGT" + base T44 "trois militants
+  démissionnent sans bruit"). Première polyphonie CK3 sentie dans le jeu.
+moment_decrochage: |
+  T9 — avant Matignon, aucun callback n'avait encore été déclenché. La promesse
+  "world remembers" n'est livrée qu'à partir de T25. Trop tard pour 5% des
+  joueurs qui décrochent en partie courte.
+nps: 8
+fix_prioritaire: |
+  P0 — Donner au stress effondré (≥80) une conséquence mécanique (pas juste
+  un label) : malus −10% sur effets numériques de tous les choix tant que
+  stress ≥80, dégressif. Sinon le système CK3-grade reste cosmétique.
+biais_reconnu: |
+  Je viens de CK3 : je veux trop de simulation émergente. PARITAS est un jeu
+  pédagogique 100 tours, pas un sandbox dynastique. La sobriété de 13 callbacks
+  bien posés vaut mieux que 100 callbacks bruyants. Mais le stress sans
+  conséquence reste un défaut, pas un parti pris.

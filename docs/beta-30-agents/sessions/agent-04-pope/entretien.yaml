@@ -1,0 +1,27 @@
+Q1: "Le card opaque qui reste lisible (SceneCard.svelte:484-512). Le commentaire de code dit 'le card RESTE opaque' — c'est exactement la décision que j'aurais prise. Le bleed-through parchment était une garniture qui mentait sur la lisibilité."
+Q2: "Tour 4. Le posture-tag à gauche du choix + le glyph dans le rond + l'accent border à 4px (SceneCard.svelte:518-536) suffisent à signaler le type de choix. Pas besoin du sépia plume géant. La signalétique tient sans la décoration."
+Q3: "Le callback narratif sans effet numérique. choiceResolver.ts:83-90 programme une phrase, gameLoop.ts:39-54 l'affiche, et le state ne bouge pas d'un dixième. Une carte de Papers Please sans tampon, c'est rien. Une mémoire CK3 sans delta, c'est rien."
+Q4: "Frachon, par la lettre N+5 'Le 7 juin restera. Tu as bien fait.' (choiceResolver.ts:111). Deux lignes, pliées soigneusement. C'est juste, c'est sec, c'est fictionnel. Si seulement la confiance bougeait avec."
+Q5: "L'identity anchor en mode Compulsif (SceneCard.svelte:262-267). 'Le téléphone à manivelle attend, les Gauloises planent.' Le détail sensoriel daté à l'ère. C'est du Pope dans le texte. Bravo au rédacteur."
+Q6: "L'autoplay-banner clignotant (SceneCard.svelte:933-961, animation 'autoplay-pulse 1.2s ease-in-out infinite'). Une animation en boucle permanente sur 'AUTO-PLAY · 5.0s' pendant que je veux lire le scénario — Pope-rouge. Si l'auto-play est OFF, le DOM ne devrait même pas contenir l'élément. Sinon le breathing dot vit dans le coin de l'œil pour rien."
+Q7: "Oui, mais en désactivant le swipe par défaut (SceneCard.svelte:114-118 le fait déjà depuis UX-#3 — bonne décision). Le swipe enabled-by-default sur un texte serif = scroll vertical mal lu. Bien retiré."
+Q8: "À un ami qui aime Obra Dinn. Pas à un joueur Reigns — il s'attendrait à des conséquences mécaniques claires sur le swipe et il aurait raison."
+Q9: "Pourquoi 13 callbacks acteurs branchés mais zéro avec effects numériques ? Si l'API scheduleActorCallback (consequenceEngine.ts:146-158) prenait un argument 'effects: Effects', le contenu existant des callbacks deviendrait cruel. C'est une heure de moteur."
+Q10: "Le badge POV au tour 1. 'Scène commune · vue depuis ton camp (syndical)' (SceneCard.svelte:308-310). C'est un acte d'honnêteté du jeu envers le joueur — il dit 'je suis un point de vue, pas la vérité'. Très rare en jeu vidéo. Ne touche pas."
+
+# === Livrable Pope spécifique : 5 à supprimer / 5 à diégétiser ===
+# (cf. agent-04-pope.md ligne 24)
+
+a_supprimer:
+  - "src/components/narrative/SceneCard.svelte:933-961 — autoplay-banner + autoplay-pulse keyframe : si autoplay.enabled est false, ne pas rendre l'élément (pas juste le cacher). Une animation en boucle = un yeux dans la pièce."
+  - "src/components/cockpit/ScenePreviewOverlay.svelte:22-39 — le wrapper invisible qui ne sert plus à rien depuis ORDA-015. Le hook data-preview-posture est déjà sur SceneCard. Composant à archiver, pas à garder en zombie."
+  - "Le doublon LaTable.svelte / NaoSimulation.svelte — deux ateliers de NAO, périmètres flous (vu dans src/components/ateliers/). Fusionner ou supprimer le moins testé."
+  - "L'identity anchor en mode Réfléchi : il est bien gardé pour Compulsif uniquement (SceneCard.svelte:263), mais le commentaire ERA_SENSORY a 15 entrées dont certaines presque doublons (sarkozy/hollande/macron_i/macron_ii/present). En garder 8."
+  - "Les hover-only signals sur tactile (coh-flag title, ability-hint title, camp-flag title — SceneCard.svelte:412/444/425). Sans long-press substitute, c'est de la décoration sur mobile. Soit on a le substitut, soit on retire."
+
+a_diegetiser:
+  - "Les 13 callbacks acteurs (choiceResolver.ts:83-193) — leur donner un champ effects: Effects. Un communiqué présidentiel doit faire bouger l'opinion, pas juste l'évoquer. C'est LE fix Pope-grade du build."
+  - "Le posture-tag (SceneCard.svelte:805-815) — le faire ressembler à un timbre de tampon administratif (Papers Please-style) plutôt qu'à un label CSS générique. Légère texture, encrage imparfait."
+  - "L'autoplay-banner (si on le garde) — le rendre comme un post-it collé sur la page, pas comme un toast moderne. Border dashed, fond papier."
+  - "Le badge POV (SceneCard.svelte:697-722) — diégétiser en estampille de cabinet : 'CABINET DU MINISTRE' / 'BOURSE DU TRAVAIL DE PARIS', selon camp. Plus de uppercase Cinzel générique."
+  - "Le ticker causal — le typer en machine à écrire (Source Serif 4 mono ou IBM Plex Mono), pas en sans-serif neutre. Une lettre dactylographiée, pas une notification."

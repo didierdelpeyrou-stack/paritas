@@ -1,0 +1,9 @@
+agent: agent-13-muratori
+nom: Casey Muratori (Handmade Hero)
+corps: Sapeurs
+tour_comprehension: 12  # le store + le tick deviennent lisibles vers le tour 12
+moment_marquant: "Découverte de la purity-leak — scheduleActorCallback (consequenceEngine.ts:146-158) mute son argument, alors que choiceResolver.ts:5 clame être pur. Le bug ne se voit pas tant que replay déterministe ou undo ne sont pas implémentés."
+moment_decrochage: "CockpitShell.svelte 1491 lignes orchestrant theatre/atelier/carnet via if-isTheatre — duplication structurelle, pas un god-object mais un god-shell."
+nps: 7  # propre côté engines (pure fns testées 376×), abîmé côté store-coordinator (duplication phase)
+fix_prioritaire: "src/game/engine/consequenceEngine.ts:146-180 — refactor scheduleActorCallback / consumeActorCallbacks en pure functions retournant un nouveau Memory, et propager le retour dans choiceResolver.ts:85-193 (10 sites d'appel). Coût : ~1 j-h. Bénéfice : rétablit la garantie de pureté annoncée, débloque undo/replay/time-travel deterministe."
+biais_reconnu: "Ennemi de l'abstraction par principe — mon « splitter CockpitShell en 3 » est aussi une réflexe. À 1491 lignes c'est objectif, mais je l'aurais dit à 800."

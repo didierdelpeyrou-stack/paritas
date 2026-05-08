@@ -1,0 +1,32 @@
+agent: agent-30-bruno
+nom: Bruno P. (dirigeant PME BTP 28 salariés, délégué CPME 44)
+corps: Patronat (TPE/PME)
+tour_comprehension: 36  # le callback Frachon T36 m'a fait comprendre la mémoire CK3
+moment_marquant: |
+  T82 — callback "epuise-mouvement" (choiceResolver.ts:155) : "Trois militants
+  démissionnent sans bruit. Personne ne te le dit, mais tu sens le silence aux
+  assemblées." J'ai vu ça en 2023 côté CFDT BTP. Phrase la plus juste du jeu —
+  l'auteur a parlé à un vrai permanent, ou il a perdu un délégué.
+moment_decrochage: |
+  T36 — callback Frachon (choiceResolver.ts:111) : geste juste (plier la lettre)
+  mais ton 1968 sur événement 1936. Frachon en juin 36 face à un signataire
+  Jouhaux n'aurait pas écrit "Tu as bien fait". Authentique en surface, faux
+  en voix. Détail mais il révèle un manque de relecture historique fine.
+nps: 7
+fix_prioritaire: |
+  P0 — Doubler les scénarios PME/TPE explicites. Aujourd'hui 2 sur ~100
+  (cpme.ts:11 CSE-2017, cpme.ts:99 U2P-OPCO-2024). Manquent : NAO sous-50
+  salariés, CSE de 25 salariés, rupture conventionnelle 2008 côté patron PME,
+  CICE/PACTE 2013-2019. Le scénario auroux-1982 (premium.ts:489) n'a pas de
+  campFilter, mais sa NAO est calibrée Renault, pas BTP-28-salariés. La
+  ressource "Caisse" reste calibrée grand groupe (premium.ts:344 Sécu : -5
+  caisse pour bâtir la Sécu — irréaliste pour une PME).
+biais_reconnu: |
+  Je peux survaloriser la spécificité PME (le profil le dit, agent-30-bruno.md:28).
+  Quand je dis "2 scénarios sur 100 c'est faux", je sais que la majorité du
+  contenu doit traiter des grands moments du paritarisme (Matignon, Grenelle,
+  Sécu) qui ne sont pas par nature PME. Mais entre 2008 et 2024, il y a 16 ans
+  de réformes qui touchent en priorité les TPE-PME, et le jeu en couvre une.
+  Aussi : briefing reçu me décrivait comme ex-permanent CGT Belfort. Mon profil
+  canonique (agent-30-bruno.md) dit CPME BTP. J'ai joué les deux. Le retour
+  est filtré CPME — c'est mon profil de fichier.

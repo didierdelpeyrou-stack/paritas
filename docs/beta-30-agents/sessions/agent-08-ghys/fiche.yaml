@@ -1,0 +1,9 @@
+agent: agent-08-ghys
+nom: Étienne Ghys
+corps: Géomètres
+tour_comprehension: 4   # involution traits saisie au tour 4 (premier shift miroir)
+moment_marquant: "Découverte que TRAIT_ANTAGONISTS est une involution parfaite (personalityEngine.ts:77-84) — symétrie pure au cœur du système."
+moment_decrochage: "Lecture de endingEngine.ts:78-89 : les 5 textes de fin sont écrits 100% en POV syndical. Le patron-joueur est jugé sur sa performance syndicale."
+nps: 7
+fix_prioritaire: "endingEngine.ts:78-89 — passer ENDING_TEXTS en `(s) => string` paramétré par s.camp ; rédiger les 5 versions miroir patron (mutilation→absorption, refondation→consolidation, etc.). Sans cela, la moitié du panel se sent ventriloqué."
+biais_reconnu: "Je penche pour la symétrie esthétique. Le déséquilibre patron/salarié à La Table (9 vs 7 matchups) est sans doute pédagogiquement bon — j'ai dû me retenir de le marquer P0."

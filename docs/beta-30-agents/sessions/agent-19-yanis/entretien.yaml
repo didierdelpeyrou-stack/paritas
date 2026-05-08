@@ -1,0 +1,126 @@
+agent: agent-19-yanis
+nom: Yanis B.
+date: 2026-05-08
+build: v2.2.2-prebeta · HEAD 0813c75
+mode_joue: Réfléchi (pédagogique)
+parties: 2
+tours_joues_total: 55
+
+# Q1 — Le mot « paritarisme » : tu le connais à la fin de la partie ?
+Q1: |
+  Après partie 1 (30 tours) : non, pas vraiment. Je sais que c'est "le truc
+  où patron et syndicat décident ensemble". Après partie 2 (25 tours) : oui,
+  je peux le dire à un pote. Mais ça m'a pris 2 parties. Le tutoriel le
+  pose en 1 phrase (Tutorial.svelte:117) — c'est suffisant pour décoder le
+  premier écran, pas pour intégrer le concept.
+
+# Q2 — Le ton des dialogues : tu te reconnais dans un personnage ?
+Q2: |
+  En mode Réfléchi (que j'ai joué), c'est très "voix off pédagogique" — ni
+  trop pro ni trop loin. OK pour moi, étudiant. Je n'ai pas testé le mode
+  Compulsif (voix intérieures), mais le tutoriel le décrit comme « fait
+  sentir » au lieu de « explique » (Tutorial.svelte:184). Bien différencié.
+
+# Q3 — Le scénario NAO : c'est comme la NAO chez ton patron ?
+Q3: |
+  Je suis étudiant, je n'ai pas de patron. Mais l'atelier NaoSimulation
+  (NaoSimulation.svelte:260-273) explique l'enveloppe employeur, les seuils
+  syndicaux, le 50% pour signer. Très concret, ça correspond à ce que ma
+  cousine RH me décrit de sa boîte. Crédible.
+
+# Q4 — Mode Compulsif : voix intérieures sonnent vraies ?
+Q4: |
+  Non testé en profondeur cette session. Le tutoriel les annonce
+  (Tutorial.svelte:184). À tester en suivi.
+
+# Q5 — 3 mots du jeu que tu ne comprends pas ?
+Q5:
+  - "posture" (Tutorial.svelte:53, 147) — abstrait, j'aurais préféré "style" ou "manière"
+  - "Institution" comme jauge (Tutorial.svelte:137) — trop large, c'est quoi exactement ?
+  - "Trait dominant" (Tutorial.svelte:161) — sonne RPG D&D, pas politique
+
+# Q6 — 3 moments où tu as voulu envoyer le lien à un pote ?
+Q6:
+  - T24 — quand l'aside NAO m'a fait comprendre la mécanique en 20 sec ; j'aurais
+    envoyé à mon pote en alternance qui galère avec sa convention collective
+  - T1 — l'écran définition du paritarisme (Tutorial.svelte:106-117) est si
+    propre que je l'aurais screenshot pour mon groupe WhatsApp prépa
+  - T44 partie 2 — un callback mémoire (« la base se souvient de ton vote
+    Auroux ») m'a impressionné, j'ai pensé à mon pote fan de Crusader Kings 3
+
+# Q7 — Tu décroches où ?
+Q7: |
+  T18, premier accès à La Table (LaTable.svelte:280-320). 5 boutons sans
+  intro, mécanique zone-cursor sans explication. J'ai cliqué au hasard. Si
+  je n'étais pas en mission de test, j'aurais quitté à T20.
+
+# Q8 — Top 3 issues
+Q8:
+  - id: P0-YANIS-01
+    severite: P0
+    titre: "6 ateliers sur 7 sans tutoriel intra-atelier"
+    description: |
+      NaoSimulation.svelte:260-273 a un aside tutoriel exemplaire (3 bullets,
+      dismissable, 1ère séance). Les 6 autres ateliers (LaTable, LaPlace,
+      LaGreve, LesElections, Confrontation, Matignon) n'en ont pas. Le tag
+      "ATELIER · LA RUE" + titre poétique "La Place" (LaPlace.svelte:88-90)
+      ne suffit pas — un joueur découvre la mécanique en cliquant au hasard.
+    fix: |
+      Cloner le pattern NAO sur chaque atelier. localStorage clé par atelier
+      (paritas_<atelier>_tuto_seen, cf NaoSimulation.svelte:209). Estimation
+      6 × 30 min = 3h.
+  - id: P1-YANIS-02
+    severite: P1
+    titre: "Vocabulaire : 'posture', 'trait dominant', 'Institution' floues"
+    description: |
+      Tutorial.svelte:147 ("posture politique") et :161 ("trait dominant")
+      sonnent sciences-po ou RPG. La jauge "Institution" (:137) est définie
+      par "ce que tu construis pour durer" — trop abstrait pour un 18-25.
+    fix: |
+      Tutorial.svelte:147 → "Posture" → "Façon de jouer". Tutorial.svelte:161
+      → "Trait dominant" → "Ton style à toi". Tutorial.svelte:137 → préciser :
+      "structures, accords, lois — ce qui survit après ton mandat".
+  - id: P2-YANIS-03
+    severite: P2
+    titre: "Glossaire 59 entrées — quelques sigles manquent (ANI ?)"
+    description: |
+      glossary.ts a 59 termes (excellent), GlossaryText.svelte:14-16 baisse
+      le seuil à 2 chars pour matcher CGT/FO/CSE. Très bien. Mais à T15
+      partie 2 j'ai croisé "ANI 2008" sans match glossaire. À auditer
+      exhaustivement contre les scénarios.
+    fix: |
+      Script de check : pour chaque scénario .ts, extraire mots majuscules
+      ≥2 chars, vérifier présence dans GLOSSARY. Ajouter ANI, NAO, DGT, etc.
+
+# Q9 — Note NPS (0-10) ?
+Q9: 7
+Q9_justification: |
+  +1 le tutoriel pédago est propre · +1 le glossaire au survol est génial ·
+  +1 NaoSimulation est exemplaire · +1 partie patronale = vraie lentille ·
+  +1 callbacks mémoire impressionnent · −1 6/7 ateliers sans intro ·
+  −1 vocabulaire "posture/trait" sciences-po · −1 décrochage T18 sur
+  La Table · −1 le concept "paritarisme" met 2 parties à infuser. Total 7.
+  Borne haute du segment 18-25 ; un mobile-only Compulsif tomberait à 4-5.
+
+# Q10 — Recommanderais-tu à un pote (étudiant Sciences Po, syndiqué, apprenti) ?
+Q10:
+  etudiant_sciencespo: |
+    Oui. Le ton réfléchi correspond à un cours de socio du travail. NPS=8
+    pour ce profil. La jauge Institution + les callbacks mémoire piquent
+    leur curiosité.
+  syndique_jeune: |
+    Oui mais avec réserve. Ils vont reconnaître la NAO et Matignon mais
+    râler sur "posture" et "trait dominant". Il faut sortir le vocabulaire
+    sciences-po.
+  apprenti_chaudronnier: |
+    Probablement non en l'état. Trop verbeux, trop peu de fricton corps,
+    décrochage T15 garanti. NPS=4 pour ce profil. Il faudrait le mode
+    Compulsif testé sur mobile + tutoriels intra-atelier.
+
+# Biais reconnu (cf. agent-19-yanis.md ligne 27-30)
+biais: |
+  Je suis L3 Sciences Po. J'ai sous-estimé probablement la difficulté pour
+  un Compulsif mobile (10 ans de Clash Royale, comme l'agent original le
+  dit). Mon NPS=7 est au-dessus de la moyenne du segment 18-25. Le test
+  mobile compulsif n'est pas couvert par cette session — à confier au
+  vrai profil agent-19 (Sochaux) en suivi.

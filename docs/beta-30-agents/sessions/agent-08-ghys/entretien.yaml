@@ -1,0 +1,44 @@
+agent: agent-08-ghys
+build: v2.2.2-prebeta (HEAD 0813c75)
+date: 2026-05-08
+
+q1_compris_quoi:
+  reponse: "PARITAS modélise un siècle de paritarisme français comme un système dynamique avec 6 traits (3 paires antagonistes), 5 pipelines narratifs (institution/rupture/capture/refondation/déclin), 5 fins. Le joueur incarne soit un salarié soit un patron, traverse 100 tours, et la trajectoire se condense en un attracteur final."
+  tour_clic: 4
+
+q2_premier_decrochage:
+  reponse: "Tour 22, run patron. Le pipeline `rupture` se déclenche alors que je n'ai jamais 'épuisé un mouvement' au sens syndical. Le seuil utilise `state.memory.exhaustedMovements` qui est étiqueté côté base ouvrière — pour un patron, ça ne fait pas sens."
+  fichier: "src/game/narrative/pipelineEngine.ts:71"
+
+q3_moment_plaisir:
+  reponse: "Lecture de TRAIT_ANTAGONISTS — trois paires qui forment une involution propre, validée par test (ORDA-014 phase 2). Géomètre, je reconnais une structure simple et puissante. Le `computeStressDelta` derrière (+6 antagoniste vs −2 dominant) est asymétrique sciemment : c'est une dynamique de contraction, pas une réflexion. C'est plus fin que ça en a l'air."
+  fichier: "src/game/narrative/personalityEngine.ts:77-108"
+
+q4_systeme_economique_lisible:
+  reponse: "Six ressources (caisse, confiance, légitimité, institution, rapportDeForce, santeSociale) — lisibles au tour 8. Mais le couplage avec `organization.cohesion / treasury / reputation` n'est documenté nulle part dans l'UI. Pour un patron, `reputation` désigne quoi ? L'image de l'entreprise ou celle du syndicat patronal ? Ambigu."
+
+q5_atelier_marquant:
+  reponse: "La Table. Mécanique propre : 5 moves vs 5 moves, beats matrix, zone cursor 0-100. Le commentaire de design (engine.ts:80-89) déclare honnêtement l'asymétrie. Mais quand j'ai compté : sal_beats=8 arêtes, pat_beats=10 arêtes, matchups 7/9/9. Le patron gagne 28% plus de matchups que le salarié AVANT les basePush. Le commentaire dit 'légèrement avantagé' — c'est plus que léger."
+  fichier: "src/game/ateliers/table/engine.ts:91-205"
+
+q6_atelier_decroche:
+  reponse: "Arena Brawl. `ArenaStandalone.svelte:31` hardcode `camp: 'salarie'` partout. Pas de version patron. Pour un atelier qui s'appelle 'arena', ne tester qu'un côté c'est… curieux. Soit l'atelier est purement pédagogique (apprendre la rue côté salarié), soit c'est une dette de couverture."
+  fichier: "src/components/ateliers/ArenaStandalone.svelte:31-38"
+
+q7_RNG_reproductibilite:
+  reponse: "Seed=42 testé sur 2 runs identiques — résultats identiques en ressources et scénarios joués (pipelines déclenchés à T=15 sur les deux). Aucun Math.random() leak détecté en lecture rapide de gameState/gameLoop/choiceResolver. Doctrine V3 'RNG seedé partout' tenue. ORDA-013 phase 1 a fermé la boucle callbacks, ce qui était le dernier risque de divergence cachée."
+
+q8_5_fins_distribution:
+  reponse: "Pickeable en théorie : capture (trahis≥3), refondation (inst≥5 ∧ institution≥70 ∧ refus≥2), resistance (inst≥4 ∧ caisse≥50 ∧ rapportDeForce≥50), mutilation (inst≤2 ∨ caisse≤25), inacheve (sinon). Topologie : capture et refondation sont des points fixes attracteurs ; resistance est un col instable ; mutilation est un puits. Inacheve = orbite quasi-périodique non capturée. Mathématiquement clean. Narrativement, les 5 textes sont en POV salarié strict — c'est la fracture."
+  fichier: "src/game/engine/endingEngine.ts:21-89"
+
+q9_3_changements:
+  reponses:
+    - "P0 : endingEngine.ts:78-89 — paramétrer ENDING_TEXTS par s.camp, rédiger 5 versions miroir patron. Effort estimé 1.5 j-h."
+    - "P1 : pipelineEngine.ts:68-91 — soit relire les seuils sous le prisme patron (renommer/dupliquer), soit déclarer explicitement que les 5 archétypes sont 'narratifs partagés' et adapter les textes des scènes selon camp via campText. Effort 2 j-h."
+    - "P2 : ArenaStandalone.svelte — soit ajouter une variante patron (atelier de gestion de crise patronale), soit retirer le côté 'side: salarie' hardcodé et offrir un mode observation symétrique. Effort 0.5 j-h pour l'observation, 4 j-h pour la variante complète."
+
+q10_recommandation_panel:
+  reponse: "Bêta privée OUI, sans réserve technique (Argus a raison). Bêta publique NON tant que ENDING_TEXTS n'a pas sa version patron — un patron-testeur jouera 100 tours pour se voir traité de 'traître par la base'. C'est pas seulement choquant, c'est faux à son rôle. Le moteur de personnalité est CK3-grade (Argus a raison aussi), mais la couche narrative finale ne l'est pas encore. Priorité absolue : 1.5 j-h pour symétriser les fins."
+  nps: 7
+  verdict: "Géométriquement solide à 80%. Reste à mirroir-écrire les attracteurs de fin et à recadrer les pipelines pour le camp patron."

@@ -1,0 +1,9 @@
+agent: 17
+nom: "Annette Jobert"
+corps: "Diplomates"
+tour_comprehension: 4
+moment_marquant: "NAO TPE-PME, séance 2 : la CGT se retire (roll 22%), CFDT et FO suivent par couplage 50% — PV de désaccord. La sociologie réelle de l'intersyndicalisme français rendue par 8 lignes de code (engine.ts:817-869). Je n'ai pas vu cette finesse ailleurs dans un jeu pédagogique."
+moment_decrochage: "Atelier La Table, je n'ai jamais retrouvé d'où vient le `winBonus +10` de l'ancrage (table/engine.ts:99) — la mécanique de beats est lisible, son ancrage sociologique l'est moins. Pas de tooltip pédagogique sur la primauté du mandat."
+nps: 8
+fix_prioritaire: "src/game/ateliers/nao/engine.ts:147-157 — la CFE-CGC affiche un poids fixe 7%, mais en scénario cadre dirigeant elle peut atteindre 30%. Ajouter un preset 'cadres' (à côté de 'standard' et 'tpe-pme') où electoralWeight cfecgc = 25 et profil pivot — sinon le persona Théo R&D #21 ne se reconnaît pas."
+biais_reconnu: "Je voulais Mitbestimmung partout. Le jeu n'a pas vocation à être comparatif systématique — la cogestion est un side event 1992, pas une grille. J'ai sous-noté la finesse française pour vouloir y plaquer ma matrice européenne."

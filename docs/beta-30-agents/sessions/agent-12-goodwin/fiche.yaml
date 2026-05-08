@@ -1,0 +1,33 @@
+agent: agent-12-goodwin
+nom: Goodwin (lentille historienne politique + procédure Kim Goodwin)
+corps: stratèges
+tour_comprehension: 4   # le livret ouvrier 1803 ancre le rapport État/main-d'œuvre
+moment_marquant: |
+  Matignon T20, voix patronale exclusive `matignon-jouer-division-cgt`
+  (1936-matignon.ts:244) — Lambert-Ribot envoie un émissaire à Jouhaux
+  « signons cette nuit, sans Frachon ». C'est une stratégie patronale
+  réelle, jamais explicite dans la pédagogie scolaire, et le jeu la
+  donne en première personne. La ligne longterm qui prolonge en 1947
+  (scission FO) est la causalité historiographique exacte.
+moment_decrochage: |
+  Le callback `signe-matignon` à T+5 (choiceResolver.ts:107-114) fait
+  écrire Frachon « Tu as bien fait » à un négociateur qui vient de
+  signer. En 1936 Frachon-CGTU était la voix qui voulait *tenir*. La
+  lettre privée approbatrice est sentimentalement séduisante, mais
+  historiquement faux — un anachronisme de tonalité 1945+ projeté sur
+  1936. P1.
+nps: 8
+fix_prioritaire: |
+  Réécrire le callback `signe-matignon` (choiceResolver.ts:111) pour
+  qu'il rende la dissonance interne CGT au lieu de la lisser. Suggestion :
+  remplacer « Tu as bien fait » par une note plus ambivalente — Frachon
+  acquiesce techniquement mais marque sa réserve, prépare la radicalité
+  du Front populaire à venir. Voix testable : « Frachon t'écrit deux
+  lignes : "Le 7 juin restera. Reste à voir si la base nous suit." »
+biais_reconnu: |
+  Mon profil Kim Goodwin survalorise la diversité des personas (3
+  portes) au détriment de la profondeur historique. La mission PM
+  m'oblige à inverser : j'ai privilégié la justesse historique et
+  rangé les 3 personas en fin de session. Je l'assume. La lentille
+  historienne capte mieux les anachronismes que la lentille personas
+  ne capte les hooks d'entrée.

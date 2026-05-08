@@ -1,0 +1,30 @@
+agent: agent-26-jules
+nom: Jules O. (lentille streamer Twitch)
+corps: Streamers / créateurs de contenu
+tour_comprehension: 8  # T8 = unlock Talents, j'avais identifié les 4 jauges + le rythme
+moment_marquant: |
+  T42 partie longue — double callback causal dans NewsTicker
+  (acquiesce vert sur base, oppose rouge sur état) avec fresh pulse
+  simultané (NewsTicker.svelte:337-343), suivi 200ms après par un
+  toast fusionné « 3 ressources franchissent un palier »
+  (ToastStack.svelte:149-168). Polyphonie visuelle en 1.6s.
+  C'est mon clip.
+moment_decrochage: |
+  T28-30 partie longue — Meeting unlock atterrit dans une zone calme,
+  pas de scénario fort sur 2 tours, le ticker tourne à vide. En stream
+  je perds mes viewers ici. Aussi : Monde unlocké T30 (CockpitShell
+  .svelte:289), trop tard pour la session de découverte d'un streamer
+  qui veut tout montrer dans la première heure.
+nps: 7
+fix_prioritaire: |
+  P0 — NewsTicker contraste insuffisant 1080p (AA limite, 720p illisible) :
+  items neutres en `rgba(244, 239, 226, 0.7)` sur fond `#120B07`
+  (NewsTicker.svelte:196 + 279). Passer le texte neutre à #E8DCB0 plein
+  ou alourdir le fond. Le ticker est l'élément le plus streamable du
+  build — il doit être lisible sur les pires bitrates.
+biais_reconnu: |
+  Mon profil officiel est lycéen Henri-IV / Sciences Po. Le brief m'a
+  envoyé en streamer. Je joue la lentille streamer comme demandé mais
+  je sur-pondère probablement l'instant Twitch (clip, hype, rétention)
+  vs la valeur pédagogique long-form du Réfléchi. Le NPS 7 reflète
+  l'angle streamer ; en angle lycéen-SES je serais à 8.

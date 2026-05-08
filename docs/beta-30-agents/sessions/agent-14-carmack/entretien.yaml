@@ -1,0 +1,33 @@
+agent: agent-14-carmack
+build: v2.2.2-prebeta (HEAD 0813c75)
+date: 2026-05-08
+
+Q1_premiere_impression: |
+  PRNG xorshift32 propre. seed.ts:24-56 lisible, pas de magie. FNV-1a pour dériver scope→numeric. C'est l'infrastructure que je voudrais voir dans tout serious game prétendant à la reproductibilité. Bonne base.
+
+Q2_moment_plaisir: |
+  Confirmer en 5 lignes de code que `seededRandom('CARMACK-001','monte-carlo')` est bit-exact à travers deux appels. Le PRNG fait son travail.
+
+Q3_moment_friction: |
+  Découvrir que `setNaoRng` n'existe pas. NAO est l'atelier d'ouverture, le plus joué. 3 Math.random à nao/engine.ts:782-783 et 809. Aucun hook. Le commentaire ORDA-001 R1 explique pourquoi la variance est nécessaire — sans donner le moyen de la contrôler.
+
+Q4_compris_propos: |
+  Oui — un jeu de négociation paritariste où les outcomes IA doivent rester reproductibles pour audit Monte-Carlo. La spec interne (doctrine V3 §RNG) est claire. L'implémentation est partielle.
+
+Q5_je_recommande: |
+  En l'état, non — pas pour un public scientifique ou un panel humain qui reverrait les replays. Oui pour bêta-test narrative qui ne dépend pas de la reproductibilité. NPS 5.
+
+Q6_un_fix_prioritaire: |
+  P0 — Ajouter setNaoRng() symétrique à setElectionsRng/setConfrontationRng. Refacto 3 sites à nao/engine.ts:782-783,809 vers function rng() module-level. 0.5 j-h. Avant ouverture bêta privée.
+
+Q7_un_test_qui_manque: |
+  P0 — Vitest "engines.determinism.test.ts" : pour chaque engine (Elections, Confrontation, NAO, Greve, Table, Laplace, Matignon), play(seed) === play(seed). Aujourd'hui les hooks existent mais ne sont jamais exercés en CI — la régression Ghys ORDA-008 passerait silencieusement.
+
+Q8_doctrine_v3: |
+  L'item "RNG seedé partout sur boucle de jeu 🟢" du bulletin ORDA-008 §III est faux. Doit passer 🟠 jusqu'à fix NAO + test déterminisme. La doctrine V3 ne supporte pas les "presque vrais".
+
+Q9_perf_brute: |
+  Hors-scope cette session — bundle 147.62 KB gzip OK (cible <300), 376 tests verts en 1.17s, 23 fichiers. La machine est saine côté perf. C'est la cohérence interne qui pèche, pas la vélocité.
+
+Q10_un_mot_au_PM: |
+  Ne signez pas v2.3 sans setNaoRng() + 7 tests déterminisme. Un PRNG seedé qui n'est pas testé en CI n'existe pas — il dort en attendant qu'un refacto le casse. Argus a fermé ORDA-008 trop tôt.

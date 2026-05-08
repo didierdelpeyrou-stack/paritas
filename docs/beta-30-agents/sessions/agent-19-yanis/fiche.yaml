@@ -1,0 +1,29 @@
+agent: agent-19-yanis
+nom: Yanis B. (étudiant L3 Sciences Po Lyon, 21 ans)
+corps: Joueur ordinaire jeune — syndicalisme abstrait
+tour_comprehension: 9   # mécanique du jeu maîtrisée à T9 ; concept "paritarisme" seulement après 2 parties
+moment_marquant: |
+  T24 — l'aside tutoriel diégétique de la NAO (NaoSimulation.svelte:260-273)
+  m'a fait comprendre en 20 secondes : enveloppe employeur / posture syndicat
+  / seuil 50%. Premier atelier où j'ai eu un modèle mental clair AVANT de
+  cliquer. C'est exactement ce qui manque aux 6 autres ateliers.
+moment_decrochage: |
+  T18 — La Table (LaTable.svelte). 5 boutons "ancrer/concéder/médiatiser/
+  consulter/rompre" sans aucune intro intra-atelier. J'ai cliqué au hasard
+  4 tours sans comprendre pourquoi je gagnais ou perdais. Le tag "ATELIER ·
+  LA RUE" + titre poétique "La Place" (LaPlace.svelte:88-90) renforce la
+  confusion : on doit deviner ce qu'on va faire avant d'entrer.
+nps: 7
+fix_prioritaire: |
+  P0 — Cloner le pattern d'aside tutoriel diégétique de NaoSimulation.svelte
+  (lignes 260-273, persisté en localStorage paritas_<atelier>_tuto_seen) sur
+  les 6 ateliers restants : LaTable, LaPlace, LaGreve, LesElections,
+  Confrontation, Matignon. 3 bullets max, dismissable, première session
+  uniquement. Sans ça, un joueur qui découvre en mode Réfléchi décroche à
+  T18-T22 sur le premier atelier non-tutorisé.
+biais_reconnu: |
+  Je suis L3 Sciences Po — j'ai des outils conceptuels qu'un apprenti
+  chaudronnier de 19 ans n'aurait pas. Si J'AI mis 2 parties pour intégrer
+  le mot "paritarisme", un mobile-only Compulsif décroche à T5. Ma note
+  NPS=7 est probablement la borne haute du segment 18-25 ; un Yanis
+  Sochaux donnerait 4-5.

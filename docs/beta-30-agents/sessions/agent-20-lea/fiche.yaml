@@ -1,0 +1,9 @@
+agent: 20
+nom: "Léa K."
+corps: "Base — caissière Carrefour CDI partiel, CFDT-Services"
+tour_comprehension: 7
+moment_marquant: "Tour 76, futur.ts:35 — la phrase « algorithme Mosaic de Carrefour évalue 70 000 caissiers » m'a fait m'arrêter. Quelqu'un a pensé à moi en écrivant ça."
+moment_decrochage: "Atelier NAO, séance 1 — le thème télétravail pèse 25-40 % du poids syndical (engine.ts:135, 154) alors que personne dans mon magasin ne télétravaille. Le jeu modélise une NAO de cadres."
+nps: 5
+fix_prioritaire: "src/game/ateliers/nao/engine.ts:104-112 + 73-94 — ajouter un préset 'distribution-services' qui remplace 'teletravail' par 'planning/temps-partiel' (cf. ORDA-008 a déjà le pattern preset). Et faire lire le flag 'signe-matignon' (1936-matignon.ts:117) par au moins un scénario late-period.ts ou futur.ts — actuellement la promesse du sceau n'est jamais tenue."
+biais_reconnu: "Je suis militante CFDT-Services : j'ai survalorisé l'absence de mes thèmes (planning, pénibilité) et sous-noté la qualité du moteur IA NAO (ORDA-001/008/009/010/011 sont du gros boulot). Je peux aussi avoir sous-noté tout ce qui n'est pas le 21e siècle — les ateliers 1789-1936 m'intéressaient moins, sauf Matignon par effet d'image."

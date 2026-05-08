@@ -1,0 +1,9 @@
+agent: 18
+nom: "Sophie Béroud"
+corps: "Diplomates"
+tour_comprehension: 4
+moment_marquant: "Tour 30 — j'avais signé fonde-fo au tour 25, et le callback choiceResolver.ts:127-134 me sert : « Une note interne CGT circule : Jouhaux a fondé sa boutique avec l'argent américain. L'attaque s'installe pour quarante ans. » Le jeu nomme la blessure 1947 comme active, pas classée. Rare."
+moment_decrochage: "Pipeline rupture (pipelineContentData.ts:201-322, 834-958) — 5 stages très bien écrits, mais aucun ne nomme SUD-Solidaires, ni les coordinations infirmières 1988, ni Sud-Rail 1995. La 'rupture' du jeu est celle de 1947, pas celle de 1995-2020. Le syndicalisme de combat post-1995 est absent."
+nps: 7
+fix_prioritaire: "src/game/ateliers/nao/engine.ts:34 — ajouter SUD/Solidaires comme 5e NaoUnion (electoralWeight ~7%, seuilAccord 0.65, profil 'Combat', poids salaires 0.35 + égalité_pro 0.30 + télétravail 0.20 + primes 0.15). Sinon le post-1995 reste représenté par 4 confédérations qui ont *toutes* signé la loi 2008 — fausse pluralité."
+biais_reconnu: "Je survalorise les marges (SUD, plateformes, coursiers). Le jeu modélise *vraiment bien* CGT vs CFDT/FO/CFE-CGC — seuils différenciés (engine.ts:123-158), couplage solidarité (engine.ts:843, 869), callbacks scission (choiceResolver.ts:91, 127). Un joueur naïf trouvera la richesse confédérale suffisante. Je note 7 mais un agnostique noterait 8."

@@ -1,0 +1,9 @@
+agent: 06
+nom: "Jane McGonigal"
+corps: "Architectes"
+tour_comprehension: 8
+moment_marquant: "Tour 25 — j'ai signé Matignon au tour 21, et 4 tours plus tard Léon Blum revient dans le ticker via callback différé : la mémoire CK3-grade transforme un choix en histoire."
+moment_decrochage: "Tours 55-78 — rythme narratif uniforme, pas de pic dramatique ni de respiration. McGonigal: alterne hard fun et easy fun, ici c'est hard tout le temps."
+nps: 8
+fix_prioritaire: "src/game/engine/endingEngine.ts:78-89 — enrichir ENDING_TEXTS avec 2-3 liens 'pour aller plus loin' (Le Crom, Hatzfeld, Wikipédia paritarisme) ; sinon le debrief clôt au lieu de lifter hors du jeu."
+biais_reconnu: "Je gonfle le NPS parce que la mécanique CK3 (stress de personnalité, callbacks différés, fins sans triomphe) me ravit en tant que game designer. Un joueur naïf trouvera le rythme lent et le debrief froid."

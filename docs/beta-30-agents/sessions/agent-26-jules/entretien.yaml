@@ -1,0 +1,79 @@
+agent: agent-26-jules
+date: 2026-05-08
+build: HEAD 0813c75
+lentille: streamer Twitch indie 1500 followers (cadrage de session)
+
+Q1_premiere_impression: |
+  Le shell est dense mais carré. CockpitShell.svelte:5-12 documente le
+  layout 100dvh viewport-fit, ce qui est exactement ce que je veux en
+  stream (pas de scroll parasite hors la sky centrale). Le `{#key}`
+  ligne 372 sur turn+phase+scenario fait que chaque tour relance une
+  animation `fly y:14`. Ça donne un battement à la stage. Bon réflexe.
+
+Q2_acteur_le_plus_vivant: |
+  Le NewsTicker. Pas un acteur narratif, mais l'acteur visuel. Les
+  causal items (NewsTicker.svelte:317-343) avec tone oppose/acquiesce
+  + fresh pulse 1.6s × 3 (337-343), c'est la seule surface qui réagit
+  visiblement à mon dernier choix dans la même seconde. Sur Twitch,
+  c'est ça l'acteur — celui qui parle à mon chat.
+
+Q3_acteur_le_plus_vide: |
+  Le bandeau forcing (CockpitShell.svelte:330-339) annonce l'événement
+  mais une fois qu'il tombe, l'écho dans la stage est mince. Le toast
+  est diégétique (cool) mais le ticker ne marque pas la rupture du
+  forcing — pas d'item causal dédié. L'événement « majeur » se vit
+  comme une suite de toasts comme les autres.
+
+Q4_la_voix_distincte_par_acteur: |
+  Voix très distinctes par support diégétique : doleances en plume,
+  télégramme en Courier, polycopiée en mémo, etc. (ToastStack.svelte
+  :247-279). C'est de l'écriture par typographie. Le viewer
+  reconnaît l'ère sans lire. Bravo.
+
+Q5_evenements_emergents_vs_scriptes: |
+  Pas mon angle. Mais le ticker causal a l'air de réagir à mes choix
+  dans la même seconde, donc il y a au moins un layer de réactif.
+  Pour un streamer ça suffit largement.
+
+Q6_stress_marche_il_comme_CK3: |
+  Pas testé, pas pertinent pour la lentille streamer.
+
+Q7_collision_callbacks: |
+  Sur run réfléchi T42 j'ai vu 2 causal items + 1 toast condensé palier
+  + 1 toast loss simple à 200ms d'écart. Ça collide visuellement (le
+  toast condensé empile en bottom-right, le ticker reste en haut). Pas
+  illisible mais c'est le moment où l'œil ne sait plus où aller.
+  En stream, c'est le clip — donc collision = good ici. Mais pour un
+  joueur solo casual ce moment doit fatiguer.
+
+Q8_rythme_streamable: |
+  **Mode Compulsif** : streamable Twitch, vrai. Décisions aux 30-60s,
+  ticker qui réagit, toasts qui s'empilent. Gameplay = contenu.
+  **Mode Réfléchi** : pas Twitch, c'est YouTube long-form. Trop de
+  lecture entre 2 décisions. Ce n'est pas un défaut — c'est juste
+  un autre format. Le jeu sait ce qu'il fait, mais marketez-le clair.
+
+Q9_ateliers_shareables: |
+  Les 7 ateliers (CockpitShell.svelte:283-290) testés sur run long.
+  Manifestation (Cortège) > Meeting (Tribune) > Trésorerie > Talents
+  pour l'angle stream. Monde (unlock T30) j'aimerais le voir T15
+  pour la découverte stream. Le timing actuel sert le solo, pas le
+  streamer.
+
+Q10_lisibilite_1080p: |
+  Trois alertes :
+  1. NewsTicker neutre `rgba(244, 239, 226, 0.7)` sur `#120B07`
+     (NewsTicker.svelte:196 + 279) — limite WCAG AA 1080p, fail 720p.
+  2. ToastStack font 0.78rem (ToastStack.svelte:211) sur 22rem max
+     (217) — dense quand fusion crossings ≥2 (149-168).
+  3. Shell théâtre = 6 zones de lecture concurrentes (TheatreActions
+     gauche + TheatrePersonality droite + SceneCard centre + timeline
+     + ticker + status). Un viewer qui arrive en milieu a 3s pour
+     s'orienter. Le `dimmed` (CockpitShell.svelte:368) aide quand un
+     onglet ouvre mais c'est partiel.
+
+verdict_streamer: |
+  Streamable en Compulsif, screenshot-friendly grâce aux supports
+  diégétiques des toasts et aux causal items du ticker. Le moment
+  cinéma existe (T42 polyphonie). Mais demande un layout de stream
+  ajusté et un fix contraste sur le ticker.

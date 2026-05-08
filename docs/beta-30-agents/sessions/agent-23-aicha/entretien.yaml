@@ -1,0 +1,72 @@
+# Entretien post-session — Aïcha M. (lentille prof histoire-géo lycée)
+# Réponses Q1-Q10 du protocole panel bêta-30 §III.3
+
+Q1_premiere_impression: |
+  Densité historique sérieuse, pas un jeu pour grand public. La page
+  d'intro ne dit pas "100 tours = ~3h" — un prof a besoin de cette
+  estimation avant de planifier une séance.
+
+Q2_clarte_objectif: |
+  L'objectif joueur est clair (faire vivre un négociateur syndical/
+  patronal sur 230 ans). L'objectif pédagogique implicite est riche
+  mais non documenté : il manque un dossier prof avec compétences
+  programme officiel (Première HGGSP, Terminale EMC).
+
+Q3_moment_engageant: |
+  Matignon T20 — les 7 choix (1936-matignon.ts:79-323) avec branches
+  patronales exclusives. Je peux faire débattre la classe : "et toi,
+  tu signes les six points ou tu pousses l'échelle mobile ?". Vrai
+  matériau pédagogique.
+
+Q4_moment_decrochage: |
+  Trois décrochages :
+  - Pas de raccourci pour démarrer à l'ère choisie (UI bloquante)
+  - Hue uniforme "slate" sur crise→Macron II (eras.ts) — perte du
+    repère chronologique pour un lycéen
+  - PersonaFilter (persona.ts:14) cache des scénarios magnifiques
+    (Jouhaux-Nobel) à des élèves qui jouent un autre persona ; je ne
+    peux pas garantir un corpus commun
+
+Q5_qualite_historique: |
+  Très bonne. Les quotes sont sourcées (1936-matignon.ts:64-77),
+  l'historicalContext nomme les acteurs réels, les théoryHint
+  apprennent du vocabulaire précis (échelle mobile, hiérarchie des
+  normes, refondation sociale). Une historienne professionnelle
+  validerait.
+
+Q6_inclusion_genre: |
+  Insuffisante. À Matignon, Henriette Carlier était présente — elle
+  n'apparaît pas. Aucune figure féminine majeure dans les
+  personaFilter découverts. Voir journal.md "3 silences" pour le
+  détail. Pour une classe mixte de 2026, c'est un problème.
+
+Q7_ateliers_TP: |
+  Les 7 ateliers (Block Blast, Calendrier social, Run 1968, Coup de
+  force, Vague de mobilisation, Compagnon terrain, Filtre slogan)
+  sont peu documentés en mode pédagogique. Block Blast pourrait
+  faire un TP "construire une coalition" si on l'isole — mais sans
+  fiche pédagogique, je ne sais pas combien de temps il dure ni quel
+  concept il enseigne. Audit nécessaire.
+
+Q8_nps: 7
+
+Q9_fix_prioritaire: |
+  Mode "Séance prof" : choisir un tour/ère de départ + dossier
+  pédagogique PDF (compétences programme + durée + fiche élève).
+  Sans ça, le jeu reste hors-classe.
+
+Q10_recommanderai_a: |
+  Oui, à mes collègues HGGSP de Première et EMC de Terminale, **après**
+  l'ajout du mode prof. À mes élèves directement, **non** — la
+  courbe d'entrée (lexique, durée) est trop raide sans
+  accompagnement.
+
+silences_condition_feminine:
+  - Henriette Carlier absente du tour Matignon (1936-matignon.ts:43,64-77)
+  - Yvonne Modiano absente du Jouhaux-Nobel (persona.ts:6-89)
+  - Aucun scénario Pelletier / Bouvier / sage-femmes-syndicalistes
+
+reussites_inclusion:
+  - voix "pragmatique" reconnaissant la fatigue des grévistes (1936-matignon.ts:48)
+  - glossaire neutre sur les confédérations (glossary.ts:50-67)
+  - troc tactique 3e semaine de congés (1936-matignon.ts:161-197) — vrai grain pédagogique

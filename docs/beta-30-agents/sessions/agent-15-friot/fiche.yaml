@@ -1,0 +1,23 @@
+agent: agent-15-friot
+nom: Bernard Friot
+corps: Paritarisme
+tour_comprehension: 23  # Sécu 1945, choix secu-caisses — moment où le moteur dit "paritarisme de gestion" (premium.ts:343)
+moment_marquant: |
+  Turn 23, choix secu-caisses (premium.ts:341-350). Le theoryHint
+  "Paritarisme de gestion : les représentants administrent une institution
+  financée par cotisations" + le bonus institution:+18 contre les +10 du
+  choix secu-etat. Le moteur récompense doctrinalement la lecture juste.
+moment_decrochage: |
+  Turn 23, choix secu-priorite-salaires (premium.ts:362-369). Opposer
+  "salaire immédiat" et "caisse" comme antagonistes nie que la cotisation
+  est déjà du salaire — socialisé. Erreur de manuel sur MA scène.
+nps: 7
+fix_prioritaire: |
+  Étendre InstitutionDef (institutions.ts:5-12) avec un champ
+  gouvernance: 'paritaire' | 'mutualiste' | 'etatique' | 'mixte', et
+  ajouter une entrée glossary "Institution = capital salarial conquis".
+  Sans ce champ, la hiérarchie paritaire reste implicite.
+biais_reconnu: |
+  Je survalorise ma grille (capital salarial). Le jeu ne PEUT pas être
+  Friot pur sans aliéner les lecteurs Supiot/Reynaud. La nuance Sécu/État
+  proposée par le choix 2 est légitime même si elle me déplaît.

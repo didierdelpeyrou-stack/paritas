@@ -1,0 +1,9 @@
+agent: agent-10-sjohnson
+nom: Soren Johnson
+corps: Diplomates
+tour_comprehension: 12       # tour où la formule de scoring devient prédictible
+moment_marquant: "T64 partie 1 — callback signe-matignon (Frachon écrit, T+5). CK3-grade authentique, choiceResolver.ts:107-114."
+moment_decrochage: "Mode compulsif — aucun preview de ressources affiché (SceneCard.svelte:383). Le badge EFFETS reste mais les flèches ▲/▼ disparaissent. Trou noir pour mon archétype."
+nps: 8
+fix_prioritaire: "Faire passer les previews de SceneCard au travers de fuelMultiplier (choicePosture.ts:120 + SceneCard.svelte:383). Aujourd'hui les flèches reflètent le delta BRUT, pas le delta MODULÉ ±20%. Un +5 majeur peut devenir +4 mineur après modulation — feedforward menteur."
+biais_reconnu: "Je sur-pondère la transparence numérique. La majorité du panel (Romero, McGonigal) jouera en mode compulsif et ne lira jamais le breakdown. Mon fix prioritaire profite à 20% du panel."

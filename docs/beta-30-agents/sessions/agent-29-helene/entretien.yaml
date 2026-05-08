@@ -1,0 +1,63 @@
+# Entretien Q1-Q10 — agent-29-helene
+# Lentille seniors / accessibilité, build HEAD 0813c75
+
+Q1_premier_contact: |
+  Écran d'accueil clair, 3 ambiances proposées. J'ai choisi Pédagogique d'instinct.
+  Le bouton Réglages est trouvable. Dans Réglages, le panneau Accessibilité est
+  riche — c'est rare et précieux pour mon âge.
+
+Q2_taille_texte: |
+  PROBLÈME P0. Le palier 'Grand' culmine à 18px (app.css:38, --a11y-text-scale: 1.12).
+  Pour une joueuse de 67 ans, le confort de lecture commence à 22-24px (WCAG AAA
+  recommandé pour seniors). J'ai dû pinch-zoomer plusieurs fois. Les pavés
+  Tutorial.svelte:242 (.res-line b font-size: 0.74rem) et le ticker sont en
+  dessous du seuil même en 'Grand'.
+
+Q3_contraste: |
+  Le 'Contraste renforcé' est correct (app.css:40-50, fond noir/texte blanc).
+  La palette par défaut #d6a949 sur #080808 est commentée 5.06:1, AA passé mais
+  pas AAA. Pour des yeux fatigués, AAA serait préférable par défaut.
+
+Q4_rythme_jeu: |
+  EXCELLENT. Aucun timer, aucun auto-advance. Le hint mécanique
+  (CockpitShell.svelte:388-409) reste les 5 premiers tours et se ferme tout seul
+  à la 1ʳᵉ action libre — comportement parfait. Je peux poser la tablette,
+  faire mon thé, revenir. C'est ce qui me fait rester.
+
+Q5_mode_reflechi_vraiment_lent: |
+  Oui, dans le bon sens : pas de pression temporelle, texte explicatif, ambiance
+  calme (CSS ambient-reflechi mentionné CockpitShell.svelte:797). C'est 'lent
+  comme la lecture du soir', pas 'lent comme une attente'. À garder.
+
+Q6_mode_compulsif: |
+  Trop allusif pour moi. Le passage compulsif coupe le contexte explicatif,
+  j'ai perdu le fil. Convient à un public plus jeune qui veut 'sentir' plutôt
+  que 'comprendre'. J'ai rebasculé en Réfléchi via Réglages — c'est bien que
+  ce soit possible en cours de partie.
+
+Q7_tutoriel: |
+  4 écrans, ça passe. Le mode 'Rappel express' (Tutorial.svelte:36-39) est
+  attentionné — bien pensé pour les retours. Mais les cards .res-line sont en
+  text-xs (0.74rem) : invisibles pour moi sans pinch.
+
+Q8_ateliers: |
+  - La Table : favori, mécanique de négo paritaire. Émotion CFDT.
+  - La Place : OK mais ticker rapide.
+  - La Grève : OK.
+  - Les Élections : texte trop dense.
+  - NAO Simulation : OK chiffres.
+  - Confrontation + Arena : trop nerveux, décrochage.
+  Recommandation : un mode 'lecture' qui désactive les ateliers d'action en
+  temps réel et propose une variante par choix.
+
+Q9_camp_patron: |
+  J'ai joué 12 tours patron mode Compulsif. Pas de honte ressentie sur les
+  choix offerts. Mais 12 tours c'est court — je ne peux pas me prononcer
+  sur la nuance Lambert-Ribot/Schneider/Seillière, je ne les ai pas
+  rencontrés. Biais reconnu : ma sympathie naturelle est syndicale.
+
+Q10_recommanderais: |
+  Oui, à mes amies retraitées qui s'intéressent à l'histoire sociale, à
+  condition de leur expliquer comment activer 'Texte Grand' + 'Lecture aérée'.
+  Sans ces réglages, le jeu est trop petit pour nous. NPS 7 — promotrice
+  conditionnelle. Si la typo passe à 22-24px par défaut au palier Grand, NPS 9.

@@ -1,0 +1,9 @@
+agent: agent-27-camille
+nom: Camille D. (lentille juriste droit social TPE/PME)
+corps: Scolaire — lecture du code et du Code (du travail)
+tour_comprehension: T36 (loi Waldeck-Rousseau, art. 2 cité in extenso premium.ts:215-220)
+moment_marquant: T46 — création des conventions collectives 1919, lecture du texte de l'article 31a Livre I C. trav. ancien (premium.ts:275-276) ; le jeu donne la source exacte que j'aurais voulue dans mes fiches étudiantes
+moment_decrochage: T55 — panneau "Mon œuvre" affiche pour Unédic 1958 "Convention collective interprofessionnelle" (institutionsRegistry.ts:32) alors que c'est juridiquement une convention/accord NATIONALE interprofessionnelle (CCN ≠ ANI)
+nps: 8
+fix_prioritaire: corriger institutionsRegistry.ts:32 ("Convention nationale interprofessionnelle de l'assurance chômage") + ajouter "et 19" dans institutions.ts:67 ("Ordonnances des 4 et 19 octobre 1945") pour aligner catalogue et scénarios
+biais_reconnu: profil canonique = étudiante L2 socio Nanterre ; mission ORDA-014 demande lentille juriste ; j'ai assumé la posture juridique au prix d'une voix plus technique que la vraie Camille

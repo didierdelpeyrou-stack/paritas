@@ -1,0 +1,9 @@
+agent: 11
+nom: "Esther Duflo"
+corps: "Stratèges (RCT / données)"
+tour_comprehension: 4
+moment_marquant: "Découvrir l'incohérence comptable entre expectedDuesIncome (HUD, 0.04/0.32) et le vrai débit de cotisations (treasury.ts, 0.05/0.16) — un économiste voit ça en 90 secondes."
+moment_decrochage: "Tour 28 partie patron : encaisser les 'droits syndicaux loi 1968' alors que cette compensation n'existe historiquement que pour les syndicats de salariés."
+nps: 7
+fix_prioritaire: "src/game/org/organization.ts:55 — harmoniser cotisationRate avec treasury.ts:87 (0.05/0.16). Le HUD ment de +24% côté salarié, -52% côté patron. P0 transparence."
+biais_reconnu: "Je vois le jeu comme un instrument de mesure (RCT), pas comme une œuvre. J'ai sous-noté la richesse narrative pour audité l'arithmétique. Les paramètres asymétriques que je critique servent peut-être un game-feel honnête."

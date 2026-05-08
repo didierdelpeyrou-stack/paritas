@@ -1,0 +1,9 @@
+agent: 04
+nom: "Lucas Pope"
+corps: "Architectes"
+tour_comprehension: 4
+moment_marquant: "Tour 8 (partie A) : le callback adversaire 'le mot court chez les patrons' tombe N+4 — beau morceau de fiction. Puis je vais voir le moteur (gameLoop.ts:39-54) et je découvre que la mémoire est PUREMENT TEXTUELLE — aucun delta sur actors.adversaire.trust. La cruauté est dans la phrase, pas dans le chiffre. Estomac serré."
+moment_decrochage: "Tour 12 (partie A) : 'trahit-base' déclenche un callback opinion T+15 mais aucun effet numérique. Si la dépêche AFP nomme ma trahison et que mon score d'opinion ne bouge pas, le jeu me ment. C'est l'inverse de ce que je voulais."
+nps: 7
+fix_prioritaire: "src/game/engine/gameLoop.ts:39-54 et src/game/engine/consequenceEngine.ts:146-158 — ajouter un champ optionnel 'effects' (Effects) sur ScheduledActorCallback. Au moment de processTurnCallbacks, applyResourceDelta + applyActorsDelta avant retour. Que la mémoire CK3-grade pèse aussi en chiffres, pas seulement en mots. Sans ça, les 13 callbacks branchés (ORDA-012/013/014) sont du décor."
+biais_reconnu: "J'aime trop l'austérité. Le badge 'Vue patronale' bleu (SceneCard.svelte:709-712) m'a paru trop saturé — c'est un cran de chaleur visuelle utile, j'ai sur-réagi. La sobriété diégétique n'est pas la grisaille."

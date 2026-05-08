@@ -1,0 +1,84 @@
+agent: agent-09-fahraeus
+date: 2026-05-08
+build: v2.2.2-prebeta
+
+Q1_premiere_impression: |
+  L'API mémoire est propre, ramassée (consequenceEngine.ts:146-180, ~35 lignes).
+  Trois fonctions, une file, branchement automatique au début du tour
+  (gameLoop.ts:39-54). Je vois immédiatement le pattern CK3 : "schedule, due,
+  consume". Pas de surcharge. Bon point d'entrée.
+
+Q2_acteur_le_plus_vivant: |
+  Frachon. Pourquoi : la phrase rentrée en dur dans choiceResolver.ts:111
+  ("Frachon t'écrit, deux lignes : « Le 7 juin restera. Tu as bien fait. »
+  Tu plies la lettre soigneusement.") a un grain de présence — un geste
+  ("plier la lettre"), une voix sobre, un nom propre. Hors écran, je le
+  sens écrire. Critère CK3 atteint.
+
+Q3_acteur_le_plus_vide: |
+  "opinion". Acteur abstrait, jamais incarné. Les callbacks "opinion"
+  (mediation-elysee, fait-victoire-historique) sont écrits en voix
+  passive, sans nom propre — "les sondages bougent", "le palais publie".
+  C'est un thermomètre, pas un personnage. À déléguer à un journaliste
+  nommé pour incarner la voix (Romero #05 va dans ce sens).
+
+Q4_la_voix_distincte_par_acteur: |
+  Sur 13 callbacks branchés : "base" parle court, charnel ("Trois militants
+  démissionnent sans bruit", "35% du SMIG..."). "adversaire" cite des notes
+  internes ("Pas de cogestion. On garde la main."). "etat" parle en
+  circulaires. "opinion" reste passive. **Trois voix distinctes sur quatre.**
+  Bon pour un MVP.
+
+Q5_evenements_emergents_vs_scriptes: |
+  Tout est scripté actuellement (13 if-flag dans choiceResolver.ts:83-193).
+  CK3 a des events émergents conditionnels sur l'état (trait + relation +
+  époque). Ici c'est purement réactif. **Pas de génération.** Mais le moteur
+  est en place pour un layer émergent : les Diplomates pourraient écrire
+  "if state.actors.base.score < 30 && state.turn > 50 → scheduleActorCallback
+  (base, +3, 'fronde silencieuse')". Pas fait. P2.
+
+Q6_stress_marche_il_comme_CK3: |
+  Le calcul fonctionne (personalityEngine.ts:94-108) et est testé
+  (personalityEngine.test.ts, 27 tests). Les 4 paliers sont clairs.
+  Mais : **stress effondré n'a aucune conséquence mécanique**. Aucun
+  modifier sur les choix futurs, aucun event "mental break", aucun lock
+  d'option. C'est un thermomètre, pas un système. Dans CK3, stress max
+  = perte de contrôle (alcoolisme, dépression, paranoïa qui bloque les
+  schemes). Ici, juste un label rouge. **Le système est CK3-shaped mais
+  pas CK3-active.** P0/P1.
+
+Q7_collision_callbacks: |
+  Risque détecté : la clé de consommation est `${fromChoiceId}@${atTurn}`
+  (consequenceEngine.ts:176). Si deux callbacks programmés depuis le même
+  choix.id atterrissent au même tour (par exemple deux scénarios qui
+  réutilisent un flag générique avec turn+3), le second efface le premier.
+  Pas vu en jeu (les 13 callbacks actuels ont des choix.id uniques) mais
+  **la prochaine vague de Diplomates va trébucher**. À documenter ou à
+  hardener (clé incluant un index ou un UUID). P1.
+
+Q8_filtre_atTurn_inferieur_egal: |
+  `dueActorCallbacks` filtre `cb.atTurn <= currentTurn` (consequenceEngine.ts:166).
+  Si un callback est programmé pour T-passé (bug Diplomate) ou si une
+  désérialisation persist remet plusieurs tours en arrière, **les callbacks
+  s'auto-déclenchent en cascade au tour de réouverture**. Pas vu mais latent.
+  Strict equality (`===`) serait plus défensif, ou un guard
+  `if (atTurn < posedAtTurn) throw`. P2.
+
+Q9_les_ateliers_lisent_la_memoire: |
+  Non. Les 7 ateliers (matignon-main, nao-main, greve-main, manif-main,
+  meeting-main, table-main, place-main, arena-main, confrontation-main,
+  elections-main) sont des mini-jeux fermés. Aucun ne lit
+  `state.scheduledActorCallbacks`, `state.personalityStress`, ou
+  `state.actors.base.score` au démarrage pour teinter la difficulté ou les
+  dialogues. **C'est un manque CK3 majeur** : un stress "effondré" devrait
+  faire trembler les mains au mini-jeu Matignon, un callback "base" récent
+  négatif devrait empoisonner les NAO. P1.
+
+Q10_un_seul_fix: |
+  Brancher le stress et la mémoire dans **au moins un** atelier (Matignon
+  est le plus emblématique). Lecture : `gs.personalityStress >= 80` →
+  modifier de difficulté +1 niveau / palette tremblante. `gs.memory
+  .scheduledActorCallbacks.filter(cb => cb.actor === 'base' && cb.atTurn
+  > turn).length >= 2` → ouvrir un dialogue "Frachon te dévisage avant la
+  réunion : il sait." **Une seule intégration prouve le concept** ; après,
+  l'extension aux 6 autres ateliers est mécanique.

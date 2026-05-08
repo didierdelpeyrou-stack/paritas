@@ -1,0 +1,31 @@
+agent: agent-24-pascal
+nom: Pascal M.
+corps: Patron PME 80 salariés mécanique de précision Lyon — adhérent CPME
+tour_comprehension: 9   # premier scénario patron (Comité des Forges 1864)
+moment_marquant: |
+  Tour 71 — CPME face aux ordonnances Macron 2017 (cpme.ts:11-98).
+  La citation Asselin sur le CSE pour PME 30 salariés est exactement
+  ce que je raconte à mon expert-comptable depuis 2018. Première fois
+  que je me reconnais dans le jeu.
+moment_decrochage: |
+  Tour 48 — Refondation MEDEF 1998 (patron.ts:266-352). Le scénario
+  suppose que je suis Seillière ou son adjoint. Spectateur d'un récit
+  CAC40 qui n'est pas le mien. Manque la porte d'entrée PME/CPME face
+  au choc Refondation.
+nps: 7
+fix_prioritaire: |
+  P0 — Cohérence numérique treasury : organization.ts:55 (rate 0.32)
+  diverge de treasury.ts:87 (rate 0.16). Le tooltip annonce un revenu,
+  le tour calcule un autre. Aligner les deux fonctions ou clarifier la
+  sémantique (income brut vs cotisation par tour).
+biais_reconnu: |
+  Je suis patron CPME convaincu. Je suis indulgent quand le jeu
+  donne la parole à la CPME et plus sévère quand il donne la parole
+  au MEDEF. Mon NPS aurait été plus bas (4-5) sans cpme.ts. Le jeu
+  *paie* l'ajout cpme.ts en crédibilité auprès de ma cible.
+note_meta: |
+  Le profil archivé .claude/agents/agent-24-pascal.md décrit un
+  comptable aveugle (Pascal V., 38 ans, JAWS) — persona très
+  différent. Le brief de cette session (Pascal patron PME 52 ans
+  Lyon CPME) supplée. Dissonance à clarifier en amont des prochaines
+  sessions.

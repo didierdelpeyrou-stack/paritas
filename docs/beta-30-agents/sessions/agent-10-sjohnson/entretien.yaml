@@ -1,0 +1,104 @@
+agent: agent-10-sjohnson
+nom: Soren Johnson
+build: v2.2.2-prebeta (HEAD 0813c75)
+date: 2026-05-08
+
+# Q1-Q10 : grille panel III.3, lentille « transparence du modèle »
+
+Q1_premiere_impression:
+  reponse: |
+    Le top header avec les 7 chips ressources, plus les paliers critique/fragile/solide/excellent
+    (resourceUtility.ts:280-323), c'est exactement ce que je voulais voir. Je sais où je suis,
+    je sais où je vais.
+  note_sur_5: 5
+
+Q2_comprehension_modele:
+  reponse: |
+    Les 7 ressources sont nommées clairement, distinguées (rapportDeForce EXTERNE vs cohesionInterne
+    INTERNE, resources.ts:57-58 — c'est juste). Le breakdown du badge EFFETS dans SceneCard.svelte:449
+    est lisible. Mais la contribution `mandate * 0.18` au score final (scoring.ts:22) n'est pas
+    visible côté UI. Si je veux vraiment prédire, je dois lire le code.
+  note_sur_5: 4
+
+Q3_choix_marquant:
+  reponse: |
+    Tour 64 partie 1 : callback signe-matignon, Frachon t'écrit T+5
+    (choiceResolver.ts:107-114). Je l'avais oublié, il revient. C'est CK3-grade et c'est rare en
+    serious game. La mémoire des acteurs n'est PAS scriptée linéairement, elle est différée et
+    asynchrone. Très bien.
+  note_sur_5: 5
+
+Q4_predictibilite:
+  reponse: |
+    À tour 30, oui je peux prédire le score final ±15% sur 3 des 4 termes (cohesion, construction,
+    resistance — formules dans scoring.ts:15-19). Le 4e (mandate) est opaque. Score = boîte
+    semi-noire, 75%.
+  note_sur_5: 4
+
+Q5_5_valeurs_ecran:
+  reponse: |
+    Demande Argus du panel : 5 valeurs classées transparente/partielle/opaque.
+
+      1. Chips ressources 0-100 (top header)        : TRANSPARENTE
+      2. Score composite fuel (mini-jeu header)     : TRANSPARENTE (breakdown disponible)
+      3. Badge `EFFETS +X%` sur choix (SceneCard)   : TRANSPARENTE (tooltip = formule)
+      4. Score final affiché en fin de partie       : PARTIELLE (mandate * 0.18 caché)
+      5. Prévisions ▲▼ sur les choix (mode reflechi): PARTIELLE (delta BRUT, pas modulé)
+  note_sur_5: 4
+
+Q6_friction:
+  reponse: |
+    Mode compulsif (instinct) supprime TOUS les previews de ressources sur les choix
+    (SceneCard.svelte:383). Cohérent narrativement, frustrant pour mon archétype. Une option
+    « afficher les previews quand même » serait honnête.
+  note_sur_5: 3
+
+Q7_apprentissage:
+  reponse: |
+    J'ai joué « mieux » en partie 2 parce que j'avais lu le scoring.ts. C'est exactement le plaisir
+    Civ IV — la maîtrise du modèle améliore le jeu. Mais combien de joueurs vont lire le code ?
+    fuelBreakdown dans le tooltip est un bon proxy ; il faudrait l'exposer plus.
+  note_sur_5: 4
+
+Q8_asymetrie_fins:
+  reponse: |
+    Refondation = 71/100, Capture = 28/100 sur mes 2 parties. Les fins ne sont pas équivalentes
+    en score — c'est une lecture morale assumée. Civ IV avait le même biais (Cultural > Conquest
+    en score). Choix de design honnête, mais à mentionner explicitement aux joueurs « complétistes »
+    sinon ils s'enferment dans un seul ending.
+  note_sur_5: 4
+
+Q9_callbacks:
+  reponse: |
+    13 callbacks branchés (choiceResolver.ts:83-193 + 162-193). Couverture 1789→2017 sur 4 acteurs.
+    L'écho différé N+3..N+5 est juste — assez court pour rester en mémoire courte, assez long pour
+    surprendre. Quelques flags emblématiques manquent encore (Le Chapelier 1791, Croizat 1945
+    côté base, dénonciation Florange 2013). Reste 5-10 % de couverture historique.
+  note_sur_5: 4
+
+Q10_recommandation:
+  reponse: |
+    NPS 8/10. Je recommande à un joueur de strategy game. Pas encore à un grand public — la lentille
+    « transparence » est en place mais pas encore complète. Deux fixes ciblés (previews modulés +
+    contribution mandate visible) et je signe v2.3.
+  nps: 8
+
+# Top 3 issues (P0/P1/P2)
+issues:
+  - severity: P0
+    titre: "Previews de ressources sur choix non modulés par fuelMultiplier"
+    fichier_ligne: "src/game/narrative/choicePosture.ts:120-133 ; consommé par src/components/narrative/SceneCard.svelte:383"
+    impact: "Feedforward menteur. Une flèche ▲ majeur (+5) peut devenir mineur (+4) après modulation. Le badge EFFETS le dit, les flèches le contredisent."
+    fix_propose: "Passer state.resources à previewResources(choice) et appliquer fuelMultiplier sur les deltas avant de classer minor/major."
+
+  - severity: P1
+    titre: "Contribution `mandate * 0.18` au score final invisible côté UI"
+    fichier_ligne: "src/game/simulation/scoring.ts:22"
+    impact: "Le joueur ne peut pas prédire le score final ±15% sans lire le code. Casse la promesse de transparence."
+    fix_propose: "Sur l'écran de fin (EndingRender), afficher le breakdown des 4 termes : cohesion / construction / resistance / mandate, chacun avec son poids."
+
+  - severity: P2
+    titre: "Mode compulsif supprime tous les previews ▲▼"
+    fichier_ligne: "src/components/narrative/SceneCard.svelte:383"
+    impact: "Les joueurs analytiques perdent leur seul feedforward visuel quand ils n'ont pas activé le mode réfléchi. Le badge EFFETS reste mais les directions disparaissent."
+    fix_propose: "Préférence utilisateur 'toujours afficher previews' (off par défaut, on pour archétypes Soren/Wroblewski). OU afficher previews + glyphes même en compulsif, juste estomper la phrase d'intent."

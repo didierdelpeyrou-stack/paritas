@@ -1,0 +1,13 @@
+agent: agent-14-carmack
+nom: John Carmack
+corps: Sapeurs
+tour_comprehension: T0 (audit code-only, pas de play-through narratif)
+moment_marquant: |
+  Tentative `setNaoRng()` → fonction inexistante. Grep `nao/engine.ts:782-783,809` → 3 Math.random non-overridables. 5 runs IA-vs-IA même état initial → 3 outcomes différents. La doctrine V3 "RNG seedé partout" ment sur l'atelier 1.
+moment_decrochage: |
+  ORDA-008 §III affirme "RNG seedé partout sur boucle de jeu 🟢 overridable". Faux pour NAO. Le bulletin a fermé la friction sans la fermer.
+nps: 5
+fix_prioritaire: |
+  P0 — Ajouter `setNaoRng()` à nao/engine.ts:790, refacto les 3 Math.random aux lignes 782-783, 809 vers un `function rng()` module-level identique au pattern Elections/Confrontation. Effort estimé : 0.5 j-h. Bloquant pour reproductibilité MC NAO et pour l'honnêteté de la doctrine V3.
+biais_reconnu: |
+  J'ignore la beauté, la narration, l'UX. Pas de play-through humain. Échantillon uniquement IA-vs-IA scripté. Pour un humain en mode tirage manuel, le bug NAO est invisible — mais pour un audit Argus reproductible ou une bêta scientifique, c'est rédhibitoire.

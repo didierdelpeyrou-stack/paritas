@@ -1,0 +1,9 @@
+agent: 25
+nom: "Manon E."
+corps: "Diplomates"
+tour_comprehension: 6
+moment_marquant: "T1 compulsif — l'identity anchor (SceneCard.svelte:262-267) : 'Toi, Manon, Section CGPF. Le téléphone à manivelle attend, les Gauloises planent.' Une ligne italique Cinzel séparée du setup par un filet or. C'est du Disco-Elysium-grade — la voix intérieure ancre le corps avant le choix. Le polish est là, et il vaut une heure de boulot."
+moment_decrochage: "T15-T20 partie Réfléchi — le top-header (7 jauges + drapeau + portrait + trait + score + mood + boutons) sature. CK3 assumé côté designer, surcharge cognitive côté dyslexie+TDAH. Le preset a11y-cognitive (app.css:62-77) résout, mais il est planqué dans Settings et personne ne le découvre tour 1."
+nps: 8
+fix_prioritaire: "src/components/cockpit/CockpitShell.svelte:388-409 — proposer le mode cognitive-friendly (a11y-cognitive) en CHOIX EXPLICITE dans le hint how-to-play tour 1, pas dans Settings. Une ligne 'Première partie ? Activer le mode lecture aérée (line-height 1.7, ticker pause)'. Coût ~30 lignes, gain énorme pour 20% du panel (dyslexie/TDAH/cognitive load)."
+biais_reconnu: "Je gonfle le NPS parce que la cohérence typo (Cinzel/Source Serif 4) et la palette posture (6 accents identitaires, choicePosture.ts:52-98) me ravissent en designer indé. Un joueur lambda voit juste 'sépia et 7 jauges' et ne perçoit pas que c'est un système éditorial cohérent. Lentille dyslexique : je lis 30% plus lentement et le ticker me décroche, donc je sous-estime la fluidité possible chez un lecteur fluide."

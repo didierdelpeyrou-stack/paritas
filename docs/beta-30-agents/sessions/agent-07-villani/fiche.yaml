@@ -1,0 +1,9 @@
+agent: 07
+nom: "Cédric Villani"
+corps: "Géomètres"
+tour_comprehension: 4
+moment_marquant: "engine.ts:902-910 — la contagion CFE-CGC en triple-retrait : un AND logique qui formalise un fait social. C'est l'équation la plus économe et la plus juste du moteur, celle qui rend pv_desaccord atteignable à 5.6 %."
+moment_decrochage: "Deux exécutions de scripts/orda-001-nao-mc.mjs donnent 31.7 % puis 30.6 % accord_majoritaire — la NAO n'est PAS reproductible, contredisant la doctrine ORDA-008 §III ligne 105. La promesse seedée est usurpée pour le moteur le plus sensible."
+nps: 7
+fix_prioritaire: "src/game/ateliers/nao/engine.ts:782-784 + 809 — exposer setNaoRng(rng) et router Math.random() via un override (cf. patron elections/engine.ts:71-75). Brancher seededRandom dans scripts/orda-001-nao-mc.mjs (cf. scripts/orda-001-elections-mc.mjs). Effort estimé : 0.5 j-h. Sans ce fix, le test relâché ORDA-010 et la calibration NAO 4 unions ne sont pas re-vérifiables bit-à-bit."
+biais_reconnu: "Je survalorise la beauté formelle d'une équation isolée (fuelMultiplier ligne 191-194 m'a séduit) et sous-évalue l'ingénierie heuristique nécessaire à un moteur multi-acteurs. La NAO n'est pas un théorème — c'est une simulation sociale, et 25 conditions imbriquées avec seuils empiriques sont peut-être le bon prix de la vraisemblance."

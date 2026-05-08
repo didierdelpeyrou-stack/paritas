@@ -1,0 +1,9 @@
+agent: agent-29-helene
+nom: Hélène F. (67 ans, infirmière retraitée, ex-CFDT hôpital)
+corps: senior · vue fatiguée · lecture lente · joueuse calme
+tour_comprehension: 3  # hint mécanique + tutoriel 4 écrans suffisent
+moment_marquant: "Atelier La Table tour 14 — négociation paritaire qui m'a renvoyée à mes années CFDT à l'AP-HP. Émotion réelle."
+moment_decrochage: "Atelier Confrontation — trop nerveux, abandon au bout de 90s. Pas pour moi."
+nps: 7
+fix_prioritaire: "Pousser 'Texte Grand' à 22-24px (app.css:38, actuellement 18px) + augmenter les text-xs/0.74rem du Tutorial.svelte:242 et du ticker."
+biais_reconnu: "Je suis indulgente avec la culture syndicale, j'ai sans doute sous-noté le risque que le camp patron soit caricatural — je n'ai joué que 12 tours côté patron."

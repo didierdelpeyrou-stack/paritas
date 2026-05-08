@@ -1,0 +1,28 @@
+agent: agent-21-theo
+nom: Théo G. (R&D Thales, CFE-CGC)
+corps: Diplomates
+tour_comprehension: 20  # T20 — premier callback Frachon (signe-matignon T15+5) déclenche la "ah, ça se souvient"
+moment_marquant: |
+  T20 — Frachon écrit "Le 7 juin restera. Tu as bien fait." 5 tours après
+  signe-matignon (choiceResolver.ts:111). Premier vrai moment CK3-grade :
+  pas un trigger de mission, un écho d'acteur. Le système holds up.
+moment_decrochage: |
+  T28 — stress atteint palier "tendu" (62) après 4 refus consécutifs.
+  Le label change, le hint change, RIEN n'est différent en mécanique.
+  CK3 te ferait basculer en lifestyle alternatif ou perdre des stats.
+  Ici stressLevel() (personalityEngine.ts:116-147) ne pilote aucun
+  consommateur en aval. Le stress est un thermomètre, pas un facteur.
+nps: 7
+fix_prioritaire: |
+  P0 — Brancher stressLevel "effondré" (≥80) sur une malus mécanique
+  réel : -15% sur effets numériques de tous les choix tant que stress
+  ≥80, dégressif jusqu'à -5% à stress 55 (cf. choiceResolver.ts:36-44
+  où applyAbilityModulation est déjà le bon point d'injection).
+  Sinon le système CK3-grade reste cosmétique sur ce vecteur.
+biais_reconnu: |
+  Cadre CFE-CGC : je suis flatté que mon syndicat soit présent (P1-4
+  ORDA-009 cite mon agent #21). Je peux survaloriser. À l'inverse je
+  joue à Civ/Old World, pas exclusivement CK3 — la lentille demandée
+  par le PM (CK3 hardcore Paradox) est légèrement au-dessus de mon
+  vrai vécu. Je peux sous-noter une émergence qui satisferait un joueur
+  Civ pur, par excès d'exigence sandbox.

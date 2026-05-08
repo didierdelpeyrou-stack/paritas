@@ -1,0 +1,12 @@
+agent: 01
+nom: "Luke Wroblewski"
+corps: "Architectes"
+build: "v2.2.2-prebeta @ 0813c75"
+viewport: "390x844 (Pixel 7, Carnet auto)"
+parties: "1 salarié Jouhaux 16 tours + 1 patron CGPF 15 tours"
+tour_comprehension: 4
+moment_marquant: "Tour 1 partie 1 — la silhouette plume géante a disparu derrière le SceneCard. La barre 4px à gauche du choice-btn (SceneCard.svelte:525) suffit. Le mobile respire enfin."
+moment_decrochage: "Tour 8 — long-press sur une jauge ouvre le glossaire (CockpitTopHeader.svelte:278), parfait. Mais le coh-flag ⚠ du SceneCard utilise toujours title= (SceneCard.svelte:411-415). Je n'ai jamais su pourquoi un choix avait un ⚠."
+nps: 7
+fix_prioritaire: "src/components/cockpit/CockpitTopHeader.svelte:622 + CockpitShell.svelte:1108 + 1222 + NewsTicker.svelte:233-234 + SceneCard.svelte:553-554 — porter sys-btn / htp-close / drawer-close / ticker-pause / coh-flag à min 44×44 px (WCAG 2.5.5 niveau AAA, 2.5.8 niveau AA). Aujourd'hui : 28, 24, 32, 22, 19. Aucun ne tient."
+biais_reconnu: "Le retrait de la silhouette sépia + filigrane Cinzel m'a réconcilié avec le build. Mon préférence pour la sobriété typographique m'a fait sur-noter ce fix de +2 NPS. Sans lui, je serais toujours à 5."

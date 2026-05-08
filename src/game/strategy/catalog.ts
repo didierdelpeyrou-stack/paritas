@@ -96,8 +96,14 @@ export const STRATEGIES: StrategyDefinition[] = [
     }
   },
   {
+    /* P1-9 (ORDA-009, AAR bêta-30 §V — Hélène #29 DRH ETI) :
+       Le mot « Lobbying » est péjoratif en français (alors que neutre
+       en anglais). Hélène : « c'est juste de l'influence en RP /
+       relations institutionnelles ». L'identifiant `lobbying-parlementaire`
+       reste pour la compat des saves ; seuls les labels et narratives
+       visibles à l'utilisateur sont neutralisés. */
     id: 'lobbying-parlementaire',
-    label: 'Lobbying parlementaire',
+    label: 'Influence institutionnelle',
     description: 'Déplacer le rapport de force vers l’État, les cabinets et la loi.',
     unlockTurn: 16,
     target: 'etat',

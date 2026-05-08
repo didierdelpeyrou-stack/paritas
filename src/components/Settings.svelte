@@ -33,6 +33,11 @@
   let reducedMotion = $state<boolean>(loadReducedMotion());
   /* P1-14 (ORDA-008) — preset cognitive-friendly (Manon #25, Aïcha #23). */
   let cognitiveFriendly = $state<boolean>(loadCognitiveFriendly());
+  /* P1-11 (ORDA-009) — mode debug overlay (Soren Johnson #10,
+     Fåhraeus #09 sous réserve, Bret Victor cité panel V3). Affiche
+     les coefficients, breakdowns, et flags d'état caché aux côtés
+     des composants concernés. Réservé aux joueurs experts. */
+  let debugOverlay = $state<boolean>(loadDebugOverlay());
   let swipeEnabled = $state<boolean>(loadSwipeEnabled());
   let textMode = $state<'falc' | 'litteraire'>(loadTextMode());
   const TS_KEY = 'paritas_text_size';
@@ -40,6 +45,7 @@
   const CB_KEY = 'paritas_color_blind';
   const RM_KEY = 'paritas_reduced_motion';
   const CG_KEY = 'paritas_cognitive_friendly';
+  const DBG_KEY = 'paritas_debug_overlay';
   const SW_KEY = 'paritas_swipe_enabled';
   const TM_KEY = 'paritas_text_mode';
   const MV_KEY = 'paritas_music_volume';
@@ -114,6 +120,10 @@
     try { return localStorage.getItem(CG_KEY) === 'true'; } catch { return false; }
   }
 
+  function loadDebugOverlay(): boolean {
+    try { return localStorage.getItem(DBG_KEY) === 'true'; } catch { return false; }
+  }
+
   function loadSwipeEnabled(): boolean {
     try { return localStorage.getItem(SW_KEY) === 'true'; } catch { return false; }
   }
@@ -127,12 +137,14 @@
     root.classList.toggle('a11y-color-blind', colorBlindFriendly);
     root.classList.toggle('a11y-reduced-motion', reducedMotion);
     root.classList.toggle('a11y-cognitive', cognitiveFriendly);
+    root.classList.toggle('debug-overlay', debugOverlay);
     try {
       localStorage.setItem(TS_KEY, textSize);
       localStorage.setItem(HC_KEY, highContrast ? 'true' : 'false');
       localStorage.setItem(CB_KEY, colorBlindFriendly ? 'true' : 'false');
       localStorage.setItem(RM_KEY, reducedMotion ? 'true' : 'false');
       localStorage.setItem(CG_KEY, cognitiveFriendly ? 'true' : 'false');
+      localStorage.setItem(DBG_KEY, debugOverlay ? 'true' : 'false');
       localStorage.setItem(SW_KEY, swipeEnabled ? 'true' : 'false');
       localStorage.setItem(TM_KEY, textMode);
       localStorage.setItem(MV_KEY, String(musicVolume));
@@ -155,7 +167,7 @@
 
   /* Réapplique à chaque changement (hooks Svelte 5). */
   $effect(() => {
-    void textSize; void highContrast; void colorBlindFriendly; void reducedMotion; void cognitiveFriendly; void swipeEnabled; void textMode;
+    void textSize; void highContrast; void colorBlindFriendly; void reducedMotion; void cognitiveFriendly; void debugOverlay; void swipeEnabled; void textMode;
     void musicVolume; void sfxVolume; void voiceVolume; void speechGranularity; void voicesBoost;
     apply();
   });
@@ -341,6 +353,16 @@
           <span class="lbl">
             <b>Lecture aérée (dyslexie · TDAH · charge cognitive)</b>
             <small>Augmente l'interlignage, espacement de mots, marges des paragraphes. Met le ticker en pause par défaut. Recommandé combiné avec « Texte large ». P1-14 ORDA-008.</small>
+          </span>
+        </label>
+      </section>
+
+      <section class="opt-toggle">
+        <label>
+          <input type="checkbox" bind:checked={debugOverlay} />
+          <span class="lbl">
+            <b>Mode développeur (afficher les coefficients)</b>
+            <small>Affiche les breakdowns numériques, flags d'état caché et coefficients de modulation à côté des composants. Réservé aux joueurs experts (Soren Johnson, Bret Victor). P1-11 ORDA-009.</small>
           </span>
         </label>
       </section>

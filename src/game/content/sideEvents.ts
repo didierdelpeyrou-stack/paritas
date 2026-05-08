@@ -452,6 +452,67 @@ export const SIDE_EVENTS: SideEvent[] = [
         flag: 'mouchard-secret'
       }
     ]
+  },
+
+  /* ============================================================
+     P1-8 (ORDA-009, AAR bêta-30 §V — Jobert #17, Lukas #28) :
+     Side event Mitbestimmung 1992 — Maastricht en arrière-plan.
+     Un délégué allemand IG Metall vient à Paris. Le jeu fait
+     enfin sentir que le modèle français est UN modèle parmi
+     d'autres. Disponible côté salarié (la cogestion interroge
+     l'autonomie syndicale française).
+     ============================================================ */
+  {
+    id: 'mitbestimmung-1992',
+    camp: 'salarie',
+    eras: ['cohabitations'],
+    fromTurn: 65,
+    toTurn: 75,
+    weight: 3,
+    title: 'Le délégué allemand',
+    subtitle: 'Salle de réunion CFDT, Paris, mars 1992 — Maastricht à venir',
+    setup:
+      `Klaus, délégué IG Metall venu de Stuttgart, te tend la carte de visite à deux faces : une moitié représentant les salariés, l'autre représentant la direction. « Chez nous, depuis 1976, on est dans le conseil de surveillance. Pas en face. Dedans. C'est ça la Mitbestimmung. » Il sourit, presque navré : « Vous, en France, vous croyez encore qu'il faut être dehors pour être libre ? »`,
+    choices: [
+      {
+        id: 'rejeter-cogestion',
+        text: 'Lui rappeler que l\'autonomie syndicale française a un prix — et qu\'il vaut le coup.',
+        intent: 'Charte d\'Amiens 1906 — l\'indépendance plutôt que la cogestion.',
+        effects: {
+          resources: { confiance: +3, legitimite: -2 },
+          actors: { base: { trust: +3 } }
+        },
+        outcome:
+          'Klaus hoche la tête, pas convaincu. « Vous protégez votre voix. Vous renoncez à votre poids. C\'est un choix. » Tu repars avec la conviction que ton modèle se défend. Tu repars avec un doute, aussi : combien de salariés français savent qu\'il existe une autre voie ?',
+        traitShift: { pragmatique: -1 },
+        flag: 'cogestion-rejetee'
+      },
+      {
+        id: 'observer-cogestion',
+        text: 'L\'inviter à présenter le modèle à la confédération le mois prochain.',
+        intent: 'Apprendre du miroir européen — sans abdiquer.',
+        effects: {
+          resources: { legitimite: +5, confiance: -1 },
+          actors: { etat: { trust: +3 }, opinion: { trust: +2 } }
+        },
+        outcome:
+          'Klaus accepte, surpris. La présentation tient deux heures, le débat trois. La CGT critique, FO doute, la CFDT prend des notes. Aucun changement immédiat — mais le mot Mitbestimmung est entré dans le vocabulaire. Vingt ans plus tard, certains s\'en souviendront pour défendre les CHSCT.',
+        traitShift: { pragmatique: +2 },
+        flag: 'mitbestimmung-presented'
+      },
+      {
+        id: 'cogestion-impossible',
+        text: 'Lui répondre que le patronat français préfère le bâton — la cogestion ne marchera jamais ici.',
+        intent: 'Réalisme désabusé — défendre l\'antagonisme.',
+        effects: {
+          resources: { rapportDeForce: +2, legitimite: -3 },
+          actors: { adversaire: { trust: -2 } }
+        },
+        outcome:
+          'Klaus reste silencieux un long moment. « Peut-être. Mais alors, qui prendra place dans les conseils quand l\'Europe les imposera ? » La question reste sans réponse. Maastricht arrive dans trois mois. La directive sur les comités d\'entreprise européens, dans deux ans.',
+        traitShift: { pragmatique: -1 }
+      }
+    ]
   }
 ];
 

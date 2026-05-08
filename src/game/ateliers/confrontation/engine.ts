@@ -396,3 +396,29 @@ export function zoneLabel(zone: number): string {
   if (zone >= 25) return 'Avantage police';
   return 'DISPERSÉ';
 }
+
+/* ============================================================
+   IA simple — extraite du composant Confrontation.svelte
+   (Argus ORDA-006 : refacto dette technique 986→820 lignes)
+   ============================================================
+   Stratégies pondérées par zone :
+   - Police agressive si zone > 55 (manif gagne)
+   - Manif agressive si zone < 45 (police gagne)
+   Tableau de pondération non uniforme : certaines actions reviennent
+   plusieurs fois pour augmenter leur probabilité. ============================================================ */
+
+export function aiPolice(state: ConfrState): PoliceAction {
+  const aggressive = state.zone > 55;
+  const opts: PoliceAction[] = aggressive
+    ? ['charge', 'lacrymo', 'nasse', 'charge', 'bouclier']
+    : ['bouclier', 'lacrymo', 'bouclier', 'nasse', 'retraite'];
+  return opts[Math.floor(Math.random() * opts.length)];
+}
+
+export function aiManif(state: ConfrState): ManifAction {
+  const aggressive = state.zone < 45;
+  const opts: ManifAction[] = aggressive
+    ? ['pousser', 'barricade', 'chanter', 'pousser', 'tenir']
+    : ['tenir', 'chanter', 'reculer', 'tenir', 'barricade'];
+  return opts[Math.floor(Math.random() * opts.length)];
+}

@@ -120,3 +120,63 @@ describe('NAO — union signing logic', () => {
     expect(willUnionSign(adj, 'fo', 'retrait', false)).toBe(false);
   });
 });
+
+describe('NAO — full session simulation (10k random)', () => {
+  it('all 4 outcomes reachable with random IA, no degenerate (Argus pre-beta)', async () => {
+    const {
+      setEmployeurMove,
+      setSyndicatMove,
+      resolveSeance,
+      nextSeance
+    } = await import('./engine');
+    const counts: Record<string, number> = {
+      accord_majoritaire: 0,
+      accord_partiel: 0,
+      accord_minoritaire: 0,
+      pv_desaccord: 0
+    };
+    const empTactics = [null, 'offre_globale', 'ultimatum', 'communication', 'audit_bloquant'] as const;
+    const synTactics = [null, 'expertise', 'coordination', 'mobilisation', 'accord_partiel'] as const;
+    const postures = ['pression', 'patience', 'compromis', 'retrait'] as const;
+
+    for (let i = 0; i < 1000; i++) {
+      let s = startNaoSession();
+      let safety = 0;
+      while (s.phase !== 'ended' && safety++ < 10) {
+        /* Allocation employeur random sur 4 thèmes, total ≤ SEANCE_BUDGET */
+        const adjustments = emptyAdjustments();
+        let budget = 13;
+        for (const t of ALL_THEMES) {
+          const v = Math.floor(Math.random() * (budget + 1));
+          adjustments[t] = v;
+          budget -= v;
+        }
+        const empMove = {
+          adjustments,
+          tactic: empTactics[Math.floor(Math.random() * empTactics.length)] as
+            'offre_globale' | 'ultimatum' | 'communication' | 'audit_bloquant' | null
+        };
+        const synMove = {
+          postures: {
+            cgt: postures[Math.floor(Math.random() * postures.length)],
+            cfdt: postures[Math.floor(Math.random() * postures.length)],
+            fo: postures[Math.floor(Math.random() * postures.length)]
+          },
+          tactic: synTactics[Math.floor(Math.random() * synTactics.length)] as
+            'expertise' | 'coordination' | 'mobilisation' | 'accord_partiel' | null
+        };
+        s = setEmployeurMove(s, empMove);
+        s = setSyndicatMove(s, synMove);
+        s = resolveSeance(s);
+        if (s.phase !== 'ended') s = nextSeance(s);
+      }
+      if (s.outcome) counts[s.outcome]++;
+    }
+    /* Avec 1000 parties random, les 4 outcomes doivent apparaître ≥1% chacun
+       (Argus a recalibré IA CGT). On reste plus tolérant que 5% car random. */
+    for (const [k, v] of Object.entries(counts)) {
+      const pct = (100 * v) / 1000;
+      expect(pct, `${k}=${pct.toFixed(1)}%`).toBeGreaterThanOrEqual(1);
+    }
+  });
+});

@@ -17,6 +17,8 @@
     pickAction,
     resolveRound,
     nextRound,
+    aiPolice,
+    aiManif,
     MANIF_ACTIONS,
     POLICE_ACTIONS,
     MATCH_OUTCOME_LABELS,
@@ -142,26 +144,7 @@
     gameState = startConfrSession();
   }
 
-  /* ======================================================
-     IA simple (random pondéré par zone)
-     ====================================================== */
-
-  function aiPolice(s: ConfrState): PoliceAction {
-    // Si zone haute (manif gagne), police devient plus agressive
-    const aggressive = s.zone > 55;
-    const opts: PoliceAction[] = aggressive
-      ? ['charge', 'lacrymo', 'nasse', 'charge', 'bouclier']
-      : ['bouclier', 'lacrymo', 'bouclier', 'nasse', 'retraite'];
-    return opts[Math.floor(Math.random() * opts.length)];
-  }
-
-  function aiManif(s: ConfrState): ManifAction {
-    const aggressive = s.zone < 45;
-    const opts: ManifAction[] = aggressive
-      ? ['pousser', 'barricade', 'chanter', 'pousser', 'tenir']
-      : ['tenir', 'chanter', 'reculer', 'tenir', 'barricade'];
-    return opts[Math.floor(Math.random() * opts.length)];
-  }
+  /* IA aiPolice / aiManif extraites vers engine.ts (Argus ORDA-006) */
 </script>
 
 <div class="rue-root" class:overlay={embedded}>

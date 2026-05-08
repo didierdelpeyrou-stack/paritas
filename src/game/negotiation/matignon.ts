@@ -1,4 +1,7 @@
-import { resolveNegotiation } from './resolve';
+/* Argus B-IT9 : extension .ts explicite pour CLI Node 22 strip-types
+   (Vite résolvait sans, Node non — bloquait simulateAllMatignonPaths
+   en CLI et donc l'audit MC sur Matignon). */
+import { resolveNegotiation } from './resolve.ts';
 import type {
   AgentIntent,
   AgreementQuality,

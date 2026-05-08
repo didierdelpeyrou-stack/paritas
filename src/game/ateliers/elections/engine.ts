@@ -137,12 +137,24 @@ export function resolveScrutin(state: ElectionState): ElectionState {
   const { salarieAlloc, patronAlloc } = state;
   if (!salarieAlloc || !patronAlloc) return state;
 
+  /* Argus R1 (Géomètres ORDA-001 post-AAR) : règle de bris d'égalité.
+     AVANT : sA===pA → 0 siège pour les deux → 65 % parité MC.
+     APRÈS : sA===pA && >0 → tirage 50/50 (factor externe : météo,
+     chronologie d'annonce, viralité d'un tract). Si 0+0 : reste
+     égalité (rien n'a été alloué = personne ne gagne). Cible : ≤ 60 %
+     parité globale. */
   const channels: ChannelResult[] = ALL_CHANNELS.map(channel => {
     const sA = salarieAlloc[channel];
     const pA = patronAlloc[channel];
     const seats = CHANNEL_SEATS[channel];
     if (sA > pA) return { channel, salarieAlloc: sA, patronAlloc: pA, winner: 'salarie', seats };
     if (pA > sA) return { channel, salarieAlloc: sA, patronAlloc: pA, winner: 'patron', seats };
+    /* Égalité avec allocation > 0 : tirage 50/50 */
+    if (sA > 0) {
+      const winner = Math.random() < 0.5 ? 'salarie' as const : 'patron' as const;
+      return { channel, salarieAlloc: sA, patronAlloc: pA, winner, seats };
+    }
+    /* 0+0 : aucun camp n'a investi → personne ne gagne */
     return { channel, salarieAlloc: sA, patronAlloc: pA, winner: 'egalite', seats: 0 };
   });
 

@@ -9,7 +9,8 @@ import {
   startNaoSession, resolveSeance,
   setEmployeurMove, setSyndicatMove,
   aiEmployeurMove, aiSyndicatMove,
-  ALL_THEMES, ALL_UNIONS, MAX_SEANCES
+  ALL_THEMES, ALL_UNIONS, MAX_SEANCES,
+  TOTAL_ENVELOPPE
 } from '../src/game/ateliers/nao/engine.ts';
 
 const N = 10000;
@@ -48,7 +49,7 @@ console.log(`  ⚠️  accord_minoritaire:  ${out.accord_minoritaire.toString().
 console.log(`  ❌ pv_desaccord      :  ${out.pv_desaccord.toString().padStart(5)} (${pct(out.pv_desaccord)} %)`);
 console.log(`\nMétriques agrégées :`);
 console.log(`  Séances moyennes : ${avg(seances).toFixed(2)} (max ${MAX_SEANCES})`);
-console.log(`  Enveloppe moyenne dépensée : ${avg(enveloppes).toFixed(1)} pts / 48`);
+console.log(`  Enveloppe moyenne dépensée : ${avg(enveloppes).toFixed(1)} pts / ${TOTAL_ENVELOPPE}`);
 console.log(`  Taux signature CGT  : ${pct(cgtSign.filter(x => x).length)} %`);
 console.log(`  Taux signature CFDT : ${pct(cfdtSign.filter(x => x).length)} %`);
 console.log(`  Taux signature FO   : ${pct(foSign.filter(x => x).length)} %`);

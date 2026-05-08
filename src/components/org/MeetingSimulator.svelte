@@ -149,10 +149,20 @@
 
     /* Le sloganBonus et le postureBonus sont déjà inclus dans `militants`
        et `opinion` ci-dessus — on ne les ré-ajoute pas. */
-    /* B4 fix (audit Argus) : plancher à 35 rendait l'échec (score<30) quasi-
-       impossible même avec de mauvais arguments. Abaissé à 8 pour que les
-       mauvais choix produisent de vrais résultats négatifs. Le plafond reste
-       calculé dynamiquement — un meeting excellent peut dépasser 80. */
+    /* Plancher 8 — décision Architectes Argus ORDA-001 R1 :
+       - B4 fix antérieur : passage de 35 (rendait échec quasi-impossible)
+         à 8 pour permettre les mauvais résultats.
+       - Le 8 est INTENTIONNEL : un meeting tenu (cost = 8 pts payés)
+         a une présence minimum non nulle. Cela représente la « garantie
+         de fait » d'un événement organisé : la salle existe, des gens
+         sont passés, la presse mentionne. Score < 8 sans même un fuelMul
+         signifierait « personne n'est venu malgré l'organisation »,
+         ce qui est sémantiquement faux dès lors que le coût est payé.
+       - Le score effectif PEUT descendre sous 8 via fuelMul=0.8
+         (mauvaises ressources préalables) → min observé ~6/100.
+       - Argus AAR 2026-05-08 : tranché « plancher 6 vs 0 » → on garde
+         le plancher de fait à ~6, c'est cohérent avec la sémantique
+         d'un événement payé. Pas un bug. */
     const baseScore = 8 + (militants + opinion) * 1.4;
 
     /* Modulation par les ressources globales : Confiance, Légitimité,

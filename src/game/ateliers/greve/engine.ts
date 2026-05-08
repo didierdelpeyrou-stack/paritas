@@ -407,8 +407,13 @@ function resolveGreveOutcome(zone: number, sol: number, prod: number): GreveMatc
   if (prod <= 10) return 'accord_victorieux';    // patron forcé
   if (sol <= 10) return 'echec_greve';           // grève s'effondre
   if (zone >= 65) return 'accord_victorieux';
-  if (zone >= 40) return 'accord_partiel';
-  if (zone <= 30) return 'echec_greve';
+  /* Argus R1 (Géomètres ORDA-001 R1) : élargissement de la fenêtre
+     patron_impose. Avant : zone ∈ [30, 40[ (≈ 3 %). Après : zone ∈
+     [25, 45[ pour atteindre la cible ≥ 5 %. Le « patron_impose »
+     correspond à une situation d'épuisement mutuel sans accord —
+     ce coin du diagramme mérite plus de présence statistique. */
+  if (zone >= 45) return 'accord_partiel';
+  if (zone <= 25) return 'echec_greve';
   return 'patron_impose';
 }
 

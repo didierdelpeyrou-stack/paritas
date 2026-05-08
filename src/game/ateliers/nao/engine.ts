@@ -706,34 +706,92 @@ export function aiSyndicatMove(state: NaoState): SyndicatMove {
   const accordPartiel = state.modifiers.accordPartielActive;
   const postures: PostureMap = { cgt: 'pression', cfdt: 'patience', fo: 'patience' };
 
-  /* Argus ORDA-001 — IA syndicat plus rationnelle :
-     chaque syndicat assouplit sa posture quand il APPROCHE de son seuil
-     (rationnel : on accepte de signer si l'offre s'approche du raisonnable). */
+  /* Argus ORDA-001 R1 (post-AAR Argus 2026-05-08) — IA syndicat
+     RECALIBRÉE : la version précédente était trop conservatrice
+     → 0 % accord_minoritaire et 0 % pv_desaccord en MC.
+     Ajout de variance stochastique pour produire de vrais blocages
+     (R-A doctrine — Mémo Rouge Diplomates) :
+     - CGT peut rester en `pression` ou `retrait` parfois jusqu'au
+       bout (10 % de ténacité absolue, 5 % de retrait défensif)
+     - FO peut refuser si position salaires reste sous son minimum
+       (sensibilité salaires renforcée)
+     - CFDT garde son pragmatisme — pivot des coalitions */
 
-  // CGT — revendicative tour 1, devient pragmatique à mesure qu'elle s'approche
+  const ROLL = () => Math.random();
+
+  // CGT — revendicative + variance ténacité / retrait
   const cgtSat = computeSatisfaction(state.themes, 'cgt', accordPartiel);
   const cgtGap = UNION_META.cgt.seuilAccord - cgtSat;
-  if (state.seance === 1)            postures.cgt = 'pression';
-  else if (cgtGap < 0.05)             postures.cgt = 'compromis';   // très proche → bascule
-  else if (cgtGap < 0.15)             postures.cgt = 'patience';    // proche → s'assouplit
-  else if (state.seance >= 4)         postures.cgt = 'patience';    // fin de jeu, lâche
-  else                                postures.cgt = 'pression';    // sinon, tient
+  const cgtRoll = ROLL();
+  if (state.seance === 1) {
+    postures.cgt = 'pression';
+  } else if (cgtRoll < 0.22) {
+    /* 22 % de retrait stratégique (refus catégorique de signer ce tour).
+       Argus R1 : taux calibré 5 % → 22 % pour franchir la cible
+       pv_desaccord ≥ 5 % via couplage intersyndical (CFDT 50 % + FO 50 %
+       suivent CGT en retrait). 22 % × 50 % × 50 % ≈ 5.5 % triple retrait. */
+    postures.cgt = 'retrait';
+  } else if (cgtRoll < 0.32 && cgtGap > 0.04) {
+    /* 10 % de ténacité : reste en pression même proche du seuil */
+    postures.cgt = 'pression';
+  } else if (cgtGap < 0.05) {
+    postures.cgt = 'compromis';
+  } else if (cgtGap < 0.15) {
+    postures.cgt = 'patience';
+  } else if (state.seance >= 4) {
+    postures.cgt = 'patience';
+  } else {
+    postures.cgt = 'pression';
+  }
 
-  // CFDT — pragmatique : accepte tôt si le gap est faible
+  // CFDT — pragmatique (pivot) + retrait conditionné
   const cfdtSat = computeSatisfaction(state.themes, 'cfdt', accordPartiel);
   const cfdtGap = UNION_META.cfdt.seuilAccord - cfdtSat;
-  if (cfdtGap < 0.05)        postures.cfdt = 'compromis';
-  else if (cfdtGap < 0.12)   postures.cfdt = 'patience';
-  else if (state.seance >= 3) postures.cfdt = 'patience';
-  else                        postures.cfdt = 'patience';
+  const cfdtRoll = ROLL();
+  /* Argus R1 — couplage intersyndical (solidarité) : si CGT s'est
+     mise en retrait, CFDT évalue le coût politique de signer seule.
+     50 % de proba de suivre. Effet : pv_desaccord atteignable. */
+  const cgtEnRetrait = postures.cgt === 'retrait';
+  if (cgtEnRetrait && cfdtRoll < 0.50) {
+    postures.cfdt = 'retrait';
+  } else if (cfdtRoll < 0.05) {
+    /* 5 % de retrait stratégique (consultation base réformiste) */
+    postures.cfdt = 'retrait';
+  } else if (cfdtGap < 0.05) {
+    postures.cfdt = 'compromis';
+  } else if (cfdtGap < 0.12) {
+    postures.cfdt = 'patience';
+  } else if (state.seance >= 3) {
+    postures.cfdt = 'patience';
+  } else {
+    postures.cfdt = 'patience';
+  }
 
-  // FO — centrée salaires, mêmes règles
+  // FO — centrée salaires : refus si salaires sous minimum vital + variance
   const foSat = computeSatisfaction(state.themes, 'fo', accordPartiel);
   const foGap = UNION_META.fo.seuilAccord - foSat;
-  if (foGap < 0.05)         postures.fo = 'compromis';
-  else if (foGap < 0.12)    postures.fo = 'patience';
-  else if (state.seance >= 4) postures.fo = 'patience';
-  else                       postures.fo = 'patience';
+  /* Argus R1 : FO refuse explicitement si la position salaires reste
+     basse en fin de partie (cohérent avec son profil "60 % salaires") */
+  const salairesPos = state.themes.salaires;
+  const foRoll = ROLL();
+  const foSalairesRefus = state.seance >= 3 && salairesPos < 35 && foRoll < 0.5;
+  /* Argus R1 — couplage solidarité : si CGT en retrait, FO a 50 %
+     de proba de suivre (autonomie revendicative + solidarité). */
+  const foSuitCgt = postures.cgt === 'retrait' && foRoll < 0.50;
+  if (foSalairesRefus || foSuitCgt) {
+    postures.fo = 'retrait';
+  } else if (foRoll < 0.06) {
+    /* 6 % de retrait stratégique (autonomie revendicative) */
+    postures.fo = 'retrait';
+  } else if (foGap < 0.05) {
+    postures.fo = 'compromis';
+  } else if (foGap < 0.12) {
+    postures.fo = 'patience';
+  } else if (state.seance >= 4) {
+    postures.fo = 'patience';
+  } else {
+    postures.fo = 'patience';
+  }
 
   // Tactique
   const available = (['expertise', 'coordination', 'mobilisation', 'accord_partiel'] as SyndicatTactic[])

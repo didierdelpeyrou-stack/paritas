@@ -4,7 +4,11 @@
      Compteur tabulaire qui pulse à chaque incrément.
      ============================================================ */
   import { game } from '$lib/stores/game.svelte';
-  import { audio } from '$lib/audio/audio';
+  /* P1-12 (ORDA-009, AAR bêta-30 §V — Carmack #14) : lazy import
+     de audio.ts → Tone.js (~265 KB) ne plombe plus le bundle initial.
+     Pattern fire-and-forget : la fanfare se déclenche au premier
+     jackpot, le module se charge en parallèle (~50-100 ms), pas
+     d'await bloquant côté UI. */
 
   let stats = $derived(game.state.rollStats);
   let rate = $derived(stats.total > 0 ? Math.round((stats.success / stats.total) * 100) : 0);
@@ -25,7 +29,11 @@
   $effect(() => {
     if (stats.jackpots !== lastJackpots) {
       pulseJackpot = true;
-      audio.fanfare();
+      /* P1-12 — dynamic import de audio.ts. Premier appel : ~50-100 ms
+         de chargement Tone.js. Suivants : module en cache (instant). */
+      import('$lib/audio/audio')
+        .then(mod => mod.audio.fanfare())
+        .catch(() => { /* audio non dispo / bloqué : silence acceptable */ });
       setTimeout(() => (pulseJackpot = false), 800);
       lastJackpots = stats.jackpots;
     }

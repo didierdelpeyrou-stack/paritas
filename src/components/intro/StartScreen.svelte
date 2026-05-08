@@ -5,6 +5,11 @@
   import LegendaryCharacterPicker from './LegendaryCharacterPicker.svelte';
   import GlossaryText from '../GlossaryText.svelte';
   import type { LegendaryCharacter } from '../../game/content/legendaryCharacters';
+  import {
+    applyLaunchPreset,
+    LAUNCH_PRESET_META,
+    type LaunchPreset
+  } from '$lib/a11y/launchPreset';
 
   interface Props {
     onStart: (opts: {
@@ -22,6 +27,17 @@
   let modeOpen = $state(false);
   let legendary = $state<LegendaryCharacter | null>(null);
   let nameTouched = $state(false);
+  /* P1-1 (ORDA-009, AAR bêta-30 §V — FG-5 Goodwin/Camille/Jules) :
+     3 boutons preset au launch (pédago/équilibré/littéraire) qui
+     pré-cochent mode + a11y-cognitive. Persisté implicitement via
+     le helper launchPreset.ts (DOM + localStorage). */
+  let activePreset = $state<LaunchPreset>('balanced');
+
+  function selectPreset(p: LaunchPreset) {
+    activePreset = p;
+    const result = applyLaunchPreset(p);
+    mode = result.mode;
+  }
 
   /* Quand un personnage légendaire est sélectionné, on pré-remplit le nom et le camp.
    * L'utilisateur garde la possibilité de surcharger le nom (cosplay).
@@ -135,13 +151,43 @@
       </div>
     </div>
 
+    <!-- P1-1 (ORDA-009) — 3 presets au launch (FG-5) -->
+    <div>
+      <div class="text-xs uppercase tracking-wider text-parchment-dim/85 mb-2">
+        Mode d'expérience
+      </div>
+      <div class="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Choisir le mode d'expérience">
+        {#each ['pedagogical', 'balanced', 'literary'] as p (p)}
+          {@const meta = LAUNCH_PRESET_META[p as LaunchPreset]}
+          <button
+            type="button"
+            role="radio"
+            aria-checked={activePreset === p}
+            onclick={() => selectPreset(p as LaunchPreset)}
+            class="rounded-lg p-2 text-left border-2 transition-all
+                   {activePreset === p
+              ? 'border-gold bg-gold/10'
+              : 'border-line hover:border-line/80'}"
+          >
+            <div class="font-display text-gold text-xs">{meta.short}</div>
+            <div class="text-[10px] text-parchment-dim/85 mt-1 leading-snug">
+              {meta.audience}
+            </div>
+          </button>
+        {/each}
+      </div>
+      <p class="text-[11px] text-parchment-dim/70 mt-1.5 leading-snug">
+        {LAUNCH_PRESET_META[activePreset].desc}
+      </p>
+    </div>
+
     <div>
       <button
         type="button"
         class="w-full text-left text-xs uppercase tracking-wider text-parchment-dim/85 flex items-center justify-between"
         onclick={() => (modeOpen = !modeOpen)}
       >
-        <span>Style de jeu — {mode === 'reflechi' ? 'Réfléchi' : 'Compulsif'}</span>
+        <span>Style de jeu (avancé) — {mode === 'reflechi' ? 'Réfléchi' : 'Compulsif'}</span>
         <span class="text-parchment-dim/50">{modeOpen ? '▴' : '▾'}</span>
       </button>
 

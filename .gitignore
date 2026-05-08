@@ -8,6 +8,8 @@ paritas-*.tar.gz
 .svelte-kit/
 .env
 .env.local
+.env.production
+.env.development
 vite
 paritas@*
 vite.config.ts.timestamp-*.mjs

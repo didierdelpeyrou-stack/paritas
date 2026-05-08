@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { fileURLToPath } from 'node:url';
 
@@ -7,8 +7,34 @@ import { fileURLToPath } from 'node:url';
    browser bloqué). Format ISO court UTC. */
 const BUILD_VERSION = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
 
+/* Plugin Argus UX-1 : injecte automatiquement le snippet Microsoft
+   Clarity dans toutes les entrées HTML (main + portail + reglages +
+   10 ateliers). Garde-fous :
+     - n'agit qu'en mode build production ;
+     - n'agit que si VITE_CLARITY_ID est défini ;
+     - le snippet lui-même skip localhost/127.0.0.1 et l'opt-out
+       localStorage côté client.
+   Doc : docs/UX_TELEMETRY_CLARITY.md. */
+function clarityIdPlugin(): Plugin {
+  let clarityId = '';
+  let isProd = false;
+  return {
+    name: 'paritas-clarity-id',
+    config(_config, env) {
+      isProd = env.command === 'build';
+      const e = loadEnv(env.mode, process.cwd(), 'VITE_');
+      clarityId = e.VITE_CLARITY_ID || '';
+    },
+    transformIndexHtml(html) {
+      if (!isProd || !clarityId) return html;
+      const snippet = `\n    <script>\n      (function () {\n        try {\n          var id = ${JSON.stringify(clarityId)};\n          var host = location.hostname;\n          if (host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local')) return;\n          if (localStorage.getItem('paritas_clarity_optout') === '1') return;\n          (function (c, l, a, r, i, t, y) {\n            c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments) };\n            t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;\n            y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);\n          })(window, document, "clarity", "script", id);\n        } catch (e) { /* noop */ }\n      })();\n    </script>\n  `;
+      return html.replace('</body>', snippet + '</body>');
+    }
+  };
+}
+
 export default defineConfig({
-  plugins: [svelte()],
+  plugins: [svelte(), clarityIdPlugin()],
   base: './',
   resolve: {
     alias: {

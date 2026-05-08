@@ -364,6 +364,12 @@ export const GLOSSARY: GlossaryEntry[] = [
     definition:
       "Ouvrier travaillant dans les mines (charbon, fer, sel). Métier longtemps emblématique du syndicalisme industriel français — Décazeville 1886, fédération nationale 1893.",
     marker: 'XIXe-XXe s.'
+  },
+  {
+    term: 'institution',
+    definition:
+      "Capital salarial conquis et institutionnalisé. La cotisation EST du salaire, socialisé via mutuelle (1864), syndicat (1884), conventions (1919), Sécu (1945) et leurs descendants paritaires. La gestion paritaire les distingue des dispositifs étatiques — l'institution n'est pas l'État, ni le marché : c'est la part socialisée du salaire que les travailleurs gèrent eux-mêmes.",
+    marker: '1864 → 1945 → ajd.'
   }
 ];
 

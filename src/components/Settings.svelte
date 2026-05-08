@@ -26,7 +26,10 @@
   }
   let { open, onClose }: Props = $props();
 
-  type TextSize = 'sm' | 'md' | 'lg';
+  /* ORDA-015 (P0 Hélène-29) : palier 'xl' (22px) ajouté pour les
+     65+ — l'option 'lg' (18px) ne suffit pas au-dessus de 65 ans
+     (WCAG AAA elderly ≥ 22px). */
+  type TextSize = 'sm' | 'md' | 'lg' | 'xl';
   let textSize = $state<TextSize>(loadTextSize());
   let highContrast = $state<boolean>(loadHighContrast());
   let colorBlindFriendly = $state<boolean>(loadColorBlind());
@@ -97,7 +100,7 @@
   function loadTextSize(): TextSize {
     try {
       const v = localStorage.getItem(TS_KEY);
-      if (v === 'sm' || v === 'md' || v === 'lg') return v;
+      if (v === 'sm' || v === 'md' || v === 'lg' || v === 'xl') return v;
     } catch {
       /* ignore */
     }
@@ -133,6 +136,7 @@
     root.classList.toggle('a11y-text-sm', textSize === 'sm');
     root.classList.toggle('a11y-text-md', textSize === 'md');
     root.classList.toggle('a11y-text-lg', textSize === 'lg');
+    root.classList.toggle('a11y-text-xl', textSize === 'xl');
     root.classList.toggle('a11y-high-contrast', highContrast);
     root.classList.toggle('a11y-color-blind', colorBlindFriendly);
     root.classList.toggle('a11y-reduced-motion', reducedMotion);
@@ -303,7 +307,7 @@
       <section class="opt-group">
         <h3>Taille de texte</h3>
         <div class="seg-control" role="radiogroup">
-          {#each (['sm', 'md', 'lg'] as TextSize[]) as ts}
+          {#each (['sm', 'md', 'lg', 'xl'] as TextSize[]) as ts}
             <button
               type="button"
               role="radio"
@@ -311,10 +315,14 @@
               data-active={textSize === ts}
               onclick={() => (textSize = ts)}
             >
-              {ts === 'sm' ? 'Petit' : ts === 'md' ? 'Standard' : 'Grand'}
+              {ts === 'sm' ? 'Petit'
+                : ts === 'md' ? 'Standard'
+                : ts === 'lg' ? 'Grand'
+                : 'Très grand'}
             </button>
           {/each}
         </div>
+        <small class="hint">« Très grand » (22px) recommandé à partir de 65 ans (WCAG AAA elderly).</small>
       </section>
 
       <section class="opt-toggle">

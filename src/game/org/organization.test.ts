@@ -104,14 +104,14 @@ describe('organization — applyOrganizationDelta', () => {
 });
 
 describe('organization — expectedDuesIncome & expectedStaffCost', () => {
-  it('expectedDuesIncome côté salarié = membership * 0.04', () => {
+  it('expectedDuesIncome côté salarié = membership * 0.05 (P0 Sapeurs Duflo-11/Pascal-24)', () => {
     const org = freshOrganization('salarie', 'X');
-    expect(expectedDuesIncome(org)).toBe(Math.round(420 * 0.04)); // 17
+    expect(expectedDuesIncome(org)).toBe(Math.round(420 * 0.05)); // 21
   });
 
-  it('expectedDuesIncome côté patron = membership * 0.32', () => {
+  it('expectedDuesIncome côté patron = membership * 0.16 (P0 Sapeurs Duflo-11/Pascal-24)', () => {
     const org = freshOrganization('patron', 'X');
-    expect(expectedDuesIncome(org)).toBe(Math.round(90 * 0.32)); // 29
+    expect(expectedDuesIncome(org)).toBe(Math.round(90 * 0.16)); // 14
   });
 
   it('expectedStaffCost = permanentStaff*2 + legalTeam*1', () => {

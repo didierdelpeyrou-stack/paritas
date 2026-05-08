@@ -181,6 +181,17 @@
     mobileMenuOpen = false;
   }
 
+  /* ORDA-015 (P0 audio bêta-30) : la transition d'ère doit déclencher
+     le crossfade musical aussi côté Cockpit (pas seulement GameShell).
+     setEra est idempotent (skip si même ère) → pose-le ici sans
+     condition de mode. Le mood scénario, idem. */
+  $effect(() => {
+    if (era?.id) sfx.setEra(era.id);
+  });
+  $effect(() => {
+    if (scenario?.mood) sfx.setMood(scenario.mood);
+  });
+
   /* Lock body scroll quand drawer/popover/menu/actions ouvert. */
   $effect(() => {
     const locked = !!cockpit.openTab || !!cockpit.openPopover
@@ -393,11 +404,17 @@
                   <p>
                     {#if gameState.turn === 1}
                       <!-- Argus B-DESK16 : utiliser le nom du joueur (pas le trait
-                           générique "Bâtisseur·e"). Fallback sur trait si pas de nom. -->
+                           générique "Bâtisseur·e"). Fallback sur trait si pas de nom.
+                           ORDA-015 (P0 Manon-25 + Aïcha-23) : exposer le mode
+                           Lecture aérée dès T1 — option planquée dans Settings. -->
                       <strong>Bienvenue {gameState.name || traitLabelShort(gameState.dominantTrait)}.</strong>
                       Lis le scénario, puis clique l'une des options pour engager
                       ton choix. Tu peux aussi déclencher 1 à 2 actions libres
                       (tracts, meeting, manif…) depuis la barre du bas.
+                      <br><small class="htp-tip">
+                        Si la mise en page te paraît dense, active
+                        <em>Lecture aérée</em> dans Réglages (⚙ en haut à droite).
+                      </small>
                     {:else}
                       <strong>Mécanique :</strong> 1 décision scénarique +
                       0 à 2 actions libres par tour.
@@ -1101,13 +1118,14 @@
     line-height: 1.5;
   }
 
+  /* ORDA-015 (P0 Wroblewski-01) : tap-target WCAG 2.5.8. 24→32px. */
   :global(.sky-content .how-to-play .htp-close) {
     background: transparent;
     border: 1px solid rgba(201, 178, 106, 0.3);
     color: rgba(244, 213, 140, 0.7);
-    width: 24px; height: 24px;
+    width: 32px; height: 32px;
     border-radius: 0.25rem;
-    font-size: 1rem;
+    font-size: 1.05rem;
     line-height: 1;
     cursor: pointer;
     align-self: start;
@@ -1215,12 +1233,13 @@
     letter-spacing: 0.04em;
   }
 
+  /* ORDA-015 (P0 Wroblewski-01) : tap-target WCAG 2.5.8. 32→40px. */
   .drawer-close {
     background: transparent;
     border: 1px solid rgba(201, 178, 106, 0.3);
     color: #F4D58C;
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     border-radius: 0.35rem;
     font-size: 1.4rem;
     line-height: 1;

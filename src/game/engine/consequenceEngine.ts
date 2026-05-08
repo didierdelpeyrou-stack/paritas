@@ -4,7 +4,7 @@
  */
 
 import type {
-  ActorId, Choice, Memory, PlayerTrait, RebirthGameState,
+  ActorId, Choice, Effects, Memory, PlayerTrait, RebirthGameState,
   Scenario, ScheduledActorCallback, TraitScores
 } from '../types';
 import { composeConsequence } from '../narrative/consequenceWriter';
@@ -142,19 +142,22 @@ export function applyNarrativeFallback(
 
 /** Programme un callback d'acteur pour un tour futur (typiquement
  *  posedAtTurn + 3..5). Aucune limite de file ; le moteur déclenche
- *  quand atTurn ≤ currentTurn. */
+ *  quand atTurn ≤ currentTurn.
+ *  P0 Pope-04 (Sapeurs ORDA-015) — accepte un 7e argument optionnel
+ *  `effects` qui sera appliqué au state au moment du déclenchement. */
 export function scheduleActorCallback(
   memory: Memory,
   atTurn: number,
   actor: ActorId,
   narrative: string,
   fromChoiceId: string,
-  posedAtTurn: number
+  posedAtTurn: number,
+  effects?: Effects
 ): void {
   if (!memory.scheduledActorCallbacks) memory.scheduledActorCallbacks = [];
-  memory.scheduledActorCallbacks.push({
-    atTurn, actor, narrative, fromChoiceId, posedAtTurn
-  });
+  const cb: ScheduledActorCallback = { atTurn, actor, narrative, fromChoiceId, posedAtTurn };
+  if (effects) cb.effects = effects;
+  memory.scheduledActorCallbacks.push(cb);
 }
 
 /** Retourne les callbacks dus au tour courant (atTurn ≤ currentTurn). */

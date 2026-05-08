@@ -5,6 +5,8 @@
 import type { RebirthGameState, ScheduledActorCallback } from '../types';
 import { eraForTurn } from '../content/eras';
 import { shouldEndEarly } from '../simulation/tensions';
+import { applyResourceDelta } from '../simulation/resources';
+import { applyActorsDelta } from '../simulation/actors';
 import {
   dueActorCallbacks,
   consumeActorCallbacks
@@ -47,8 +49,31 @@ export function processTurnCallbacks(state: RebirthGameState): TurnCallbacksResu
     scheduledActorCallbacks: [...(state.memory.scheduledActorCallbacks ?? [])]
   };
   consumeActorCallbacks(nextMemory, due);
+
+  /* P0 Pope-04 (Sapeurs ORDA-015) — applique les effets numériques
+     éventuels portés par chaque callback. La mémoire des acteurs cesse
+     d'être purement narrative : un Frachon qui te félicite +5 trust,
+     une base trahie -3 patience. Les effets s'empilent dans l'ordre
+     de la file (FIFO). */
+  let nextResources = state.resources;
+  let nextActors = state.actors;
+  for (const cb of due) {
+    if (!cb.effects) continue;
+    if (cb.effects.resources) {
+      nextResources = applyResourceDelta(nextResources, cb.effects.resources);
+    }
+    if (cb.effects.actors) {
+      nextActors = applyActorsDelta(nextActors, cb.effects.actors);
+    }
+  }
+
   return {
-    state: { ...state, memory: nextMemory },
+    state: {
+      ...state,
+      memory: nextMemory,
+      resources: nextResources,
+      actors: nextActors
+    },
     triggered: due
   };
 }

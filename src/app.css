@@ -36,6 +36,10 @@
 html.a11y-text-sm { --a11y-text-scale: 0.92; font-size: 14px; }
 html.a11y-text-md { --a11y-text-scale: 1; font-size: 16px; }
 html.a11y-text-lg { --a11y-text-scale: 1.12; font-size: 18px; }
+/* ORDA-015 (P0 Hélène-29) : palier seniors WCAG AAA elderly = 22-24px.
+   Le `lg` à 18px ne suffit pas pour 65+. `xl` ajouté à 22px (1.375×).
+   Propage à --a11y-text-scale pour que les .text-xs et 0.74rem suivent. */
+html.a11y-text-xl { --a11y-text-scale: 1.375; font-size: 22px; }
 
 html.a11y-high-contrast {
   --tw-text-opacity: 1 !important;

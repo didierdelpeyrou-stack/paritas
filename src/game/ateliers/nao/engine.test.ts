@@ -17,6 +17,7 @@ import {
   aiEmployeurMove,
   aiSyndicatMove,
   naoOutcomeToV2Effects,
+  setNaoRng,
   ALL_THEMES,
   ALL_UNIONS,
   MAX_SEANCES,
@@ -24,6 +25,20 @@ import {
   SEANCE_BUDGET,
   SIGNING_MAJORITY
 } from './engine';
+
+/* PRNG mulberry32 — petit générateur 32-bit déterministe seedable.
+   Référence : https://stackoverflow.com/a/47593316. Reproduit par lui-même
+   sans Math.random — convient pour les tests P0 Carmack-14 / Villani-07. */
+function mulberry32(seed: number): () => number {
+  let s = seed >>> 0;
+  return function () {
+    s = (s + 0x6D2B79F5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
 describe('NAO — constants & invariants (Argus AAR 2026-05-08 fix)', () => {
   it('TOTAL_ENVELOPPE is 60 (corrected from "/48" cosmetic bug)', () => {
@@ -364,5 +379,58 @@ describe('NAO — V2 effects mapping', () => {
         expect(typeof fx.caisse).toBe('number');
       }
     }
+  });
+});
+
+/* P0 Carmack-14 + Villani-07 — RNG seedable (Sapeurs ORDA-015 PARITAS).
+   Deux runs IA pleinement scriptés avec le même seed doivent produire
+   exactement la même séquence de coups. Si un Math.random() reste planqué
+   quelque part dans le moteur, la déterminance casse et le test rougit. */
+describe('NAO — RNG seedable (P0 Sapeurs Carmack-14 / Villani-07)', () => {
+  function playWithSeed(seed: number) {
+    setNaoRng(mulberry32(seed));
+    const trace: Array<{
+      seance: number;
+      empTactic: string | null;
+      synTactic: string | null;
+      cgt: string;
+      cfdt: string;
+      fo: string;
+      cfecgc: string;
+    }> = [];
+    let s = startNaoSession();
+    for (let i = 0; i < MAX_SEANCES && !s.outcome; i++) {
+      const empMove = aiEmployeurMove(s);
+      const synMove = aiSyndicatMove(s);
+      trace.push({
+        seance: s.seance,
+        empTactic: empMove.tactic,
+        synTactic: synMove.tactic,
+        cgt: synMove.postures.cgt,
+        cfdt: synMove.postures.cfdt,
+        fo: synMove.postures.fo,
+        cfecgc: synMove.postures.cfecgc
+      });
+      s = setEmployeurMove(s, empMove);
+      s = setSyndicatMove(s, synMove);
+      s = resolveSeance(s);
+      if (!s.outcome) s = nextSeance(s);
+    }
+    return trace;
+  }
+
+  it('play(seed) === play(seed) — runs identiques avec même seed', () => {
+    const a = playWithSeed(42);
+    const b = playWithSeed(42);
+    expect(a).toEqual(b);
+    setNaoRng(null); // restore Math.random fallback
+  });
+
+  it('seeds différents produisent traces différentes (preuve que le RNG injecté est bien câblé)', () => {
+    const a = playWithSeed(42);
+    const b = playWithSeed(7);
+    // Au moins un coup IA doit différer — sinon le RNG override est inopérant.
+    expect(a).not.toEqual(b);
+    setNaoRng(null);
   });
 });

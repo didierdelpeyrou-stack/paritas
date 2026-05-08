@@ -50,9 +50,14 @@ export function applyOrganizationDelta(
   };
 }
 
-/** Flux de trésorerie entrant par tour, calibré selon le camp. */
+/** Flux de trésorerie entrant par tour, calibré selon le camp.
+   P0 Duflo-11 + Pascal-24 (Sapeurs ORDA-015 PARITAS) — réaligné sur le ratio
+   1:3 documenté dans treasury.ts (un syndicat patronal U2P/CPME a moins
+   d'adhérents mais cotisations plus lourdes ; l'écart par tête est sensible
+   mais pas écrasant comme l'ancien 1:8). Tarifs 0.05 / 0.16 cohérents avec
+   computeRecettes() — source unique de vérité. */
 export function expectedDuesIncome(org: PlayerOrganization): number {
-  const rate = org.camp === 'salarie' ? 0.04 : 0.32;
+  const rate = org.camp === 'salarie' ? 0.05 : 0.16;
   return Math.round(org.membership * rate);
 }
 

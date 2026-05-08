@@ -138,6 +138,22 @@
     if (w === 'patron')  return '🏛️ Direction';
     return '— Partagé';
   }
+
+  /* ============================================================
+     Tutoriel diégétique (ORDA-015 PARITAS, Yanis-19)
+     Trois bullets en JE pour expliquer les Élections en ~20 secondes.
+     Persistance localStorage.
+     ============================================================ */
+  let tutoDismissed = $state(false);
+  if (typeof window !== 'undefined') {
+    try { tutoDismissed = localStorage.getItem('paritas:tuto-elections-dismissed') === '1'; }
+    catch { /* ignore */ }
+  }
+  function dismissTuto() {
+    tutoDismissed = true;
+    try { localStorage.setItem('paritas:tuto-elections-dismissed', '1'); } catch { /* ignore */ }
+  }
+  const showTuto = $derived(phase === 'allocating' && gameState.round === 1 && !tutoDismissed);
 </script>
 
 <div class="elec-atelier" class:embedded-mode={embedded}>
@@ -155,6 +171,22 @@
       {/if}
     </div>
   </header>
+
+  <!-- TUTORIEL DIÉGÉTIQUE (1er scrutin) -->
+  {#if showTuto}
+    <aside class="atelier-tuto" role="note" aria-label="Comment ça marche">
+      <div class="atelier-tuto-head">
+        <span class="atelier-tuto-icon" aria-hidden="true">🗳️</span>
+        <h2 class="atelier-tuto-title">Premier scrutin — comment je joue</h2>
+        <button type="button" class="atelier-tuto-close" onclick={dismissTuto} aria-label="Fermer le tutoriel">×</button>
+      </div>
+      <ul class="atelier-tuto-list">
+        <li><strong>Je dispose d'un budget</strong> de {BUDGET_PER_ROUND} points par scrutin à répartir sur quatre <em>canaux</em> (terrain, presse, listes, expertise). L'autre camp fait pareil, en aveugle.</li>
+        <li><strong>Je dévoile</strong> simultanément avec l'adversaire — le canal le mieux investi rafle ses sièges. Diversifier = plus stable, concentrer = coup de poker.</li>
+        <li><strong>Je vise 11 sièges sur 21</strong> en trois scrutins. Au-delà, j'ai la majorité au CSE et je verrouille la doctrine d'établissement.</li>
+      </ul>
+    </aside>
+  {/if}
 
   <!-- SCORE SIÈGES -->
   <div class="seats-row">
@@ -430,6 +462,35 @@
   .e-title { font-size:1rem; font-weight:700; color:#C9A84C; margin:0; }
   .e-scrutin { font-size:0.7rem; background:#1c1917; border:1px solid #44403c; border-radius:999px; padding:0.2rem 0.6rem; color:#a8a29e; white-space:nowrap; }
   .e-skip { font-size:0.7rem; color:#78716c; background:none; border:1px solid #44403c; padding:0.2rem 0.5rem; border-radius:4px; cursor:pointer; margin-left:auto; }
+
+  /* Tutoriel diégétique (ORDA-015 PARITAS) */
+  .atelier-tuto {
+    background: linear-gradient(135deg, rgba(96,165,250,0.10), rgba(239,68,68,0.05));
+    border: 1px solid #44403c;
+    border-left: 3px solid #C9A84C;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    margin: 0.6rem auto;
+    max-width: 900px;
+    width: calc(100% - 2rem);
+  }
+  .atelier-tuto-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem; }
+  .atelier-tuto-icon { font-size: 1.05rem; }
+  .atelier-tuto-title { flex: 1; font-size: 0.85rem; font-weight: 700; color: #C9A84C; margin: 0; }
+  .atelier-tuto-close {
+    background: transparent; border: 1px solid #44403c; color: #a8a29e;
+    width: 26px; height: 26px; border-radius: 4px; cursor: pointer;
+    font-size: 1rem; line-height: 1;
+  }
+  .atelier-tuto-close:hover { border-color: #C9A84C; color: #C9A84C; }
+  .atelier-tuto-list {
+    margin: 0; padding-left: 1.1rem;
+    font-size: 0.8rem; color: #d6d3d1; line-height: 1.55;
+  }
+  .atelier-tuto-list li { margin-bottom: 0.3rem; }
+  .atelier-tuto-list li:last-child { margin-bottom: 0; }
+  .atelier-tuto-list strong { color: #f5f5f4; }
+  .atelier-tuto-list em { color: #C9A84C; font-style: normal; }
 
   /* Sièges */
   .seats-row { display:flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; max-width:900px; margin:0 auto; width:100%; }

@@ -62,6 +62,17 @@ export const ALL_THEMES: NaoTheme[] = ['salaires', 'primes', 'teletravail', 'ega
 export const ALL_UNIONS: NaoUnion[] = ['cgt', 'cfdt', 'fo', 'cfecgc'];
 export const MAX_SEANCES          = 5;
 
+/* P0 Carmack-14 + Villani-07 (Sapeurs ORDA-015 PARITAS) — RNG overridable.
+   Le moteur a 3 sites Math.random() (lignes ~782-783, ~809). Plutôt que
+   refacto chaque appel pour passer un seed, on offre un override module-scope.
+   Les scripts MC et tests Vitest peuvent injecter un PRNG seedé via
+   setNaoRng() avant la session. Fallback transparent vers Math.random() en prod.
+   Pattern aligné sur src/game/ateliers/elections/engine.ts. */
+let _rng: () => number = Math.random;
+export function setNaoRng(fn: (() => number) | null | undefined): void {
+  _rng = fn ?? Math.random;
+}
+
 /* P1-3 (ORDA-008, AAR bêta-30 §V) — préset TPE/PME pour NAO.
    Bruno #30 (CPME, 28 salariés BTP) et Léa #20 (caissière) :
    « la NAO du jeu est calibrée pour un grand groupe (60 pts, 5
@@ -779,8 +790,8 @@ export function aiEmployeurMove(state: NaoState): EmployeurMove {
     const { weight } = computeSigningWeight(state.themes, state.postures, accordPartiel);
     if (weight >= SIGNING_MAJORITY) tactic = 'ultimatum';
   }
-  if (!tactic && available.length > 0 && Math.random() > 0.55) {
-    tactic = available[Math.floor(Math.random() * available.length)];
+  if (!tactic && available.length > 0 && _rng() > 0.55) {
+    tactic = available[Math.floor(_rng() * available.length)];
     if (tactic === 'ultimatum') tactic = null; // ne jamais ultimer trop tôt via random
   }
 
@@ -806,7 +817,7 @@ export function aiSyndicatMove(state: NaoState): SyndicatMove {
        (sensibilité salaires renforcée)
      - CFDT garde son pragmatisme — pivot des coalitions */
 
-  const ROLL = () => Math.random();
+  const ROLL = () => _rng();
 
   // CGT — revendicative + variance ténacité / retrait
   const cgtSat = computeSatisfaction(state.themes, 'cgt', accordPartiel);

@@ -224,16 +224,19 @@
     animation-play-state: paused;
   }
 
-  /* P0-2 : bouton pause/play accessible clavier, dans le tab order. */
+  /* P0-2 : bouton pause/play accessible clavier, dans le tab order.
+     ORDA-015 (P0 Wroblewski-01) : 22→32px tap-target WCAG 2.5.8.
+     ORDA-015 (P0 Soueidan-03) : focus-visible restauré (outline +
+     épaisseur), pas de retrait visuel. */
   .ticker-pause {
     flex: 0 0 auto;
     background: transparent;
     border: 1px solid var(--color-border, rgba(255, 255, 255, 0.12));
     color: var(--color-muted, rgba(255, 255, 255, 0.7));
-    width: 22px;
-    height: 22px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    font-size: 0.7rem;
+    font-size: 0.85rem;
     line-height: 1;
     display: inline-flex;
     align-items: center;
@@ -247,7 +250,7 @@
     background: rgba(255, 255, 255, 0.08);
     color: #fff;
     outline: 2px solid var(--sem-action, #d6a949);
-    outline-offset: 1px;
+    outline-offset: 2px;
   }
 
   /* prefers-reduced-motion : pas de défilement, on liste les
@@ -265,6 +268,9 @@
     100% { transform: translateX(-100%); }
   }
 
+  /* ORDA-015 (P0 Jules-26 streamer + Soueidan-03 a11y) : contraste
+     0.70 → 0.92 sur fond sombre — respecte WCAG AA en 720p stream
+     bitrate dégradé. Le ticker est le composant le plus shareable. */
   .ticker-item {
     --cat-color: #C9B26A;
     display: inline-flex;
@@ -276,9 +282,9 @@
     border: 0;
     border-left: 2px solid color-mix(in srgb, var(--cat-color) 65%, transparent);
     border-radius: 0;
-    color: rgba(244, 239, 226, 0.7);
+    color: rgba(244, 239, 226, 0.92);
     font-family: 'Source Serif 4', Georgia, serif;
-    font-size: 0.74rem;
+    font-size: 0.78rem;
     cursor: default;
     transition: color 0.18s ease, background 0.18s ease;
   }

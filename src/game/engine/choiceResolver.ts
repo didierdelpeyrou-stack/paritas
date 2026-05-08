@@ -97,19 +97,28 @@ export function resolveChoice(
     );
   }
   if (choice.flag === 'trahit-base') {
-    /* La base perd confiance — opinion publique aussi. Tour +3. */
+    /* La base perd confiance — opinion publique aussi. Tour +3.
+       P0 Pope-04 : la base ne « perd confiance » plus en simple narratif —
+       trust −3 sur l'acteur base au déclenchement. */
     scheduleActorCallback(
       nextMemory, state.turn + 3, 'opinion',
       "Une dépêche AFP nomme ta trahison. La presse syndicale relaie. L'opinion bascule, lentement.",
-      choice.id, state.turn
+      choice.id, state.turn,
+      { actors: { base: { trust: -3 } } }
     );
   }
   if (choice.flag === 'signe-matignon') {
-    /* Reconnaissance différée — Frachon écrit. Tour +5. */
+    /* Reconnaissance ambivalente — Frachon écrit. Tour +5.
+       P0 Pope-04 : opinion +5 trust — la reconnaissance différée a une
+       morsure mécanique, pas seulement esthétique.
+       ORDA-015 (Goodwin-12) : la version initiale (« Tu as bien fait. »)
+       sonnait post-1945. Réécriture ambivalente : préserve la tension
+       CGT / CGT-Unitaire (refusion 1936) et amorce la scission FO 1947. */
     scheduleActorCallback(
       nextMemory, state.turn + 5, 'base',
-      'Frachon t\'écrit, deux lignes : « Le 7 juin restera. Tu as bien fait. » Tu plies la lettre soigneusement.',
-      choice.id, state.turn
+      'Frachon t\'écrit, trois lignes : « Le 7 juin restera. Reste à voir si la base nous suit. La CGT-Unitaire ne pardonne pas vite. » Tu plies la lettre, sans la ranger.',
+      choice.id, state.turn,
+      { actors: { opinion: { trust: 5 } } }
     );
   }
 
@@ -149,22 +158,28 @@ export function resolveChoice(
     );
   }
   if (choice.flag === 'epuise-mouvement') {
-    /* Sur-usage de la mobilisation — la base se retire silencieusement. Tour +3. */
+    /* Sur-usage de la mobilisation — la base se retire silencieusement. Tour +3.
+       P0 Pope-04 : base patience −3 — l'érosion silencieuse a une trace
+       chiffrée, le joueur sent la jauge se retirer en même temps que les militants. */
     scheduleActorCallback(
       nextMemory, state.turn + 3, 'base',
       "Les permanences se vident. Trois militants démissionnent sans bruit. Personne ne te le dit, mais tu sens le silence aux assemblées.",
-      choice.id, state.turn
+      choice.id, state.turn,
+      { actors: { base: { patience: -3 } } }
     );
   }
 
   /* ORDA-014 (extension Diplomates, vague 2) : 4 callbacks
      supplémentaires sur les flags institutionnels et patronaux. */
   if (choice.flag === 'cree-secu') {
-    /* 1945 — Croizat fonde la Sécu. L'État institutionnalise. Tour +5. */
+    /* 1945 — Croizat fonde la Sécu. L'État institutionnalise. Tour +5.
+       P0 Pope-04 : etat trust +3 — l'État reconnaît le canal paritaire,
+       et la jauge le dit. Pas un compliment, un repère. */
     scheduleActorCallback(
       nextMemory, state.turn + 5, 'etat',
       "Le ministère du Travail t'envoie copie d'une circulaire : « La gestion paritaire des caisses est désormais le canal officiel. » Tu lis deux fois — c'est inattendu venant d'eux.",
-      choice.id, state.turn
+      choice.id, state.turn,
+      { actors: { etat: { trust: 3 } } }
     );
   }
   if (choice.flag === 'cree-chsct') {
@@ -217,13 +232,37 @@ export function resolveChoice(
 
 /* Applique le multiplicateur d'énergie aux deltas de ressources d'un
    choix dont l'ability est définie. Effets sur acteurs/flags non
-   touchés (rester narratif). Borné ±20% via fuelMultiplier. */
+   touchés (rester narratif). Borné ±20% via fuelMultiplier.
+   P0 Fåhraeus-09 + Théo-21 (Sapeurs ORDA-015 PARITAS) — quand le joueur est
+   en stress effondré (≥80), un facteur supplémentaire −15 % s'empile sur le
+   multiplicateur. Le burnout coupe les jambes : on tape moins fort, qu'on
+   soit en énergie ou pas. Fåhraeus l'a vécu sur le terrain (« j'ai signé
+   sans relire »), Théo en a fait un retour formel sur le panel CFE-CGC. */
+const STRESS_COLLAPSE_THRESHOLD = 80;
+const STRESS_COLLAPSE_PENALTY = 0.85;
+
 function applyAbilityModulation(choice: Choice, state: RebirthGameState): Effects {
-  if (!choice.ability) return choice.effects;
-  if (!choice.effects.resources) return choice.effects;
+  const stressed = state.personalityStress >= STRESS_COLLAPSE_THRESHOLD;
+
+  // Cas dégénéré : pas d'ability, pas de ressources → rien à moduler.
+  if (!choice.ability || !choice.effects.resources) {
+    if (!stressed || !choice.effects.resources) return choice.effects;
+    // Ability absente mais stress actif → on applique le malus seul.
+    const out: Record<string, number> = {};
+    for (const [k, v] of Object.entries(choice.effects.resources)) {
+      out[k] = typeof v === 'number'
+        ? Math.round(v * STRESS_COLLAPSE_PENALTY)
+        : (v as number);
+    }
+    return { ...choice.effects, resources: out as Effects['resources'] };
+  }
+
   const score = abilityFuelScore(choice.ability, state.resources);
-  const mul = fuelMultiplier(score);
+  const fuelMul = fuelMultiplier(score);
+  const stressMul = stressed ? STRESS_COLLAPSE_PENALTY : 1;
+  const mul = fuelMul * stressMul;
   if (mul === 1) return choice.effects;
+
   const out: Record<string, number> = {};
   for (const [k, v] of Object.entries(choice.effects.resources)) {
     out[k] = typeof v === 'number' ? Math.round(v * mul) : (v as number);

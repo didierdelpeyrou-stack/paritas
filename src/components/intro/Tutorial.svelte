@@ -82,7 +82,7 @@
       <h2 class="font-display text-2xl text-gold mb-3">Rappel — tu as déjà joué</h2>
       <ul class="express-list">
         <li>
-          <b>6 ressources</b> — Confiance, Caisse, Santé sociale, Légitimité, Rapport de force, Institution. Aucune décision ne change tout.
+          <b>7 ressources</b> — Confiance, Caisse, Santé sociale, Légitimité, Rapport de force, Cohésion interne, Institution. Aucune décision ne change tout.
         </li>
         <li>
           <b>6 postures</b> — chaque décision a une posture politique. Tes décisions forment un trait dominant.
@@ -124,16 +124,17 @@
     </div>
   {:else if step === 1}
     <div in:fly={{ y: 8, duration: 240 }}>
-      <h2 class="font-display text-2xl text-gold mb-3">Six ressources, un mandat</h2>
+      <h2 class="font-display text-2xl text-gold mb-3">Sept ressources, un mandat</h2>
       <p class="text-parchment-dim leading-relaxed text-sm mb-3">
-        Tu as 6 jauges. Elles vont de 0 à 100. Elles montrent l'état de ton organisation. Aucune décision ne change toutes les jauges. Tu dois choisir.
+        Tu as 7 jauges. Elles vont de 0 à 100. Elles montrent l'état de ton organisation. Aucune décision ne change toutes les jauges. Tu dois choisir.
       </p>
       <ul class="grid grid-cols-2 gap-2 text-xs">
         <li class="res-line"><b>Confiance</b><span>la base te suit ou non</span></li>
         <li class="res-line"><b>Caisse</b><span>l'argent dont tu disposes</span></li>
         <li class="res-line"><b>Santé sociale</b><span>solidité du collectif</span></li>
         <li class="res-line"><b>Légitimité</b><span>ce que l'opinion pense de toi</span></li>
-        <li class="res-line"><b>Rapport de force</b><span>capacité à mobiliser</span></li>
+        <li class="res-line"><b>Rapport de force</b><span>capacité à imposer dehors</span></li>
+        <li class="res-line"><b>Cohésion interne</b><span>tenue du groupe à l'intérieur</span></li>
         <li class="res-line"><b>Institution</b><span>ce que tu construis pour durer</span></li>
       </ul>
       <p class="mt-3 text-parchment-dim leading-relaxed text-sm">

@@ -304,6 +304,21 @@ Tu pourrais signer ce soir et sauver des semaines. Tu pourrais aussi pousser le 
       traitShift: { paternaliste: +2, technocrate: +2 },
       flag: 'mediation-elysee',
       camp: 'patron'
+    },
+    {
+      id: 'matignon-table-interactive',
+      text: '🎮 Prendre place à la table — négocier toi-même',
+      intent: 'Incarner le négociateur CGT en direct. Chaque mouvement compte.',
+      theoryHint:
+        'Mini-jeu de négociation : tu incarnes le négociateur CGT à Matignon. Tes choix déterminent les gains de la partie en cours.',
+      effects: {
+        resources: {}
+      },
+      consequence: {
+        immediate: 'Tu entres dans la salle. La table est là.'
+      },
+      traitShift: { batisseur: +1 },
+      flag: 'enter_matignon'
     }
   ]
 };

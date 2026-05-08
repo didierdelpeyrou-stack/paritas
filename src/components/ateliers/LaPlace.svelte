@@ -78,6 +78,22 @@
       onresolve(effects);
     }
   }
+
+  /* ============================================================
+     Tutoriel diégétique (ORDA-015 PARITAS, Yanis-19)
+     Trois bullets en JE pour expliquer La Place en ~20 secondes.
+     Persistance localStorage.
+     ============================================================ */
+  let tutoDismissed = $state(false);
+  if (typeof window !== 'undefined') {
+    try { tutoDismissed = localStorage.getItem('paritas:tuto-place-dismissed') === '1'; }
+    catch { /* ignore */ }
+  }
+  function dismissTuto() {
+    tutoDismissed = true;
+    try { localStorage.setItem('paritas:tuto-place-dismissed', '1'); } catch { /* ignore */ }
+  }
+  const showTuto = $derived(gameState.phase !== 'ended' && gameState.act === 1 && !tutoDismissed);
 </script>
 
 <div class="place-root" class:overlay={embedded}>
@@ -93,6 +109,22 @@
         <button class="skip-btn" onclick={onskip}>Passer →</button>
       {/if}
     </div>
+
+    <!-- TUTORIEL DIÉGÉTIQUE (Acte I) -->
+    {#if showTuto}
+      <aside class="atelier-tuto" role="note" aria-label="Comment ça marche">
+        <div class="atelier-tuto-head">
+          <span class="atelier-tuto-icon" aria-hidden="true">📣</span>
+          <h2 class="atelier-tuto-title">Premier acte sur la Place</h2>
+          <button type="button" class="atelier-tuto-close" onclick={dismissTuto} aria-label="Fermer le tutoriel">×</button>
+        </div>
+        <ul class="atelier-tuto-list">
+          <li><strong>Je traverse trois actes</strong> de manif — chaque acte = une décision : durcir, tenir, négocier, disperser. Le ton du suivant dépend du précédent.</li>
+          <li><strong>Je surveille deux jauges</strong> : <em>Escalade</em> (rouge si je provoque trop) et <em>Foule</em> (chute si je laisse partir). L'équilibre se joue acte par acte.</li>
+          <li><strong>Je vise un dénouement lisible</strong> : victoire de rue, négo arrachée, débandade ou répression. Tout passe par mes choix — pas de hasard caché.</li>
+        </ul>
+      </aside>
+    {/if}
 
     <!-- Jauges -->
     <div class="gauges">
@@ -271,6 +303,33 @@
   }
 
   .skip-btn:hover { border-color: #b8860b; color: #e8dcc8; }
+
+  /* Tutoriel diégétique (ORDA-015 PARITAS) */
+  .atelier-tuto {
+    background: linear-gradient(135deg, rgba(184,134,11,0.12), rgba(196,74,26,0.05));
+    border: 1px solid #3a3633;
+    border-left: 3px solid #b8860b;
+    border-radius: 0.5rem;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.75rem;
+  }
+  .atelier-tuto-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem; }
+  .atelier-tuto-icon { font-size: 1.1rem; }
+  .atelier-tuto-title { flex: 1; font-size: 0.85rem; font-weight: 700; color: #e8dcc8; margin: 0; letter-spacing: 0.04em; }
+  .atelier-tuto-close {
+    background: transparent; border: 1px solid #3a3633; color: #a89786;
+    width: 26px; height: 26px; border-radius: 4px; cursor: pointer;
+    font-size: 1rem; line-height: 1;
+  }
+  .atelier-tuto-close:hover { border-color: #b8860b; color: #e8dcc8; }
+  .atelier-tuto-list {
+    margin: 0; padding-left: 1.1rem;
+    font-size: 0.82rem; color: #c9b9a7; line-height: 1.55;
+  }
+  .atelier-tuto-list li { margin-bottom: 0.3rem; }
+  .atelier-tuto-list li:last-child { margin-bottom: 0; }
+  .atelier-tuto-list strong { color: #f0e5d3; }
+  .atelier-tuto-list em { color: #b8860b; font-style: normal; }
 
   /* ====== Jauges ====== */
   .gauges {

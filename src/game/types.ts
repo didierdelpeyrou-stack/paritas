@@ -345,6 +345,10 @@ export interface ScheduledActorCallback {
   fromChoiceId: string;
   /** Tour où le choix a été posé (= atTurn - 3..5). */
   posedAtTurn: number;
+  /** P0 Pope-04 (Sapeurs ORDA-015) — effets numériques optionnels appliqués
+   *  au déclenchement du callback. Permet à la mémoire des acteurs d'avoir
+   *  une vraie morsure mécanique (pas seulement narrative). */
+  effects?: Effects;
 }
 
 /* ============================================================

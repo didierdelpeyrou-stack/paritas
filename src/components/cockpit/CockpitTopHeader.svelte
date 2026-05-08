@@ -615,11 +615,14 @@
     gap: 0.3rem;
   }
 
+  /* ORDA-015 (P0 Wroblewski-01) : tap-target WCAG 2.5.8 (min 24×24,
+     AAA 44×44). Passe de 28px → 36px (compromis lisibilité+respect zone
+     tactile sur smartphone). */
   .sys-btn {
     background: transparent;
     border: 1px solid rgba(201, 178, 106, 0.30);
     color: #F4D58C;
-    width: 28px; height: 28px;
+    width: 36px; height: 36px;
     border-radius: 0.3rem;
     cursor: pointer;
     display: inline-flex;

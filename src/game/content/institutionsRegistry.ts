@@ -29,7 +29,7 @@ export const INSTITUTIONS: InstitutionRecord[] = [
     id: 'unedic-1958',
     label: 'Unédic',
     year: '1958',
-    blurb: 'Convention collective interprofessionnelle de l\'assurance chômage.',
+    blurb: 'Convention nationale interprofessionnelle de l\'assurance chômage.',
     seal: '◈'
   },
   {

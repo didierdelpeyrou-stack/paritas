@@ -117,16 +117,24 @@ const RESOURCE_GLYPH: Record<ResourceKey, string> = {
   institution: '◈'
 };
 
-export function previewResources(choice: Choice): ResourcePreview[] {
+/* ORDA-015 (P0 Soren-10) : signature étendue pour aligner les
+   previews ▲▼ sur le multiplicateur d'énergie de l'ability.
+   Sans le multiplier, un +5 majeur peut devenir +4 mineur après
+   modulation ±20% — feedforward menteur juste à côté du badge
+   `EFFETS +X%`. Le paramètre `multiplier` est optionnel pour
+   préserver la rétro-compat (tests + appels qui n'ont pas le
+   contexte). */
+export function previewResources(choice: Choice, multiplier = 1): ResourcePreview[] {
   const deltas = choice.effects.resources;
   if (!deltas) return [];
   const out: ResourcePreview[] = [];
   for (const [resource, value] of Object.entries(deltas) as [ResourceKey, number][]) {
     if (typeof value !== 'number' || value === 0) continue;
+    const modulated = value * multiplier;
     out.push({
       resource,
-      direction: value > 0 ? 'up' : 'down',
-      magnitude: Math.abs(value) >= 5 ? 'major' : 'minor'
+      direction: modulated > 0 ? 'up' : 'down',
+      magnitude: Math.abs(modulated) >= 5 ? 'major' : 'minor'
     });
   }
   return out;

@@ -64,6 +64,22 @@
     institutionalMemory: 'Mémoire institutionnelle',
     ethicalClarity: 'Clarté éthique'
   };
+
+  /* ============================================================
+     Tutoriel diégétique (ORDA-015 PARITAS, Yanis-19)
+     Trois bullets en JE pour expliquer Matignon en ~20 secondes.
+     Persistance localStorage.
+     ============================================================ */
+  let tutoDismissed = $state(false);
+  if (typeof window !== 'undefined') {
+    try { tutoDismissed = localStorage.getItem('paritas:tuto-matignon-dismissed') === '1'; }
+    catch { /* ignore */ }
+  }
+  function dismissTuto() {
+    tutoDismissed = true;
+    try { localStorage.setItem('paritas:tuto-matignon-dismissed', '1'); } catch { /* ignore */ }
+  }
+  const showTuto = $derived(session.phase === 'opening' && session.history.length === 0 && !tutoDismissed);
 </script>
 
 <div class="min-h-screen bg-stone-950 text-parchment font-body">
@@ -86,6 +102,31 @@
   </header>
 
   <main class="max-w-2xl mx-auto p-4 space-y-6">
+
+    <!-- TUTORIEL DIÉGÉTIQUE (1er passage) -->
+    {#if showTuto}
+      <aside
+        class="bg-gradient-to-br from-amber-900/20 to-stone-900/40 border border-stone-700 border-l-4 border-l-gold rounded-lg p-4"
+        role="note"
+        aria-label="Comment ça marche"
+      >
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-base" aria-hidden="true">🏛️</span>
+          <h2 class="flex-1 text-sm font-bold text-gold tracking-wide m-0">Premier pas à Matignon — 7 juin 1936</h2>
+          <button
+            type="button"
+            onclick={dismissTuto}
+            aria-label="Fermer le tutoriel"
+            class="bg-transparent border border-stone-700 text-stone-400 w-6 h-6 rounded text-base leading-none hover:border-gold hover:text-gold cursor-pointer"
+          >×</button>
+        </div>
+        <ul class="m-0 pl-5 text-xs text-stone-300 leading-relaxed space-y-1.5 list-disc">
+          <li><strong class="text-stone-100">Je négocie en trois phases</strong> — ouverture, contre-proposition, ratification. Chaque mouvement déplace les <em class="not-italic text-gold">métriques</em> (Base, Pression, État, Lisibilité, Draft).</li>
+          <li><strong class="text-stone-100">Je lis la table</strong> avant chaque coup : qui pousse, qui fléchit, quelle marge il me reste. Une concession mal conçue se paie en confiance de la base.</li>
+          <li><strong class="text-stone-100">Je vise un accord lisible</strong> sans trahir la grève. La fin retourne un profil de compétences — c'est ce que je révèle à mon avenir syndical.</li>
+        </ul>
+      </aside>
+    {/if}
 
     {#if session.phase !== 'ended'}
       <!-- Phase courante -->

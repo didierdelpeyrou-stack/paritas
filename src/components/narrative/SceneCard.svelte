@@ -11,7 +11,7 @@
   } from '../../game/narrative/choicePosture';
   import { TRAIT_LABELS, TRAIT_ANTAGONISTS } from '../../game/narrative/personalityEngine';
   import { rebirth } from '../../game/engine/gameState.svelte';
-  import { abilityFuelScore, ABILITY_SHORT_LABEL, fuelBreakdown } from '../../game/simulation/resourceUtility';
+  import { abilityFuelScore, ABILITY_SHORT_LABEL, fuelBreakdown, fuelMultiplier } from '../../game/simulation/resourceUtility';
   import { scenePreview } from '$lib/stores/scenePreview.svelte';
   import VoicePanel from './VoicePanel.svelte';
   import HistoricalImage from '../HistoricalImage.svelte';
@@ -380,7 +380,10 @@
     {#each visibleChoices(scenario) as ch, i}
       {@const posture = derivePosture(ch)}
       {@const style = POSTURE_STYLES[posture]}
-      {@const previews = mode === 'reflechi' ? previewResources(ch) : []}
+      {@const choiceMul = ch.ability && rebirth.state
+        ? fuelMultiplier(abilityFuelScore(ch.ability, rebirth.state.resources))
+        : 1}
+      {@const previews = mode === 'reflechi' ? previewResources(ch, choiceMul) : []}
       {@const locked = isLocked(ch)}
       {@const coh = coherenceOf(ch)}
       {@const txt = effectiveText(ch)}
@@ -545,19 +548,22 @@
   }
 
   /* === Coherence flags (CK3-like) ===
-     Indicateur posé en haut-droite du bouton de choix. */
+     Indicateur posé en haut-droite du bouton de choix.
+     ORDA-015 (P0 Wroblewski-01 + Manon-25) : tap-target WCAG 2.5.8.
+     1.2rem (≈19px) → 1.6rem (≈25.6px) — au-dessus du seuil AA 24×24.
+     Glyph reste centré, font-size +0.05rem pour rééquilibrer. */
   .coh-flag {
     position: absolute;
     top: 0.4rem;
     right: 0.45rem;
-    width: 1.2rem;
-    height: 1.2rem;
+    width: 1.6rem;
+    height: 1.6rem;
     border-radius: 999px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-family: 'Cinzel', Georgia, serif;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     line-height: 1;
     cursor: help;
     z-index: 1;

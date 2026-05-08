@@ -134,6 +134,22 @@
     if (!o) return null;
     return TABLE_OUTCOME_LABELS[o as keyof typeof TABLE_OUTCOME_LABELS];
   }
+
+  /* ============================================================
+     Tutoriel diégétique (ORDA-015 PARITAS, Yanis-19)
+     Trois bullets en JE pour expliquer l'atelier en ~20 secondes.
+     Persistance localStorage pour ne pas réimposer au joueur.
+     ============================================================ */
+  let tutoDismissed = $state(false);
+  if (typeof window !== 'undefined') {
+    try { tutoDismissed = localStorage.getItem('paritas:tuto-table-dismissed') === '1'; }
+    catch { /* ignore */ }
+  }
+  function dismissTuto() {
+    tutoDismissed = true;
+    try { localStorage.setItem('paritas:tuto-table-dismissed', '1'); } catch { /* ignore */ }
+  }
+  const showTuto = $derived(phase === 'picking' && gameState.round === 1 && !tutoDismissed);
 </script>
 
 <!-- ============================================================ -->
@@ -157,6 +173,22 @@
       {/if}
     </div>
   </header>
+
+  <!-- TUTORIEL DIÉGÉTIQUE (1er round) -->
+  {#if showTuto}
+    <aside class="atelier-tuto" role="note" aria-label="Comment ça marche">
+      <div class="atelier-tuto-head">
+        <span class="atelier-tuto-icon" aria-hidden="true">⚖️</span>
+        <h2 class="atelier-tuto-title">Premier tour à la Table</h2>
+        <button type="button" class="atelier-tuto-close" onclick={dismissTuto} aria-label="Fermer le tutoriel">×</button>
+      </div>
+      <ul class="atelier-tuto-list">
+        <li><strong>Je joue trois rounds</strong> en aveugle — chacun choisit son coup, on retourne ensemble. La <em>zone</em> au centre glisse vers RUPTURE ou ACCORD.</li>
+        <li><strong>Je vise mon côté</strong> : si je suis le syndicat, j'ancre / médiatise / consulte ma base ; si je suis le patron, je maintiens / juridicise / divise. Chaque coup a son contre.</li>
+        <li><strong>Je gagne en finissant côté ACCORD</strong> (≥ 65) avec un coup constructif, ou côté RUPTURE assumée. Tout entre les deux, c'est de la procrastination.</li>
+      </ul>
+    </aside>
+  {/if}
 
   <!-- ZONE CURSOR -->
   <div class="zone-track-wrapper">
@@ -382,6 +414,35 @@
   .round-badge { font-size: 0.75rem; background: #1c1917; border: 1px solid #44403c; border-radius: 999px; padding: 0.25rem 0.75rem; color: #a8a29e; }
   .skip-btn { font-size: 0.75rem; color: #78716c; background: none; border: 1px solid #44403c; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; }
   .skip-btn:hover { color: #e7e0d5; }
+
+  /* Tutoriel diégétique (ORDA-015 PARITAS) */
+  .atelier-tuto {
+    background: linear-gradient(135deg, rgba(201,168,76,0.10), rgba(120,113,108,0.04));
+    border: 1px solid #44403c;
+    border-left: 3px solid #C9A84C;
+    border-radius: 0.5rem;
+    padding: 0.85rem 1rem;
+    margin: 0.75rem auto 0.25rem;
+    max-width: 900px;
+    width: calc(100% - 2rem);
+  }
+  .atelier-tuto-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem; }
+  .atelier-tuto-icon { font-size: 1.1rem; }
+  .atelier-tuto-title { flex: 1; font-size: 0.85rem; font-weight: 700; color: #C9A84C; margin: 0; }
+  .atelier-tuto-close {
+    background: transparent; border: 1px solid #44403c; color: #a8a29e;
+    width: 26px; height: 26px; border-radius: 4px; cursor: pointer;
+    font-size: 1rem; line-height: 1;
+  }
+  .atelier-tuto-close:hover { border-color: #C9A84C; color: #C9A84C; }
+  .atelier-tuto-list {
+    margin: 0; padding-left: 1.1rem;
+    font-size: 0.82rem; color: #d6d3d1; line-height: 1.55;
+  }
+  .atelier-tuto-list li { margin-bottom: 0.3rem; }
+  .atelier-tuto-list li:last-child { margin-bottom: 0; }
+  .atelier-tuto-list strong { color: #f5f5f4; }
+  .atelier-tuto-list em { color: #C9A84C; font-style: normal; }
 
   /* ZONE CURSOR */
   .zone-track-wrapper { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; max-width: 900px; margin: 0 auto; width: 100%; }

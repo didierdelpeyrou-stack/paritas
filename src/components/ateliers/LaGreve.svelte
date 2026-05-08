@@ -114,6 +114,22 @@
     if (!o) return null;
     return GREVE_OUTCOME_LABELS[o as keyof typeof GREVE_OUTCOME_LABELS] ?? null;
   }
+
+  /* ============================================================
+     Tutoriel diégétique (ORDA-015 PARITAS, Yanis-19)
+     Trois bullets en JE pour expliquer La Grève en ~20 secondes.
+     Persistance localStorage.
+     ============================================================ */
+  let tutoDismissed = $state(false);
+  if (typeof window !== 'undefined') {
+    try { tutoDismissed = localStorage.getItem('paritas:tuto-greve-dismissed') === '1'; }
+    catch { /* ignore */ }
+  }
+  function dismissTuto() {
+    tutoDismissed = true;
+    try { localStorage.setItem('paritas:tuto-greve-dismissed', '1'); } catch { /* ignore */ }
+  }
+  const showTuto = $derived(phase === 'picking' && gameState.round === 1 && !tutoDismissed);
 </script>
 
 <div class="greve-atelier" class:embedded-mode={embedded}>
@@ -131,6 +147,22 @@
       {/if}
     </div>
   </header>
+
+  <!-- TUTORIEL DIÉGÉTIQUE (1er round) -->
+  {#if showTuto}
+    <aside class="atelier-tuto" role="note" aria-label="Comment ça marche">
+      <div class="atelier-tuto-head">
+        <span class="atelier-tuto-icon" aria-hidden="true">⏱️</span>
+        <h2 class="atelier-tuto-title">Premier round de grève</h2>
+        <button type="button" class="atelier-tuto-close" onclick={dismissTuto} aria-label="Fermer le tutoriel">×</button>
+      </div>
+      <ul class="atelier-tuto-list">
+        <li><strong>Je tiens cinq rounds</strong> — chaque round, mon camp et l'autre jouent un coup en aveugle. Solidarité tombe, production aussi. Le premier qui craque ou cède la zone perd.</li>
+        <li><strong>Je dose mes munitions</strong> : grève totale ou tournante côté salarié, lockout ou recrutement côté patron. La <em>caisse</em> et le <em>juridique</em> sont mes leviers de tenue dans la durée.</li>
+        <li><strong>Je sors par accord, victoire d'usure ou rupture</strong>. Une grève longue mal préparée se paie en confiance pour les dix prochains tours.</li>
+      </ul>
+    </aside>
+  {/if}
 
   <!-- JAUGES RESSOURCES -->
   <div class="resources-row">
@@ -405,6 +437,35 @@
   .g-title { font-size:1.1rem; font-weight:700; color:#C9A84C; margin:0; }
   .g-round { font-size:0.7rem; background:#1c1917; border:1px solid #44403c; border-radius:999px; padding:0.2rem 0.6rem; color:#a8a29e; }
   .g-skip { font-size:0.7rem; color:#78716c; background:none; border:1px solid #44403c; padding:0.2rem 0.5rem; border-radius:4px; cursor:pointer; margin-left:auto; }
+
+  /* Tutoriel diégétique (ORDA-015 PARITAS) */
+  .atelier-tuto {
+    background: linear-gradient(135deg, rgba(239,68,68,0.10), rgba(201,168,76,0.04));
+    border: 1px solid #44403c;
+    border-left: 3px solid #ef4444;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    margin: 0.6rem auto;
+    max-width: 900px;
+    width: calc(100% - 2rem);
+  }
+  .atelier-tuto-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem; }
+  .atelier-tuto-icon { font-size: 1.05rem; }
+  .atelier-tuto-title { flex: 1; font-size: 0.85rem; font-weight: 700; color: #ef4444; margin: 0; }
+  .atelier-tuto-close {
+    background: transparent; border: 1px solid #44403c; color: #a8a29e;
+    width: 26px; height: 26px; border-radius: 4px; cursor: pointer;
+    font-size: 1rem; line-height: 1;
+  }
+  .atelier-tuto-close:hover { border-color: #ef4444; color: #ef4444; }
+  .atelier-tuto-list {
+    margin: 0; padding-left: 1.1rem;
+    font-size: 0.8rem; color: #d6d3d1; line-height: 1.55;
+  }
+  .atelier-tuto-list li { margin-bottom: 0.3rem; }
+  .atelier-tuto-list li:last-child { margin-bottom: 0; }
+  .atelier-tuto-list strong { color: #f5f5f4; }
+  .atelier-tuto-list em { color: #C9A84C; font-style: normal; }
 
   /* ressources */
   .resources-row { display:grid; grid-template-columns:1fr auto 1fr; gap:0.75rem; padding:0.6rem 1rem; max-width:900px; margin:0 auto; width:100%; align-items:end; }

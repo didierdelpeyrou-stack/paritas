@@ -511,6 +511,10 @@
     box-shadow: 0 0 0 1px rgba(122, 163, 122, 0.25), 0 12px 36px rgba(122, 163, 122, 0.15);
   }
 
+  /* ORDA-015 : la barre d'accent gauche est devenue le signal
+     principal du type de choix (plume sépia retirée). 4px en
+     pleine couleur d'accent — repérable au coup d'œil sans
+     détacher l'attention du texte. */
   .choice-btn {
     display: grid;
     grid-template-columns: 2.4rem 1fr;
@@ -518,7 +522,7 @@
     align-items: stretch;
     width: 100%;
     border: 1px solid var(--accent-muted);
-    border-left-width: 2px;
+    border-left: 4px solid var(--accent);
     border-radius: 0.55rem;
     background: var(--accent-soft);
     padding: 0.7rem 0.85rem 0.7rem 0.65rem;

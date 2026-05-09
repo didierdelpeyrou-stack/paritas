@@ -6,6 +6,8 @@
   "description": "Paritas : la table des Ateliers. Simulation politique narrative sur le paritarisme français, de 1789 à 2026.",
   "scripts": {
     "dev": "vite",
+    "dev:fresh": "npm run clean:cache && vite --force",
+    "clean:cache": "rm -rf node_modules/.vite dist .svelte-kit",
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",

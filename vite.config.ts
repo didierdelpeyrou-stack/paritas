@@ -45,7 +45,21 @@ export default defineConfig({
   define: {
     __BUILD_VERSION__: JSON.stringify(BUILD_VERSION)
   },
-  server: { port: 4321, host: true, strictPort: false },
+  server: {
+    port: 4321,
+    host: true,
+    strictPort: false,
+    /* ORDA-021 P0 (DX) : empêcher le browser de cacher les ressources
+       servies par Vite dev. Évite le besoin de hard-refresh manuel
+       à chaque changement (cas courant Svelte 5 quand HMR échoue
+       silencieusement). En prod, le serveur web décide de sa propre
+       politique de cache. */
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    }
+  },
   build: {
     rollupOptions: {
       input: {

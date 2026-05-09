@@ -16,6 +16,7 @@
   import TableWindow from './components/table/TableWindow.svelte';
   import { cockpit, resolveLayout } from '$lib/stores/cockpit.svelte';
   import ToastStack from './components/feedback/ToastStack.svelte';
+  import DevVersionBadge from './components/feedback/DevVersionBadge.svelte';
   /* Overlays d'ateliers — Argus B-MR1 / B-MR2 :
      rendus AU TOP-LEVEL pour fonctionner quelle que soit la
      coque (GameShell carnet, CockpitShell théâtre/atelier).
@@ -145,6 +146,7 @@
   <TableWindow />
 {:else}
 <ToastStack />
+<DevVersionBadge />
 
 <!-- ╔══════════════════════════════════════════════════════════
      Overlays d'ateliers (Argus B-MR1 / B-MR2)

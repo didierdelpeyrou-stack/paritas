@@ -217,32 +217,16 @@
 
   async function purgeCacheAndReload() {
     cachePurged = true;
-    try {
-      /* 1. Caches API (Service Workers / fetch cache) */
-      if (typeof caches !== 'undefined') {
-        const keys = await caches.keys();
-        await Promise.all(keys.map(k => caches.delete(k)));
-      }
-      /* 2. Service Workers (s'il y en a un déclaré ailleurs) */
-      if (navigator.serviceWorker?.getRegistrations) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.map(r => r.unregister()));
-      }
-      /* 3. localStorage : ON NE TOUCHE PAS aux sauvegardes du jeu
-       *    (paritas_save_v1 + paritas_rebirth_save_slot_*). On retire
-       *    seulement les caches de session/preferences renouvelables. */
-      /* (rien à faire — Vite cache HTTP a déjà été géré par
-       *  caches.delete() ci-dessus.) */
-    } catch { /* ignore */ }
-    /* 4. Hard reload — bypass le cache HTTP */
-    setTimeout(() => {
-      try {
-        /* @ts-ignore — paramètre non-standard mais supporté */
-        window.location.reload(true);
-      } catch {
-        window.location.reload();
-      }
-    }, 600);
+    /* ORDA-021 — logique extraite dans $lib/cache pour partage avec
+       DevVersionBadge.svelte et le raccourci Shift+R d'App.svelte.
+       Préserve l'invariant : on ne touche PAS à localStorage (les
+       sauvegardes du jeu paritas_save_v1 + paritas_rebirth_save_slot_*
+       restent intactes). */
+    const { purgeCaches, hardReloadCacheBust } = await import('$lib/cache');
+    await purgeCaches();
+    /* Petit délai visuel pour que cachePurged=true s'affiche avant le
+       reload — sinon l'utilisateur ne voit jamais l'état "purgé". */
+    setTimeout(hardReloadCacheBust, 600);
   }
 
   function hardReload() {

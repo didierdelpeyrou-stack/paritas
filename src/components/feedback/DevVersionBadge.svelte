@@ -2,8 +2,11 @@
   /* ORDA-021 P0 (DX anti-cache) — Badge version visible en mode dev.
      Coup d'œil bas-droite : `dev — 11h42:38` ou `BUILD 2026-05-09T20:44:25Z`.
      Permet de vérifier instantanément qu'on n'est pas sur un cache stale.
-     Click → purgeCacheAndReload() (même comportement que Settings).
+     Click → purgeCacheAndReload() (logique partagée avec App.svelte
+     et Settings.svelte via $lib/cache).
      En production : ne s'affiche pas. */
+
+  import { purgeCacheAndReload } from '$lib/cache';
 
   /* import.meta.env.DEV est true en dev, false en build prod */
   const isDev = import.meta.env.DEV;
@@ -26,19 +29,7 @@
   async function purgeAndReload() {
     if (busy) return;
     busy = true;
-    try {
-      if (typeof caches !== 'undefined') {
-        const keys = await caches.keys();
-        await Promise.all(keys.map(k => caches.delete(k)));
-      }
-      if (navigator.serviceWorker?.getRegistrations) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.map(r => r.unregister()));
-      }
-    } catch { /* ignore */ }
-    /* Cache-bust URL puis reload pour bypasser le cache HTTP. */
-    const sep = window.location.href.includes('?') ? '&' : '?';
-    window.location.href = `${window.location.href}${sep}_t=${Date.now()}`;
+    await purgeCacheAndReload();
   }
 </script>
 
@@ -48,7 +39,7 @@
     class="dev-badge"
     onclick={purgeAndReload}
     aria-label="Vider le cache et recharger"
-    title="Cliquer pour purger le cache + reload (équivalent Cmd+Shift+R + Caches API)"
+    title="Cliquer ou Shift+R : purger le cache + reload (Caches API + ServiceWorker + cache-bust URL)"
   >
     <span class="dot" aria-hidden="true"></span>
     <span class="label">{display}</span>

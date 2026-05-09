@@ -47,6 +47,34 @@
     return () => window.removeEventListener('resize', apply);
   });
 
+  /* ORDA-021 (DX anti-cache) : raccourci global Shift+R = purge cache
+     + reload. Garde-fous :
+       - skip si focus sur input/textarea/contenteditable (le user
+         peut taper "R" en majuscule dans un nom de personnage)
+       - skip si modificateurs Cmd/Ctrl/Alt présents (Cmd+Shift+R reste
+         le hard-refresh natif du browser, on ne capture pas)
+       - skip si dans le shadow DOM d'un editor riche
+     L'effet : depuis n'importe quel écran (slot, start, game, atelier),
+     Shift+R purge les Caches API + SW + cache-bust URL et reload. */
+  $effect(() => {
+    if (typeof window === 'undefined') return;
+    const handler = async (e: KeyboardEvent) => {
+      if (e.key !== 'R' || !e.shiftKey) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t) {
+        const tag = t.tagName?.toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+        if (t.isContentEditable) return;
+      }
+      e.preventDefault();
+      const { purgeCacheAndReload } = await import('$lib/cache');
+      void purgeCacheAndReload();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  });
+
   const effectiveLayout = $derived(resolveLayout(cockpit.preference, viewportWidth));
   /* Théâtre + Atelier passent par CockpitShell (qui gère ses propres
    * breakpoints internes pour rails/popovers). Carnet passe par

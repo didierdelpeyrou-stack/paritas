@@ -51,6 +51,11 @@
   }
   let brawl = $state<BrawlState | null>(null);
   let brawlContext = $state<BrawlContext | null>(null);
+  /* Refonte 2026-05-10 : raison d'inéligibilité affichée dans l'écran
+     de résultat à la place du bouton brawl actif. Permet au joueur
+     de comprendre POURQUOI la baston n'est pas accessible et donc
+     comment moduler ses choix au prochain run. */
+  let brawlReason = $state<string | null>(null);
   /* Bloque le bouton après lancement (un brawl par manif). */
   let brawlConsumed = $state(false);
 
@@ -264,31 +269,66 @@
     });
     void sfx.play(r.score >= 70 ? 'fanfare' : r.score >= 45 ? 'impact' : 'fail');
 
-    /* === Module baston : prépare le contexte si conditions remplies ===
-       - Paris est dans les villes ciblées
-       - Score ≥ 50 (manif significative)
-       - Soit adversaire stance dur, soit score >= 75 (rue tendue)
-       - Camp salarié uniquement : historiquement, le patronat du XXᵉ
-         a déplacé ses conflits de la rue vers le droit. Lui rendre
-         des nervis serait régressif (cf. audit Argus 2026-05-04).
-       Le déclenchement reste à la main du joueur via le bouton
-       « Place de la République ». Force du joueur : foule effective
-       à Paris (proportionnelle à la part de Paris dans le multi-ville). */
+    /* === Module baston Place de la République ===
+       Refonte 2026-05-10 (atelier brawler manif) : avant ce fix, le
+       brawl était gated par 4 conditions cumulatives strictes
+       (score ≥ 50 + tensionForte + Paris + camp salarié) qui le
+       rendaient invisible à >95% des joueurs. Le BrawlArena (998 LoC
+       canvas, rally cooldown, super-attacks) n'était jamais exposé.
+
+       Nouveau modèle :
+       - eligibility = bool (peut entrer dans la mêlée ou non)
+       - reason = string explicatif quand non éligible
+       - L'écran de résultat affiche TOUJOURS le bloc « Place de la
+         République » : actif si éligible, dégradé+hint sinon.
+
+       Critères d'éligibilité assouplis (manif modeste OK pour un
+       brawl petit, le risque est porté par le joueur) :
+       - Paris dans les villes ciblées (la place reste à Paris)
+       - Score ≥ 35 (au lieu de 50) — un cortège de 35/100 vaut une
+         escarmouche, même si elle se solde par un repli
+       - Tension : adversaire dur OU score ≥ 60 OU refusedCompromise > 0
+         (un joueur qui a déjà refusé un compromis a une rue tendue
+         héritée — pédagogiquement juste)
+       - Camp salarié uniquement (l'audit Argus 2026-05-04 maintient
+         le déséquilibre historique : le patronat du XXᵉ a déplacé
+         ses conflits de la rue vers le droit). */
     brawlContext = null;
     brawlConsumed = false;
     const includesParis = cities.includes('paris');
     const advStance = gs.actors.adversaire?.stance;
-    const tensionForte = advStance === 'dur' || r.score >= 75;
-    if (gs.camp === 'salarie' && includesParis && r.score >= 50 && tensionForte) {
-      const parisCity = MANIF_CITIES.find(c => c.id === 'paris');
-      const parisWeight = parisCity?.cost ?? 1;
-      const totalCityCost = selectedCities.reduce((s, c) => s + c.cost, 0);
-      const parisRatio = totalCityCost > 0 ? parisWeight / totalCityCost : 1;
-      const fouleParis = Math.round(r.foule * parisRatio);
-      const policePressure = (gs.actors.etat?.pressure ?? 30) +
-        (advStance === 'dur' ? 25 : 0);
-      const initialMomentum = (r.score - 50) * 0.6;
+    const tensionForte = advStance === 'dur'
+      || r.score >= 60
+      || (gs.memory?.refusedCompromise ?? 0) > 0;
+    /* Inéligible côté patron OU pas Paris : reason fixe.
+       Inéligible faute de score / tension : reason dynamique. */
+    let reason: string | null = null;
+    if (gs.camp !== 'salarie') {
+      reason = 'Côté patronal, les conflits se règlent au tribunal et en presse — pas dans la rue.';
+    } else if (!includesParis) {
+      reason = 'Pour tenir la place, il faut une manif parisienne.';
+    } else if (r.score < 35) {
+      reason = `Manif trop modeste (${r.score}/100). Il faut au moins 35 pour défier l'État dans la rue.`;
+    } else if (!tensionForte) {
+      reason = 'L\'État reste en posture de médiation. Pas de prétexte à la confrontation directe.';
+    }
+    const eligible = reason === null;
+    const parisCity = MANIF_CITIES.find(c => c.id === 'paris');
+    const parisWeight = parisCity?.cost ?? 1;
+    const totalCityCost = selectedCities.reduce((s, c) => s + c.cost, 0);
+    const parisRatio = totalCityCost > 0 ? parisWeight / totalCityCost : 1;
+    const fouleParis = Math.round(r.foule * parisRatio);
+    const policePressure = (gs.actors.etat?.pressure ?? 30) +
+      (advStance === 'dur' ? 25 : 0);
+    /* Momentum = bonus initial si manif robuste, pénalité si limite.
+       Centré sur 35 (seuil d'éligibilité). */
+    const initialMomentum = (r.score - 35) * 0.55;
+    if (eligible) {
       brawlContext = { fouleParis, policePressure, initialMomentum };
+      brawlReason = null;
+    } else {
+      brawlContext = null;
+      brawlReason = reason;
     }
   }
 
@@ -497,6 +537,11 @@
       <p class="result-line"><b>{result.headline}</b></p>
       <p class="result-line italic text-parchment-dim/90">{result.storyline}</p>
 
+      <!-- Refonte 2026-05-10 : bloc Place de la République TOUJOURS
+           visible dans l'écran de résultat — actif si conditions
+           remplies, dégradé+hint sinon. Avant ce fix, le bloc était
+           invisible quand brawlContext === null, ce qui rendait le
+           BrawlArena (998 LoC canvas) inaccessible à >95% des joueurs. -->
       {#if brawlContext && !brawlConsumed}
         <button type="button" class="btn-brawl w-full" onclick={launchBrawl}>
           <span class="brawl-icon" aria-hidden="true">⚔</span>
@@ -509,6 +554,14 @@
         <p class="text-[0.78rem] italic text-parchment-dim/70 text-center">
           Affrontement de République consommé pour cette manif.
         </p>
+      {:else if brawlReason}
+        <div class="brawl-locked">
+          <span class="brawl-icon brawl-icon-locked" aria-hidden="true">⚔</span>
+          <span class="brawl-stack">
+            <b>Place de la République</b>
+            <small>{brawlReason}</small>
+          </span>
+        </div>
       {/if}
 
       <button type="button" class="btn-ghost w-full" onclick={reset}>Préparer une autre manifestation</button>
@@ -764,6 +817,39 @@
     color: rgba(237, 228, 201, 0.78);
     font-size: 0.74rem;
     line-height: 1.3;
+    font-style: italic;
+  }
+
+  /* Refonte 2026-05-10 : variante "locked" du bloc Place de la
+     République, affichée quand le brawl n'est pas accessible
+     (brawlReason ≠ null). Mêmes proportions visuelles que .btn-brawl
+     mais palette atténuée (gris ardoise) et non-cliquable. Sert de
+     pédagogie : le joueur SAIT que la confrontation existe et SAIT
+     pourquoi elle ne lui est pas accessible cette fois. */
+  .brawl-locked {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    width: 100%;
+    border: 1px dashed rgba(237, 228, 201, 0.22);
+    border-radius: 0.55rem;
+    background: rgba(13, 16, 20, 0.45);
+    padding: 0.7rem 0.85rem;
+    text-align: left;
+    color: rgba(237, 228, 201, 0.65);
+  }
+
+  .brawl-icon-locked {
+    color: rgba(237, 228, 201, 0.4);
+    filter: grayscale(1);
+  }
+
+  .brawl-locked .brawl-stack b {
+    color: rgba(237, 228, 201, 0.7);
+  }
+
+  .brawl-locked .brawl-stack small {
+    color: rgba(237, 228, 201, 0.5);
     font-style: italic;
   }
 </style>

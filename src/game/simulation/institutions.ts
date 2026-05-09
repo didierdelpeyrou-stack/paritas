@@ -64,7 +64,7 @@ export const INSTITUTIONS: InstitutionDef[] = [
     id: 'secu-1945',
     name: 'Sécurité sociale',
     year: '1945',
-    desc: 'Ordonnances du 4 octobre. Croizat / Laroque.'
+    desc: 'Ordonnances des 4 et 19 octobre 1945. Croizat / Laroque / Parodi.'
   },
   {
     id: 'unedic-1958',

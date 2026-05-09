@@ -49,13 +49,23 @@ export function tickWorldAI(state: RebirthGameState): WorldAITick {
   next = applyStateStrategy(next);
   next = applyOpponentStrategy(next);
 
-  return {
-    state: next,
-    logs: [
-      `T${state.turn} — État : ${stateStrategy.label}. ${stateStrategy.signal}`,
-      `T${state.turn} — Adversaire : ${opponentStrategy.label}. ${opponentStrategy.signal}`
-    ]
-  };
+  /* BUG-3 (Paritas-QA 2026-05-10) : on ne pousse de log que si la
+     stratégie a CHANGÉ depuis le dernier tour. Avant ce fix, l'État
+     pouvait réémettre 5 fois d'affilée le même « Passage par décret »
+     dans le journal, brisant l'illusion d'une IA évolutive. Garde la
+     mécanique d'effets numériques (applyStateStrategy / applyOpponentStrategy)
+     qui doit toujours s'appliquer (sinon les ressources se figent). */
+  const stateChanged = state.worldAI.state.id !== stateStrategy.id;
+  const oppChanged = state.worldAI.opponent.id !== opponentStrategy.id;
+  const logs: string[] = [];
+  if (stateChanged) {
+    logs.push(`T${state.turn} — État : ${stateStrategy.label}. ${stateStrategy.signal}`);
+  }
+  if (oppChanged) {
+    logs.push(`T${state.turn} — Adversaire : ${opponentStrategy.label}. ${opponentStrategy.signal}`);
+  }
+
+  return { state: next, logs };
 }
 
 function pressure(intensity: number, base = 1): number {

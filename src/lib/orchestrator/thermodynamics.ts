@@ -99,7 +99,7 @@ export const EXTERNAL_FORCINGS: ExternalForcing[] = [
   {
     fromTurn: 17, toTurn: 22,
     label: 'Front populaire',
-    description: 'Mai 36 — la grève générale est dans l\'air. Manifestations puissamment soutenues.',
+    description: 'Mai 1936 — la grève générale est dans l\'air. Manifestations puissamment soutenues.',
     modifiers: [
       { actionId: 'manifestation', costMultiplier: 0.5, effectMultiplier: 2 },
       { actionId: 'tracts', costMultiplier: 0.6 }

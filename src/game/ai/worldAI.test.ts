@@ -78,13 +78,30 @@ describe('worldAI — freshWorldAI', () => {
 });
 
 describe('worldAI — tickWorldAI structure de retour', () => {
-  it('retourne { state, logs } avec 2 lignes de log nommées', () => {
+  it('retourne { state, logs } — logs présents uniquement quand la stratégie change (Paritas-QA BUG-3)', () => {
+    /* freshWorldAI initialise state.id='mediation' et opponent.id='compromis_limite'.
+       Si chooseStateStrategy retombe sur ces mêmes ids, logs=[] (skip).
+       Sinon les logs commencent par "T{turn} — État" / "T{turn} — Adversaire". */
     const tick = tickWorldAI(mkState({ turn: 3 }));
     expect(tick.state).toBeDefined();
     expect(Array.isArray(tick.logs)).toBe(true);
-    expect(tick.logs).toHaveLength(2);
-    expect(tick.logs[0]).toMatch(/^T3 — État/);
-    expect(tick.logs[1]).toMatch(/^T3 — Adversaire/);
+    expect(tick.logs.length).toBeLessThanOrEqual(2);
+    for (const log of tick.logs) {
+      expect(log).toMatch(/^T3 — (État|Adversaire) :/);
+    }
+  });
+
+  it('skip log État si l\'id ne change pas entre deux ticks (Paritas-QA BUG-3)', () => {
+    /* Premier tick depuis freshWorldAI : peut émettre 0-2 logs selon
+       chooseStateStrategy. On enchaîne un second tick sur le state
+       résultant — les ids sont alors stables, donc 0 nouveau log. */
+    const t1 = tickWorldAI(mkState({ turn: 3 }));
+    const t2 = tickWorldAI({ ...t1.state, turn: 4 } as any);
+    expect(t2.logs.length).toBeLessThanOrEqual(t1.logs.length);
+    /* Si t1 a déjà stabilisé (logs=[]), t2 doit aussi être []. */
+    if (t1.logs.length === 0) {
+      expect(t2.logs).toEqual([]);
+    }
   });
 
   it('met à jour worldAI.state, worldAI.opponent et lastSignals', () => {

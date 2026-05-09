@@ -22,7 +22,7 @@ export const INSTITUTIONS: InstitutionRecord[] = [
     id: 'secu-1945',
     label: 'Sécurité sociale',
     year: '1945',
-    blurb: 'Ordonnances du 4 octobre. Maladie, vieillesse, famille — gestion paritaire.',
+    blurb: 'Ordonnances des 4 et 19 octobre 1945. Maladie, vieillesse, famille — gestion paritaire.',
     seal: '⚕'
   },
   {

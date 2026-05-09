@@ -90,7 +90,7 @@
   }
 </script>
 
-<div class="max-w-3xl mx-auto bordered-card p-6 sm:p-8 space-y-6" in:fade={{ duration: 400 }}>
+<div class="max-w-3xl mx-auto bordered-card p-6 sm:p-8 pb-24 space-y-6" in:fade={{ duration: 400 }}>
   <header class="space-y-1">
     <h1 class="font-display text-4xl uppercase tracking-widest text-gold">
       Paritas
@@ -287,17 +287,85 @@
     </div>
   {/if}
 
-  <button
-    type="button"
-    class="btn-primary w-full disabled:opacity-40 disabled:cursor-not-allowed"
-    disabled={!canStart}
-    onclick={start}
-  >
-    {legendary ? `Entrer dans l'histoire en ${legendary.name}` : "Entrer dans l'histoire"}
-  </button>
+  <!-- ORDA-020 P0 (remontée user 2026-05-09) : avant ce fix, le bouton
+       était au fond du flex column hors-fold sur 1080p. L'utilisateur
+       a signalé "ne peut pas accéder au bouton Démarrer". Solution :
+       sticky bottom-bar dans le viewport, toujours visible, avec
+       hint contextuel quand inactif. -->
+  <div class="cta-sticky" class:cta-disabled={!canStart}>
+    {#if !canStart}
+      <p class="cta-hint">
+        {#if !camp}
+          Sélectionne <strong>une figure légendaire</strong> ou crée un personnage de zéro pour continuer.
+        {:else if !name.trim()}
+          Renseigne un <strong>nom</strong> dans la voie « personnage de zéro ».
+        {/if}
+      </p>
+    {/if}
+    <button
+      type="button"
+      class="btn-primary cta-btn"
+      disabled={!canStart}
+      onclick={start}
+    >
+      {legendary ? `Entrer dans l'histoire en ${legendary.name}` : "Entrer dans l'histoire"}
+    </button>
+  </div>
 </div>
 
 <style>
+  /* ORDA-020 P0 (remontée user 2026-05-09) : CTA fixé au bas du
+     viewport. Avant : bouton hors-fold sur 1080p, l'utilisateur disait
+     "je n'arrive pas à accéder au bouton Démarrer". Désormais le CTA
+     est toujours visible (fixed, max-w 768px centré), gold-glow quand
+     actif, gris + hint quand inactif. */
+  .cta-sticky {
+    position: fixed;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 2rem);
+    max-width: 768px;
+    z-index: 50;
+    padding: 0.75rem 0.9rem 0.85rem;
+    border-radius: 0.7rem;
+    background: linear-gradient(180deg,
+      rgba(26, 31, 38, 0.96),
+      rgba(35, 42, 51, 0.98));
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(244, 213, 139, 0.5);
+    box-shadow:
+      0 -4px 24px rgba(0, 0, 0, 0.55),
+      0 0 0 2px rgba(244, 213, 139, 0.1) inset;
+  }
+
+  .cta-sticky.cta-disabled {
+    border-color: rgba(237, 228, 201, 0.22);
+    box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.45);
+  }
+
+  .cta-hint {
+    margin: 0 0 0.5rem;
+    font-size: 0.85rem;
+    color: rgba(237, 228, 201, 0.78);
+    text-align: center;
+    line-height: 1.4;
+  }
+  .cta-hint strong {
+    color: #f4d58b;
+    font-weight: 600;
+  }
+
+  .cta-btn {
+    width: 100%;
+    /* Override l'opacity 40% par défaut du btn-primary disabled —
+       restant visible mais sans inviter au clic. */
+  }
+  .cta-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
   .recommended-path {
     position: relative;
     border: 1px solid rgba(244, 213, 139, 0.3);

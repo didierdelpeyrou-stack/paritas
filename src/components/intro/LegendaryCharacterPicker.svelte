@@ -128,10 +128,10 @@
           type="button"
           onclick={() => pick(c)}
           aria-label={`Incarner ${c.name}`}
-          class="card-main text-left rounded-lg p-2.5 pb-7 border-2 transition-all w-full
+          class="card-main text-left rounded-lg p-2.5 pb-7 transition-all w-full
                  {selected?.id === c.id
-            ? 'border-amber-400 bg-gold/10 shadow-[0_0_0_1px_rgba(251,191,36,0.4)]'
-            : rarityClass[c.rarity] + ' hover:border-gold/50 hover:bg-gold/5'}"
+            ? 'card-selected'
+            : 'border-2 ' + rarityClass[c.rarity] + ' hover:border-gold/50 hover:bg-gold/5'}"
         >
           <div class="flex items-start gap-2">
             <div class="shrink-0 w-9 h-9 rounded-full bg-ink/60 border border-line/60 flex items-center justify-center font-display text-gold text-sm">
@@ -174,8 +174,12 @@
   </div>
 
   {#if selected}
-    <div class="text-xs italic text-gold-soft/80 text-center flex items-center justify-center gap-2" in:fade>
-      <span>Tu incarneras <span class="not-italic font-display text-gold">{selected.name}</span>.</span>
+    <!-- ORDA-020 P0 : feedback de sélection beaucoup plus visible (text-sm
+         vs text-xs, contraste accru) après remontée user (bouton Démarrer
+         pas accessible / sélection invisible). -->
+    <div class="selection-banner" in:fade>
+      <span class="sel-icon" aria-hidden="true">✦</span>
+      <span class="sel-text">Tu incarneras <strong>{selected.name}</strong></span>
       <button type="button" class="annul-btn" onclick={deselect}>Désélectionner</button>
     </div>
   {:else}
@@ -358,19 +362,61 @@
     border-top: 1px solid rgba(237, 228, 201, 0.12);
   }
 
+  /* ORDA-020 P0 : card sélectionnée beaucoup plus visible — border 3px
+     gold + box-shadow + bg gold/15 + scale subtil. Le 1px shadow
+     précédent était illisible sur fond foncé. */
+  :global(.card-main.card-selected) {
+    border: 3px solid #f4d58b;
+    background: rgba(244, 213, 139, 0.15);
+    box-shadow:
+      0 0 0 2px rgba(244, 213, 139, 0.35),
+      0 8px 24px rgba(244, 213, 139, 0.18);
+    transform: scale(1.02);
+  }
+
+  /* ORDA-020 P0 : bandeau de confirmation de sélection — 1.5× plus
+     grand, contraste accru, halo doré subtil. Avant : text-xs italic
+     gris quasi invisible. */
+  .selection-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    background: linear-gradient(180deg,
+      rgba(244, 213, 139, 0.10),
+      rgba(244, 213, 139, 0.04));
+    border: 1px solid rgba(244, 213, 139, 0.28);
+    border-radius: 0.5rem;
+    padding: 0.55rem 0.8rem;
+    margin-top: 0.5rem;
+    color: #f4d58b;
+    font-size: 0.92rem;
+    font-family: 'Source Serif 4', Georgia, serif;
+  }
+  .selection-banner .sel-icon { font-size: 1rem; opacity: 0.85; }
+  .selection-banner .sel-text { flex: 1; text-align: center; }
+  .selection-banner .sel-text strong {
+    font-family: 'Cinzel', Georgia, serif;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #fff7d8;
+  }
+
   .annul-btn {
-    border: 1px solid rgba(237, 228, 201, 0.18);
+    border: 1px solid rgba(244, 213, 139, 0.4);
     border-radius: 0.35rem;
-    background: transparent;
-    color: rgba(237, 228, 201, 0.78);
-    padding: 0.18rem 0.55rem;
-    font-size: 0.78rem;
-    transition: border-color 0.15s ease, color 0.15s ease;
+    background: rgba(0, 0, 0, 0.25);
+    color: rgba(244, 213, 139, 0.92);
+    padding: 0.28rem 0.7rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
   }
 
   .annul-btn:hover {
-    border-color: rgba(244, 213, 139, 0.5);
-    color: #f4d58b;
+    border-color: #f4d58b;
+    color: #fff7d8;
+    background: rgba(244, 213, 139, 0.1);
   }
 
   /* Petit lien "Bio" inline en bas-droite de chaque carte personnage.

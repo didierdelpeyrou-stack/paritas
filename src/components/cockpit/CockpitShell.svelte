@@ -1180,11 +1180,15 @@
   }
 
   /* ===== Drawer onglet ===== */
+  /* BUG-5 (Paritas-QA 2026-05-10) : avant ce fix, le drawer Journal
+     glissait à droite mais le backdrop à 0.55 + blur 2px ne masquait
+     pas suffisamment le top-banner ticker, créant une lecture
+     polluée. Backdrop opaque à 0.78 + blur 6px isole correctement. */
   .drawer-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(13, 16, 20, 0.55);
-    backdrop-filter: blur(2px);
+    background: rgba(13, 16, 20, 0.78);
+    backdrop-filter: blur(6px);
     z-index: 50;
   }
 
@@ -1281,6 +1285,11 @@
     gap: 0.35rem;
   }
 
+  /* BUG-4 (Paritas-QA 2026-05-10) : avant ce fix, les longs textes
+     du journal (ex. "État : Passage par décret. les cabinets parlent
+     de calendrier parlementaire fermé : l'accord social devient
+     secondaire.") débordaient horizontalement et étaient tronqués.
+     overflow-wrap + word-break garantissent un wrap propre. */
   .log-list li {
     padding: 0.4rem 0.6rem;
     background: rgba(244, 213, 140, 0.05);
@@ -1288,6 +1297,8 @@
     border-radius: 0.25rem;
     font-size: 0.85rem;
     line-height: 1.45;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .primary-btn {

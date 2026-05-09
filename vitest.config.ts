@@ -7,13 +7,13 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     environment: 'node',
-    include: ['src/game/**/*.test.ts'],
+    include: ['src/game/**/*.test.ts', 'src/lib/**/*.test.ts'],
     exclude: ['node_modules', 'dist', '.wrangler'],
     globals: true,
     coverage: {
       provider: 'v8',
-      include: ['src/game/**/*.ts'],
-      exclude: ['src/game/**/*.test.ts', 'src/game/**/types.ts'],
+      include: ['src/game/**/*.ts', 'src/lib/**/*.ts'],
+      exclude: ['src/**/*.test.ts', 'src/**/types.ts'],
       reporter: ['text', 'json-summary']
     }
   }

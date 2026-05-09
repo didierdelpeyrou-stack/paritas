@@ -33,8 +33,15 @@ export const INSTITUTIONS: InstitutionDef[] = [
   {
     id: 'caisse-mutuelle-1864',
     name: 'Caisses de secours mutuel',
-    year: '1864+',
-    desc: 'Solidarité ouvrière contournant Le Chapelier.'
+    /* BUG-2 (Paritas-QA 2026-05-10) : 1864 = loi Ollivier sur la
+       coalition (25 mai 1864), ce qui dépénalise les regroupements
+       ouvriers et permet aux caisses informelles de prospérer.
+       Les sociétés de secours mutuel existaient déjà (décret 26 mars
+       1852) ; la Charte de la mutualité est posée par la loi du
+       1er avril 1898. Le marqueur '1864+' couvre donc le contexte
+       de coalition autorisée → essor mutualiste. */
+    year: '1864 → 1898',
+    desc: 'Loi Ollivier 1864 + Charte de la mutualité 1898. Solidarité ouvrière post-Le Chapelier.'
   },
   {
     id: 'syndicat-1884',

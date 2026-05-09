@@ -52,6 +52,17 @@
       onSelect(null);
     } else {
       onSelect(c);
+      /* BUG-9 (Paritas-QA 2026-05-10) : scroll auto vers la sticky CTA
+         "ENTRER DANS L'HISTOIRE" après sélection. Sur 1080p, sans ce
+         scroll l'utilisateur peut ne pas voir le bouton activé. La
+         barre est en position:fixed donc on scrolle en réalité l'ancre
+         du picker pour que le banner "Tu incarneras X" soit aligné. */
+      if (typeof window !== 'undefined') {
+        requestAnimationFrame(() => {
+          const target = document.querySelector('.cta-sticky');
+          target?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      }
     }
   }
 

@@ -31,12 +31,25 @@
     busy = true;
     await purgeCacheAndReload();
   }
+
+  /* BUG-10 (Paritas-QA 2026-05-10) : pause l'animation du dot quand
+     l'onglet est inactif (impact CPU négligeable mais batterie utile
+     sur laptop). Réactive au focus. */
+  let tabHidden = $state(false);
+  $effect(() => {
+    if (typeof document === 'undefined') return;
+    const update = () => { tabHidden = document.visibilityState === 'hidden'; };
+    update();
+    document.addEventListener('visibilitychange', update);
+    return () => document.removeEventListener('visibilitychange', update);
+  });
 </script>
 
 {#if isDev}
   <button
     type="button"
     class="dev-badge"
+    class:tab-hidden={tabHidden}
     onclick={purgeAndReload}
     aria-label="Vider le cache et recharger"
     title="Cliquer ou Shift+R : purger le cache + reload (Caches API + ServiceWorker + cache-bust URL)"
@@ -90,4 +103,7 @@
   @media (prefers-reduced-motion: reduce) {
     .dev-badge .dot { animation: none; }
   }
+
+  /* BUG-10 : pause animation quand l'onglet est masqué. */
+  .dev-badge.tab-hidden .dot { animation-play-state: paused; }
 </style>

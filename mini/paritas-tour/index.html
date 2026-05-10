@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="theme-color" content="#080808" />
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+    <title>Paritas — Tour complet (démo)</title>
+    <meta name="description" content="PARITAS · Tour complet : pupitre Direction × pupitre Intersyndicale, arbitrage à la Table, sous-jeux." />
+    <script>
+      (function() {
+        try {
+          var r = document.documentElement;
+          var p = JSON.parse(localStorage.getItem('paritas-a11y-prefs') || '{}');
+          if (p.contrast) r.dataset.a11yContrast = p.contrast;
+          if (p.fontFamily && p.fontFamily !== 'standard') r.dataset.a11yFontFamily = p.fontFamily;
+          if (p.colorBlind && p.colorBlind !== 'none') r.dataset.a11yColorBlind = p.colorBlind;
+          if (p.reducedMotion) r.dataset.a11yReducedMotion = 'true';
+        } catch(e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="atelier-root"></div>
+    <script type="module" src="../../src/ateliers/paritas-tour-main.ts"></script>
+  </body>
+</html>

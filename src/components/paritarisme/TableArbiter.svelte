@@ -15,6 +15,9 @@
    *   delta post-mêlée → onsettled (delta combiné transmis au parent)
    */
   import Emeute from '../ateliers/Emeute.svelte';
+  import Marchandage from './Marchandage.svelte';
+  import Conseil from './Conseil.svelte';
+  import BlockBlastPlaceholder from './BlockBlastPlaceholder.svelte';
   import {
     kpiToMatchConfig,
     applyEmeuteResult,
@@ -27,7 +30,8 @@
     SalarieKPI,
     SharedKPI,
     Doctrine,
-    DeltaVec
+    DeltaVec,
+    AcquisId
   } from '../../game/paritarisme/dialectic';
   import type { MatchConfig } from '../../game/ateliers/emeute/engine';
 
@@ -42,21 +46,36 @@
     shared: SharedKPI;
     /** Doctrines actives ce tour. */
     doctrines: { patron: Doctrine; salarie: Doctrine };
+    /** Acquis irréversibles déjà débloqués (utilisé par Conseil). */
+    acquis?: Set<AcquisId>;
     /** Côté incarné par le joueur. */
     playerSide?: 'patron' | 'salarie';
     /** Callback quand l'arbitrage est fini.
-       Reçoit le delta combiné = delta dialectique + delta post-mêlée. */
+       Reçoit le delta combiné = delta dialectique + delta post-atelier. */
     onsettled?: (combinedDelta: Partial<DeltaVec>) => void;
   }
 
-  let { outcome, patron, salarie, shared, doctrines, playerSide = 'salarie', onsettled }: Props = $props();
+  let {
+    outcome, patron, salarie, shared, doctrines,
+    acquis = new Set<AcquisId>(),
+    playerSide = 'salarie',
+    onsettled
+  }: Props = $props();
 
   /* === Étape courante de l'arbitrage ===
-     - 'showing-result' : si pas d'atelier, on montre juste le delta dialectique
-     - 'in-emeute'      : mêlée en cours
-     - 'in-other'       : autre atelier (placeholder)
-     - 'done'           : terminé, onsettled appelé. */
-  type Stage = 'showing-result' | 'in-emeute' | 'in-other' | 'done';
+     - 'showing-result'   : si pas d'atelier, on montre juste le delta dialectique
+     - 'in-emeute'        : mêlée brawler
+     - 'in-marchandage'   : sous-jeu 4 leviers
+     - 'in-conseil'       : audience prud'homale
+     - 'in-blockblast'    : Block Blast cotisations (placeholder)
+     - 'done'             : terminé, onsettled appelé. */
+  type Stage =
+    | 'showing-result'
+    | 'in-emeute'
+    | 'in-marchandage'
+    | 'in-conseil'
+    | 'in-blockblast'
+    | 'done';
 
   /* `stage` est mutable : passe à 'done' à la fin de l'arbitrage.
      Initialisé via $derived… non — un état mutable doit rester
@@ -65,8 +84,12 @@
      reactive update sur outcome attendu. */
   function computeInitialStage(): Stage {
     if (outcome.atelier == null) return 'showing-result';
-    if (outcome.atelier.kind === 'emeute') return 'in-emeute';
-    return 'in-other';
+    switch (outcome.atelier.kind) {
+      case 'emeute':                  return 'in-emeute';
+      case 'marchandage_4_leviers':   return 'in-marchandage';
+      case 'conseil':                 return 'in-conseil';
+      case 'blockblast_cotisations':  return 'in-blockblast';
+    }
   }
   let stage = $state<Stage>(computeInitialStage());
 
@@ -102,12 +125,26 @@
     onsettled?.(outcome.finalDelta);
   }
 
-  function skipOtherAtelier() {
-    /* Placeholder : pour les triggers non câblés (blockblast, marchandage,
-       conseil), on applique juste le delta dialectique nominal. */
-    stage = 'done';
-    onsettled?.(outcome.finalDelta);
+  /** Combine le delta dialectique avec un delta post-atelier quelconque. */
+  function combineWithDelta(post: Partial<DeltaVec>): Partial<DeltaVec> {
+    const combined: Partial<DeltaVec> = { ...outcome.finalDelta };
+    for (const k of Object.keys(post) as (keyof DeltaVec)[]) {
+      const v = post[k];
+      if (v == null) continue;
+      combined[k] = (combined[k] ?? 0) + v;
+    }
+    return combined;
   }
+
+  function handleAtelierResolve(post: Partial<DeltaVec>) {
+    stage = 'done';
+    onsettled?.(combineWithDelta(post));
+  }
+
+  /** Doctrine du CPU = celle du camp opposé au joueur. */
+  const cpuDoctrine = $derived(
+    playerSide === 'salarie' ? doctrines.patron : doctrines.salarie
+  );
 
   /* === Helpers d'affichage === */
   function fmtDelta(v: number | undefined): string {
@@ -161,7 +198,7 @@
     </section>
 
   {:else if stage === 'in-emeute' && emeuteConfig}
-    <section class="emeute-wrap">
+    <section class="atelier-wrap">
       <header class="banner">
         <h2>⚔ Émeute · Place de la République</h2>
         <p class="banner-sub">
@@ -176,16 +213,51 @@
       />
     </section>
 
-  {:else if stage === 'in-other' && outcome.atelier}
-    <section class="other-atelier">
-      <h2>Atelier {outcome.atelier.kind}</h2>
-      <p class="reason">{outcome.atelier.reason}</p>
-      <p class="placeholder">
-        <em>(Composant non encore câblé — affichage du delta nominal.)</em>
-      </p>
-      <button type="button" class="cta" onclick={skipOtherAtelier}>
-        Appliquer le delta →
-      </button>
+  {:else if stage === 'in-marchandage'}
+    <section class="atelier-wrap">
+      <header class="banner">
+        <h2>🤝 Marchandage · Échange croisé</h2>
+        <p class="banner-sub">
+          Cellule <b>{cellLabel}</b> — sous-jeu 4 leviers.
+        </p>
+      </header>
+      <Marchandage
+        cpuDoctrine={cpuDoctrine}
+        playerSide={playerSide}
+        onsettled={handleAtelierResolve}
+      />
+    </section>
+
+  {:else if stage === 'in-conseil'}
+    <section class="atelier-wrap">
+      <header class="banner">
+        <h2>⚖ Conseil prud'homal</h2>
+        <p class="banner-sub">
+          Cellule <b>{cellLabel}</b> — saisine prud'homale, audience.
+        </p>
+      </header>
+      <Conseil
+        patron={patron}
+        salarie={salarie}
+        acquis={acquis}
+        cpuDoctrine={cpuDoctrine}
+        playerSide={playerSide}
+        onsettled={handleAtelierResolve}
+      />
+    </section>
+
+  {:else if stage === 'in-blockblast'}
+    <section class="atelier-wrap">
+      <header class="banner">
+        <h2>🧱 Block Blast · Cotisations Sécu</h2>
+        <p class="banner-sub">
+          Cellule <b>{cellLabel}</b> — équilibrage de la caisse Sécurité sociale.
+        </p>
+      </header>
+      <BlockBlastPlaceholder
+        shared={outcome.nextShared}
+        onsettled={handleAtelierResolve}
+      />
     </section>
 
   {:else}
@@ -267,8 +339,8 @@
     color: #f4d58b;
   }
 
-  /* === Émeute wrap === */
-  .emeute-wrap {
+  /* === Atelier wrap (Émeute / Marchandage / Conseil / BlockBlast) === */
+  .atelier-wrap {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -295,30 +367,6 @@
   .banner-sub b {
     color: #c9b26a;
     font-family: 'Source Code Pro', monospace;
-  }
-
-  /* === Other atelier (placeholder) === */
-  .other-atelier {
-    max-width: 520px;
-    margin: 3rem auto;
-    text-align: center;
-    border: 1px dashed rgba(237, 228, 201, 0.3);
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-  }
-  .other-atelier h2 {
-    color: #c9b26a;
-    font-family: 'Cinzel', Georgia, serif;
-    margin: 0 0 0.5rem;
-  }
-  .reason {
-    font-style: italic;
-    margin: 0 0 0.8rem;
-    color: rgba(237, 228, 201, 0.75);
-  }
-  .placeholder {
-    color: rgba(237, 228, 201, 0.5);
-    font-size: 0.85rem;
   }
 
   /* === Done message === */

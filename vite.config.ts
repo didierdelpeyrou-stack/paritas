@@ -80,7 +80,10 @@ export default defineConfig({
         'mini-table':         fileURLToPath(new URL('./mini/table/index.html', import.meta.url)),
         'mini-greve':         fileURLToPath(new URL('./mini/greve/index.html', import.meta.url)),
         'mini-elections':     fileURLToPath(new URL('./mini/elections/index.html', import.meta.url)),
-        'mini-nao':           fileURLToPath(new URL('./mini/nao/index.html', import.meta.url))
+        'mini-nao':           fileURLToPath(new URL('./mini/nao/index.html', import.meta.url)),
+        /* Démos paritarisme (moteur dialectique + arbitrage tour-par-tour) */
+        'mini-table-arbiter': fileURLToPath(new URL('./mini/table-arbiter/index.html', import.meta.url)),
+        'mini-paritas-tour':  fileURLToPath(new URL('./mini/paritas-tour/index.html', import.meta.url))
       }
     }
   }

@@ -255,9 +255,10 @@ describe('IA CPU', () => {
     s.players[1].x = 200;
     /* Step avec 1 input vide pour humain — l'IA produira son input. */
     s = step(s, [emptyInput(), emptyInput()], 16);
-    /* L'IA devrait avoir vx != 0 ou être en train d'attaquer. */
+    /* L'IA devrait avoir vx != 0 ou être en train d'attaquer.
+       (facing est typé 1|-1 donc on ne le vérifie pas en !=0.) */
     const p = s.players[0];
-    expect(p.vx !== 0 || p.attackMs > 0 || p.facing !== 0).toBe(true);
+    expect(p.vx !== 0 || p.attackMs > 0).toBe(true);
   });
 
   it('toutes IA + 1 humain ne crashent pas pendant 60 frames', () => {
